@@ -1,0 +1,765 @@
+---
+swagger: "2.0"
+info:
+  description: "Dimona REST webservice."
+  version: "${artifact.version}"
+  title: "Dimona REST webservice"
+  contact:
+    name: "Dimona support"
+    url: "https://www.smals.be"
+    email: "tbdimona@smals.be"
+  license:
+    name: "Smals 2.0"
+    url: "http://www.smals.be/licenses/LICENSE-2.0.html"
+basePath: "/dimona/v1"
+tags:
+  - name: "Declarations"
+  - name: "Documentation"
+  - name: "Monitoring"
+schemes:
+  - "https"
+securityDefinitions:
+  oauth_clientCredentials:
+    type: oauth2
+    tokenUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v4/token'
+    flow: application
+    scopes:
+      'scope:dimona:declaration:declarant': this scope is for expeditors with client credentials to declare a Dimona declaration
+      'scope:dimona:declaration:consult': this scope is for expeditors with client credentials to consult the Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaenterpriseconsult': this scope is for enterprises that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaenterprisedeclare' : this scope is for enterprises that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonarepresentativeconsult': this scope is for representatives that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonarepresentativedeclare': this scope is for representatives that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaprofessionalconsult': this scope is for professional agents that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaprofessionaldeclare': this scope is for professional agents that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:monitoring': this scope is only for monitoring
+  oauth_accessCode:
+    type: oauth2
+    tokenUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v4/token'
+    authorizationUrl: 'https://oauth-v4.int.ext.socialsecurity.be/oauth2/authorize'
+    flow: accessCode
+    scopes:
+      'scope:dimona:declaration:declarant': this scope is for expeditors with client credentials to declare a Dimona declaration
+      'scope:dimona:declaration:consult': this scope is for expeditors with client credentials to consult the Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaenterpriseconsult': this scope is for enterprises that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaenterprisedeclare' : this scope is for enterprises that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonarepresentativeconsult': this scope is for representatives that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonarepresentativedeclare': this scope is for representatives that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaprofessionalconsult': this scope is for professional agents that can consult a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:dimonaprofessionaldeclare': this scope is for professional agents that can declare a Dimona declaration
+      'scope:dimona:declaration:ws-restdimona:monitoring': this scope is only for monitoring
+paths:
+  /api/doc:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the API documentation in HTML format"
+      description: ""
+      operationId: "getApiDoc"
+      produces:
+        - "text/html"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+      security: [ ]
+  /api/doc/jsonSchemas/{jsonSchema}:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the JSON Schemas"
+      description: ""
+      operationId: "getJsonSchema"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "jsonSchema"
+          in: "path"
+          description: "JSON Schema name"
+          required: true
+          type: "string"
+          pattern: ".+"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+      security: [ ]
+  /api/doc/swagger.json:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the API documentation in JSON Swagger format"
+      description: ""
+      operationId: "getSwagger"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+      security: [ ]
+  /api/healthCheck:
+    get:
+      tags:
+        - "Monitoring"
+      summary: "Check health of this REST API"
+      description: "This resource is only available to supervision users"
+      operationId: "healthCheck"
+      produces:
+        - "text/xml"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "Defines the which sanity checks must be ran"
+          required: false
+          type: "string"
+          default: "default"
+          enum:
+            - "ping"
+            - "default"
+            - "deep"
+      responses:
+        default:
+          description: "successful operation"
+      security: [ ]
+  /declarations:
+    post:
+      tags:
+        - "Declarations"
+      summary: "Create a new Dimona Declaration"
+      description: ""
+      operationId: "add"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json;charset=UTF-8"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Declaration data"
+          required: true
+          schema:
+            $ref: "#/definitions/declaration"
+      responses:
+        201:
+          description: "Declaration recieved, you can find the declaration id in the\
+            \ 'Location' header of the response."
+        400:
+          description: "Bad Request parameter. Can be a StatusMessage or an array\
+            \ of properties that aren't correct."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+        403:
+          description: "Forbidden, you can't send a declaration for this employer."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+        500:
+          description: "Internal Server Error."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+      security:
+        - oauth_clientCredentials:
+            - 'scope:dimona:declaration:declarant'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaenterprisedeclare'
+            - 'scope:dimona:declaration:ws-restdimona:dimonarepresentativedeclare'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaprofessionaldeclare'
+        - oauth_accessCode:
+            - 'scope:dimona:declaration:declarant'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaenterprisedeclare'
+            - 'scope:dimona:declaration:ws-restdimona:dimonarepresentativedeclare'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaprofessionaldeclare'
+      x-oauth2-required-scopes: any
+  /declarations/{dimonaNbr}:
+    get:
+      tags:
+        - "Declarations"
+      summary: "Retrieve a Dimona Declaration"
+      description: ""
+      operationId: "getDimona"
+      produces:
+        - "application/json;charset=UTF-8"
+      parameters:
+        - name: "dimonaNbr"
+          in: "path"
+          description: "The declaration number"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "Dimona declaration found."
+          schema:
+            $ref: "#/definitions/declaration"
+        403:
+          description: "Forbidden to consult this dimona declaration."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+        404:
+          description: "Dimona declaration not found for this number or your declaration\
+            \ is not yet processed."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+        500:
+          description: "Internal Server Error."
+          schema:
+            $ref: "#/definitions/StatusMessage"
+      security:
+        - oauth_clientCredentials:
+            - 'scope:dimona:declaration:consult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaenterpriseconsult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonarepresentativeconsult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaprofessionalconsult'
+        - oauth_accessCode:
+            - 'scope:dimona:declaration:consult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaenterpriseconsult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonarepresentativeconsult'
+            - 'scope:dimona:declaration:ws-restdimona:dimonaprofessionalconsult'
+      x-oauth2-required-scopes: any
+definitions:
+  Address:
+    type: "object"
+    required:
+      - "city"
+      - "country"
+      - "houseNumber"
+      - "street"
+      - "zipCode"
+    properties:
+      street:
+        type: "string"
+        example: "00517"
+        description: "Street name"
+        minLength: 0
+        maxLength: 42
+      houseNumber:
+        type: "string"
+        example: "00518"
+        description: "House number"
+        minLength: 0
+        maxLength: 10
+      postBox:
+        type: "string"
+        example: "00519"
+        description: "Post box"
+        minLength: 0
+        maxLength: 4
+      zipCode:
+        type: "string"
+        example: "00520"
+        description: "Belgian zip code, the value must refer to one of the codes listed\
+          \ in Annex 23"
+        minLength: 0
+        maxLength: 9
+      city:
+        type: "string"
+        example: "00522"
+        description: "City name"
+        minLength: 0
+        maxLength: 40
+      country:
+        type: "string"
+        example: "00523"
+        description: "Country. See Annex 5 - Country Code List"
+        pattern: "^[0-9]{1,5}$"
+    description: "Block for completely specifying an address"
+  Anomaly:
+    type: "object"
+    properties:
+      errorId:
+        type: "string"
+        description: "Identifier of the anomaly - See Annex 30 of the Glossary (https://www.socialsecurity.be/lambda/portail/glossaires/dimona.nsf/web/glossary_home_fr)"
+      labelFr:
+        type: "string"
+        description: "Label of the anomaly in French"
+      labelNl:
+        type: "string"
+        description: "Label of the anomaly in Dutch"
+    description: "Block containing the detail of an anomaly"
+  ConstructionControlCards:
+    type: "object"
+    required:
+      - "firstMonthC32ANumber"
+      - "nextMonthC32ANumber"
+    properties:
+      firstMonthC32ANumber:
+        type: "string"
+        example: "00663"
+        description: "Control card number C3.2A assigned to the worker for the beginning\
+          \ of the Dimona period"
+        pattern: "^[0-9]{1,12}$"
+      nextMonthC32ANumber:
+        type: "string"
+        example: "00664"
+        description: "Control card number C3.2A assigned to the worker for the month\
+          \ following the month of the beginning of his Dimona period"
+        pattern: "^[0-9]{1,12}$"
+    description: "Block for declaring C3.2A-construction control card data"
+  DeclarationStatus:
+    type: "object"
+    properties:
+      dimonaDeclarationId:
+        type: "string"
+        description: "Identification number of the Dimona declaration"
+      result:
+        type: "string"
+        description: "Result of the processing of the declaration. (A - accepted,\
+          \ W - accepted with warning, B - refused and S - Waiting because an identification\
+          \ request sent to SIGeDIS)"
+      dimonaPeriodId:
+        type: "string"
+        description: "Identification number of the Dimona period"
+      anomaliesCollection:
+        type: "array"
+        description: "list of anomalies"
+        items:
+          $ref: "#/definitions/Anomaly"
+      informationsCollection:
+        type: "array"
+        description: "List of additional information"
+        items:
+          $ref: "#/definitions/Information"
+    description: "Block containing the data relating to the declaration processing.\
+      \ When retrieving a declaration this is filled up by the service."
+  Detail:
+    type: "object"
+    properties:
+      kind:
+        type: "object"
+      message:
+        type: "object"
+      ref:
+        type: "object"
+      value:
+        type: "object"
+  DimonaCancel:
+    type: "object"
+    required:
+      - "dimonaNumber"
+    properties:
+      references:
+        description: "Block to specity references"
+        $ref: "#/definitions/References"
+      dimonaNumber:
+        type: "string"
+        example: "00913"
+        description: "Number that uniquely identifies a Dimona period. This number\
+          \ is automatically assigned to the Dimona IN declaration that generates\
+          \ the period"
+    description: "Block containing the information necessary for a declaration Dimona\
+      \ cancellation of the relationship between an employer and a worker"
+  DimonaIn:
+    type: "object"
+    required:
+      - "dimonaFeatures"
+      - "startingDate"
+    properties:
+      references:
+        description: "Block to specity references"
+        $ref: "#/definitions/References"
+      startingDate:
+        type: "string"
+        example: "00910"
+        description: "Start date of the Dimona period in YYYY-MM-DD format"
+        pattern: "^(19[2-9][0-9]|20[0-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
+      startingHour:
+        type: "string"
+        example: "00777"
+        description: "Starting time of the Dimona period in HH:MI format"
+        pattern: "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+      endingDate:
+        type: "string"
+        example: "00911"
+        description: "End date of the Dimona period in YYYY-MM-DD format"
+        pattern: "^(19[2-9][0-9]|20[0-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
+      endingHour:
+        type: "string"
+        example: "00778"
+        description: "Finishing time of the Dimona period in HH:MI format"
+        pattern: "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+      plannedDaysNumber:
+        type: "integer"
+        format: "int32"
+        example: 1017
+        description: "Number of work days planned by the employer over the declared\
+          \ Dimona period"
+        minimum: 1.0
+        maximum: 999999.0
+      plannedHoursNumber:
+        type: "integer"
+        format: "int32"
+        example: 1135
+        description: "Number of hours of work planned by the employer over the declared\
+          \ Dimona period"
+        minimum: 1.0
+        maximum: 999999.0
+      dimonaFeatures:
+        description: "Block to declare the characteristics of the Dimona period"
+        $ref: "#/definitions/DimonaFeatures"
+      constructionControlCards:
+        description: "Block for declaring C3.2A-construction control card data"
+        $ref: "#/definitions/ConstructionControlCards"
+      studentPlaceOfWork:
+        description: "Block for declaring information about the workplace of a student.\
+          \ Mandatory if it is not the company's head office"
+        $ref: "#/definitions/StudentPlaceOfWork"
+      smallStatutesInformation:
+        description: "Block for the data necessary for the calculation of risk premiums\
+          \ for small status (internship and professional training)."
+        $ref: "#/definitions/SmallStatutesInformation"
+    description: "Block containing the information necessary for a Dimona declaration\
+      \ of entry into service"
+  DimonaOut:
+    type: "object"
+    required:
+      - "dimonaNumber"
+      - "endingDate"
+    properties:
+      references:
+        description: "Block to specity references"
+        $ref: "#/definitions/References"
+      dimonaNumber:
+        type: "string"
+        example: "00913"
+        description: "Number that uniquely identifies a Dimona period. This number\
+          \ is automatically assigned to the Dimona IN declaration that generates\
+          \ the period"
+      endingDate:
+        type: "string"
+        example: "00911"
+        description: "End date of the Dimona period in YYYY-MM-DD format"
+        pattern: "^(19[2-9][0-9]|20[0-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
+    description: "Block containing the information needed for a Dimona declaration\
+      \ of end of the employer-worker relationship"
+  DimonaUpdate:
+    type: "object"
+    required:
+      - "dimonaNumber"
+    properties:
+      references:
+        description: "Block to specity references"
+        $ref: "#/definitions/References"
+      dimonaNumber:
+        type: "string"
+        example: "00913"
+        description: "Number that uniquely identifies a Dimona period. This number\
+          \ is automatically assigned to the Dimona IN declaration that generates\
+          \ the period"
+      startingDate:
+        type: "string"
+        example: "00910"
+        description: "Start date of the Dimona period in YYYY-MM-DD format"
+        pattern: "^(19[2-9][0-9]|20[0-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
+      startingHour:
+        type: "string"
+        example: "00777"
+        description: "Starting time of the Dimona period in HH:MI format"
+        pattern: "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+      endingDate:
+        type: "string"
+        example: "00911"
+        description: "End date of the Dimona period in YYYY-MM-DD format"
+        pattern: "^(19[2-9][0-9]|20[0-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])|9999-12-31$"
+      endingHour:
+        type: "string"
+        example: "00778"
+        description: "Finishing time of the Dimona period in HH:MI format"
+        pattern: "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+      plannedDaysNumber:
+        type: "integer"
+        format: "int32"
+        example: 1017
+        description: "Number of work days planned by the employer over the declared\
+          \ Dimona period"
+        minimum: 1.0
+        maximum: 999999.0
+      plannedHoursNumber:
+        type: "integer"
+        format: "int32"
+        example: 1135
+        description: "Number of hours of work planned by the employer over the declared\
+          \ Dimona period"
+        minimum: 1.0
+        maximum: 999999.0
+    description: "Block containing the information necessary for a Dimona declaration\
+      \ of modification of an employer-worker relationship"
+  DimonaFeatures:
+    type: "object"
+    required:
+      - "workerType"
+    properties:
+      jointCommissionNumber:
+        type: "string"
+        example: "00046"
+        description: "Joint commision number. Watch the adminitration instructions\
+          \ at: https://www.socialsecurity.be/employer/instructions/dmfa/fr/latest/instructions/obligations/obligations_nsso/dimona/principaldata.html#h22"
+        minLength: 0
+        maxLength: 4
+      workerType:
+        type: "string"
+        example: "00655"
+        description: "The worker type. Watch the adminitration instructions at: https://www.socialsecurity.be/employer/instructions/dmfa/fr/latest/instructions/obligations/obligations_nsso/dimona/principaldata.html#h22"
+        minLength: 0
+        maxLength: 4
+      subEntityNumber:
+        type: "string"
+        example: "00652"
+        description: "For employers ORPSS you need to define sometimes the sub entity\
+          \ number of the employer."
+        pattern: "^[0-9]{1,10}$"
+      usingEmployer:
+        description: "Block for identification data of the employing company where\
+          \ the person concerned is employed as a temporary worker"
+        $ref: "#/definitions/UsingEmployer"
+    description: "Block to declare the characteristics of the Dimona period"
+  Employer:
+    type: "object"
+    properties:
+      nssoRegistrationNumber:
+        type: "string"
+        example: "00011"
+        description: "NSSO Registration number form National Social Security Office"
+      provisionalNssoRegistrationNumber:
+        type: "string"
+        example: "00948"
+      companyId:
+        type: "string"
+        example: "00014"
+        description: "Unique number from Crossroad Bank for Entreprises"
+    description: "Block for declaring employer identification data. Required for a\
+      \ Dimona IN. When retrieving a declaration this is filled up by the service."
+  Information:
+    type: "object"
+    required:
+      - "informationDetail"
+      - "informationType"
+    properties:
+      informationType:
+        type: "string"
+        description: "Type of additional information"
+      informationDetail:
+        type: "string"
+        description: "Value of additional information"
+    description: "Block containing the detail of an additional information"
+  References:
+    type: "object"
+    properties:
+      declarationReference:
+        type: "string"
+        description: "To specify a declaration reference"
+        minLength: 0
+        maxLength: 20
+      employerReference:
+        type: "string"
+        description: "To specify an employer reference"
+        minLength: 0
+        maxLength: 20
+      workerReference:
+        type: "string"
+        description: "To specify a worker reference"
+        minLength: 0
+        maxLength: 20
+    description: "Block to specity references"
+  SmallStatutesInformation:
+    type: "object"
+    required:
+      - "employmentNature"
+      - "workerStatus"
+    properties:
+      employmentNature:
+        type: "string"
+        example: "01231"
+        description: "The nature of the worker can be EMPLOYEE or WORKER"
+        enum:
+          - "EMPLOYEE"
+          - "WORKER"
+      activityWithRisk:
+        type: "integer"
+        format: "int32"
+        example: 41
+        description: "Activity versus risk. See Annex 6 - Activity versus risk List"
+        minimum: 1.0
+        maximum: 999.0
+      workerStatus:
+        type: "string"
+        example: "00053"
+        description: "Code that specifies the risk coverage regime and compensation\
+          \ of the worker. This code can be F1 or F2. See Annex 21 - Worker status"
+        pattern: "^[F][1,2]$"
+    description: "Block for the data necessary for the calculation of risk premiums\
+      \ for small status (internship and professional training)."
+  StatusMessage:
+    type: "object"
+    required:
+      - "code"
+      - "id"
+      - "message"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      code:
+        type: "string"
+      message:
+        type: "string"
+      contact:
+        type: "string"
+      environment:
+        type: "string"
+        enum:
+          - "DEVELOPMENT"
+          - "TEST"
+          - "INTEGRATION"
+          - "ACCEPTATION"
+          - "SIMULATION"
+          - "PRODUCTION"
+      stackTrace:
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "string"
+      details:
+        type: "array"
+        items:
+          $ref: "#/definitions/Detail"
+    description: "A representation of a generic error message"
+  StudentPlaceOfWork:
+    type: "object"
+    required:
+      - "address"
+      - "denomination"
+    properties:
+      denomination:
+        type: "string"
+        example: "00776"
+        description: "Name of the company or agency of the student's workplace"
+      address:
+        description: "Block for completely specifying an address"
+        $ref: "#/definitions/Address"
+    description: "Block for declaring information about the workplace of a student.\
+      \ Mandatory if it is not the company's head office"
+  UsingEmployer:
+    type: "object"
+    required:
+      - "jointCommissionNumber"
+    properties:
+      jointCommissionNumber:
+        type: "string"
+        example: "00046"
+        description: "The joint commision number. Watch the adminitration instructions\
+          \ at: https://www.socialsecurity.be/employer/instructions/dmfa/fr/latest/instructions/obligations/obligations_nsso/dimona/principaldata.html#h22"
+      usingEmployerName:
+        type: "string"
+        example: "00153"
+        description: "The name of the company where an interim works"
+      usingCompanyId:
+        type: "string"
+        example: "00131"
+        description: "The companyId of the company where an interim works"
+      address:
+        description: "Block for completely specifying an address"
+        $ref: "#/definitions/Address"
+    description: "Block for identification data of the employing company where the\
+      \ person concerned is employed as a temporary worker"
+  Worker:
+    type: "object"
+    properties:
+      ssin:
+        type: "string"
+        example: "00024"
+        description: "Social Security Identification Number"
+        pattern: "^[0-9]{11}$"
+      lastName:
+        type: "string"
+        example: "00048"
+        description: "The last name of the worker"
+        minLength: 0
+        maxLength: 48
+      firstName:
+        type: "string"
+        example: "00026"
+        description: "The first name of the worker"
+        minLength: 0
+        maxLength: 48
+      middleName:
+        type: "string"
+        description: "The middle name of the worker"
+        minLength: 0
+        maxLength: 48
+      initial:
+        type: "string"
+        example: "00027"
+        description: "The initials of the worker"
+        minLength: 0
+        maxLength: 1
+      birthDate:
+        type: "string"
+        example: "00028"
+        description: "The birthday of the worker"
+        pattern: "^((19|20)[0-9][0-9])-(0[0-9]|1[012])-(0[0-9]|[12][0-9]|3[01])$"
+      birthPlace:
+        type: "string"
+        example: "00168"
+        description: "The place of birth of the worker"
+        minLength: 0
+        maxLength: 40
+      birthPlaceCountry:
+        type: "string"
+        example: "00169"
+        description: "The country of birth of the worker. See Annex 5 - Country Code\
+          \ List"
+        pattern: "^[0-9]{1,5}$"
+      nationality:
+        type: "string"
+        example: "00119"
+        description: "The nationality of the worker. See Annex 5 - Country Code List"
+        pattern: "^[0-9]{1,5}$"
+      gender:
+        type: "string"
+        example: "00029"
+        description: "The gender of the worker can be MALE or FEMALE"
+        enum:
+          - "MALE"
+          - "FEMALE"
+      address:
+        description: "Block for completely specifying an address"
+        $ref: "#/definitions/Address"
+    description: "Block for declaring worker identification data. Required for a Dimona\
+      \ IN. When retrieving a declaration this is filled up by the service."
+  declaration:
+    type: "object"
+    properties:
+      employer:
+        description: "Block for declaring employer identification data. Required for\
+          \ a Dimona IN. When retrieving a declaration this is filled up by the service."
+        $ref: "#/definitions/Employer"
+      worker:
+        description: "Block for declaring worker identification data. Required for\
+          \ a Dimona IN. When retrieving a declaration this is filled up by the service."
+        $ref: "#/definitions/Worker"
+      dimonaIn:
+        description: "Block containing the information necessary for a Dimona declaration\
+          \ of entry into service"
+        $ref: "#/definitions/DimonaIn"
+      dimonaOut:
+        description: "Block containing the information needed for a Dimona declaration\
+          \ of end of the employer-worker relationship"
+        $ref: "#/definitions/DimonaOut"
+      dimonaUpdate:
+        description: "Block containing the information necessary for a Dimona declaration\
+          \ of modification of an employer-worker relationship"
+        $ref: "#/definitions/DimonaUpdate"
+      dimonaCancel:
+        description: "Block containing the information necessary for a declaration\
+          \ Dimona cancellation of the relationship between an employer and a worker"
+        $ref: "#/definitions/DimonaCancel"
+      declarationStatus:
+        description: "Block containing the data relating to the declaration processing.\
+          \ When retrieving a declaration this is filled up by the service."
+        $ref: "#/definitions/DeclarationStatus"
+    description: "Comment dimonaDeclaration"

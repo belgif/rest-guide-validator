@@ -1,0 +1,1058 @@
+---
+swagger: "2.0"
+info:
+  description: "Identification workflows of the Overseas Social Security"
+  version: "${artifact.version}"
+  title: "overseasSocialSecurity - identification workflows"
+  contact:
+    name: "Overseas dev team"
+    url: "http://www.smals.be"
+    email: "overseas_dev@smals.be"
+host: "overseas-identification-process.int.paas.socialsecurity.be"
+basePath: "/v1/resources"
+schemes:
+  - "https"
+paths:
+  /api/doc:
+    get:
+      operationId: "GET /api/doc"
+      produces:
+        - "text/html"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/doc/swagger.json:
+    get:
+      operationId: "GET /api/doc/swagger.json"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/doc/swagger.yaml:
+    get:
+      operationId: "GET /api/doc/swagger.yaml"
+      produces:
+        - "application/x-yaml"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /businessrules:
+    get:
+      summary: "Lists the names of all loaded business rules"
+      description: ""
+      operationId: "GET /businessrules"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+            uniqueItems: true
+  /businessrules/execute/{name}:
+    post:
+      summary: "Execute the specified business rule using the given input data"
+      description: ""
+      operationId: "POST /businessrules/execute/{name}"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "name"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /businessrules/{name}:
+    get:
+      summary: "Retrieve the source code (as a DMN XML) of the specified business\
+        \ rule"
+      description: ""
+      operationId: "GET /businessrules/{name}"
+      produces:
+        - "application/xml"
+      parameters:
+        - name: "name"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+    put:
+      summary: "Update the specified business rule"
+      description: ""
+      operationId: "PUT /businessrules/{name}"
+      consumes:
+        - "text/plain"
+      parameters:
+        - name: "name"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /businessvalues:
+    get:
+      summary: "Retrieve all loaded business values"
+      description: ""
+      operationId: "GET /businessvalues"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+            additionalProperties:
+              type: "string"
+  /businessvalues/{key}:
+    post:
+      summary: "Updates the specified business value"
+      description: ""
+      operationId: "POST /businessvalues/{key}"
+      parameters:
+        - name: "key"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /registries/employers:
+    get:
+      summary: "Find employers in the CBE registry using search criteria"
+      description: ""
+      operationId: "GET /registries/employers"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "enterpriseId"
+          in: "query"
+          description: "CBE number of desired employer"
+          required: false
+          type: "string"
+        - name: "denomination"
+          in: "query"
+          description: "Token contained in desired employers' denomination"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/EmployerDto"
+  /registries/familyComposition:
+    get:
+      summary: "Fetch family composition for specified person in the national registries"
+      description: ""
+      operationId: "GET /registries/familyComposition"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "query"
+          description: "The person's social security number"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/FamilyMemberDto"
+  /registries/person:
+    get:
+      summary: "Find physical persons in the national registries using search criteria.\
+        \ Search is possible on either SSIN OR combination of last name, first name\
+        \ and birthdate"
+      description: ""
+      operationId: "GET /registries/person"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "query"
+          description: "Social security number"
+          required: false
+          type: "string"
+        - name: "firstName"
+          in: "query"
+          description: "Person's first name"
+          required: false
+          type: "string"
+        - name: "lastName"
+          in: "query"
+          description: "Person's last name"
+          required: false
+          type: "string"
+        - name: "birthDate"
+          in: "query"
+          description: "Person's birth date"
+          required: false
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/PersonDto"
+    post:
+      summary: "Create physical person in the bis registry."
+      description: ""
+      operationId: "POST /registries/person"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "The physical person"
+          required: false
+          schema:
+            $ref: "#/definitions/PersonDto"
+      responses:
+        default:
+          description: "successful operation"
+    patch:
+      summary: "Update physical person in the bis registry."
+      description: ""
+      operationId: "PATCH /registries/person"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "The physical person"
+          required: false
+          schema:
+            $ref: "#/definitions/PersonDto"
+      responses:
+        default:
+          description: "successful operation"
+  /registries/person/{ssin}:
+    get:
+      summary: "Find physical person in the national registries by the persons SSIN."
+      description: ""
+      operationId: "GET /registries/person/{ssin}"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "Social security number"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/PersonDto"
+  /valuelists:
+    get:
+      summary: "Returns a list of all loaded value list concepts"
+      description: ""
+      operationId: "GET /valuelists"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ValueListConceptDto"
+    post:
+      summary: "Create a new value list concept"
+      description: ""
+      operationId: "POST /valuelists"
+      consumes:
+        - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /valuelists/{type}/{code}:
+    put:
+      summary: "Update a value list concept"
+      description: ""
+      operationId: "PUT /valuelists/{type}/{code}"
+      consumes:
+        - "application/json"
+      parameters:
+        - name: "type"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "code"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /workflow/employer/start:
+    post:
+      summary: "Starts a new workflow instance"
+      description: ""
+      operationId: "POST /workflow/employer/start"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "workflow"
+          in: "query"
+          description: "The technical name of the workflow to instantiate"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+  /workflow/employer/{subjectId}:
+    get:
+      summary: "Retrieve the current workflow state of the specified domain object"
+      description: ""
+      operationId: "GET /workflow/employer/{subjectId}"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the desired domain object"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/WorkflowStateDto"
+  /workflow/employer/{subjectId}/newTasks:
+    get:
+      summary: "Returns whether or not new workflow tasks have been generated since\
+        \ the specified time for the specified domain object"
+      description: ""
+      operationId: "GET /workflow/employer/{subjectId}/newTasks"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the desired domain object"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: "since"
+          in: "query"
+          description: "Cutoff time to search for new tasks"
+          required: false
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "boolean"
+  /workflow/employer/{subjectId}/tasks/{taskId}/complete:
+    post:
+      summary: "Completes the specified workflow task with the given input"
+      description: ""
+      operationId: "POST /workflow/employer/{subjectId}/tasks/{taskId}/complete"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the domain object containing the specified task"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: "taskId"
+          in: "path"
+          description: "Technical ID of the task to complete, to be recuperated from\
+          \ the task object retrieved earlier (in a workflow state object)"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /workflow/person/start:
+    post:
+      summary: "Starts a new workflow instance"
+      description: ""
+      operationId: "POST /workflow/person/start"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "workflow"
+          in: "query"
+          description: "The technical name of the workflow to instantiate"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+  /workflow/person/{subjectId}:
+    get:
+      summary: "Retrieve the current workflow state of the specified domain object"
+      description: ""
+      operationId: "GET /workflow/person/{subjectId}"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the desired domain object"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/WorkflowStateDto"
+  /workflow/person/{subjectId}/newTasks:
+    get:
+      summary: "Returns whether or not new workflow tasks have been generated since\
+        \ the specified time for the specified domain object"
+      description: ""
+      operationId: "GET /workflow/person/{subjectId}/newTasks"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the desired domain object"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: "since"
+          in: "query"
+          description: "Cutoff time to search for new tasks"
+          required: false
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "boolean"
+  /workflow/person/{subjectId}/tasks/{taskId}/complete:
+    post:
+      summary: "Completes the specified workflow task with the given input"
+      description: ""
+      operationId: "POST /workflow/person/{subjectId}/tasks/{taskId}/complete"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "subjectId"
+          in: "path"
+          description: "Unique ID of the domain object containing the specified task"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: "taskId"
+          in: "path"
+          description: "Technical ID of the task to complete, to be recuperated from\
+          \ the task object retrieved earlier (in a workflow state object)"
+          required: true
+          type: "string"
+      responses:
+        default:
+          description: "successful operation"
+securityDefinitions:
+  implicit:
+    type: "oauth2"
+    authorizationUrl: "https://oauth.socialsecurity.be/oauth/authorize"
+    flow: "implicit"
+    scopes:
+      scope:socialsecurity:management:overseas:controler: "OSS Controller"
+      scope:socialsecurity:management:overseas:agent: "OSS Agent"
+      scope:socialsecurity:management:overseas:client: "OSS Client"
+      scope:socialsecurity:management:overseas:user: "Client application"
+security:
+  - implicit: [
+    'scope:socialsecurity:management:overseas:controler',
+    'scope:socialsecurity:management:overseas:agent',
+    'scope:socialsecurity:management:overseas:client',
+    'scope:socialsecurity:management:overseas:user',
+  ]
+x-oauth2-required-scopes: any
+definitions:
+  ActivityDto:
+    type: "object"
+    properties:
+      code:
+        type: "string"
+      name:
+        $ref: "#/definitions/Name"
+  AddressDto:
+    type: "object"
+    properties:
+      street:
+        type: "string"
+      streetCode:
+        type: "string"
+      houseNumber:
+        type: "string"
+      postBox:
+        type: "string"
+      postalCode:
+        type: "string"
+      city:
+        type: "string"
+      cityCode:
+        type: "integer"
+        format: "int64"
+      countryCode:
+        type: "integer"
+        format: "int64"
+      type:
+        type: "string"
+        enum:
+          - "LOCAL_RESIDENTIAL"
+          - "DIPLOMATIC_RESIDENTIAL"
+          - "DIPLOMATIC_REFERENCE"
+          - "LOCAL_REFERENCE"
+          - "CORRESPONDENCE"
+          - "HEAD_OFFICE"
+  CivilStateDto:
+    type: "object"
+    properties:
+      state:
+        type: "string"
+        enum:
+          - "SINGLE"
+          - "MARRIED"
+          - "NULLIFICATION_MARRIAGE"
+          - "PUTATIVE_MARRIAGE"
+          - "WIDOWER_WIDOW"
+          - "DIVORCED"
+          - "SEPARATED_TABLE_BED"
+          - "REPUDIATION"
+          - "PARTNERSHIP"
+          - "PERMINATION_PARTNERSHIP"
+          - "UNDEFINED"
+          - "LEGALLY_COHABITING"
+          - "DEFACTO_COHABITING"
+      since:
+        type: "integer"
+        format: "int64"
+  ContactInformationDto:
+    type: "object"
+    properties:
+      preferredChannel:
+        type: "string"
+        enum:
+          - "E_MAIL"
+          - "E_BOX"
+          - "LETTER"
+      email:
+        type: "array"
+        items:
+          type: "string"
+      telephone:
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+      language:
+        type: "string"
+        enum:
+          - "NL"
+          - "FR"
+          - "EN"
+          - "DE"
+      contactPerson:
+        type: "string"
+  ContactPersonDto:
+    type: "object"
+    properties:
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      email:
+        type: "array"
+        items:
+          type: "string"
+      telephone:
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+  DependantDto:
+    type: "object"
+    properties:
+      income:
+        type: "integer"
+        format: "int64"
+      validFrom:
+        type: "string"
+        format: "date-time"
+      validTo:
+        type: "string"
+        format: "date-time"
+      href:
+        type: "string"
+        format: "uri"
+      id:
+        type: "integer"
+        format: "int64"
+      thirdPartyId:
+        type: "integer"
+        format: "int64"
+      ssin:
+        type: "string"
+      ssinSource:
+        type: "string"
+        enum:
+          - "NATIONAL_REGISTRY"
+          - "BIS_REGISTRY"
+      birthDate:
+        type: "string"
+        format: "date-time"
+      birthPlace:
+        $ref: "#/definitions/LocationDto"
+      deceaseDate:
+        type: "string"
+        format: "date-time"
+      deceasePlace:
+        $ref: "#/definitions/LocationDto"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      gender:
+        type: "string"
+        enum:
+          - "_0"
+          - "_1"
+          - "_2"
+      nationalities:
+        type: "array"
+        items:
+          type: "string"
+      civilState:
+        $ref: "#/definitions/CivilStateDto"
+      contactInformation:
+        $ref: "#/definitions/ContactInformationDto"
+      status:
+        type: "string"
+        enum:
+          - "NEW"
+          - "IDENTIFIED"
+          - "ACTIVE"
+          - "SUSPENDED"
+          - "SLEEPING"
+          - "RETIRED"
+          - "CLOSED"
+      addresses:
+        type: "array"
+        items:
+          $ref: "#/definitions/AddressDto"
+      familyMembers:
+        type: "array"
+        items:
+          $ref: "#/definitions/FamilyMemberDto"
+      dependants:
+        type: "array"
+        items:
+          $ref: "#/definitions/DependantDto"
+      dependsOn:
+        $ref: "#/definitions/HttpLink"
+      migrationStatus:
+        type: "string"
+        enum:
+          - "GOLD"
+          - "SILVER"
+          - "BRONZE"
+          - "UPDATED"
+      comment:
+        type: "string"
+  EmployerDto:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        $ref: "#/definitions/Name"
+      thirdPartyId:
+        type: "integer"
+        format: "int64"
+      foleenId:
+        type: "integer"
+        format: "int64"
+      foreignIdentificationNbr:
+        type: "string"
+      foreignIdentificationNbrType:
+        type: "string"
+        enum:
+          - "EU_VAT"
+          - "NON_EU_VAT"
+          - "OTHER"
+      enterpriseNbr:
+        type: "integer"
+        format: "int64"
+      contactInformation:
+        $ref: "#/definitions/ContactInformationDto"
+      contactPerson:
+        type: "array"
+        items:
+          $ref: "#/definitions/ContactPersonDto"
+      addresses:
+        type: "array"
+        items:
+          $ref: "#/definitions/AddressDto"
+      since:
+        type: "string"
+        format: "date-time"
+      activity:
+        $ref: "#/definitions/ActivityDto"
+      juridicalSituation:
+        type: "string"
+      juridicalForm:
+        type: "string"
+      status:
+        type: "string"
+        enum:
+          - "NEW"
+          - "IDENTIFIED"
+          - "CLOSED"
+      migrationStatus:
+        type: "string"
+        enum:
+          - "GOLD"
+          - "SILVER"
+          - "BRONZE"
+          - "UPDATED"
+      comment:
+        type: "string"
+      href:
+        type: "string"
+        format: "uri"
+  FamilyMemberDto:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        enum:
+          - "HEAD_OF_HOUSEHOLD"
+          - "PARTNER"
+          - "CHILD"
+          - "CHILD_IN_LAW"
+          - "GRANDCHILD"
+          - "PARENT"
+          - "PARENT_IN_LAW"
+          - "GRAND_PARENT"
+          - "SIBLING"
+          - "SIBLING_IN_LAW"
+          - "RELATED"
+          - "UNRELATED"
+          - "STEP_SON_DAUGHTER"
+          - "GREAT_GRAND_SON_DAUGHTER"
+          - "UNCLE_AUNT"
+          - "THIRD_DEGREE_NEPHEW_NIECE"
+          - "FOURTH_DEGREE_NEPHEW_NIECE"
+          - "COMMUNITIES_HOMES"
+      quality:
+        type: "string"
+        enum:
+          - "LCOHAB"
+          - "DOMESTICHELPER"
+          - "LEGALCOHAB"
+      since:
+        type: "string"
+        format: "date-time"
+      href:
+        type: "string"
+        format: "uri"
+      id:
+        type: "integer"
+        format: "int64"
+      thirdPartyId:
+        type: "integer"
+        format: "int64"
+      ssin:
+        type: "string"
+      ssinSource:
+        type: "string"
+        enum:
+          - "NATIONAL_REGISTRY"
+          - "BIS_REGISTRY"
+      birthDate:
+        type: "string"
+        format: "date-time"
+      birthPlace:
+        $ref: "#/definitions/LocationDto"
+      deceaseDate:
+        type: "string"
+        format: "date-time"
+      deceasePlace:
+        $ref: "#/definitions/LocationDto"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      gender:
+        type: "string"
+        enum:
+          - "_0"
+          - "_1"
+          - "_2"
+      nationalities:
+        type: "array"
+        items:
+          type: "string"
+      civilState:
+        $ref: "#/definitions/CivilStateDto"
+      contactInformation:
+        $ref: "#/definitions/ContactInformationDto"
+      status:
+        type: "string"
+        enum:
+          - "NEW"
+          - "IDENTIFIED"
+          - "ACTIVE"
+          - "SUSPENDED"
+          - "SLEEPING"
+          - "RETIRED"
+          - "CLOSED"
+      addresses:
+        type: "array"
+        items:
+          $ref: "#/definitions/AddressDto"
+      familyMembers:
+        type: "array"
+        items:
+          $ref: "#/definitions/FamilyMemberDto"
+      dependants:
+        type: "array"
+        items:
+          $ref: "#/definitions/DependantDto"
+      dependsOn:
+        $ref: "#/definitions/HttpLink"
+      migrationStatus:
+        type: "string"
+        enum:
+          - "GOLD"
+          - "SILVER"
+          - "BRONZE"
+          - "UPDATED"
+      comment:
+        type: "string"
+  FieldInstructionDto:
+    type: "object"
+    properties:
+      field:
+        type: "string"
+      comment:
+        type: "string"
+  HttpLink:
+    type: "object"
+    properties:
+      href:
+        type: "string"
+        format: "uri"
+  InstructionsDto:
+    type: "object"
+    properties:
+      mayProvide:
+        type: "array"
+        items:
+          $ref: "#/definitions/FieldInstructionDto"
+      mustProvide:
+        type: "array"
+        items:
+          $ref: "#/definitions/FieldInstructionDto"
+  Label:
+    type: "object"
+    properties:
+      language:
+        type: "string"
+        enum:
+          - "DUTCH"
+          - "FRENCH"
+          - "GERMAN"
+          - "ENGLISH"
+      text:
+        type: "string"
+  LocationDto:
+    type: "object"
+    properties:
+      city:
+        type: "string"
+      cityCode:
+        type: "integer"
+        format: "int64"
+      countryCode:
+        type: "integer"
+        format: "int64"
+  Name:
+    type: "object"
+    properties:
+      fr:
+        type: "string"
+      nl:
+        type: "string"
+      de:
+        type: "string"
+      en:
+        type: "string"
+  PersonDto:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      thirdPartyId:
+        type: "integer"
+        format: "int64"
+      ssin:
+        type: "string"
+      ssinSource:
+        type: "string"
+        enum:
+          - "NATIONAL_REGISTRY"
+          - "BIS_REGISTRY"
+      birthDate:
+        type: "string"
+        format: "date-time"
+      birthPlace:
+        $ref: "#/definitions/LocationDto"
+      deceaseDate:
+        type: "string"
+        format: "date-time"
+      deceasePlace:
+        $ref: "#/definitions/LocationDto"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      gender:
+        type: "string"
+        enum:
+          - "_0"
+          - "_1"
+          - "_2"
+      nationalities:
+        type: "array"
+        items:
+          type: "string"
+      civilState:
+        $ref: "#/definitions/CivilStateDto"
+      contactInformation:
+        $ref: "#/definitions/ContactInformationDto"
+      status:
+        type: "string"
+        enum:
+          - "NEW"
+          - "IDENTIFIED"
+          - "ACTIVE"
+          - "SUSPENDED"
+          - "SLEEPING"
+          - "RETIRED"
+          - "CLOSED"
+      addresses:
+        type: "array"
+        items:
+          $ref: "#/definitions/AddressDto"
+      familyMembers:
+        type: "array"
+        items:
+          $ref: "#/definitions/FamilyMemberDto"
+      dependants:
+        type: "array"
+        items:
+          $ref: "#/definitions/DependantDto"
+      dependsOn:
+        $ref: "#/definitions/HttpLink"
+      migrationStatus:
+        type: "string"
+        enum:
+          - "GOLD"
+          - "SILVER"
+          - "BRONZE"
+          - "UPDATED"
+      comment:
+        type: "string"
+      href:
+        type: "string"
+        format: "uri"
+  ValueListConceptDto:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+      code:
+        type: "string"
+      labels:
+        type: "array"
+        items:
+          $ref: "#/definitions/Label"
+      metadata:
+        type: "object"
+        additionalProperties:
+          type: "object"
+  WorkflowStateDto:
+    type: "object"
+    properties:
+      subjectId:
+        type: "integer"
+        format: "int64"
+      subjectType:
+        type: "string"
+      subject:
+        type: "object"
+      tasks:
+        type: "array"
+        items:
+          $ref: "#/definitions/WorkflowTaskDto"
+  WorkflowTaskDto:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      process:
+        type: "string"
+      type:
+        type: "string"
+      instructions:
+        $ref: "#/definitions/InstructionsDto"
+      variables:
+        type: "object"
+        additionalProperties:
+          type: "object"

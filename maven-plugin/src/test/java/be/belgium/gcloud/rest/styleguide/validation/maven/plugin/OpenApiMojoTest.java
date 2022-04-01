@@ -1,0 +1,20 @@
+package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class OpenApiMojoTest {
+    private static final String BAS_DIR = "src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/";
+
+    @Test
+    void execute() {
+        var openApiMojo = new OpenApiMojo();
+        openApiMojo.files = List.of(new String[]{BAS_DIR+ "swagger_bad.yaml", BAS_DIR+ "swagger4.yaml"});
+        var exception = assertThrows(MojoFailureException.class, () -> openApiMojo.execute());
+        assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
+    }
+}

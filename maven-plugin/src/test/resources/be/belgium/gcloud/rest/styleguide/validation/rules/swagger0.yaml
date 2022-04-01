@@ -1,0 +1,369 @@
+swagger: '2.0'
+info:
+  title: CDS - ACCOUNTING ORDER - REST API
+  version: "${artifact.version}"
+basePath: /app005ws/REST/accounting-order/v1
+schemes:
+  - "http"
+  - "https"
+consumes:
+  - application/json
+produces:
+  - application/json
+  - application/problem+json
+tags:
+  - name: AccountingOrder
+  - name: Monitoring
+securityDefinitions:
+  oauth_implicit:
+    type: oauth2
+    authorizationUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v2/authorize'
+    flow: implicit
+    scopes:
+      'scope:accounting:order:service:user:system': 'accounting order user client credential scope'
+      'scope:payment:management:accountingorderservice:monitoring': 'accountingorder service monitoring'
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      tags:
+        - Monitoring
+      description: This resource is only available to supervision users
+      summary: Check health of this REST API
+      produces:
+        - text/xml
+      parameters:
+        - name: type
+          in: query
+          description: Defines the which sanity checks must be ran
+          required: false
+          type: string
+          enum:
+            - ping
+            - default
+            - deep
+          default: default
+          x-oad-type: parameter
+      responses:
+        default:
+          description: "OK"
+  /accountingOrderRequests:
+    post:
+      operationId: addAccountingOrderRequest
+      tags:
+        - AccountingOrder
+      summary: Add an accounting order request
+      responses:
+        '202':
+          $ref: '#/responses/202-Accepted'
+        '400':
+          $ref: '#/responses/400-BadRequest'
+      parameters:
+        - name: accountingOrderRequest
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AccountingOrderRequest'
+          x-oad-type: parameter
+    x-oad-type: operation
+responses:
+  202-Accepted:
+    description: Accepted
+    x-oad-type: response
+  400-BadRequest:
+    description: Bad Request
+    schema:
+      $ref: '#/definitions/Problem'
+    x-oad-type: response
+definitions:
+  AccountingOrderRequest:
+    x-oad-type: object
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/AccountingOrderRequestType'
+      employer:
+        $ref: '#/definitions/Employer'
+      references:
+        x-oad-type: array
+        type: array
+        title: References
+        items:
+          $ref: '#/definitions/Reference'
+      accountingOrders:
+        x-oad-type: array
+        type: array
+        title: AccountingOrders
+        items:
+          $ref: '#/definitions/AccountingOrder'
+    required:
+      - type
+      - employer
+      - references
+      - accountingOrders
+  AccountingOrderRequestType:
+    x-oad-type: string
+    type: string
+    description: Type of request
+    enum:
+      - DMFA
+  Employer:
+    x-oad-type: object
+    type: object
+    description: >-
+      Employer concerned by the accounting order(s). At least one of the two
+      identifiers has to be provided.
+    properties:
+      nssoRegNbr:
+        $ref: '#/definitions/NssoRegistrationNumber'
+      enterpriseNbr:
+        $ref: '#/definitions/EnterpriseNumber'
+  EnterpriseNumber:
+    x-oad-type: integer
+    type: integer
+    description: Identification number at the Crossroads Bank for Enterprises (CBE)
+    format: int64
+    x-smalsValidationClassName: be.smals.validation.constraints.socialsecurity.CompanyId
+  NssoRegistrationNumber:
+    x-oad-type: integer
+    type: integer
+    description: Identification number at the National Social Security Office (NSSO)
+    x-smalsValidationClassName: >-
+      be.smals.validation.constraints.socialsecurity.NossRegistrationNumber
+  Reference:
+    x-oad-type: object
+    type: object
+    description: References of the accounting orders
+    properties:
+      type:
+        $ref: '#/definitions/ReferenceType'
+      origin:
+        $ref: '#/definitions/ReferenceOrigin'
+      number:
+        x-oad-type: string
+        type: string
+        description: Reference number
+    required:
+      - type
+      - origin
+      - number
+  ReferenceOrigin:
+    x-oad-type: integer
+    type: integer
+    description: |
+      Reference origin:
+              * 2: assigned by the NSSO
+    format: int32
+    enum:
+      - 2
+  ReferenceType:
+    x-oad-type: integer
+    type: integer
+    description: |
+      Reference type:
+              * 0: OLD (LEGACY) SENDING NUMBER (NNNNN-NNNNN)
+              * 3: DMFA
+    format: int32
+    enum:
+      - 0
+      - 3
+  AccountingOrder:
+    x-oad-type: object
+    type: object
+    properties:
+      period:
+        $ref: '#/definitions/Period'
+      categories:
+        x-oad-type: array
+        type: array
+        title: Categories
+        description: List of categories to which entries belong
+        items:
+          x-oad-type: integer
+          type: integer
+          minimum: 0
+          maximum: 999
+      entries:
+        x-oad-type: array
+        type: array
+        title: AccountEntries
+        description: List of entries linked to an accounting order
+        items:
+          $ref: '#/definitions/AccountEntry'
+    required:
+      - period
+      - entries
+  Period:
+    x-oad-type: object
+    type: object
+    description: Period (calculation base) to which the accounting orders and/or entries apply
+    properties:
+      beginDate:
+        x-oad-type: string
+        type: string
+        description: Begin date of the period
+        example: '2018-01-01T00:00:00.000+01:00'
+        format: date-time
+      endDate:
+        x-oad-type: string
+        type: string
+        description: End date of the period
+        example: '2018-03-31T23:59:59.999+02:00'
+        format: date-time
+      frequency:
+        $ref: '#/definitions/PeriodFrequencyType'
+    required:
+      - beginDate
+      - endDate
+  PeriodFrequencyType:
+    x-oad-type: string
+    type: string
+    description: Frequency of the period
+    enum:
+      - QUARTERLY
+      - YEARLY
+  AccountEntry:
+    x-oad-type: object
+    type: object
+    discriminator: 'type'
+    properties:
+      type:
+        $ref: '#/definitions/AccountEntryType'
+      date:
+        x-oad-type: string
+        type: string
+        format: date-time
+      amount:
+        x-oad-type: integer
+        type: integer
+        format: int64
+        minimum: 0
+        maximum: 999999999999
+      declarantQuality:
+        $ref: '#/definitions/DeclarantQualityType'
+      isAtFault:
+        x-oad-type: boolean
+        type: boolean
+        default: false
+    required:
+      - type
+      - date
+      - amount
+  AccountEntryType:
+    x-oad-type: string
+    type: string
+    description: Type of an account entry
+    example: DECLARATION_ORIGINAL
+    enum:
+      - ANNUAL_VACATION
+      - COMPLEMENTARY_ANNUAL_VACATION
+      - COMPENSATION_CONTRIBUTION
+      - DECLARATION_NIHIL
+      - DECLARATION_ORIGINAL
+      - INCREASE_DECLARATION_NEGLECTED
+      - REDISTRIBUTION_SOCIAL_CHARGES
+  DeclarantQualityType:
+    x-oad-type: integer
+    type: integer
+    description: Quality of the declarant (see appendix 39)
+    enum:
+      - 10
+      - 11
+      - 12
+      - 13
+      - 20
+      - 22
+      - 23
+      - 24
+  AnnualVacationAccountEntry:
+    x-oad-type: allOf
+    allOf:
+      - $ref: '#/definitions/AccountEntry'
+      - x-oad-type: object
+        type: object
+        properties:
+          isUnderCuratorship:
+            x-oad-type: boolean
+            type: boolean
+  ComplementaryAnnualVacationAccountEntry:
+    x-oad-type: allOf
+    allOf:
+      - $ref: '#/definitions/AnnualVacationAccountEntry'
+      - x-oad-type: object
+        type: object
+        properties:
+          originalDmfaReference:
+            $ref: '#/definitions/OriginalDmfaReference'
+        required:
+          - originalDmfaReference
+  OriginalDmfaReference:
+    x-oad-type: object
+    type: object
+    description: Reference of the original DmfA declaration that is used to compute the annual vacation
+    properties:
+      nssoRegNbr:
+        $ref: '#/definitions/NssoRegistrationNumber'
+      period:
+        $ref: '#/definitions/Period'
+      entryDate:
+        x-oad-type: string
+        type: string
+        format: date-time
+    required:
+      - nssoRegNbr
+      - period
+      - entryDate
+  RedistributionSocialChargesAccountEntry:
+    x-oad-type: allOf
+    allOf:
+      - $ref: '#/definitions/AccountEntry'
+      - x-oad-type: object
+        type: object
+        properties:
+          rscCcCode:
+            $ref: '#/definitions/RedistributionSocialChargesAndCompensationContributionCode'
+        required:
+          - rscCcCode
+  RedistributionSocialChargesAndCompensationContributionCode:
+    x-oad-type: integer
+    type: integer
+    description: |
+      * 3: solde débiteur/créditeur >= 37,18 euro + avis non émis
+      * 4: solde créditeur >= 37,18 euro + avis émis
+      * 5: solde débiteur/créditeur < 37,18 euro = pas de participation + avis émis
+      * 6: solde débiteur/créditeur < 37,18 euro = pas de participation + avis non émis
+      * 9: solde débiteur >= 37,18 euro + avis émis ou avis émis après le déblocage par l'ONSS
+    enum:
+      - 3
+      - 4
+      - 5
+      - 6
+      - 9
+  Problem:
+    description: A Problem Details object (RFC 7807)
+    type: object
+    properties:
+      type:
+        type: string
+        format: uri
+        description: An URI reference that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type (e.g. using HTML).
+        default: about:blank
+      title:
+        type: string
+        description: A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized)
+        example: Service Unavailable
+      status:
+        type: integer
+        format: int32
+        description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        minimum: 400
+        maximum: 600
+        exclusiveMaximum: true
+        example: 503
+      detail:
+        type: string
+        description: A human-readable explanation specific to this occurrence of the problem
+      instance:
+        type: string
+        format: uri
+        description: A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.

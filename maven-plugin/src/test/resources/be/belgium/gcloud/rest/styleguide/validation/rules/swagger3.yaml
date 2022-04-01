@@ -1,0 +1,2070 @@
+---
+swagger: "2.0"
+info:
+  description: "This is the implementation of compact REST API"
+  version: "${artifact.version}"
+  title: "Complementary Activity - WEB API"
+  contact:
+    name: "Compact team"
+    url: "www.smals.be"
+    email: "CompactDevelopers@smals.be"
+basePath: "/"
+tags:
+  - name: "Activity"
+  - name: "CitizenQuotaSummary"
+  - name: "CitizenWhiteList"
+  - name: "City"
+  - name: "ControlAdditionalWork"
+  - name: "Documentation"
+  - name: "Error Message"
+  - name: "Monitoring"
+  - name: "Organisations"
+  - name: "ReferenceData"
+  - name: "UnincorporatedAssociation"
+schemes:
+  - "http"
+securityDefinitions:
+  oauth_implicit:
+    type: oauth2
+    authorizationUrl: 'https://oauth-v4.int.ext.socialsecurity.be/oauth2/authorize'
+    flow: implicit
+    scopes:
+      'scope:complementary:activities:entreprise:declare': this scope is for the enterprises to declare an activity
+      'scope:complementary:activities:citizen:declare': this scope is for the citizen to declare an activity
+      'scope:complementary:activities:representative:declare': this scope is for the mandatarians to declare an activity
+      'scope:complementary:activities:professional:consult': this scope is for the professional agents to consult an activity
+      'scope:complementary:activities:professional:declare': this scope is for the professional agents to declare an activity
+      'scope:rsz-onss:declaration:rest:complementaryactivity:monitoring': this scope is for monitoring
+  oauth_clientCredentials:
+    type: oauth2
+    tokenUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v4/token'
+    flow: application
+    scopes:
+      'scope:complementary:activities:entreprise:declare': this scope is for the enterprises to declare an activity
+      'scope:complementary:activities:citizen:declare': this scope is for the citizen to declare an activity
+      'scope:complementary:activities:representative:declare': this scope is for the mandatarians to declare an activity
+      'scope:complementary:activities:professional:consult': this scope is for the professional agents to consult an activity
+      'scope:complementary:activities:professional:declare': this scope is for the professional agents to declare an activity
+      'scope:rsz-onss:declaration:rest:complementaryactivity:monitoring': this scope is for monitoring
+  oauth_accessCode:
+    type: oauth2
+    tokenUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v4/token'
+    authorizationUrl: 'https://oauth-v4.int.ext.socialsecurity.be/oauth2/authorize'
+    flow: accessCode
+    scopes:
+      'scope:complementary:activities:entreprise:declare': this scope is for the enterprises to declare an activity
+      'scope:complementary:activities:citizen:declare': this scope is for the citizen to declare an activity
+      'scope:complementary:activities:representative:declare': this scope is for the mandatarians to declare an activity
+      'scope:complementary:activities:professional:consult': this scope is for the professional agents to consult an activity
+      'scope:complementary:activities:professional:declare': this scope is for the professional agents to declare an activity
+      'scope:rsz-onss:declaration:rest:complementaryactivity:monitoring': this scope is for monitoring
+paths:
+  /:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Return the API swagger document"
+      description: ""
+      operationId: "getRootApi"
+      parameters: [ ]
+      responses:
+        200:
+          description: "OK"
+      security: [ ]
+  /activities:
+    post:
+      tags:
+        - "Activity"
+      summary: "Create a new activity"
+      description: ""
+      operationId: "postCreateActivity"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "activity"
+          description: "The activity to create"
+          required: true
+          schema:
+            $ref: "#/definitions/Activity"
+        - name: "bypassControls"
+          in: "query"
+          description: "Indication whether or not controls must be bypassed (for professional\
+          \ users only)"
+          required: false
+          type: "boolean"
+          default: false
+      responses:
+        201:
+          description: "Activity created"
+        400:
+          description: "Bad request"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /activities/byCitizen/{ssin}:
+    get:
+      tags:
+        - "Activity"
+      summary: "Get activities by citizen"
+      description: ""
+      operationId: "getActivitiesByCitizen"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "language"
+          in: "query"
+          description: "The language of the connected user"
+          required: false
+          type: "string"
+        - name: "ssin"
+          in: "path"
+          description: "The SSIN of the citizen for whom to retrieve the activities"
+          required: true
+          type: "string"
+        - name: "uia"
+          in: "query"
+          description: "Indication whether or not activities are retrieved for an unincorporated\
+          \ association"
+          required: false
+          type: "boolean"
+          default: false
+        - name: "page"
+          in: "query"
+          description: "The page to retrieve"
+          required: false
+          type: "integer"
+          default: 1
+          minimum: 1.0
+          format: "int32"
+        - name: "pageSize"
+          in: "query"
+          description: "The number of items per page to retrieve"
+          required: false
+          type: "integer"
+          default: 20
+          minimum: 1.0
+          format: "int32"
+        - name: "client"
+          in: "query"
+          description: "Filter activities for a specific client"
+          required: false
+          type: "string"
+        - name: "worker"
+          in: "query"
+          description: "Filter activities for a specific worker"
+          required: false
+          type: "string"
+        - name: "association"
+          in: "query"
+          description: "Filter activities for an unincorporated association"
+          required: false
+          type: "string"
+        - name: "startDate"
+          in: "query"
+          description: "Filter activities starting from this date"
+          required: false
+          type: "string"
+        - name: "endDate"
+          in: "query"
+          description: "Filter activities up until this date"
+          required: false
+          type: "string"
+        - name: "type"
+          in: "query"
+          description: "Filter activities for a specific type"
+          required: false
+          type: "string"
+        - name: "nature"
+          in: "query"
+          description: "Filter activities for a specific nature (specified by the ID\
+          \ of the nature"
+          required: false
+          type: "integer"
+          format: "int32"
+        - name: "withHistory"
+          in: "query"
+          description: "Indication whether or not declarations are retrieved with activities"
+          required: false
+          type: "boolean"
+        - name: "sort"
+          in: "query"
+          description: "Sort the activities by ascending value for the specified properties\
+          \ separated by a comma, prefix the property name with a dash (ie. '-client')\
+          \ for descending order"
+          required: false
+          type: "string"
+          default: "-startDate"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Activities"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /activities/byOrganisation/{enterpriseNbr}:
+    get:
+      tags:
+        - "Activity"
+      summary: "Get activities by enterprise"
+      description: ""
+      operationId: "getActivitiesByOrganisation"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "language"
+          in: "query"
+          description: "The language of the connected user"
+          required: false
+          type: "string"
+        - name: "enterpriseNbr"
+          in: "path"
+          description: "The identification number of the organisation for which to retrieve\
+          \ the activities"
+          required: true
+          type: "string"
+        - name: "page"
+          in: "query"
+          description: "The page to retrieve"
+          required: false
+          type: "integer"
+          default: 1
+          minimum: 1.0
+          format: "int32"
+        - name: "pageSize"
+          in: "query"
+          description: "The number of items per page to retrieve"
+          required: false
+          type: "integer"
+          default: 20
+          minimum: 1.0
+          format: "int32"
+        - name: "worker"
+          in: "query"
+          description: "Filter activities for a specific worker"
+          required: false
+          type: "string"
+        - name: "startDate"
+          in: "query"
+          description: "Filter activities starting from this date"
+          required: false
+          type: "string"
+        - name: "endDate"
+          in: "query"
+          description: "Filter activities up until this date"
+          required: false
+          type: "string"
+        - name: "type"
+          in: "query"
+          description: "Filter activities for a specific type"
+          required: false
+          type: "string"
+        - name: "nature"
+          in: "query"
+          description: "Filter activities for a specific nature (specified by the ID\
+          \ of the nature"
+          required: false
+          type: "integer"
+          format: "int32"
+        - name: "withHistory"
+          in: "query"
+          description: "Indication whether or not declarations are retrieved with activities"
+          required: false
+          type: "boolean"
+        - name: "sort"
+          in: "query"
+          description: "Sort the activities by ascending value for the specified properties\
+          \ separated by a comma, prefix the property name with a dash (ie. '-client')\
+          \ for descending order"
+          required: false
+          type: "string"
+          default: "-startDate"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Activities"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /activities/{id}:
+    get:
+      tags:
+        - "Activity"
+      summary: "Get an activity"
+      description: ""
+      operationId: "getActivity"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the activity to retrieve"
+          required: true
+          type: "integer"
+          format: "int32"
+        - name: "withHistory"
+          in: "query"
+          description: "Indication whether or not declarations are retrieved with activities"
+          required: false
+          type: "boolean"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Activity"
+        401:
+          description: "Not authorized"
+        404:
+          description: "No activity found for the given ID"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+    patch:
+      tags:
+        - "Activity"
+      summary: "Update an activity"
+      description: ""
+      operationId: "patchActivity"
+      consumes:
+        - "application/merge-patch+json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the activity to update"
+          required: true
+          type: "integer"
+          format: "int32"
+        - name: "The type of update to apply "
+          in: "query"
+          required: false
+          type: "string"
+          enum:
+            - "cancel"
+            - "update"
+        - name: "bypassControls"
+          in: "query"
+          description: "Bypasses some validations, only valid if the user is a professional."
+          required: false
+          type: "boolean"
+          default: false
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Activity"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /api/alive:
+    get:
+      tags:
+        - "Monitoring"
+      summary: "Check liveness of this REST API"
+      description: ""
+      operationId: "getApiAlive"
+      parameters: [ ]
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+      security: [ ]
+  /api/healthCheck:
+    get:
+      tags:
+        - "Monitoring"
+      summary: "Check health of this REST API"
+      description: "This resource is only available to supervision users"
+      operationId: "getApiHealthCheck"
+      produces:
+        - "text/xml; charset=UTF-8"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "Defines the which sanity checks must be ran"
+          required: false
+          type: "string"
+          default: "default"
+          enum:
+            - "ping"
+            - "default"
+            - "deep"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/HealthCheckResponse"
+      security: [ ]
+  /apidoc/html:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the apidoc.html, human friendly file describing the service"
+      description: ""
+      operationId: "getApiDocHtml"
+      produces:
+        - "text/html"
+      parameters: [ ]
+      responses:
+        200:
+          description: "OK"
+      security: [ ]
+  /apidoc/swagger.json:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the swagger.json file describing the service"
+      description: ""
+      operationId: "getApiDocSwagger"
+      produces:
+        - "application/json"
+      parameters: [ ]
+      responses:
+        200:
+          description: "OK"
+      security: [ ]
+  /cities:
+    get:
+      tags:
+        - "City"
+      summary: "Get cities"
+      description: ""
+      operationId: "getCities"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "zipCode"
+          in: "query"
+          required: false
+          type: "string"
+        - name: "city"
+          in: "query"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Cities"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /citizenQuotaSummary:
+    get:
+      tags:
+        - "CitizenQuotaSummary"
+      summary: "Get the quota summary for a citizen"
+      description: ""
+      operationId: "getCitizenQuotaSummary"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "query"
+          description: "The SSIN of the citizen for whom to retrieve the quota summary"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/CitizenQuotaSummary"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /citizenwhitelist/byCitizen/{ssin}:
+    get:
+      tags:
+        - "CitizenWhiteList"
+      summary: "Get CitizenWhiteList by ssin"
+      description: ""
+      operationId: "getCitizenwhitelistByCitizen"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "The SSIN of the citizen for whom to retrieve the whiteList periods"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/CitizenWhiteList"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /citizenwhitelist/{id}:
+    get:
+      tags:
+        - "CitizenWhiteList"
+      summary: "Get a period"
+      description: ""
+      operationId: "getCitizenwhitelist"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the period to retrieve"
+          required: true
+          type: "integer"
+          format: "int32"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/CitizenWhiteListPeriod"
+        401:
+          description: "Not authorized"
+        404:
+          description: "No Period found for the given ID"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /citizenwhitelist/{ssin}/periods:
+    post:
+      tags:
+        - "CitizenWhiteList"
+      summary: "create a new citizenwhitelist"
+      description: ""
+      operationId: "postCitizenwhitelistPeriods"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "an citizenwhitelist"
+          required: true
+          type: "string"
+      responses:
+        201:
+          description: "ADDED"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /citizenwhitelist/{ssin}/periods/{id}:
+    patch:
+      tags:
+        - "CitizenWhiteList"
+      summary: "Cancel an period"
+      description: ""
+      operationId: "patchCitizenwhitelistPeriods"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "ID of the CitizenWhiteList to cancel"
+          required: true
+          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+          format: "int32"
+        - name: "The type of cancel to apply "
+          in: "query"
+          required: false
+          type: "string"
+          enum:
+            - "cancel"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/CitizenWhiteListPeriod"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /controladditionalwork/{ssin}:
+    get:
+      tags:
+        - "ControlAdditionalWork"
+      summary: "Check if worker can do complementary activities."
+      description: ""
+      operationId: "getControladditionalwork"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "The SSIN of the worker to check if he's allowed to do complementary\
+          \ activities."
+          required: true
+          type: "string"
+        - name: "companyId"
+          in: "query"
+          description: "CompanyId if of the organisation in case of an o2c"
+          required: false
+          type: "string"
+        - name: "startDate"
+          in: "query"
+          description: "Starting date of the activity"
+          required: true
+          type: "string"
+        - name: "endDate"
+          in: "query"
+          description: "End date of the activity"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /errorMessage:
+    get:
+      tags:
+        - "Error Message"
+      summary: "retrieve the messages in error"
+      description: ""
+      operationId: "getErrorMessages"
+      produces:
+        - "application/json"
+      parameters: [ ]
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ErrorMessages"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /errorMessage/{errorMessageId}:
+    post:
+      tags:
+        - "Error Message"
+      summary: "resend a message in error"
+      description: ""
+      operationId: "postErrorMessage"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "errorMessageId"
+          in: "path"
+          description: "The id of the message to resend"
+          required: true
+          type: "integer"
+          format: "int32"
+      responses:
+        201:
+          description: "Message resend"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /organisations/{enterpriseNbr}:
+    get:
+      tags:
+        - "Organisations"
+      summary: "Get details of the organisation with the provided enterprise number"
+      description: ""
+      operationId: "getOrganisationByEnterpriseNumber"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "enterpriseNbr"
+          in: "path"
+          description: "The identification number of the organisation for which to retrieve\
+          \ the activities"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Organisation"
+        403:
+          description: "The company does exist, but the user has no access"
+          schema:
+            $ref: "#/definitions/Organisation"
+        404:
+          description: "The company does not exist"
+          schema:
+            $ref: "#/definitions/Organisation"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /referenceData/applicationParameters/{key}:
+    get:
+      tags:
+        - "ReferenceData"
+      summary: "Get the value for application param key"
+      description: ""
+      operationId: "getReferenceDataApplicationParamValue"
+      produces:
+        - "text/plain"
+      parameters:
+        - name: "key"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ApplicationParameters"
+        401:
+          description: "UNAUTHORIZED"
+        404:
+          description: "No param found"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /referenceData/natures:
+    get:
+      tags:
+        - "ReferenceData"
+      summary: "Get the list of natures for the specified activity type"
+      description: ""
+      operationId: "getReferenceDataNaturesByType"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "The activity type for which to retrieve the natures"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Natures"
+        204:
+          description: "No natures found for the given type"
+        401:
+          description: "Not authorized"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /referenceData/quota:
+    get:
+      tags:
+        - "ReferenceData"
+      summary: "Get the quota"
+      description: ""
+      operationId: "getReferenceDataQuota"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "The type of quota to retrieve"
+          required: true
+          type: "string"
+        - name: "date"
+          in: "query"
+          description: "The date for which to retrieve the quotum"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Quota"
+        204:
+          description: "No quota found"
+        401:
+          description: "UNAUTHORIZED"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:entreprise:declare'
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:representative:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /unincorporatedAssociations:
+    get:
+      tags:
+        - "UnincorporatedAssociation"
+      summary: "get unincorporated corporation by responsible  ssin"
+      description: ""
+      operationId: "getUnIncorporatedAssociationsBySsin"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ssin"
+          in: "query"
+          description: "ssin"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "FOUND"
+          schema:
+            $ref: "#/definitions/unIncorporatedAssociations"
+        401:
+          description: "UNAUTHORIZED"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - "UnincorporatedAssociation"
+      summary: "create a new unincorporated association and return the association\
+        \ business key"
+      description: ""
+      operationId: "postUnIncorporatedAssociation"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Accept-Language"
+          in: "header"
+          description: "language"
+          required: false
+          type: "string"
+          enum:
+            - "fr"
+            - "nl"
+            - "de"
+        - in: "body"
+          name: "body"
+          description: "an unincorporated association"
+          required: true
+          schema:
+            $ref: "#/definitions/unIncorporatedAssociation"
+      responses:
+        201:
+          description: "CREATED"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+  /unincorporatedAssociations/{id}:
+    get:
+      tags:
+        - "UnincorporatedAssociation"
+      summary: "get unincorporated corporation"
+      description: ""
+      operationId: "getUnIncorporatedAssociation"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "association number"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: "FOUND"
+          schema:
+            $ref: "#/definitions/unIncorporatedAssociation"
+        401:
+          description: "UNAUTHORIZED"
+        404:
+          description: "NOT_FOUND"
+      security:
+        - oauth_implicit:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_clientCredentials:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+        - oauth_accessCode:
+            - 'scope:complementary:activities:citizen:declare'
+            - 'scope:complementary:activities:professional:consult'
+            - 'scope:complementary:activities:professional:declare'
+      x-oauth2-required-scopes: any
+definitions:
+  Activities:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/Activity"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of activities"
+  Activity:
+    type: "object"
+    required:
+      - "client"
+      - "clientType"
+      - "lastDeclarationAmounts"
+      - "lastDeclarationEndDate"
+      - "lastDeclarationNature"
+      - "lastDeclarationStartDate"
+      - "type"
+      - "worker"
+    properties:
+      activityId:
+        type: "integer"
+        format: "int32"
+        description: "Unique identifier of an activity"
+      lastDeclarationId:
+        type: "integer"
+        format: "int32"
+        description: "Unique identifier of the last declaration of an activity"
+      type:
+        type: "string"
+        enum:
+          - "C_2_C"
+          - "O_2_C"
+      lastDeclarationNature:
+        description: "The nature of an activity"
+        $ref: "#/definitions/Nature"
+      lastDeclarationStartDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) when the activity will begin"
+      lastDeclarationEndDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) when the activity will end"
+      lastDeclarationDate:
+        type: "string"
+        format: "date-time"
+        description: "Date-time (yyyy-MM-dd'T'HH:mm:ssXXX) when the declaration is\
+          \ created"
+      lastDeclarationStatus:
+        type: "string"
+        description: "status of a declaration"
+        enum:
+          - "ACCEPTED"
+          - "REFUSED"
+          - "CANCELLED"
+          - "WARNING"
+          - "PENDING"
+      lastDeclarationAmounts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Amount"
+        maxItems: 13
+        minItems: 1
+      lastDeclarationAnomalies:
+        type: "array"
+        items:
+          $ref: "#/definitions/Anomaly"
+      lastDeclarationByProfessional:
+        type: "boolean"
+        default: false
+      declarations:
+        type: "array"
+        items:
+          $ref: "#/definitions/Declaration"
+      worker:
+        description: "A citizen"
+        $ref: "#/definitions/Citizen"
+      client:
+        type: "object"
+      clientType:
+        type: "string"
+        enum:
+          - "CITIZEN"
+          - "ORGANISATION"
+          - "UNINCORPORATED_ASSOCIATION"
+      representative:
+        description: "An organisation"
+        $ref: "#/definitions/Organisation"
+    description: "An activity represents a work contract in its last version between\
+      \ a citizen and another citizen or between an organisation and a citizen"
+  Address:
+    type: "object"
+    required:
+      - "city"
+      - "country"
+      - "houseNbr"
+      - "street"
+      - "zipCode"
+    properties:
+      street:
+        type: "string"
+        description: "The street of the address"
+      houseNbr:
+        type: "string"
+        description: "The house number of the address"
+      postBox:
+        type: "string"
+        description: "The postBox of the address"
+      zipCode:
+        type: "string"
+        description: "The zipCode of the address"
+      city:
+        type: "string"
+        description: "The city of the address"
+      country:
+        type: "string"
+        description: "The country of the address"
+    description: "An Address"
+  AddressForUIA:
+    type: "object"
+    required:
+      - "city"
+      - "countryNisCode"
+      - "houseNbr"
+      - "street"
+      - "zipCode"
+    properties:
+      street:
+        type: "string"
+        description: "The street of the unincorporated association"
+        minLength: 1
+        maxLength: 100
+      houseNbr:
+        type: "string"
+        description: "The house number of unincorporated association"
+        minLength: 1
+        maxLength: 11
+      zipCode:
+        type: "string"
+        description: "The zip code of the unincorporated association"
+        minLength: 1
+        maxLength: 10
+      city:
+        type: "string"
+        description: "The city of the unincorporated association"
+        minLength: 1
+        maxLength: 100
+      cityNisCode:
+        type: "integer"
+        format: "int32"
+        description: "The city NIS code of the unincorporated association"
+      countryNisCode:
+        type: "integer"
+        format: "int32"
+        description: "The country NIS code of the unincorporated association"
+      postBox:
+        type: "string"
+        description: "The post box of the unincorporated association"
+        minLength: 1
+        maxLength: 10
+    description: "JSON template for unincorporated association address management\
+      \ in complementary activity webapp "
+  Amount:
+    type: "object"
+    required:
+      - "amount"
+      - "endDate"
+      - "startDate"
+    properties:
+      amount:
+        type: "number"
+        description: "The amount"
+      startDate:
+        type: "string"
+        format: "date"
+        description: "The start date of the work relative to the amount"
+      endDate:
+        type: "string"
+        format: "date"
+        description: "The end date of the work relative to the amount"
+      anomalies:
+        type: "array"
+        items:
+          $ref: "#/definitions/Anomaly"
+    description: "An amount that the worker receive in exchange of his services"
+  Anomaly:
+    type: "object"
+    required:
+      - "code"
+      - "label"
+      - "severity"
+    properties:
+      code:
+        type: "string"
+        description: "The code of the anomaly"
+      label:
+        description: "Common type defined to provide a string value for each supported\
+          \ language among nl, fr, de"
+        $ref: "#/definitions/Label"
+      severity:
+        type: "string"
+        description: "The severity of the anomaly"
+        enum:
+          - "BLOCKING"
+          - "WARNING"
+    description: "An anomaly"
+  ApplicationParameters:
+    type: "object"
+    description: "Parameters for the application ComplementaryActivity"
+  Cities:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/city"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of cities"
+  Citizen:
+    type: "object"
+    properties:
+      citizenId:
+        type: "integer"
+        format: "int32"
+        description: "The unique identifier of a citizen"
+      ssin:
+        type: "string"
+        description: "A number that identifies a person. Also known as NISS, INSZ\
+          \ or INSS"
+        pattern: "^\\d{11}$"
+      midInfos:
+        description: "The additionnal infos concerning a Citizen"
+        $ref: "#/definitions/CitizenMid"
+    description: "A citizen"
+  CitizenMid:
+    type: "object"
+    required:
+      - "address"
+      - "birthDate"
+      - "birthPlace"
+      - "firstName"
+      - "gender"
+      - "lastName"
+    properties:
+      lastName:
+        type: "string"
+        description: "Last name of a citizen"
+      firstName:
+        type: "string"
+        description: "First name of a citizen"
+      birthDate:
+        type: "string"
+        format: "date"
+        description: "Birth date of a citizen"
+      birthPlace:
+        type: "string"
+        description: "Birth place of a citizen"
+      gender:
+        type: "string"
+        description: "Gender of a citizen"
+        enum:
+          - "M"
+          - "F"
+      address:
+        description: "An Address"
+        $ref: "#/definitions/Address"
+    description: "The additionnal infos concerning a Citizen"
+  CitizenQuotaSummary:
+    type: "object"
+    description: "The agregated view of the quota of a citizen"
+  CitizenWhiteList:
+    type: "object"
+    required:
+      - "citizen"
+    properties:
+      citizen:
+        description: "Citizen for white List"
+        $ref: "#/definitions/Citizen_"
+      periods:
+        type: "array"
+        items:
+          $ref: "#/definitions/CitizenWhiteListPeriod"
+    description: "The entry of a citizen on the citizen_whitelist with the periods\
+      \ for which a citizen must be allowed to perform complementary activities"
+  CitizenWhiteListPeriod:
+    type: "object"
+    properties:
+      periodId:
+        type: "integer"
+        format: "int32"
+        description: "The id of the period"
+      startDate:
+        type: "string"
+        format: "date"
+      endDate:
+        type: "string"
+        format: "date"
+      creationDate:
+        type: "string"
+        format: "date-time"
+      reasonCreate:
+        type: "string"
+      srNumberCreate:
+        type: "string"
+      reasonCancel:
+        type: "string"
+      cancelDate:
+        type: "string"
+        format: "date-time"
+      srNumberCancel:
+        type: "string"
+    description: "The periods for which a citizen is added to the citizen whitelist"
+  Citizen_:
+    type: "object"
+    required:
+      - "citizenEditable"
+      - "lastName"
+      - "ssin"
+    properties:
+      ssin:
+        type: "string"
+        description: "A number that identifies a person. Also known as NISS, INSZ\
+          \ or INSS"
+        pattern: "^\\d{11}$"
+      lastName:
+        type: "string"
+        description: "Last name of a citizen"
+      firstName:
+        type: "string"
+        description: "First name of a citizen"
+      citizenEditable:
+        type: "boolean"
+        default: false
+    description: "Citizen for white List"
+  CityName:
+    type: "object"
+    properties:
+      language:
+        type: "string"
+        description: "Language of the cityName"
+        enum:
+          - "FR"
+          - "NL"
+          - "DE"
+      cityName:
+        type: "string"
+        description: "name of the city in language from the cbezipcode reference table"
+        minLength: 1
+        maxLength: 100
+  Component:
+    type: "object"
+    required:
+      - "name"
+      - "version"
+    properties:
+      name:
+        type: "string"
+        xml:
+          name: "Name"
+      version:
+        type: "string"
+        xml:
+          name: "Version"
+      mavenReference:
+        xml:
+          name: "MavenReference"
+        $ref: "#/definitions/MavenReference"
+      catalogPart:
+        type: "string"
+        xml:
+          name: "CatalogPart"
+      extensions:
+        xml:
+          name: "Extensions"
+        $ref: "#/definitions/Extensions"
+  Declaration:
+    type: "object"
+    required:
+      - "amounts"
+      - "declarationId"
+      - "endDate"
+      - "startDate"
+      - "status"
+    properties:
+      declarationId:
+        type: "integer"
+        format: "int32"
+        description: "Unique identifier of a declaration"
+      status:
+        type: "string"
+        description: "status of a declaration"
+        enum:
+          - "ACCEPTED"
+          - "REFUSED"
+          - "CANCELLED"
+          - "WARNING"
+          - "PENDING"
+      startDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) when the activity will begin"
+      endDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) when the activity will end"
+      creationDate:
+        type: "string"
+        format: "date-time"
+        description: "Date-time (yyyy-MM-dd'T'HH:mm:ssXXX) when the declaration is\
+          \ created"
+      nature:
+        description: "The nature of an activity"
+        $ref: "#/definitions/Nature"
+      amounts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Amount"
+      anomalies:
+        type: "array"
+        items:
+          $ref: "#/definitions/Anomaly"
+    description: "A declaration is the part of an activity that can be modified"
+  ErrorMessage:
+    type: "object"
+    required:
+      - "creationDate"
+      - "id"
+      - "objectId"
+      - "properties"
+      - "queue"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "Unique identifier of an error message"
+      creationDate:
+        type: "string"
+        format: "date-time"
+        description: "Date-time (yyyy-MM-dd'T'HH:mm:ssXXX) when the message is created"
+      queue:
+        type: "string"
+        enum:
+          - "ACTIVITY_QUEUE"
+      objectId:
+        type: "integer"
+        format: "int32"
+        description: "Unique identifier of the object of the message (Eg. : activity\
+          \ id)'"
+      stacktrace:
+        type: "object"
+        description: "Exception stacktrace"
+      properties:
+        type: "array"
+        items:
+          $ref: "#/definitions/Property"
+    description: "A message in error in a queue"
+  ErrorMessages:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/ErrorMessage"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of error messages"
+  Extensions:
+    type: "object"
+    properties:
+      any:
+        type: "array"
+        items:
+          type: "object"
+      otherAttributes:
+        type: "object"
+        additionalProperties:
+          type: "string"
+  HealthCheckResponse:
+    type: "object"
+    required:
+      - "component"
+      - "location"
+      - "status"
+    properties:
+      status:
+        xml:
+          name: "Status"
+        $ref: "#/definitions/Status"
+      component:
+        xml:
+          name: "Component"
+        $ref: "#/definitions/Component"
+      location:
+        xml:
+          name: "Location"
+        $ref: "#/definitions/Location"
+      sanityCheck:
+        type: "array"
+        xml:
+          name: "SanityCheck"
+        items:
+          $ref: "#/definitions/SanityCheck"
+      timestamp:
+        type: "string"
+        format: "date-time"
+        xml:
+          attribute: true
+    xml:
+      name: "HealthCheckResponse"
+  Label:
+    type: "object"
+    properties:
+      nl:
+        type: "string"
+      fr:
+        type: "string"
+      de:
+        type: "string"
+    description: "Common type defined to provide a string value for each supported\
+      \ language among nl, fr, de"
+  Location:
+    type: "object"
+    required:
+      - "environment"
+      - "host"
+    properties:
+      environment:
+        type: "string"
+        xml:
+          name: "Environment"
+        enum:
+          - "PRD"
+          - "SIM"
+          - "ACC"
+          - "INT"
+          - "TST"
+          - "DEV"
+          - "SIC"
+          - "LOCAL"
+          - "OTHER"
+      host:
+        type: "string"
+        xml:
+          name: "Host"
+      port:
+        type: "integer"
+        format: "int32"
+        xml:
+          name: "Port"
+      name:
+        type: "string"
+        xml:
+          name: "Name"
+      url:
+        type: "string"
+        xml:
+          name: "URL"
+      extensions:
+        xml:
+          name: "Extensions"
+        $ref: "#/definitions/Extensions"
+  MavenReference:
+    type: "object"
+    properties:
+      groupId:
+        type: "string"
+        xml:
+          attribute: true
+      artifactId:
+        type: "string"
+        xml:
+          attribute: true
+  Nature:
+    type: "object"
+    required:
+      - "natureId"
+    properties:
+      natureId:
+        type: "integer"
+        format: "int32"
+        description: "The unique identifier of a nature"
+      label:
+        description: "Common type defined to provide a string value for each supported\
+          \ language among nl, fr, de"
+        $ref: "#/definitions/Label"
+      labelShort:
+        description: "Common type defined to provide a string value for each supported\
+          \ language among nl, fr, de"
+        $ref: "#/definitions/Label"
+      startDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) from which the nature is active"
+      endDate:
+        type: "string"
+        format: "date"
+        description: "Date (yyyy-MM-dd) from which the nature is no longer active"
+    description: "The nature of an activity"
+  Natures:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/Nature"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of natures"
+  Organisation:
+    type: "object"
+    required:
+      - "enterpriseNbr"
+    properties:
+      organisationId:
+        type: "integer"
+        format: "int32"
+        description: "The unique identifier of an organisation"
+      enterpriseNbr:
+        type: "string"
+        example: "0406798006"
+      denomination:
+        description: "Common type defined to provide a string value for each supported\
+          \ language among nl, fr, de"
+        $ref: "#/definitions/Label"
+    description: "An organisation"
+  Property:
+    type: "object"
+    properties:
+      key:
+        type: "string"
+      value:
+        type: "string"
+  Quota:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/Quotum"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of quotum"
+  Quotum:
+    type: "object"
+    required:
+      - "ceiling"
+      - "endDate"
+      - "id"
+      - "startDate"
+      - "type"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "id of the quotum"
+      label:
+        description: "Common type defined to provide a string value for each supported\
+          \ language among nl, fr, de"
+        $ref: "#/definitions/Label"
+      type:
+        type: "string"
+        description: "type of the quotum"
+        enum:
+          - "MONTHLY"
+          - "YEARLY"
+      startDate:
+        type: "string"
+        format: "date"
+        description: "Start date of the quotum"
+      endDate:
+        type: "string"
+        format: "date"
+        description: "End date of the quotum"
+      ceiling:
+        type: "number"
+        description: "ceiling of the quotum"
+      natures:
+        type: "array"
+        items:
+          type: "integer"
+          format: "int32"
+    description: "A quotum"
+  Resource:
+    type: "object"
+    properties:
+      location:
+        xml:
+          name: "Location"
+        $ref: "#/definitions/Location"
+      name:
+        type: "string"
+        xml:
+          attribute: true
+      type:
+        type: "string"
+        xml:
+          attribute: true
+        enum:
+          - "DB"
+          - "LDAP"
+          - "CACHE"
+          - "SOCKET"
+          - "MAINFRAME"
+          - "BATCH"
+          - "FILESYSTEM"
+          - "CLASSPATH"
+          - "CERTIFICATE"
+          - "QUEUE"
+          - "EJB"
+          - "WS"
+          - "MAIL"
+          - "OTHER"
+      reference:
+        type: "string"
+        xml:
+          attribute: true
+  Responsible:
+    type: "object"
+    required:
+      - "citizen"
+      - "functionCode"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        description: "Unique index for the responsible within the company"
+        minimum: 1.0
+        maximum: 1.0E16
+      functionCode:
+        type: "integer"
+        format: "int32"
+        description: "function of the responsible within the unincorporated association"
+      citizen:
+        description: "A citizen"
+        $ref: "#/definitions/Citizen"
+  SanityCheck:
+    type: "object"
+    required:
+      - "resource"
+      - "status"
+    properties:
+      status:
+        xml:
+          name: "Status"
+        $ref: "#/definitions/Status"
+      resource:
+        xml:
+          name: "Resource"
+        $ref: "#/definitions/Resource"
+      timeInMillis:
+        type: "integer"
+        format: "int32"
+        xml:
+          name: "TimeInMillis"
+      extensions:
+        xml:
+          name: "Extensions"
+        $ref: "#/definitions/Extensions"
+      stackTrace:
+        type: "string"
+        xml:
+          name: "StackTrace"
+      id:
+        type: "string"
+        xml:
+          attribute: true
+      description:
+        type: "string"
+        xml:
+          attribute: true
+      failSafe:
+        type: "boolean"
+        xml:
+          attribute: true
+        default: false
+      type:
+        type: "string"
+        xml:
+          attribute: true
+        enum:
+          - "PING"
+          - "DEFAULT"
+          - "DEEP"
+  Status:
+    type: "object"
+    required:
+      - "level"
+    properties:
+      level:
+        type: "string"
+        xml:
+          name: "Level"
+        enum:
+          - "OK"
+          - "WARNING"
+          - "CRITICAL"
+          - "FATAL"
+      code:
+        type: "string"
+        xml:
+          name: "Code"
+      message:
+        type: "string"
+        xml:
+          name: "Message"
+      extensions:
+        xml:
+          name: "Extensions"
+        $ref: "#/definitions/Extensions"
+  city:
+    type: "object"
+    required:
+      - "cityNames"
+      - "nisCode"
+      - "zipCode"
+    properties:
+      zipCode:
+        type: "string"
+        description: "The zip code in the cbezipcode reference table"
+        minLength: 1
+        maxLength: 2147483647
+      nisCode:
+        type: "integer"
+        format: "int32"
+        description: "The city nisCode code in the cbezipcode reference table"
+      cityNames:
+        type: "array"
+        items:
+          $ref: "#/definitions/CityName"
+    description: "JSON template for city in complementary activity WebApp"
+  contact:
+    type: "object"
+    properties:
+      phoneNbr:
+        type: "string"
+        description: "Phone number of contact person within the unincorporated association"
+        minLength: 0
+        maxLength: 20
+      mobileNbr:
+        type: "string"
+        description: "Mobile number of contact person within the unincorporated association"
+        minLength: 0
+        maxLength: 20
+      faxNbr:
+        type: "string"
+        description: "Fax number of contact person within the unincorporated association"
+        minLength: 0
+        maxLength: 20
+      emailAddress:
+        type: "string"
+        description: "Email address of contact person within the unincorporated association"
+        minLength: 0
+        maxLength: 254
+        pattern: "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$"
+    description: "JSON template for contact management of the unincorporated association\
+      \ in complementary activity WebApp"
+  unIncorporatedAssociation:
+    type: "object"
+    required:
+      - "address"
+      - "applicant"
+      - "contact"
+      - "createUnIncorporatedAssociationRequestDate"
+      - "denomination"
+      - "language"
+      - "responsibles"
+    properties:
+      identificationNbr:
+        type: "integer"
+        format: "int64"
+        description: "The unique key for an unincorporated association within the\
+          \ complementary activity WebApp"
+        minimum: 1.0
+        maximum: 1.0E16
+      createUnIncorporatedAssociationRequestDate:
+        type: "string"
+        format: "date"
+        description: "unincorporated association creation date"
+      creationDate:
+        type: "string"
+        format: "date-time"
+        description: "Creation date of the request"
+      denomination:
+        type: "string"
+        description: "unincorporated association denomination"
+        minLength: 1
+        maxLength: 160
+      language:
+        type: "string"
+        description: "Language of the unincorporated association"
+        enum:
+          - "FR"
+          - "DE"
+          - "NL"
+      address:
+        description: "JSON template for unincorporated association address management\
+          \ in complementary activity webapp "
+        $ref: "#/definitions/AddressForUIA"
+      responsibles:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/Responsible"
+        maxItems: 10
+        minItems: 2
+      contact:
+        description: "JSON template for contact management of the unincorporated association\
+          \ in complementary activity WebApp"
+        $ref: "#/definitions/contact"
+      applicant:
+        description: "A citizen"
+        $ref: "#/definitions/Citizen"
+    description: "JSON template for unincorporated association management in complementary\
+      \ activity WebApp"
+  unIncorporatedAssociations:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/unIncorporatedAssociation"
+      totalItems:
+        type: "integer"
+        format: "int32"
+    description: "A collection of unincorporated association"
