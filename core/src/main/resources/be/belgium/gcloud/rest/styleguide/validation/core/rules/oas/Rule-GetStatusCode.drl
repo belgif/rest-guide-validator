@@ -1,0 +1,63 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function void violationGet(OpenApiViolationAggregator oas, String operationId, String code){
+    oas.addViolation("getStatusCode"+code, "GET operation should not have a status code: "+code,
+                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+}
+
+
+rule "Get Status Code 201 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "201")
+	then
+        violationGet(oas, $operationId, "201");
+end
+rule "Get Status Code 202 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "202")
+	then
+        violationGet(oas, $operationId, "202");
+end
+rule "Get Status Code 204 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "204")
+	then
+        violationGet(oas, $operationId, "204");
+end
+rule "Get Status Code 303 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "303")
+	then
+        violationGet(oas, $operationId, "303");
+end
+rule "Get Status Code 409 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "409")
+	then
+        violationGet(oas, $operationId, "409");
+end
+rule "Get Status Code 412 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "412")
+	then
+        violationGet(oas, $operationId, "412");
+end
+rule "Get Status Code 413 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "413")
+	then
+        violationGet(oas, $operationId, "413");
+end

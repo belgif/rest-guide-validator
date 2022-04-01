@@ -1,0 +1,21 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function String patternSlash(){
+    return ".+\\/$";
+}
+function void violationSlash(OpenApiViolationAggregator oas, String path){
+    oas.addViolation("PathTrailingSlash", "Trailing slashes MUST NOT be used. \t"+ path, oas.getLineNumber(path));
+}
+
+rule "Path Trailing Slash V2"
+	when
+        $api: OpenAPI()
+        $path: String() from ApiFunctions.getPathMatch($api, patternSlash())
+    then
+        violationSlash(oas, $path);
+end

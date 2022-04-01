@@ -1,0 +1,56 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function void violationHead(OpenApiViolationAggregator oas, String operationId, String code){
+    oas.addViolation("headStatusCode"+code, "HEAD operation should not have a status code: "+code,
+                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+}
+
+//v2
+rule "Head Status Code 201 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "201")
+	then
+        violationHead(oas, $operationId, "201");
+end
+rule "Head Status Code 202 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "202")
+	then
+        violationHead(oas, $operationId, "202");
+end
+rule "Head Status Code 303 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "303")
+	then
+        violationHead(oas, $operationId, "303");
+end
+rule "Head Status Code 409 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "409")
+	then
+        violationHead(oas, $operationId, "409");
+end
+rule "Head Status Code 412 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "412")
+	then
+        violationHead(oas, $operationId, "412");
+end
+rule "Head Status Code 413 v2"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "413")
+	then
+        violationHead(oas, $operationId, "413");
+end

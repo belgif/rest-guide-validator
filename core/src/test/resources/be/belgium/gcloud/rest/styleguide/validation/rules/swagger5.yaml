@@ -1,0 +1,212 @@
+swagger: '2.0'
+info:
+  version: '1.0'
+  title: REST Pass Through
+  contact:
+    email: SupportSOA@smals.be
+  license:
+    name: Copyright SMALS 2018. All rights reserved.
+tags:
+  - name: RestPassThrough
+schemes:
+  - http
+paths:
+  /identity/token:
+    post:
+      tags:
+        - post
+      summary: ''
+      description: ''
+      operationId: identity-token
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: grant_type
+          type: string
+          required: false
+        - in: formData
+          name: apikey
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+  /*:
+    get:
+      tags:
+        - get
+      summary: ''
+      description: ''
+      operationId: GET
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    post:
+      tags:
+        - post
+      summary: ''
+      description: ''
+      operationId: POST
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    put:
+      tags:
+        - put
+      summary: ''
+      description: ''
+      operationId: PUT
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    delete:
+      tags:
+        - delete
+      summary: ''
+      description: ''
+      operationId: DELETE
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    patch:
+      tags:
+        - patch
+      summary: ''
+      description: ''
+      operationId: PATCH
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    options:
+      tags:
+        - options
+      summary: ''
+      description: ''
+      operationId: OPTIONS
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+  /:
+    get:
+      tags:
+        - get
+      summary: ''
+      description: ''
+      operationId: GET_0
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    post:
+      tags:
+        - post
+      summary: ''
+      description: ''
+      operationId: POST_0
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    put:
+      tags:
+        - put
+      summary: ''
+      description: ''
+      operationId: PUT_0
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    delete:
+      tags:
+        - delete
+      summary: ''
+      description: ''
+      operationId: DELETE_0
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    patch:
+      tags:
+        - patch
+      summary: ''
+      description: ''
+      operationId: PATCH_0
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+    options:
+      tags:
+        - options
+      summary: ''
+      description: ''
+      operationId: OPTIONS_0
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object

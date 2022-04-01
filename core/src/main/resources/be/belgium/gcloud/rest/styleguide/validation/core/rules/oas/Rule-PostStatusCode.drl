@@ -1,0 +1,21 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+
+function void violationPost(OpenApiViolationAggregator oas, String operationId, String code){
+    oas.addViolation("postStatusCode"+code, "POST operation should not have a status code: "+code,
+                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+}
+
+rule "Post Status Code 304"
+	when
+		$api: OpenAPI()
+	    $operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.POST, "304")
+	then
+	    violationPost(oas, $operationId, "304");
+end

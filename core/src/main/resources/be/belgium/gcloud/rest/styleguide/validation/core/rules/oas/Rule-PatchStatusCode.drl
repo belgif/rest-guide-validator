@@ -1,0 +1,42 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function void violationPatch(OpenApiViolationAggregator oas, String operationId, String code){
+    oas.addViolation("patchStatusCode"+code, "PATCH operation should not have a status code: "+code,
+                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+}
+
+//v3
+rule "Patch Status Code 201 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PATCH, "201")
+	then
+        violationPatch(oas, $operationId, "201");
+end
+rule "Patch Status Code 202 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PATCH, "202")
+	then
+        violationPatch(oas, $operationId, "202");
+end
+rule "Patch Status Code 303 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PATCH, "303")
+	then
+        violationPatch(oas, $operationId, "303");
+end
+rule "Patch Status Code 304 v3"
+	when
+		$api: OpenAPI()
+		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PATCH, "304")
+	then
+        violationPatch(oas, $operationId, "304");
+end

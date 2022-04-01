@@ -1,0 +1,24 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+
+function String urlPattern(){
+    return "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}\\/[A-Za-z0-9]*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
+}
+function void violationServerUrlFormat(OpenApiViolationAggregator oas, String url){
+    oas.addViolation("serverUrlFormat",
+                     "The server url (or the basePath) should follow this format: pathPrefix/apiName/vmajorVersion \t"+ url,
+                     oas.getLineNumber(url));
+}
+
+rule "Server Url or basePath Format"
+    when
+		$api: OpenAPI()
+		$serverUrl: String() from ApiFunctions.getServerNotMatch($api, urlPattern())
+    then
+        violationServerUrlFormat(oas, $serverUrl);
+end

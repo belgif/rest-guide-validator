@@ -1,0 +1,24 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function String patternPath(){
+    return
+      "^\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*(\\/\\{?[a-z0-9]+([A-Z]?[a-z0-9]+)*\\}?)*\\/?$|(^\\/doc\\/swagger\\.json$)|(^\\/doc\\/swagger\\.yaml)";
+}
+function void violationPath(OpenApiViolationAggregator oas, String path){
+    oas.addViolation("pathCamelCase",
+           		 "The URI notation MUST use lowerCamelCase to enhance readability and to separate compound names. \t"+ path,
+           		 oas.getLineNumber(path));
+}
+
+rule "Path CamelCase"
+	when
+        $api: OpenAPI()
+        $path: String() from ApiFunctions.getPathNoMatch($api, patternPath())
+    then
+        violationPath(oas, $path);
+end

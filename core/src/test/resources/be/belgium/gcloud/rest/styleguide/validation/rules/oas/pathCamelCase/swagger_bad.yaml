@@ -1,0 +1,2775 @@
+---
+swagger: "2.0"
+info:
+  description: Service that manages the non-formal contact data (email, phone) of companies.
+  version: "${artifact.version}"
+  title: contactData
+  contact:
+    email: contactDataTeam@smals.be
+basePath: /REST/contactData/v1/
+tags:
+  - name: contacts
+    description: A contact represents a contact point of a company. A contact may be a person, a department, a team of people
+    externalDocs:
+      description: More information
+      url: https://confluence.smals.be/display/CONTACTBEH/WS+REST+contactData
+schemes:
+  - https
+paths:
+  /userInfo:
+    get:
+      tags:
+        - user
+      summary: Get connected user's info
+      description: Get the user's info of the connected user like the scopes
+      operationId: getUserInfo
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserInfo'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /Categories:
+    get:
+      tags:
+        - categories
+      summary: Get the list of available categories
+      description: Get the list of available categories. The list is fixed.
+      operationId: getAllCategories
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CategoriesCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts:
+    get:
+      tags:
+        - contacts
+      summary: Find all the entities' contacts related to matching all the given filters
+      description: Find all the entities' contacts related to matching all the given filters
+      operationId: findEntityContacts
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: nssoNbr
+          in: query
+          description: the NOSS identifier of an employer
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.NossRegistrationNumberIterable
+        - name: cbeNbr
+          in: query
+          description: the CBE identifier of a company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.CompanyIdIterable
+        - name: foleenId
+          in: query
+          description: the Foleen identifier of a foreign company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: euid
+          in: query
+          description: the european identifier of a european company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: contextType
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: contextCode
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: includeExternalSources
+          in: query
+          description: Flag indicating if the external sources have to be consulted
+          default: true
+          required: false
+          type: boolean
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContactsCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a new contact
+      operationId: addEntityContact
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Contact object to add
+          required: true
+          schema:
+            $ref: '#/definitions/Contact'
+      responses:
+        201:
+          description: created
+        400:
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/CONTACT/{contactId}:
+    get:
+      tags:
+        - contacts
+      summary: Get a contact by ID
+      description: Returns a single contact
+      operationId: getEntityContactById
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContactLink'
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+        - contacts
+      summary: Replace an existing contact
+      description: Replace an existing contact
+      operationId: replaceEntityContact
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact to update
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: The new contact object. This will replace the existing contact, and all its contactdata.
+          required: true
+          schema:
+            $ref: '#/definitions/Contact'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Contact'
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        405:
+          description: Validation exception
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete a contact and all its contact data
+      operationId: deleteEntityContact
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: Contact id to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: Contact deleted
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/invalidDATA:
+    get:
+      tags:
+        - contacts
+      summary: find the invalidData for a specific contact
+      description: Returns a single contact's invalidData
+      operationId: findContactInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidDataCollection'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a new contact invalidData
+      operationId: addContactInvalidData
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: created
+        default:
+          description: any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/invalidData/{invalidDataId}:
+    get:
+      tags:
+        - contacts
+      summary: get a specific contact invalidData
+      description: Returns a single  invalidData
+      operationId: getContactInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidData'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+        - contacts
+      summary: update an existing existing contact invalidData
+      description: update an existing existing contact invalidData
+      operationId: updateContactInvalidData
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Contact'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete a contact and all its contact data
+      operationId: deleteContactInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: invalidData deleted
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/emailAddresses:
+    get:
+      tags:
+        - contacts
+      summary: Consult emails of a contact
+      description: Consult emails of a contact
+      operationId: findEntityContactEmails
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EmailAddressesCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add an email to the contact
+      description: Add an email to the contact
+      operationId: addEntityContactEmail
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: Email object to add
+          required: true
+          schema:
+            $ref: '#/definitions/EmailAddress'
+      responses:
+        201:
+          description: created
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/emailAddresses/{email}:
+    get:
+      tags:
+        - contacts
+      summary: Get an email of the contact
+      description: Get an email of the contact
+      operationId: getEntityContactEmail
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EmailAddressLink'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: email not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete an email of the contact
+      description: Delete an email of the contact
+      operationId: deleteEntityContactEmail
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to delete
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+      responses:
+        204:
+          description: email deleted
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: email not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/emailAddresses/{email}/invalidData:
+    get:
+      tags:
+        - contacts
+      summary: find the invalidData for a specific email address
+      description: Returns a single email address's invalidData
+      operationId: findEmailInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidDataCollection'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a new email invalidData
+      operationId: addEmailInvalidData
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: created
+        default:
+          description: any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/emailAddresses/{email}/invalidData/{invalidDataId}:
+    get:
+      tags:
+        - contacts
+      summary: get a specific email invalidData
+      description: Returns a single  invalidData
+      operationId: getEmailInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidData'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+        - contacts
+      summary: update an existing existing email invalidData
+      description: update an existing  email invalidData
+      operationId: updateEmailInvalidData
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Contact'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete a contact and all its contact data
+      operationId: deleteEmailInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: email
+          in: path
+          description: The email to retrieve
+          required: true
+          type: "string"
+          pattern: "^.*@.*\\..*$"
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: invalidData deleted
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/phoneNumbers:
+    get:
+      tags:
+        - contacts
+      summary: Consult phone numbers of a contact
+      description: Consult phone numbers of a contact
+      operationId: getEntityContactPhoneNumbers
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhoneNumbersCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: phone not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a phone number to the contact
+      description: Add a phone number to the contact
+      operationId: addEntityContactPhoneNumber
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: PhoneNumber object to add
+          required: true
+          schema:
+            $ref: '#/definitions/PhoneNumber'
+      responses:
+        201:
+          description: created
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}:
+    get:
+      tags:
+        - contacts
+      summary: Get an email of the contact
+      description: Get an email of the contact
+      operationId: getEntityContactPhoneNumber
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to retrieve
+          required: true
+          type: "string"
+          pattern: "^[0-9]*$"
+          maxLength: 4
+        - name: phoneNumber
+          in: path
+          description: The phone number to retrieve
+          required: true
+          type: "string"
+          pattern: "^[0-9]*$"
+          maxLength: 15
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhoneNumberLink'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: phone not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete a phone number of the contact
+      description: Delete a phone number of the contact
+      operationId: deleteEntityContactPhoneNumber
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+      responses:
+        204:
+          description: phone number deleted
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: phone number not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}/invalidData:
+    get:
+      tags:
+        - contacts
+      summary: find the invalidData for a specific phone number
+      description: Returns a single phone number's invalidData
+      operationId: findPhoneInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidDataCollection'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a new phone number invalidData
+      operationId: addPhoneInvalidData
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: created
+        default:
+          description: any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}/invalidData/{invalidDataId}:
+    get:
+      tags:
+        - contacts
+      summary: get a specific phone number invalidData
+      description: Returns a single  invalidData
+      operationId: getPhoneInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidData'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+        - contacts
+      summary: update an existing existing email invalidData
+      description: update an existing  phone invalidData
+      operationId: updatePhoneInvalidData
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Contact'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete an invalidData
+      operationId: deletePhoneInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: phoneNumberRole
+          in: path
+          description: The role of the phone number
+          required: true
+          type: "string"
+          enum: ["PHONE", "FAX"]
+        - name: countryCode
+          in: path
+          description: The international phone country code of the phone number to delete
+          required: true
+          maxLength: 4
+          type: "string"
+        - name: phoneNumber
+          in: path
+          description: The phone number to delete
+          required: true
+          type: "string"
+          maxLength: 15
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: invalidData deleted
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/links:
+    get:
+      tags:
+        - contacts
+      summary: Consult links of a contact
+      description: Consult links of a contact
+      operationId: getEntityContactLinks
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LinksCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Link not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a link to the contact
+      description: Add a link to the contact
+      operationId: addEntityContactLink
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: Link object to add
+          required: true
+          schema:
+            $ref: '#/definitions/Link'
+      responses:
+        201:
+          description: created
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/links/{linkId}:
+    get:
+      tags:
+        - contacts
+      summary: Get a link of the contact
+      description: Get a link of the contact
+      operationId: getEntityContactLink
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The link id to retrieve
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LinkLink'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Link not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete a link of the contact
+      description: Delete a link of the contact
+      operationId: deleteEntityContactLink
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: The identifier of the contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: link deleted
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Link not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: DatabasError, InternalServerError
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/links/{linkId}/invalidData:
+    get:
+      tags:
+        - contacts
+      summary: find the invalidData for a specific link
+      description: Returns a single link's invalidData
+      operationId: findLinkInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidDataCollection'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+        - contacts
+      summary: Add a new link invalidData
+      operationId: addLinkInvalidData
+      consumes:
+        - application/json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: created
+        default:
+          description: any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/links/{linkId}/invalidData/{invalidDataId}:
+    get:
+      tags:
+        - contacts
+      summary: get a specific link's invalidData
+      description: Returns a single  invalidData
+      operationId: getLinkInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InvalidData'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+        - contacts
+      summary: update an existing link's invalidData
+      description: update an existing  link invalidData
+      operationId: updateLinkInvalidData
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: invalidData object to add
+          required: true
+          schema:
+            $ref: '#/definitions/InvalidData'
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Contact'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+        - contacts
+      summary: Delete an invalidData
+      operationId: deleteLinkInvalidData
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact
+          required: true
+          type: integer
+          format: int64
+        - name: linkId
+          in: path
+          description: The id of the link to delete
+          required: true
+          type: integer
+          format: int64
+        - name: invalidDataId
+          in: path
+          description: ID of the invalidData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: invalidData deleted
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        default:
+          description: Any other status code
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/revisions:
+    get:
+      tags:
+        - contacts
+      summary: Find all the entities' contacts revisions matching all the given filters
+      description: Find all the entities' contacts related to matching all the given filters
+      operationId: findEntityRevisions
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: nssoNbr
+          in: query
+          description: the NOSS identifier of an employer
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.NossRegistrationNumberIterable
+        - name: cbeNbr
+          in: query
+          description: the CBE identifier of a company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.CompanyIdIterable
+        - name: foleenId
+          in: query
+          description: the Foleen identifier of a foreign company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: euid
+          in: query
+          description: the european identifier of a european company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: contextType
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: contextCode
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: pageSize
+          in: query
+          description: indicates the number of results to include in the response
+          default: 25
+          minimum: 1
+          required: false
+          type: integer
+        - name: embed
+          in: query
+          type: string
+          description: Allows to embed the full representation of the collection elements in the reply
+        - name: afterRevisionId
+          in: query
+          description: indicates the id of the revision after which the page content should start
+          required: false
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/RevisionsCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/revisions:
+    get:
+      tags:
+        - contacts
+      summary: Find the revisions of a contact by ContactId
+      description: Returns a single contact's revision history
+      operationId: findEntityRevisionsByContactId
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact's revision history to return
+          required: true
+          type: integer
+          format: int64
+        - name: pageSize
+          in: query
+          description: indicates the number of results to include in the response
+          default: 25
+          minimum: 1
+          required: false
+          type: integer
+        - name: embed
+          in: query
+          type: string
+          description: Allows to embed the full representation of the collection elements in the reply
+        - name: afterRevisionId
+          in: query
+          description: indicates the id of the revision after which the page content should start
+          required: false
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/RevisionsCollection'
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts/{contactId}/revisions/{revisionId}:
+    get:
+      tags:
+        - contacts
+      summary: Get a revision by its Id
+      description: Returns a single revision
+      operationId: getRevisionById
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: contactId
+          in: path
+          description: ID of contact's revision history to return
+          required: true
+          type: integer
+          format: int64
+        - name: revisionId
+          in: path
+          description: ID of contact's revision history to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Revision'
+        400:
+          description: Invalid ID supplied
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: Contact not found
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /health:
+    get:
+      tags:
+        - "Monitoring"
+      summary: "Check health of this REST API"
+      description: "This resource is only available to supervision users"
+      operationId: "healthCheck"
+      produces:
+        - "text/xml"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "Defines the which sanity checks must be ran"
+          required: false
+          type: "string"
+          default: "default"
+          enum:
+            - "ping"
+            - "default"
+            - "deep"
+      responses:
+        default:
+          description: "successful operation"
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:monitoring
+  /health/status:
+    get:
+      tags:
+        - "Monitoring"
+      summary: "HealthCheck Status"
+      description: "This resource returns an http status indicating if the service is up or down"
+      operationId: "healthStatus"
+      produces:
+        - application/problem+json
+      responses:
+        204:
+          description: The service is up and running
+        500:
+          description: The service is down
+          schema:
+            $ref: '#/definitions/Problem'
+  /doc:
+    get:
+      tags:
+        - "Documentation"
+      summary: "List links"
+      description: ""
+      operationId: "getDoc"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /doc/swagger.json:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the API documentation in JSON Swagger format"
+      operationId: "getJsonSwagger"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+  /doc/swagger.yaml:
+    get:
+      tags:
+        - "Documentation"
+      summary: "Returns the API documentation in YAML Swagger format"
+      operationId: "getSwagger"
+      produces:
+        - "application/yaml" # TODO yaml
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+security: []
+securityDefinitions:
+  contactData_auth:
+    type: oauth2
+    authorizationUrl: http://xxx/oauth/dialog
+    flow: implicit
+    scopes:
+      scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult: consult contact
+      scope:rsz-onss:gestion:company-data:ws-restcontactdata:update: manage contacts
+      scope:rsz-onss:gestion:company-data:ws-restcontactdata:monitoring: monitoring
+      scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult: self service company consult
+      scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate: self service company update
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  EntityIdentifier:
+    type: object
+    properties:
+      nssoNbr:
+        type: string
+        example: "163190083"
+        description: the NOSS identifier of an employer
+      cbeNbr:
+        type: string
+        description: the CBE identifier of a company
+      foleenId:
+        type: string
+        description: the Foleen identifier of a foreign company
+      euid:
+        type: string
+        description: the european identifier of a european company
+  Contact:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 841557
+        description: the unique identifier of the contact
+        readOnly: true
+      creationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      lastModificationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      entityId:
+        $ref: '#/definitions/EntityIdentifier'
+      name:
+        type: string
+        maxLength: 100
+        example: Mr Jean Dupont
+        description: the denomination of the contact (can be a person, a department, a team, ...)
+      jobTitle:
+        type: string
+        maxLength: 50
+        example: Resp. fin
+        description: the jobTitle of the person in the company
+      preferredLanguage:
+        type: string
+        example: fr
+        description: the prefered language of the contact
+        enum:
+          - fr
+          - nl
+          - de
+          - en
+      optOut:
+        type: boolean
+        description: flag indicating if the contact explicitely asked not to be contacted any more
+        default: false
+      contactType:
+        type: string
+        description: Contact type
+        enum:
+          - default
+          - entity
+      emailAddresses:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/EmailAddressReference'
+      phoneNumbers:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/PhoneNumberReference'
+      links:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/LinkReference'
+      categories:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/Category'
+      contexts:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/Context'
+      invalidData:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidDataReference'
+        readOnly: true
+      hasInvalidData:
+        type: boolean
+        description: indicates if a contact or any of its contact data has been flagged as invalid
+        readOnly: true
+    description: A contact defined in the ContactData system
+  ContactLink:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/Contact'
+      - type: object
+  ContactReference:
+    allOf:
+      - $ref: '#/definitions/HttpLink'
+      - $ref: '#/definitions/Contact'
+      - type: object
+  ExternalContact:
+    type: object
+    required:
+      - contactOrigin
+    properties:
+      contactOrigin:
+        type: string
+        example: CBE
+        description: the name of the external source where the contact was found
+      entityId:
+        $ref: '#/definitions/EntityIdentifier'
+      name:
+        type: string
+        example: Mr Jean Dupont
+        description: the denomination of the contact (can be a person, a department, a team, ...)
+      jobTitle:
+        type: string
+        example: Resp. fin
+        description: the jobTitle of the person in the company
+      emails:
+        type: array
+        items:
+          $ref: '#/definitions/EmailAddress'
+      phoneNumbers:
+        type: array
+        items:
+          $ref: '#/definitions/PhoneNumber'
+      preferredLanguage:
+        type: string
+        example: fr
+        description: the prefered language of the contact
+        enum:
+          - fr
+          - nl
+          - de
+          - en
+    description: A contact defined in another system external to ContactData (CBE, ...)
+  ContactsCollection:
+    type: object
+    required:
+      - consultedExternalSources
+      - externalContacts
+      - items
+      - total
+    properties:
+      consultedExternalSources:
+        type: array
+        description: the list of the technical identifier of the consulted external sources
+        items:
+          type: string
+      externalContacts:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalContact'
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/ContactReference'
+      total:
+        type: integer
+  EmailAddress:
+    type: object
+    required:
+      - email
+    properties:
+      creationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      lastModificationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      email:
+        type: string
+        maxLength: 255
+        pattern: "(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
+        example: test@smals.be
+        description: the email
+      invalidData:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidDataReference'
+        readOnly: true
+  EmailAddressLink:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/EmailAddress'
+      - type: object
+  EmailAddressReference:
+    allOf:
+      - $ref: '#/definitions/HttpLink'
+      - $ref: '#/definitions/EmailAddress'
+      - type: object
+  EmailAddressesCollection:
+    type: object
+    required:
+      - items
+      - total
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/EmailAddressReference'
+      total:
+        type: integer
+  PhoneNumber:
+    type: object
+    required:
+      - phoneNumber
+      - phoneNumberRole
+    properties:
+      creationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      lastModificationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      countryCode:
+        type: string
+        # According to ITU (International Telecommunication Union - www.itu.int) Country code can have 4 digits.
+        # Then you have 00 or + in front. Example: ANTIGUA AND BARBUDA +1268 / 001268. So 6 is the max length
+        maxLength: 4
+        example: "32"
+        pattern: "^[0-9]+$"
+        default: "32"
+        description: the international phone country code. 32 by default if not provided.
+      phoneNumber:
+        type: string
+        maxLength: 15
+        example: 021234567
+        pattern: "^[0-9]+$"
+        description: the phone number
+      phoneNumberRole:
+        type: string
+        enum: [PHONE,FAX]
+      invalidData:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidDataReference'
+        readOnly: true
+  PhoneNumberLink:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/PhoneNumber'
+      - type: object
+  PhoneNumberReference:
+    allOf:
+      - $ref: '#/definitions/HttpLink'
+      - $ref: '#/definitions/PhoneNumber'
+      - type: object
+  PhoneNumbersCollection:
+    type: object
+    required:
+      - items
+      - total
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/PhoneNumberReference'
+      total:
+        type: integer
+  Link:
+    type: object
+    required:
+      - label
+      - url
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 841557
+        description: the unique identifier of the link
+        readOnly: true
+      creationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      lastModificationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      label:
+        type: string
+        example: "Mon site"
+        description: Description de ce vers quoi pointe l'URL
+      url:
+        type: string
+        maxLength: 2000
+        example: "www.monsite.com"
+        description: Url référencée par le lien
+        pattern: "^(?:http(s)?:\\/\\/)?[-a-zA-Z0-9:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9():%_\\+.~#?&//=]*)$"
+      invalidData:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidDataReference'
+        readOnly: true
+  LinkLink:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/Link'
+      - type: object
+  LinkReference:
+    allOf:
+      - $ref: '#/definitions/HttpLink'
+      - $ref: '#/definitions/Link'
+      - type: object
+  LinksCollection:
+    type: object
+    required:
+      - items
+      - total
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/LinkReference'
+      total:
+        type: integer
+  Context:
+    type: object
+    properties:
+      contextType:
+        type: string
+        maxLength: 25
+        description: The context related to the contact (can be multiple)
+      contextCode:
+        type: string
+        maxLength: 25
+        description: The context related to the contact (can be multiple)
+  InvalidData:
+    type: object
+    required:
+      - reason
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 841557
+        description: the unique identifier of the invalid data
+        readOnly: true
+      reason:
+        type: string
+        maxLength: 500
+        description: a free text describing why the data has been reported as invalid
+      dataType:
+        type: string
+        enum:
+          - preferredLanguage
+          - name
+          - jobTitle
+          - emailAddress
+          - phoneNumber
+          - link
+      isEditable:
+        type: boolean
+        description: indicates if the user is allowed to modify this invalidity notification
+        readOnly: true
+      creationDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modificationDate:
+        type: string
+        format: date-time
+        readOnly: true
+  InvalidDataLink:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/InvalidData'
+      - type: object
+  InvalidDataReference:
+    allOf:
+      - $ref: '#/definitions/HttpLink'
+      - $ref: '#/definitions/InvalidData'
+      - type: object
+  InvalidDataCollection:
+    type: object
+    required:
+      - items
+      - total
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidDataReference'
+      total:
+        type: integer
+  RevisionsCollection:
+    type: object
+    required:
+      - items
+      - total
+      - pageSize
+      - first
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/RevisionReference'
+      total:
+        type: integer
+      first:
+        type: string
+        format: uri
+      next:
+        type: string
+        format: uri
+      pageSize:
+        type: integer
+      embedded:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Revision'
+  RevisionReference:
+    allOf:
+      - $ref: '#/definitions/SelfLink'
+      - $ref: '#/definitions/RevisionInfo'
+      - type: object
+  RevisionData:
+    type: object
+    properties:
+      contactData:
+        $ref: '#/definitions/Contact'
+  RevisionInfo:
+    type: object
+    properties:
+      revisionId:
+        type: integer
+        format: int64
+        example: 841557
+        description: the unique identifier of the revision
+      contactId:
+        type: integer
+        format: int64
+        example: 841557
+        description: the unique identifier of the contact
+      actor:
+        type: string
+      date:
+        type: string
+        format: date-time
+      self:
+        type: string
+        format: uri
+      type:
+        type: "string"
+        enum:
+          - "edit"
+          - "add"
+          - "delete"
+  Revision:
+    allOf:
+      - $ref: '#/definitions/RevisionInfo'
+      - $ref: '#/definitions/RevisionData'
+      - type: object
+  Problem:
+    type: object
+    required:
+      - instance
+      - status
+      - code
+      - title
+    properties:
+      instance:
+        type: string
+        format: uuid
+        example: d9e35127-e9b1-4201-a211-2b52e52508df
+        description: unique identifier of the error
+      type:
+        type: string
+        format: uri
+        description: An URI reference that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type (e.g. using HTML).
+        default: about:blank
+      title:
+        type: string
+        example: "Bad Request"
+        description: A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized)
+      status:
+        type: integer
+        format: int32
+        example: 503
+        description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        minimum: 400
+        maximum: 600
+        exclusiveMaximum: true
+      code:
+        type: string
+        example: CONTACTDATA_ERR_BUS_10
+        description: The error code corresponding to the encountered exception
+      detail:
+        type: string
+        example: No employer with company id 0206731645
+        description: A human-readable explanation specific to this occurrence of the problem
+      stackTrace:
+        type: string
+      invalidParams:
+        type: array
+        items:
+          $ref: '#/definitions/InvalidParameter'
+    description: A Problem Details object (RFC 7807)
+  InvalidParameter:
+    type: object
+    properties:
+      in:
+        type: string
+        example: path
+      name:
+        type: string
+        example: cbeNbr
+      reason:
+        type: string
+        example: should be numeric
+      value:
+        type: string
+        example: abc
+    description: an invalid parameter in the request
+  HttpLink:
+    type: object
+    properties:
+      href:
+        type: string
+        format: uri
+        example: http://rest.socialsecurity.be/contactData/v1/contacts/......
+        description: Any absolute URI that is using http or https protocol
+        readOnly: true
+    description: A base type of objects representing links to resources.
+  SelfLink:
+    type: object
+    properties:
+      self:
+        type: string
+        format: uri
+        example: http://rest.socialsecurity.be/contactData/v1/contacts/......
+        description: Absolute URI (http or https) to the the resource's own location.
+        readOnly: true
+    description: A base type representing a link to the resource's own location within its representation
+  Category:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: string
+        maxLength: 25
+      name:
+        $ref: '#/definitions/LocalizedString'
+  CategoriesCollection:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Category'
+      total:
+        type: integer
+  UserInfo:
+    type: object
+    properties:
+      entityDenomination:
+        type: string
+        maxLength: 50
+      entityQuality:
+        type: string
+        maxLength: 25
+      cbeNumber:
+        type: string
+        maxLength: 25
+      nossNumber:
+        type: string
+        maxLength: 25
+      pplNumber:
+        type: string
+        maxLength: 25
+  LocalizedString:
+    description: A description specified in multiple languages
+    type: object
+    properties:
+      #nl, fr,de , de are predefined, but additional languages can be added
+      nl:
+        type: string
+      fr:
+        type: string
+      de:
+        type: string
+externalDocs:
+  description: Find out more about ContactData
+  url: https://confluence.smals.be/display/CONTACTBEH/ContactBeheer

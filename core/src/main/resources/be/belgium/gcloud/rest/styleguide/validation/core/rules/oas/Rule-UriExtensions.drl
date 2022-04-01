@@ -1,0 +1,24 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function String patternUriExt(){
+    return ".+\\..+$";
+}
+function void violationUriExt(OpenApiViolationAggregator oas, String path){
+    if (! path.equalsIgnoreCase("/doc/swagger.json") && ! path.equalsIgnoreCase("/doc/swagger.yaml"))
+        oas.addViolation("uriExtensions",
+                         "The URI SHOULD NOT contain a file extension (A notable exception to this rule is the swagger/OpenAPI file). \t"+ path,
+                         oas.getLineNumber(path));
+}
+
+rule "Uri Extensions V3"
+   	when
+        $api: OpenAPI()
+    	$path: String() from ApiFunctions.getPathMatch($api, patternUriExt())
+    then
+    	violationUriExt(oas, $path);
+end

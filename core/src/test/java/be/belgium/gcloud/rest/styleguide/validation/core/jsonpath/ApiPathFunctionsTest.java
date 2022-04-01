@@ -1,0 +1,94 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.jsonpath;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.Filter;
+import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.jayway.jsonpath.Criteria.where;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class ApiPathFunctionsTest {
+    static String jsonString;
+
+    @BeforeAll
+    static void init() throws IOException {
+        var file = new File(ApiPathFunctionsTest.class.getResource("../../rules/swagger_bad.yaml").getFile());
+        var oas = new OpenApiViolationAggregator();
+        ApiFunctions.buildOpenApiSpecification(file, oas);
+        jsonString = getJsonString(oas);
+    }
+    private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
+        var yamlReader = new ObjectMapper(new YAMLFactory());
+        var obj = yamlReader.readValue(oas.getSrc().stream().collect(Collectors.joining("\n")), Object.class);
+
+        var jsonWriter = new ObjectMapper();
+        return jsonWriter.writeValueAsString(obj);
+    }
+
+
+    @Test
+    void read() {
+        assertNotNull(jsonString);
+    }
+
+    @Test
+    void testRead() {
+        assertNotNull(jsonString);
+    }
+
+    @Test
+    void testPath() {
+        assertNotNull(jsonString);
+        var producesTpl = "$.paths[*].%s[?]['operationId','produces']";
+        var document = Configuration.defaultConfiguration().jsonProvider().parse(jsonString);
+
+        var produceFilter = Filter.filter(
+                where("produces").noneof(ApiPathFunctions.PRODUCES_MEDIATYPE));
+        JSONArray arr = JsonPath.read(document, String.format(producesTpl, "get"), produceFilter);
+        System.out.println(arr.toJSONString());
+
+    }
+
+    @Test
+    void operationDontHaveProduce() {
+        assertNotNull(jsonString);
+        List<OperationData> list = ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.GET, ApiPathFunctions.PRODUCES_MEDIATYPE);
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void operationDontHaveConsume() {
+        assertNotNull(jsonString);
+        List<OperationData> list = ApiPathFunctions.operationDataDontHaveConsume(jsonString, OperationEnum.POST, ApiPathFunctions.CONSUMES_MEDIATYPE);
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void testOperationDontHaveProduce() {
+        assertNotNull(jsonString);
+        List<Object> list = ApiPathFunctions.operationIdDontHaveProduce(jsonString, OperationEnum.GET);
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void testOperationDontHaveConsume() {
+        assertNotNull(jsonString);
+        List<Object> list = ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.POST);
+        assertFalse(list.isEmpty());
+    }
+}
