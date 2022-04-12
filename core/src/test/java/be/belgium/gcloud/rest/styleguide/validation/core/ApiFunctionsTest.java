@@ -52,7 +52,6 @@ class ApiFunctionsTest {
         Map<String, List<String>> stringListMap = ApiFunctions.getDefinitionPropertiesNoMatch(getOpenApi(),  "^[a-z]+([A-Z]?[a-z]+)*$");
         assertNotNull(stringListMap);
         assertFalse(stringListMap.isEmpty());
-        stringListMap.keySet().forEach(System.out::println);
     }
 
     @Test

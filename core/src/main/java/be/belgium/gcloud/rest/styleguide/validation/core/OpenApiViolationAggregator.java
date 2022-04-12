@@ -19,6 +19,9 @@ public class OpenApiViolationAggregator {
     private final List<Violation> violations = new ArrayList<>();
     protected List<String> src;
 
+    private int ruleNumber;
+    private float time;
+
     public void addViolation(Violation violation){
         this.violations.add(violation);
     }

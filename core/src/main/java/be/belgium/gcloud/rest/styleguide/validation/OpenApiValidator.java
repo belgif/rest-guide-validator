@@ -12,7 +12,6 @@ import org.kie.api.runtime.KieContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,9 +23,13 @@ public class OpenApiValidator {
 
     public static void callRuleOAS(OpenApiViolationAggregator oas, OpenAPI openApi) throws JsonProcessingException {
         var kSession = kContainer.newStatelessKieSession();
+        oas.setRuleNumber(kSession.getKieBase().getKiePackages().stream().mapToInt(pack-> pack.getRules().size()).sum());
+
         kSession.setGlobal("oas", oas);
         kSession.setGlobal("jsonString", getJsonString(oas));
+        long start = System.currentTimeMillis();
         kSession.execute(openApi);
+        oas.setTime((System.currentTimeMillis()-start)/1000f);
     }
 
     private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
@@ -36,29 +39,16 @@ public class OpenApiValidator {
     }
 
     public static boolean isOasValid(File file) throws IOException {
+        return isOasValid(file, null);
+    }
+
+    public static boolean isOasValid(File file, OutputProcessor outputProcessor) throws IOException {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
         callRuleOAS(openApiViolationAggregator, openApi);
-        printViolation(openApiViolationAggregator);
+        if(outputProcessor != null)
+            outputProcessor.process(openApiViolationAggregator);
         return openApiViolationAggregator.getViolations().isEmpty();
     }
 
-    private static void printViolation(OpenApiViolationAggregator apiDetail){
-        Collections.sort(apiDetail.getViolations());
-        if( ! apiDetail.getViolations().isEmpty()){
-            log.debug("\n {} OpenApi Violations for: "+apiDetail.getOpenApiFile().getAbsolutePath(), apiDetail.getViolations().size());
-        }
-        apiDetail.getViolations().forEach(v->{
-            switch (v.type){
-                case MANDATORY:
-                    log.error(v.toString()); break;
-                case RECOMMENDED:
-                    log.warn(v.toString()); break;
-                case STYLE:
-                    log.debug(v.toString()); break;
-                default:
-                    log.info(v.toString());
-            }
-        });
-    }
 }

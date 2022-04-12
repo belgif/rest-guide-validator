@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OpenApiMojoTest {
     private static final String BAS_DIR = "src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/";

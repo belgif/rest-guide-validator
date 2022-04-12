@@ -37,7 +37,7 @@ public abstract class AbstractRuleTest {
         var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).collect(Collectors.toSet());
         assertTrue( (getErrorCount() == 1 && violations.size() > 0) | (getErrorCount() > 1 && violations.size() == getErrorCount() ) ,
                 getMessage(violations));
-        violations.forEach(v-> log.warn(v.toString()));
+        //violations.forEach(v-> log.warn(v.toString()));
     }
 
     protected String getMessage(Set<Violation> violations){

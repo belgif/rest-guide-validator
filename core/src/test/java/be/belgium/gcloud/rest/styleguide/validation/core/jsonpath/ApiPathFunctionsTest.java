@@ -60,7 +60,8 @@ class ApiPathFunctionsTest {
         var produceFilter = Filter.filter(
                 where("produces").noneof(ApiPathFunctions.PRODUCES_MEDIATYPE));
         JSONArray arr = JsonPath.read(document, String.format(producesTpl, "get"), produceFilter);
-        System.out.println(arr.toJSONString());
+        assertNotNull(arr);
+        assertFalse(arr.isEmpty());
 
     }
 

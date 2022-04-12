@@ -20,6 +20,7 @@
 
     <properties>
         <maven.version>3.8.4</maven.version>
+        <jaxb.api.version>3.0.0</jaxb.api.version>
     </properties>
 
     <dependencies>
@@ -44,6 +45,21 @@
             <version>3.6.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- jaxb -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.api.version}</version>
+        </dependency>
+        <!-- JAXB API only -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jaxb.api.version}</version>
+        </dependency>
+
+
 
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
