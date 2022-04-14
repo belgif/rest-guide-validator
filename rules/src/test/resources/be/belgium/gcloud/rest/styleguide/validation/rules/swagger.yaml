@@ -1046,7 +1046,7 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
       x-oauth2-required-scopes: any
-  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}:
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}-{countryCode}-{phoneNumber}:
     get:
       tags:
         - contacts
@@ -1175,7 +1175,7 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
       x-oauth2-required-scopes: any
-  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}/invalidData:
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}-{countryCode}-{phoneNumber}/invalidData:
     get:
       tags:
         - contacts
@@ -1274,7 +1274,7 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
       x-oauth2-required-scopes: any
-  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}/{countryCode}/{phoneNumber}/invalidData/{invalidDataId}:
+  /entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}-{countryCode}-{phoneNumber}/invalidData/{invalidDataId}:
     get:
       tags:
         - contacts

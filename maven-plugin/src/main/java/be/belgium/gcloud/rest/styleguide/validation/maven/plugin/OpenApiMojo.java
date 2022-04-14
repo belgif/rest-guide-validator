@@ -18,7 +18,7 @@ public class OpenApiMojo extends AbstractMojo {
 
     static final String FAILURE_MESSAGE = "At least 1 error in validation !";
 
-    @Parameter(property = "api-validator.files")
+    @Parameter(property = "api-validator.files", required = true)
     List<String> files;
 
     @Parameter(readonly = true, defaultValue = "${project}")
@@ -26,6 +26,8 @@ public class OpenApiMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if(files == null || files.isEmpty())
+            throw new IllegalArgumentException("api-validator need at least one file! Add the 'api-validator.files' in the plugin configuration.");
         String base;
         if(mavenProject != null)
             base = this.mavenProject.getBasedir().getAbsolutePath() + File.separator;

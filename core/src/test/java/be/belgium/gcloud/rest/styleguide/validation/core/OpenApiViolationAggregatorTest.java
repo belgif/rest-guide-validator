@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class OpenApiViolationAggregatorTest {
 
-    private OpenApiViolationAggregator getOAS() throws IOException {
+    OpenApiViolationAggregator getOAS() throws IOException {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
-        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
+        var file = new File(OpenApiViolationAggregatorTest.class.getResource("../rules/swagger_bad.yaml").getFile());
         ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
         return openApiViolationAggregator;
     }

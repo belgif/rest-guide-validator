@@ -21,13 +21,13 @@ public class OpenApiValidator {
 
     private OpenApiValidator(){}
 
-    public static void callRuleOAS(OpenApiViolationAggregator oas, OpenAPI openApi) throws JsonProcessingException {
+    static void callRuleOAS(OpenApiViolationAggregator oas, OpenAPI openApi) throws JsonProcessingException {
         var kSession = kContainer.newStatelessKieSession();
         oas.setRuleNumber(kSession.getKieBase().getKiePackages().stream().mapToInt(pack-> pack.getRules().size()).sum());
 
         kSession.setGlobal("oas", oas);
         kSession.setGlobal("jsonString", getJsonString(oas));
-        long start = System.currentTimeMillis();
+        var start = System.currentTimeMillis();
         kSession.execute(openApi);
         oas.setTime((System.currentTimeMillis()-start)/1000f);
     }
@@ -45,10 +45,11 @@ public class OpenApiValidator {
     public static boolean isOasValid(File file, OutputProcessor outputProcessor) throws IOException {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
+
         callRuleOAS(openApiViolationAggregator, openApi);
+
         if(outputProcessor != null)
             outputProcessor.process(openApiViolationAggregator);
         return openApiViolationAggregator.getViolations().isEmpty();
     }
-
 }

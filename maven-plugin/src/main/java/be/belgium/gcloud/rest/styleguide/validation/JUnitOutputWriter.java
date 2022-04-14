@@ -1,6 +1,5 @@
-package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
+package be.belgium.gcloud.rest.styleguide.validation;
 
-import be.belgium.gcloud.rest.styleguide.validation.OutputProcessor;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Failure;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Testcase;
@@ -25,14 +24,13 @@ public class JUnitOutputWriter implements OutputProcessor {
 
     public void write(Testsuite testsuite){
         if (testsuite == null)
-            throw new IllegalArgumentException("testsuites cannot be null");
+            throw new IllegalArgumentException("testsuite cannot be null");
         if(outputFile == null || ! outputFile.canWrite())
             throw new IllegalArgumentException("outputFile cannot be null and must be writable");
         try {
             Marshaller mar= JAXBContext.newInstance(Testsuite.class).createMarshaller();
             mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             mar.marshal(testsuite, outputFile);
-            //mar.marshal(testsuite, System.out);
         } catch (JAXBException e) {
             log.error(e.getMessage(), e);
         }
@@ -41,8 +39,8 @@ public class JUnitOutputWriter implements OutputProcessor {
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
         Testsuite testsuite = Testsuite.builder()
-                .name("be.belgium.gcloud.rest.styleguide.validation.maven.plugin.OpenApi")
-                .pkg("be.belgium.gcloud.rest.styleguide.validation.maven.plugin")
+                .name(this.getClass().getCanonicalName())
+                .pkg(this.getClass().getPackageName())
                 .timestamp(LocalDateTime.now().toString())
                 .tests(violationAggregator.getRuleNumber())
                 .time(violationAggregator.getTime())

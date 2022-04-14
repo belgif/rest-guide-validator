@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
+import be.belgium.gcloud.rest.styleguide.validation.JUnitOutputWriter;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Error;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Failure;
