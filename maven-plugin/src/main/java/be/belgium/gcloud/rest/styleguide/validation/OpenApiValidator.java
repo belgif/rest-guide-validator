@@ -10,6 +10,8 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -21,7 +23,7 @@ public class OpenApiValidator {
 
     private OpenApiValidator(){}
 
-    static void callRuleOAS(OpenApiViolationAggregator oas, OpenAPI openApi) throws JsonProcessingException {
+    static void callRuleOAS(@NotNull OpenApiViolationAggregator oas, @NotNull OpenAPI openApi) throws JsonProcessingException {
         var kSession = kContainer.newStatelessKieSession();
         oas.setRuleNumber(kSession.getKieBase().getKiePackages().stream().mapToInt(pack-> pack.getRules().size()).sum());
 
@@ -38,15 +40,20 @@ public class OpenApiValidator {
         return new ObjectMapper().writeValueAsString(obj);
     }
 
-    public static boolean isOasValid(File file) throws IOException {
+    public static boolean isOasValid(@NotNull File file) {
         return isOasValid(file, null);
     }
 
-    public static boolean isOasValid(File file, OutputProcessor outputProcessor) throws IOException {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
+    public static boolean isOasValid(@NotNull File file, @Nullable OutputProcessor outputProcessor) {
+        OpenApiViolationAggregator openApiViolationAggregator = null;
+        try {
+            openApiViolationAggregator = new OpenApiViolationAggregator();
+            var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
 
-        callRuleOAS(openApiViolationAggregator, openApi);
+            callRuleOAS(openApiViolationAggregator, openApi);
+        } catch (IOException e) {
+            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
+        }
 
         if(outputProcessor != null)
             outputProcessor.process(openApiViolationAggregator);

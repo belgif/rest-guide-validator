@@ -14,7 +14,14 @@ class OpenApiMojoTest {
     @Test
     void execute() {
         var openApiMojo = new OpenApiMojo();
-        openApiMojo.files = List.of(new String[]{BAS_DIR+ "swagger_bad.yaml", BAS_DIR+ "swagger4.yaml"});
+        openApiMojo.files = List.of(new String[]{BAS_DIR + "swagger_bad.yaml", BAS_DIR + "swagger4.yaml"});
+        var exception = assertThrows(MojoFailureException.class, () -> openApiMojo.execute());
+        assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
+    }
+    @Test
+    void executeNoFile() {
+        var openApiMojo = new OpenApiMojo();
+        openApiMojo.files = List.of(new String[]{ BAS_DIR + "notExist.yaml"});
         var exception = assertThrows(MojoFailureException.class, () -> openApiMojo.execute());
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
     }

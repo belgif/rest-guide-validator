@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
-import be.belgium.gcloud.rest.styleguide.validation.OpenApiValidator;
+import be.belgium.gcloud.rest.styleguide.validation.*;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -12,6 +12,8 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Mojo(name = "api-validator", defaultPhase = LifecyclePhase.COMPILE)
 public class OpenApiMojo extends AbstractMojo {
@@ -21,30 +23,54 @@ public class OpenApiMojo extends AbstractMojo {
     @Parameter(property = "api-validator.files", required = true)
     List<String> files;
 
+    @Parameter(property = "api-validator.outputType", required = false)
+    OutputType outputType = OutputType.CONSOLE;
+
+    @Parameter(property = "api-validator.outputDir", required = false, defaultValue = "target")
+    String outputDir = "target";
+
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject mavenProject;
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    private String base;
+    private OutputProcessor outputProcessor;
+
+    private void init(){
         if(files == null || files.isEmpty())
             throw new IllegalArgumentException("api-validator need at least one file! Add the 'api-validator.files' in the plugin configuration.");
-        String base;
+
         if(mavenProject != null)
             base = this.mavenProject.getBasedir().getAbsolutePath() + File.separator;
         else
             base = System.getProperty("user.dir") + File.separator;
         getLog().debug("Working directory: "+base);
 
-        var isValid = true;
-        for (String filename: files){
-            var file = new File(base+filename);
-            try {
-                isValid &= OpenApiValidator.isOasValid(file);
-            }catch (IOException ex){
-                throw new MojoExecutionException(ex);
-            }
+        getLog().debug("Using outputProcessor: "+outputType.name());
+        switch (outputType){
+            case NONE: outputProcessor = null; break;
+            case JUNIT: outputProcessor = new JUnitOutputProcessor();break;
+            case LOG4J: outputProcessor = new Log4JOutputProcessor();break;
+            default: outputProcessor = new ConsoleOutputProcessor();
         }
-        if ( ! isValid)
+    }
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        init();
+
+        AtomicBoolean isValid = new AtomicBoolean(true);
+
+        files.stream()
+                .map(filename -> new File(base+filename))
+                .forEach(file->{
+                    if(outputType == OutputType.JUNIT)
+                        ((JUnitOutputProcessor) outputProcessor).setOutputFile(
+                                new File(outputDir, "TEST-" + file.getName() + ".xml"));
+
+                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessor) && isValid.get());
+                });
+
+        if (! isValid.get())
             throw new MojoFailureException(FAILURE_MESSAGE);
     }
 }

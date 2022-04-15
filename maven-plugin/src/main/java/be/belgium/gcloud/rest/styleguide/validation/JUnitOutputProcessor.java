@@ -7,9 +7,7 @@ import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Testsuite;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -17,15 +15,16 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Slf4j
-public class JUnitOutputWriter implements OutputProcessor {
-    private final File outputFile;
+public class JUnitOutputProcessor implements OutputProcessor {
+    private File outputFile;
 
     public void write(Testsuite testsuite){
         if (testsuite == null)
             throw new IllegalArgumentException("testsuite cannot be null");
-        if(outputFile == null || ! outputFile.canWrite())
+        if(outputFile == null )
             throw new IllegalArgumentException("outputFile cannot be null and must be writable");
         try {
             Marshaller mar= JAXBContext.newInstance(Testsuite.class).createMarshaller();

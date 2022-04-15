@@ -9,18 +9,18 @@ public class ConsoleOutputProcessor implements OutputProcessor{
     public void process(OpenApiViolationAggregator violationAggregator) {
         Collections.sort(violationAggregator.getViolations());
         if( ! violationAggregator.getViolations().isEmpty()){
-            System.out.printf("\n %d OpenApi Violations for: %s ", violationAggregator.getViolations().size(), violationAggregator.getOpenApiFile().getAbsolutePath());
+            System.out.printf("\n %d OpenApi Violations for: %s ", violationAggregator.getViolations().size(), violationAggregator.getOpenApiFile().getAbsolutePath()); //NOSONAR
         }
         violationAggregator.getViolations().forEach(v->{
             switch (v.type){
                 case MANDATORY:
-                    System.err.println(v.toString()); break;
+                    System.err.println(v.toString()); break; //NOSONAR
                 case RECOMMENDED:
-                    System.out.println(v.toString()); break;
+                    System.out.println(v.toString()); break; //NOSONAR
                 case STYLE:
-                    System.out.println(v.toString()); break;
+                    System.out.println(v.toString()); break; //NOSONAR
                 default:
-                    System.out.println(v.toString());
+                    System.out.println(v.toString()); //NOSONAR
             }
         });
     }

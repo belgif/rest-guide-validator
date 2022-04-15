@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
-import be.belgium.gcloud.rest.styleguide.validation.JUnitOutputWriter;
+import be.belgium.gcloud.rest.styleguide.validation.JUnitOutputProcessor;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Error;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Failure;
@@ -17,7 +17,7 @@ class JUnitOutputWriterTest {
     @Test
     void writeEmpty() {
         try {
-            new JUnitOutputWriter(File.createTempFile("tmp", "")).write(new Testsuite());
+            new JUnitOutputProcessor(File.createTempFile("tmp", "")).write(new Testsuite());
         } catch (IOException e) {
             fail(e);
         }
@@ -53,7 +53,7 @@ class JUnitOutputWriterTest {
         testsuite.addTestcase(testcase);
 
         try {
-            new JUnitOutputWriter(File.createTempFile("tmp", "")).write(testsuite);
+            new JUnitOutputProcessor(File.createTempFile("tmp", "")).write(testsuite);
         } catch (IOException e) {
             fail(e);
         }
@@ -62,7 +62,7 @@ class JUnitOutputWriterTest {
     @Test
     void process() {
         try {
-            new JUnitOutputWriter(File.createTempFile("tmp", "")).process(getViolationAggregator());
+            new JUnitOutputProcessor(File.createTempFile("tmp", "")).process(getViolationAggregator());
         } catch (IOException e) {
             fail(e);
         }
