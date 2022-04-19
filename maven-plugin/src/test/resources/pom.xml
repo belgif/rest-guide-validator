@@ -14,9 +14,16 @@
                 <groupId>be.belgium.gcloud.rest</groupId>
                 <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>api-validator</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <files>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swaggerOk.yaml</file>
+                        <file>be/belgium/gcloud/rest/styleguide/validation/rules/swaggerOk.yaml</file>
                     </files>
                 </configuration>
             </plugin>
