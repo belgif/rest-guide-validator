@@ -16,6 +16,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+/**
+ * Validate an open-api file using Drools and rules from the classpath.
+ */
 @Slf4j
 public class OpenApiValidator {
     private static KieServices kieServices = KieServices.Factory.get();
@@ -40,10 +43,21 @@ public class OpenApiValidator {
         return new ObjectMapper().writeValueAsString(obj);
     }
 
+    /**
+     * Validate the file without using a outputProcessor. Return true if the file is a valid open-api file.
+     * @param file
+     * @return
+     */
     public static boolean isOasValid(@NotNull File file) {
         return isOasValid(file, null);
     }
 
+    /**
+     * Validate the file and use the outputProcessor. Return true if the file is a valid open-api file.
+     * @param file
+     * @param outputProcessor
+     * @return
+     */
     public static boolean isOasValid(@NotNull File file, @Nullable OutputProcessor outputProcessor) {
         OpenApiViolationAggregator openApiViolationAggregator = null;
         try {

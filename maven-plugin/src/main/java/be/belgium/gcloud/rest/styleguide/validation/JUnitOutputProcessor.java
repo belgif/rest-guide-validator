@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.time.LocalDateTime;
 
+/**
+ * Output processor to write a junit xml test result.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,6 +24,10 @@ import java.time.LocalDateTime;
 public class JUnitOutputProcessor implements OutputProcessor {
     private File outputFile;
 
+    /**
+     * Write the testsuite to an XML file.
+     * @param testsuite
+     */
     public void write(Testsuite testsuite){
         if (testsuite == null)
             throw new IllegalArgumentException("testsuite cannot be null");
@@ -35,6 +42,10 @@ public class JUnitOutputProcessor implements OutputProcessor {
         }
     }
 
+    /**
+     * Write a XML JUnit file using the violationAggregator.
+     * @param violationAggregator
+     */
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
         Testsuite testsuite = Testsuite.builder()

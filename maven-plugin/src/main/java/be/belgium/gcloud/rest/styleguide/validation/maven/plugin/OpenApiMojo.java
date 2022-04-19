@@ -15,6 +15,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Maven plugin that check if a Swagger API or an open API is conformed the G-Cloud standards.
+ * The plugin use the following parameters:
+ *  - api-validator.files: a list of files to validate
+ *  - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
+ *  - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
+ *  - ${project} root directory for api-validator.files
+ */
 @Mojo(name = "api-validator", defaultPhase = LifecyclePhase.COMPILE)
 public class OpenApiMojo extends AbstractMojo {
 
@@ -54,6 +62,11 @@ public class OpenApiMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * For each file in @files validate using OpenApiValidator.
+     * @throws MojoExecutionException when file cannot be read or parse.
+     * @throws MojoFailureException when file is not a valid open-api.
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         init();

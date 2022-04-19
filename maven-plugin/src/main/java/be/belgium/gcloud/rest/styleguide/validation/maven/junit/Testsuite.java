@@ -13,6 +13,9 @@ import java.util.List;
 @Builder
 @ToString
 
+/**
+ * Generated class to write a XML output file (junit)
+ */
 @XmlRootElement(name = "testsuite")
 public class Testsuite {
     private String id;

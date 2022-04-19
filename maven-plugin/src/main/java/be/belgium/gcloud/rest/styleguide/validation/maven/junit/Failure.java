@@ -6,6 +6,9 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
 import lombok.*;
 
+/**
+ * Generated class to write a XML output file (junit)
+ */
 @Getter
 @Setter
 @NoArgsConstructor
