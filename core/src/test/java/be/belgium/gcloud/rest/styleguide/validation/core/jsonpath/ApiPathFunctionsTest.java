@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.jayway.jsonpath.Criteria.where;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ApiPathFunctionsTest {
     static String jsonString;
@@ -91,5 +90,19 @@ class ApiPathFunctionsTest {
         assertNotNull(jsonString);
         List<Object> list = ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.POST);
         assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void isSwaggerV2() throws IOException {
+        assertNotNull(jsonString);
+        assertTrue(ApiPathFunctions.isSwaggerV2(jsonString));
+
+        var file = new File(ApiPathFunctionsTest.class.getResource("../../rules/petstore.json").getFile());
+        var oas = new OpenApiViolationAggregator();
+        ApiFunctions.buildOpenApiSpecification(file, oas);
+        var jsonStringV3 = getJsonString(oas);
+
+        assertNotNull(jsonStringV3);
+        assertFalse(ApiPathFunctions.isSwaggerV2(jsonStringV3));
     }
 }
