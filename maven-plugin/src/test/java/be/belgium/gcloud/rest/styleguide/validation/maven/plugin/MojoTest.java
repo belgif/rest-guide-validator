@@ -2,11 +2,7 @@ package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MojoTest extends AbstractMojoTestCase{
     protected void setUp()throws Exception{

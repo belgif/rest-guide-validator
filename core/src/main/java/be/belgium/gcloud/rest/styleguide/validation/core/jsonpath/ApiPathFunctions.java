@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 
 import static com.jayway.jsonpath.Criteria.where;
 
+/**
+ * Json path function tool.
+ */
 public class ApiPathFunctions {
     public static final String DONT_HAVE_TPL ="$.paths[*].%s[?].operationId";
     public static final String PRODUCES_TPL = "$.paths[*].%s[?]['operationId','produces']";
@@ -24,13 +27,13 @@ public class ApiPathFunctions {
 
     public static final String SWAGGER_JPATH = "$.swagger";
 
-    //used in rules
+    // used in rules
     public static final String[] PRODUCES_MEDIATYPE = new String[]{"application/json", "application/problem+json"};
     public static final String[] CONSUMES_MEDIATYPE = new String[]{"application/json"};
 
     private ApiPathFunctions(){}
 
-    public static boolean isSwaggerV2(String jsonString){
+    static boolean isSwaggerV2(String jsonString){
         try {
             String swagger = JsonPath.read(jsonString, SWAGGER_JPATH);
             return swagger.startsWith("2.") ;
@@ -39,6 +42,12 @@ public class ApiPathFunctions {
         }
     }
 
+    /**
+     * Get all path.operationId for the operation that not have a 'produces' field.
+     * @param jsonString a valid swagger 2.x json string
+     * @param operation
+     * @return a list of operationId (String)
+     */
     public static List<Object> operationIdDontHaveProduce(String jsonString, OperationEnum operation){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
@@ -48,6 +57,13 @@ public class ApiPathFunctions {
         JSONArray arr = JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), producesFilter);
         return arr.stream().collect(Collectors.toList());
     }
+
+    /**
+     * Get all path.operationId for the operation that not have a 'consumes' field.
+     * @param jsonString a valid swagger 2.x json string
+     * @param operation
+     * @return a list of operationId (String)
+     */
     public static List<Object> operationIdDontHaveConsume(String jsonString, OperationEnum operation){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
@@ -58,6 +74,13 @@ public class ApiPathFunctions {
         return arr.stream().collect(Collectors.toList());
     }
 
+    /**
+     * Get all path.operationId for the operation that not have a 'produces' field value in the mediaType array.
+     * @param jsonString a valid swagger 2.x json string
+     * @param operation
+     * @param mediaType
+     * @return a list of operationId (String)
+     */
     public static List<OperationData> operationDataDontHaveProduce(String jsonString, OperationEnum operation, String[] mediaType){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
@@ -76,6 +99,14 @@ public class ApiPathFunctions {
                     .build();
         }).collect(Collectors.toList());
     }
+
+    /**
+     * Get all path.operationId for the operation that not have a 'consumes' field value in the mediaType array.
+     * @param jsonString a valid swagger 2.x json string
+     * @param operation
+     * @param mediaType
+     * @return a list of operationId (String)
+     */
     public static List<OperationData> operationDataDontHaveConsume(String jsonString, OperationEnum operation, String[] mediaType){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();

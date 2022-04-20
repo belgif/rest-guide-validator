@@ -10,10 +10,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Maven plugin that check if a Swagger API or an open API is conformed the G-Cloud standards.
