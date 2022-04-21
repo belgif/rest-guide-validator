@@ -10,9 +10,9 @@ public class Log4JOutputProcessor implements OutputProcessor{
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
         Collections.sort(violationAggregator.getViolations());
-        if( ! violationAggregator.getViolations().isEmpty()){
-            log.debug("\n {} OpenApi Violations for: "+violationAggregator.getOpenApiFile().getAbsolutePath(), violationAggregator.getViolations().size());
-        }
+
+        log.debug("\n {} OpenApi Violations for: "+violationAggregator.getOpenApiFile().getAbsolutePath(), violationAggregator.getViolations().size());
+
         violationAggregator.getViolations().forEach(v->{
             switch (v.type){
                 case MANDATORY:
