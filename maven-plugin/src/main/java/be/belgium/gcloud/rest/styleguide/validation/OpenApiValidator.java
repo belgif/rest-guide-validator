@@ -55,10 +55,10 @@ public class OpenApiValidator {
     /**
      * Validate the file and use the outputProcessor. Return true if the file is a valid open-api file.
      * @param file
-     * @param outputProcessor
+     * @param outputProcessors
      * @return
      */
-    public static boolean isOasValid(@NotNull File file, @Nullable OutputProcessor outputProcessor) {
+    public static boolean isOasValid(@NotNull File file, @Nullable OutputProcessor... outputProcessors) {
         OpenApiViolationAggregator openApiViolationAggregator = null;
         try {
             openApiViolationAggregator = new OpenApiViolationAggregator();
@@ -69,8 +69,10 @@ public class OpenApiValidator {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
         }
 
-        if(outputProcessor != null)
-            outputProcessor.process(openApiViolationAggregator);
+        if(outputProcessors != null)
+            for (OutputProcessor outputProcessor : outputProcessors) {
+                outputProcessor.process(openApiViolationAggregator);
+            }
         return openApiViolationAggregator.getViolations().isEmpty();
     }
 }

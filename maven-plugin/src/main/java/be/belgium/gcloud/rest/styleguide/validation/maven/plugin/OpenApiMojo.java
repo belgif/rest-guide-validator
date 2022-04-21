@@ -10,7 +10,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -26,14 +29,17 @@ public class OpenApiMojo extends AbstractMojo {
 
     static final String FAILURE_MESSAGE = "At least 1 error in validation !";
 
-    @Parameter(property = "api-validator.files", required = true)
-    List<String> files;
+    @Parameter(property = "api-validator.files")
+    List<String> files = new ArrayList<>();
+
+    @Parameter(property = "api-validator.fileWithExclusions")
+    List<FileWithExclusion> fileWithExclusions = new ArrayList<>();
 
     @Parameter(property = "api-validator.skipOnErrors ")
     boolean skipOnErrors = false;
 
-    @Parameter(property = "api-validator.outputType")
-    OutputType outputType = OutputType.CONSOLE;
+    @Parameter(property = "api-validator.outputTypes")
+    List<OutputType> outputTypes ;
 
     @Parameter(property = "api-validator.outputDir", defaultValue = "target")
     String outputDir = "target";
@@ -41,12 +47,13 @@ public class OpenApiMojo extends AbstractMojo {
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject mavenProject;
 
+    private Set<OutputProcessor> outputProcessors;
+
     private String base;
-    private OutputProcessor outputProcessor;
 
     private void init(){
-        if(files == null || files.isEmpty())
-            throw new IllegalArgumentException("api-validator need at least one file! Add the 'api-validator.files' in the plugin configuration.");
+        if( files.isEmpty() && fileWithExclusions.isEmpty() )
+            throw new IllegalArgumentException("api-validator need at least one file! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
 
         if(mavenProject != null)
             base = this.mavenProject.getBasedir().getAbsolutePath() + File.separator;
@@ -54,13 +61,24 @@ public class OpenApiMojo extends AbstractMojo {
             base = System.getProperty("user.dir") + File.separator;
         getLog().debug("Working directory: "+base);
 
-        getLog().debug("Using outputProcessor: "+outputType.name());
-        switch (outputType){
-            case NONE: outputProcessor = null; break;
-            case JUNIT: outputProcessor = new JUnitOutputProcessor();break;
-            case LOG4J: outputProcessor = new Log4JOutputProcessor();break;
-            default: outputProcessor = new ConsoleOutputProcessor();
+        if ( outputTypes == null )
+            outputProcessors = Set.of(new ConsoleOutputProcessor[]{new ConsoleOutputProcessor()});
+        else {
+            outputProcessors = new HashSet<>();
+            outputTypes.forEach(outputType -> {
+                switch (outputType) {
+                    case NONE: break;
+                    case JUNIT:
+                        outputProcessors.add(new JUnitOutputProcessor()); break;
+                    case LOG4J:
+                        outputProcessors.add(new Log4JOutputProcessor()); break;
+                    default:
+                        outputProcessors.add(new ConsoleOutputProcessor());
+                }
+            });
         }
+
+
     }
 
     /**
@@ -77,11 +95,22 @@ public class OpenApiMojo extends AbstractMojo {
         files.stream()
                 .map(filename -> new File(base+filename))
                 .forEach(file->{
-                    if(outputType == OutputType.JUNIT)
-                        ((JUnitOutputProcessor) outputProcessor).setOutputFile(
-                                new File(outputDir, "TEST-" + file.getName() + ".xml"));
+                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
+                                    .map(o -> (JUnitOutputProcessor)o)
+                                    .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
+                                            new File(outputDir, "TEST-" + file.getName() + ".xml")));
 
-                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessor) && isValid.get());
+                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
+                });
+
+        fileWithExclusions.forEach(fileWithExclusion->{
+                    File file = new File(base + fileWithExclusion.getFile() );
+                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
+                            .map(o -> (JUnitOutputProcessor)o)
+                            .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
+                                    new File(outputDir, "TEST-" + file.getName() + ".xml")));
+
+                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
                 });
 
         if (! skipOnErrors && ! isValid.get())

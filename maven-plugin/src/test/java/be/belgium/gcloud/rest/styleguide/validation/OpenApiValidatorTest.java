@@ -16,5 +16,10 @@ public class OpenApiValidatorTest {
     void isValidTest() throws IOException {
         var file = new File(getClass().getResource("rules/swagger_bad.yaml").getFile());
         assertFalse(OpenApiValidator.isOasValid(file));
+
+        assertFalse(OpenApiValidator.isOasValid(file, new ConsoleOutputProcessor()));
+
+        assertFalse(OpenApiValidator.isOasValid(file, new ConsoleOutputProcessor(), new Log4JOutputProcessor()));
     }
+
 }

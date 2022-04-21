@@ -16,14 +16,17 @@
                 <version>1.0.0-SNAPSHOT</version>
                 <configuration>
                     <files>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger.yaml</file>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger0.yaml</file>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger1.yaml</file>
+                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/petstore.json</file>
                     </files>
-                    <outputTypes>
-                        <outputType>JUNIT</outputType>
-                    </outputTypes>
-                    <outputDir>target/surefire-reports</outputDir>
+                    <fileWithExclusions>
+                        <fileWithExclusion>
+                            <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger.yaml</file>
+                            <excludesPaths>
+                                <excludesPath>/entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}-{countryCode}-{phoneNumber}</excludesPath>
+                            </excludesPaths>
+
+                        </fileWithExclusion>
+                    </fileWithExclusions>
                 </configuration>
             </plugin>
         </plugins>
