@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.junit.jupiter.api.Test;
 
@@ -15,14 +16,23 @@ class OpenApiMojoTest {
     void execute() {
         var openApiMojo = new OpenApiMojo();
         openApiMojo.files = List.of(new String[]{BAS_DIR + "swagger_bad.yaml", BAS_DIR + "swagger4.yaml"});
-        var exception = assertThrows(MojoFailureException.class, () -> openApiMojo.execute());
+        var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
     }
     @Test
     void executeNoFile() {
         var openApiMojo = new OpenApiMojo();
         openApiMojo.files = List.of(new String[]{ BAS_DIR + "notExist.yaml"});
-        var exception = assertThrows(MojoFailureException.class, () -> openApiMojo.execute());
+        var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
+    }
+
+    @Test
+    void ExecuteSkipOnErrors () throws MojoExecutionException, MojoFailureException {
+        var openApiMojo = new OpenApiMojo();
+        openApiMojo.files = List.of(new String[]{ BAS_DIR + "notExist.yaml"});
+        openApiMojo.skipOnErrors = true;
+
+        openApiMojo.execute();
     }
 }

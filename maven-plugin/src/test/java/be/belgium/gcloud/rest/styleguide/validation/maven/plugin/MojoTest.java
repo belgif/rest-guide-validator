@@ -22,7 +22,7 @@ public class MojoTest extends AbstractMojoTestCase{
 
         var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
         assertNotNull( myMojo );
-        myMojo.execute();
+        myMojo.execute(); // not working in InteliJ
     }
 
     public void testNoProperties() throws Exception {
@@ -32,9 +32,7 @@ public class MojoTest extends AbstractMojoTestCase{
 
         var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
         assertNotNull( myMojo );
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            myMojo.execute();
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, myMojo::execute);
     }
 
     public void testApiValidatorFail() throws Exception {
@@ -44,9 +42,7 @@ public class MojoTest extends AbstractMojoTestCase{
 
         var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
         assertNotNull( myMojo );
-        Assertions.assertThrows(MojoFailureException.class, () -> {
-            myMojo.execute();
-        });
+        Assertions.assertThrows(MojoFailureException.class, myMojo::execute);
     }
     public void testApiValidatorFailJunit() throws Exception {
         var pom = getTestFile( "src/test/resources/pomFailJunit.xml" );
@@ -55,8 +51,16 @@ public class MojoTest extends AbstractMojoTestCase{
 
         var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
         assertNotNull( myMojo );
-        Assertions.assertThrows(MojoFailureException.class, () -> {
-            myMojo.execute();
-        });
+        Assertions.assertThrows(MojoFailureException.class, myMojo::execute);
+    }
+
+    public void testApiValidatorSkipOnErrors() throws Exception {
+        var pom = getTestFile( "src/test/resources/pomSkipOnErrors.xml" );
+        assertNotNull( pom );
+        assertTrue( pom.exists() );
+
+        var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
+        assertNotNull( myMojo );
+        myMojo.execute();
     }
 }

@@ -29,10 +29,13 @@ public class OpenApiMojo extends AbstractMojo {
     @Parameter(property = "api-validator.files", required = true)
     List<String> files;
 
-    @Parameter(property = "api-validator.outputType", required = false)
+    @Parameter(property = "api-validator.skipOnErrors ")
+    boolean skipOnErrors = false;
+
+    @Parameter(property = "api-validator.outputType")
     OutputType outputType = OutputType.CONSOLE;
 
-    @Parameter(property = "api-validator.outputDir", required = false, defaultValue = "target")
+    @Parameter(property = "api-validator.outputDir", defaultValue = "target")
     String outputDir = "target";
 
     @Parameter(readonly = true, defaultValue = "${project}")
@@ -81,7 +84,7 @@ public class OpenApiMojo extends AbstractMojo {
                     isValid.set(OpenApiValidator.isOasValid(file, outputProcessor) && isValid.get());
                 });
 
-        if (! isValid.get())
+        if (! skipOnErrors && ! isValid.get())
             throw new MojoFailureException(FAILURE_MESSAGE);
     }
 }
