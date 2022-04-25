@@ -11,7 +11,7 @@ function String urlPattern(){
 }
 function void violationServerUrlFormat(OpenApiViolationAggregator oas, String url){
     oas.addViolation("serverUrlFormat",
-                     "The server url (or the basePath) should follow this format: pathPrefix/apiName/vmajorVersion \t"+ url,
+                     "The server url (or the basePath) should follow this format: host/pathPrefix/apiName/vmajorVersion \t"+ url,
                      oas.getLineNumber(url));
 }
 

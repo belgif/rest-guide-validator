@@ -9,7 +9,7 @@ info:
     url: "http://www.smals.be"
     email: "overseas_dev@smals.be"
 host: "overseas-identification-process.int.paas.socialsecurity.be"
-basePath: "/v1/resources"
+basePath: "/resources/v1"
 schemes:
   - "https"
 paths:

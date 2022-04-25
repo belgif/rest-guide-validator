@@ -118,6 +118,7 @@
                             <goal>descriptor</goal>
                         </goals>
                     </execution>
+
                     <execution>
                         <id>help-goal</id>
                         <goals>

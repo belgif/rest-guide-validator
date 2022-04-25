@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -128,4 +129,39 @@ public class ApiFunctions {
         return properties;
     }
 
+    public static List<LineRangePath> getAllPathWithLineRange(OpenAPI api, OpenApiViolationAggregator oas){
+        var paths = new ArrayList<LineRangePath>();
+
+        var pathKeys = getPathKeys(api);
+        pathKeys.forEach(p-> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
+        Collections.sort(paths);
+        for(int i=0; i<pathKeys.size()-1;i++){
+            paths.get(i).setEnd(paths.get(i+1).getStart()-1);
+        }
+
+        var last = paths.get(paths.size()-1);
+
+        var others = List.of(new String[]{"components", "security", "securityDefinitions", "definitions", "externalDocs"});
+        var otherRanges = others.stream()
+                .map(other -> new LineRangePath(other, oas.getLineNumber(other)))
+                .filter(range -> range.getStart() > last.getStart())
+                .sorted()
+                .collect(Collectors.toList());
+        if (otherRanges.isEmpty())
+            last.setEnd(oas.src.size()-1);
+        else
+            last.setEnd(otherRanges.get(0).getStart());
+
+        return  paths;
+    }
+
+    public static boolean isInPathList(List<LineRangePath> lineRangePaths, String path, int lineNumber){
+        return lineRangePaths.stream()
+                .anyMatch(lineRangePath -> lineRangePath.getPath().equals(path) && lineRangePath.inRange(lineNumber));
+    }
+
+    public static boolean isInPathList(List<LineRangePath> lineRangePaths, List<String> paths, int lineNumber){
+        return lineRangePaths.stream()
+                .anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
+    }
 }

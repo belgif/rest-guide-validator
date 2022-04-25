@@ -5,7 +5,7 @@ info:
   title: contactData
   contact:
     email: contactDataTeam@smals.be
-basePath: /REST/contactData/v1/
+basePath: /REST/contactData/v1
 tags:
   - name: contacts
     description: A contact represents a contact point of a company. A contact may be a person, a department, a team of people

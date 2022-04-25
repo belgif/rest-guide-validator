@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +66,35 @@ public class OpenApiValidator {
             var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
 
             callRuleOAS(openApiViolationAggregator, openApi);
+        } catch (IOException e) {
+            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
+        }
+
+        if(outputProcessors != null)
+            for (OutputProcessor outputProcessor : outputProcessors) {
+                outputProcessor.process(openApiViolationAggregator);
+            }
+        return openApiViolationAggregator.getViolations().isEmpty();
+    }
+
+    /**
+     * Validate the file and use the outputProcessor. Return true if the file is a valid open-api file.
+     * @param file
+     * @param excludesPaths
+     * @param outputProcessors
+     * @return
+     */
+    public static boolean isOasValid(@NotNull File file, List<String> excludesPaths, @Nullable OutputProcessor... outputProcessors) {
+        OpenApiViolationAggregator openApiViolationAggregator = null;
+        try {
+            openApiViolationAggregator = new OpenApiViolationAggregator();
+            var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
+            var paths = ApiFunctions.getAllPathWithLineRange(openApi, openApiViolationAggregator);
+
+            callRuleOAS(openApiViolationAggregator, openApi);
+            var excluded = openApiViolationAggregator.getViolations().stream()
+                    .filter(violation -> ApiFunctions.isInPathList(paths, excludesPaths,violation.getLineNumber()) ).collect(Collectors.toSet());
+            openApiViolationAggregator.getViolations().removeAll(excluded);
         } catch (IOException e) {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
         }

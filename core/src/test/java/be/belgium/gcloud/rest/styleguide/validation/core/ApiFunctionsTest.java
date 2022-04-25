@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.jsonpath.ApiPathFunctions;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Paths;
@@ -16,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 class ApiFunctionsTest {
     private OpenAPI getOpenApi() throws IOException {
-        File file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
-        OpenAPI openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
+        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
         return openApi;
     }
 
@@ -28,28 +29,28 @@ class ApiFunctionsTest {
 
     @Test
     void getOperationId() throws IOException{
-        Set<String> operationIds = ApiFunctions.getOperationId(getOpenApi(), OperationEnum.GET, "200");
+        var operationIds = ApiFunctions.getOperationId(getOpenApi(), OperationEnum.GET, "200");
         assertNotNull(operationIds);
         assertTrue(operationIds.size() > 0);
     }
 
     @Test
     void getPathKeys()throws IOException {
-        Set<String> keys = ApiFunctions.getPathKeys(getOpenApi());
+        var keys = ApiFunctions.getPathKeys(getOpenApi());
         assertNotNull(keys);
         assertFalse(keys.isEmpty());
     }
 
     @Test
     void getPaths() throws IOException{
-        Paths paths = ApiFunctions.getPaths(getOpenApi());
+        var paths = ApiFunctions.getPaths(getOpenApi());
         assertNotNull(paths);
         assertFalse(paths.getPathItems().isEmpty());
     }
 
     @Test
     void testGetDefinitionPropertiesNoMatch() throws IOException {
-        Map<String, List<String>> stringListMap = ApiFunctions.getDefinitionPropertiesNoMatch(getOpenApi(),  "^[a-z]+([A-Z]?[a-z]+)*$");
+        var stringListMap = ApiFunctions.getDefinitionPropertiesNoMatch(getOpenApi(),  "^[a-z]+([A-Z]?[a-z]+)*$");
         assertNotNull(stringListMap);
         assertFalse(stringListMap.isEmpty());
     }
@@ -75,5 +76,27 @@ class ApiFunctionsTest {
         var properties = ApiFunctions.getPropertiesNotMatch(getOpenApi(), "^[a-z]+([A-Z]?[a-z0-9]+)*$");
         assertNotNull(properties);
         assertFalse(properties.isEmpty());
+    }
+
+    @Test
+    void getAllPathWithLineRange() throws IOException {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
+
+        var paths = ApiFunctions.getAllPathWithLineRange(openApi, oas);
+        assertNotNull(paths);
+        paths.forEach(p-> assertTrue(p.getEnd() > p.getStart()));
+        paths.forEach(p-> log.debug(p.toString()));
+    }
+
+    @Test
+    void isInPathList() throws IOException {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
+
+        var paths = ApiFunctions.getAllPathWithLineRange(openApi, oas);
+        assertTrue(ApiFunctions.isInPathList(paths, "/health", 2070));
     }
 }
