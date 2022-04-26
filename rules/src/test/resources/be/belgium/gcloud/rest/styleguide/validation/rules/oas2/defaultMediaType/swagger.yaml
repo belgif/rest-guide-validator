@@ -54,32 +54,6 @@ paths:
       x-oauth2-required-scopes: any
 
 
-  /health:
-    get:
-      tags:
-        - "Monitoring"
-      summary: "Check health of this REST API"
-      description: "This resource is only available to supervision users"
-      operationId: "healthCheck"
-      produces:
-        - "text/xml"
-      parameters:
-        - name: "type"
-          in: "query"
-          description: "Defines the which sanity checks must be ran"
-          required: false
-          type: "string"
-          default: "default"
-          enum:
-            - "ping"
-            - "default"
-            - "deep"
-      responses:
-        default:
-          description: "successful operation"
-      security:
-        - contactData_auth:
-            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:monitoring
   /health/status:
     get:
       tags:
@@ -123,20 +97,7 @@ paths:
           description: "successful operation"
           schema:
             type: "string"
-  /doc/swagger.yaml:
-    get:
-      tags:
-        - "Documentation"
-      summary: "Returns the API documentation in YAML Swagger format"
-      operationId: "getSwagger"
-      produces:
-        - "application/yaml" # TODO yaml
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "string"
+
 security: []
 securityDefinitions:
   contactData_auth:

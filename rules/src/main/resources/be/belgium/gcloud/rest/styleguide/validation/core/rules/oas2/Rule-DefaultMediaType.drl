@@ -10,11 +10,6 @@ import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 global java.lang.String jsonString;
 
-function boolean isInProducesException(String operationId){
-  final List<String> exceptionList = List.of(new String[]{"healthCheck", "getSwagger"});
-  return exceptionList.contains(operationId);
-}
-
 function void violationProduce(OpenApiViolationAggregator oas, String operation, String operationId){
     oas.addViolation(operation+"defaultMediaTypeProduce",
      "OpenAPI 2.0 specifications SHOULD specify following default media types for produces: 'application/json' and 'application/problem+json'. \t"+ operationId,
@@ -32,8 +27,7 @@ rule "Rule-defaultMediaType-getDontHaveProduces"
         $api: OpenAPI()
         $operationId: String() from ApiPathFunctions.operationIdDontHaveProduce(jsonString, OperationEnum.GET)
     then
-        if( ! isInProducesException($operationId))
-            violationProduce(oas,OperationEnum.GET.name(), $operationId);
+        violationProduce(oas,OperationEnum.GET.name(), $operationId);
 end
 
 rule "Rule-defaultMediaType-getDontHaveCorrectProduces"
@@ -41,8 +35,7 @@ rule "Rule-defaultMediaType-getDontHaveCorrectProduces"
         $api: OpenAPI()
         $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.GET, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        if( ! isInProducesException($operationData.getOperationId()))
-            violationProduce(oas, OperationEnum.GET.name(), $operationData.getOperationId());
+        violationProduce(oas, OperationEnum.GET.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-posttDontHaveCorrectProduces"
