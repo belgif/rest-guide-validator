@@ -8,7 +8,7 @@ public class ConsoleOutputProcessor implements OutputProcessor{
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
         Collections.sort(violationAggregator.getViolations());
-        System.out.printf("\n %d OpenApi Violations for: %s ", violationAggregator.getViolations().size(), violationAggregator.getOpenApiFile().getAbsolutePath()); //NOSONAR
+        System.out.printf("\n %d OpenApi Violations for: %s \n", violationAggregator.getViolations().size(), violationAggregator.getOpenApiFile().getAbsolutePath()); //NOSONAR
 
         violationAggregator.getViolations().forEach(v->{
             switch (v.type){

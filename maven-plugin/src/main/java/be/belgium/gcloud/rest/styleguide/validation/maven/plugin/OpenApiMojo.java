@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *  - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
  *  - ${project} root directory for api-validator.files
  */
-@Mojo(name = "api-validator", defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "api-validator", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class OpenApiMojo extends AbstractMojo {
 
     static final String FAILURE_MESSAGE = "At least 1 error in validation !";
