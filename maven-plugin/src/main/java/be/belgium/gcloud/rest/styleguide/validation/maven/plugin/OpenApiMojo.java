@@ -110,7 +110,7 @@ public class OpenApiMojo extends AbstractMojo {
                             .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
                                     new File(outputDir, "TEST-" + file.getName() + ".xml")));
 
-                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
+                    isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
                 });
 
         if (! skipOnErrors && ! isValid.get())
