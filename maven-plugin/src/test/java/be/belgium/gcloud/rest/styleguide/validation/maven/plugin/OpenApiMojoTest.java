@@ -2,8 +2,10 @@ package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,25 +14,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class OpenApiMojoTest {
     private static final String BAS_DIR = "src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/";
 
+    private OpenApiMojo getMojo(){
+        var openApiMojo = new OpenApiMojo();
+        openApiMojo.mavenProject = new MavenProject();
+        openApiMojo.mavenProject.setFile(new File(this.getClass().getResource(".").getFile()));
+        return openApiMojo;
+    }
     @Test
     void execute() {
-        var openApiMojo = new OpenApiMojo();
-        openApiMojo.files = List.of(new String[]{BAS_DIR + "swagger_bad.yaml", BAS_DIR + "swagger4.yaml"});
+        var openApiMojo = getMojo();
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml"), new File(BAS_DIR + "swagger4.yaml")});
         var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
     }
     @Test
     void executeNoFile() {
-        var openApiMojo = new OpenApiMojo();
-        openApiMojo.files = List.of(new String[]{ BAS_DIR + "notExist.yaml"});
+        var openApiMojo = getMojo();
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "notExist.yaml")});
         var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
     }
 
     @Test
     void ExecuteSkipOnErrors () throws MojoExecutionException, MojoFailureException {
-        var openApiMojo = new OpenApiMojo();
-        openApiMojo.files = List.of(new String[]{ BAS_DIR + "notExist.yaml"});
+        var openApiMojo = getMojo();
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "notExist.yaml")});
         openApiMojo.skipOnErrors = true;
 
         openApiMojo.execute();
@@ -38,8 +46,8 @@ class OpenApiMojoTest {
 
     @Test
     void ExecuteWithExcludes () throws MojoExecutionException, MojoFailureException {
-        var openApiMojo = new OpenApiMojo();
-        openApiMojo.files = List.of(new String[]{ BAS_DIR + "swagger4.yaml"});
+        var openApiMojo = getMojo();
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger4.yaml")});
         openApiMojo.excludeResources = List.of(new String[]{"/api/doc/swagger.json", "/health", "/api/doc", "/api/healthCheck"});
 
         var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);

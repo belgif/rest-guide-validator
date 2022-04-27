@@ -10,10 +10,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.FilenameFilter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -31,7 +31,7 @@ public class OpenApiMojo extends AbstractMojo {
     static final String FAILURE_MESSAGE = "At least 1 error in validation !";
 
     @Parameter(property = "api-validator.files")
-    List<String> files = new ArrayList<>();
+    List<File> files = new ArrayList<>();
 
     @Parameter(property = "api-validator.fileWithExclusions")
     List<FileWithExclusion> fileWithExclusions = new ArrayList<>();
@@ -46,26 +46,25 @@ public class OpenApiMojo extends AbstractMojo {
     String outputDir = "target";
 
     @Parameter(readonly = true, defaultValue = "${project}")
-    private MavenProject mavenProject;
+    MavenProject mavenProject;
 
     @Parameter(property = "api-validator.excludeResources")
     List<String> excludeResources = new ArrayList<>();
 
     private Set<OutputProcessor> outputProcessors;
 
-    private String base;
-
+    private List<File> addAllFiles(File directory){
+        return List.of(directory.listFiles((dir, name) ->
+                name.endsWith(".yml") || name.endsWith(".yaml") || name.endsWith(".json")));
+    }
     private void init(){
-        if( files.isEmpty() && fileWithExclusions.isEmpty() )
-            throw new IllegalArgumentException("api-validator need at least one file! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
+       initFiles();
+       initOutputProcessor();
+       addExclusions();
+    }
 
-        if(mavenProject != null)
-            base = this.mavenProject.getBasedir().getAbsolutePath() + File.separator;
-        else
-            base = System.getProperty("user.dir") + File.separator;
-        getLog().debug("Working directory: "+base);
-
-        if ( outputTypes == null )
+    private void initOutputProcessor(){
+        if ( outputTypes == null || outputTypes.isEmpty())
             outputProcessors = Set.of(new ConsoleOutputProcessor[]{new ConsoleOutputProcessor()});
         else {
             outputProcessors = new HashSet<>();
@@ -81,10 +80,29 @@ public class OpenApiMojo extends AbstractMojo {
                 }
             });
         }
-
-
     }
 
+    private void initFiles(){
+        if( files.isEmpty() && fileWithExclusions.isEmpty() )
+            throw new IllegalArgumentException("api-validator need at least one file ! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
+        if( files.stream().anyMatch(file -> file.getPath().startsWith(mavenProject.getFile().getPath())) ||
+            fileWithExclusions.stream().anyMatch(f -> f.getFile().getPath().startsWith(mavenProject.getFile().getPath())) )
+            throw new IllegalArgumentException("All files must be in the maven project structure !");
+
+        // add all file from directories
+        var dirs = files.stream().filter(file -> file.isDirectory()).collect(Collectors.toSet());
+        var fromDir = dirs.stream().map(dir->addAllFiles(dir)).collect(Collectors.toList()).stream().collect(Collectors.toList());
+
+        dirs.forEach(dir ->files.remove(dir));
+        fromDir.forEach(list-> files.addAll(list));
+    }
+
+    private void addExclusions(){
+        fileWithExclusions.forEach(fileWithExclusion -> fileWithExclusion.getExcludesPaths().addAll(excludeResources));
+        fileWithExclusions.addAll( files.stream()
+                .map(file -> new FileWithExclusion(file, excludeResources))
+                .collect(Collectors.toList()) );
+    }
     /**
      * For each file in @files validate using OpenApiValidator.
      * @throws MojoExecutionException when file cannot be read or parse.
@@ -94,14 +112,9 @@ public class OpenApiMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         init();
 
-        fileWithExclusions.forEach(fileWithExclusion -> fileWithExclusion.getExcludesPaths().addAll(excludeResources));
-        fileWithExclusions.addAll( files.stream()
-                .map(filename -> new FileWithExclusion(filename, excludeResources))
-                .collect(Collectors.toList()) );
-
         AtomicBoolean isValid = new AtomicBoolean(true);
         fileWithExclusions.forEach(fileWithExclusion->{
-                    File file = new File(base + fileWithExclusion.getFile() );
+                    var file = fileWithExclusion.getFile() ;
                     outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
                             .map(o -> (JUnitOutputProcessor)o)
                             .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
