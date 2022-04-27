@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * Maven plugin that check if a Swagger API or an open API is conformed the G-Cloud standards.
@@ -46,6 +47,9 @@ public class OpenApiMojo extends AbstractMojo {
 
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject mavenProject;
+
+    @Parameter(property = "api-validator.excludeResources")
+    List<String> excludeResources = new ArrayList<>();
 
     private Set<OutputProcessor> outputProcessors;
 
@@ -90,19 +94,12 @@ public class OpenApiMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         init();
 
+        fileWithExclusions.forEach(fileWithExclusion -> fileWithExclusion.getExcludesPaths().addAll(excludeResources));
+        fileWithExclusions.addAll( files.stream()
+                .map(filename -> new FileWithExclusion(filename, excludeResources))
+                .collect(Collectors.toList()) );
+
         AtomicBoolean isValid = new AtomicBoolean(true);
-
-        files.stream()
-                .map(filename -> new File(base+filename))
-                .forEach(file->{
-                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
-                                    .map(o -> (JUnitOutputProcessor)o)
-                                    .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
-                                            new File(outputDir, "TEST-" + file.getName() + ".xml")));
-
-                    isValid.set(OpenApiValidator.isOasValid(file, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
-                });
-
         fileWithExclusions.forEach(fileWithExclusion->{
                     File file = new File(base + fileWithExclusion.getFile() );
                     outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)

@@ -1,6 +1,8 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +27,21 @@ public class ApiFunctions {
      */
     private ApiFunctions(){}
 
+    private static List<String> getLines(File file) throws IOException {
+        var lines = Files.readAllLines(file.toPath());
+
+        // lines > 1 then is a yaml or a pretty json file
+        if(lines.size() > 1)
+            return lines;
+
+        // else is a ugly json file
+        var gson = new GsonBuilder().setPrettyPrinting().create();
+        var pretty = gson.toJson( JsonParser.parseString(lines.get(0)) );
+        return pretty.lines().collect(Collectors.toList());
+    }
     public static OpenAPI buildOpenApiSpecification(File file, OpenApiViolationAggregator oas) throws IOException {
         oas.setOpenApiFile(file);
-        oas.setSrc( Files.readAllLines(file.toPath()));
+        oas.setSrc(getLines(file));
 
         var openApiParser = new OpenAPIParser();
         var parseOptions = new ParseOptions();

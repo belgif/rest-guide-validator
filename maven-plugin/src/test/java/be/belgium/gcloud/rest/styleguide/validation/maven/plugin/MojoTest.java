@@ -75,4 +75,14 @@ public class MojoTest extends AbstractMojoTestCase{
         assertNotNull( myMojo );
         myMojo.execute();
     }
+
+    public void testApiValidatorWithExcludes() throws Exception {
+        var pom = getTestFile( "src/test/resources/pomWithExcludes.xml" );
+        assertNotNull( pom );
+        assertTrue( pom.exists() );
+
+        var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
+        assertNotNull( myMojo );
+        myMojo.execute();
+    }
 }

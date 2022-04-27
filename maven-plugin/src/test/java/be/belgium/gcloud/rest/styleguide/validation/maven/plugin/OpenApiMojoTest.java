@@ -35,4 +35,14 @@ class OpenApiMojoTest {
 
         openApiMojo.execute();
     }
+
+    @Test
+    void ExecuteWithExcludes () throws MojoExecutionException, MojoFailureException {
+        var openApiMojo = new OpenApiMojo();
+        openApiMojo.files = List.of(new String[]{ BAS_DIR + "swagger4.yaml"});
+        openApiMojo.excludeResources = List.of(new String[]{"/api/doc/swagger.json", "/health", "/api/doc", "/api/healthCheck"});
+
+        var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
+        assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
+    }
 }

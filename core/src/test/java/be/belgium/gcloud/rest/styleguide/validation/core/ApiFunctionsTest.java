@@ -28,6 +28,15 @@ class ApiFunctionsTest {
     }
 
     @Test
+    void buildUgly()throws IOException {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/ugly.json").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
+        assertNotNull(openApi);
+        assertTrue(oas.src.size()>1);
+    }
+
+    @Test
     void getOperationId() throws IOException{
         var operationIds = ApiFunctions.getOperationId(getOpenApi(), OperationEnum.GET, "200");
         assertNotNull(operationIds);
