@@ -14,19 +14,14 @@
                 <groupId>be.belgium.gcloud.rest</groupId>
                 <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>api-validator</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <files>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/petstore.json</file>
-                    </files>
-                    <fileWithExclusions>
-                        <fileWithExclusion>
-                            <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger.yaml</file>
-                            <excludesPaths>
-                                <excludesPath>/entity/contacts/{contactId}/phoneNumbers/{phoneNumberRole}-{countryCode}-{phoneNumber}</excludesPath>
-                            </excludesPaths>
-
-                        </fileWithExclusion>
-                    </fileWithExclusions>
                 </configuration>
             </plugin>
         </plugins>

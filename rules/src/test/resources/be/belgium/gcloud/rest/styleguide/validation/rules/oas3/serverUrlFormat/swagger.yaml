@@ -7,8 +7,7 @@ info:
     http://localhost:8080/transactions/sgw-prd-00
   version: '1.7'
 servers:
-  - url: 'https://localhost:8080/REST/v1'
-    description: Generated server url
+  - url: '/api/v3'
 paths:
   '/transactions/{group}':
     get:

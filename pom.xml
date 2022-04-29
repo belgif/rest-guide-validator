@@ -61,6 +61,7 @@
         <module>core</module>
         <module>rules</module>
         <module>maven-plugin</module>
+        <module>integrationtest</module>
     </modules>
 
     <!-- Build -->

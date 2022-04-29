@@ -81,6 +81,16 @@ class ApiFunctionsTest {
     }
 
     @Test
+    void testUrlV3() throws IOException {
+        var pattern = "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(\\/[A-Za-z0-9]*)*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
+        var file = new File(getClass().getResource("../rules/petstore.json").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
+        var url = openApi.getServers().get(0).getUrl();
+        log.debug(url);
+        assertTrue(url.matches(pattern));
+    }
+
+    @Test
     void testProperties()throws IOException {
         var properties = ApiFunctions.getPropertiesNotMatch(getOpenApi(), "^[a-z]+([A-Z]?[a-z0-9]+)*$");
         assertNotNull(properties);

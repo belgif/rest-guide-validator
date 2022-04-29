@@ -1,0 +1,361 @@
+swagger: "2.0"
+info:
+  description: "Artist API swagger definition"
+  version: "${artifact.version}"
+  title: "Artist API"
+securityDefinitions:
+  oauth_accessCode:
+    type: oauth2
+    authorizationUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v2/authorize'
+    tokenUrl: 'https://professionalservices-int.socialsecurity.be/REST/oauth/v2/token'
+    flow: accessCode
+    scopes:
+      'scope:socialsecurity:consultation:ws-restartist:consult': access for artist consultation for professionnal
+      'scope:socialsecurity:consultation:ws-restartist:monitoring': ws artist monitoring
+x-oauth2-required-scopes: any
+basePath: /REST/artist/v1
+paths:
+  /performingArtists:
+    get:
+      tags:
+        - "performingArtists"
+      summary : "findArtistsDeclaredAtEmployer"
+      description: "Get artists who declared a performance at a specific employer"
+      operationId: "findArtistsDeclaredAtEmployer"
+      produces:
+        - "application/json"
+      security:
+        - oauth_accessCode:
+            - 'scope:socialsecurity:consultation:ws-restartist:consult'
+      parameters:
+        - name: "contractorSsin"
+          in: "query"
+          description: "Employer SSIN number"
+          type: "string"
+        - name: "contractorCbeNumber"
+          in: "query"
+          description: "Employer CBE Identification number"
+          type: "string"
+        - name: "validFrom"
+          in: "query"
+          description: "Validity period start"
+          type: "string"
+          format: date
+        - name: "validTo"
+          in: "query"
+          description: "Validity period end"
+          type: "string"
+          format: date
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/PerformingArtists"
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: "Not Found"
+  /artists/{ssin}:
+    get:
+      tags:
+        - "artistsSsin"
+      summary: "findArtistWithRecognitions"
+      description: "Get Artist's informations with its recognitions"
+      operationId: "findArtistWithRecognitions"
+      produces:
+        - "application/json"
+      security:
+        - oauth_accessCode:
+            - 'scope:socialsecurity:consultation:ws-restartist:consult'
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "Artist SSIN"
+          required: true
+          type: "string"
+        - name: "validFrom"
+          in: "query"
+          description: "Validity period start"
+          type: "string"
+          format: date
+        - name: "validTo"
+          in: "query"
+          description: "Validity period end"
+          type: "string"
+          format: date
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Artist"
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: "Not Found"
+  /artists/{ssin}/performances:
+    get:
+      tags:
+        - "performance"
+      summary: "findPerformancesForAnArtist"
+      description: "Find performances declared by an artist employer"
+      operationId: "findPerformancesForAnArtist"
+      produces:
+        - "application/json"
+      security:
+        - oauth_accessCode:
+            - 'scope:socialsecurity:consultation:ws-restartist:consult'
+      parameters:
+        - name: "ssin"
+          in: "path"
+          description: "Artist SSIN"
+          required: true
+          type: "string"
+        - name: "contractorSsin"
+          in: "query"
+          description: "Employer SSIN number"
+          type: "string"
+        - name: "contractorCbeNumber"
+          in: "query"
+          description: "Employer Cbe number"
+          type: "string"
+        - name: "validFrom"
+          in: "query"
+          description: "Validity period start"
+          type: "string"
+          format: date
+        - name: "validTo"
+          in: "query"
+          description: "Validity period end"
+          type: "string"
+          format: date
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Performances'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: "Not Found"
+  /refData/businessParameters:
+    get:
+      tags:
+        - "parameters"
+      summary : "findParameters"
+      description: "Get business parameters value"
+      operationId: "findParametersValue"
+      produces:
+        - "application/json"
+      security:
+        - oauth_accessCode:
+            - 'scope:socialsecurity:consultation:ws-restartist:consult'
+      parameters:
+        - name: "year"
+          in: "query"
+          description: "Year"
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/BusinessParameters"
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Problem'
+        404:
+          description: "Not Found"
+
+definitions:
+  BusinessParameters:
+    type: object
+    title: BusinessParameters
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/BusinessParameter'
+  BusinessParameter:
+    type: object
+    properties:
+      requestType:
+        type: string
+        enum:
+          - C
+          - V
+          - D
+      parameter:
+        type: string
+      value:
+        type: string
+      translation:
+        $ref: '#/definitions/Translation'
+  PerformingArtists:
+    type: object
+    title: PerformingArtists
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/PerformingArtist'
+  PerformingArtist:
+    type: object
+    title: PerformingArtist
+    properties:
+      ssin:
+        type: string
+      lastname:
+        type: string
+      firstname:
+        type: string
+  Artist:
+    type: object
+    title: Artist
+    properties:
+      ssin:
+        type: string
+      lastname:
+        type: string
+      firstname:
+        type: string
+      recognitions:
+        $ref: '#/definitions/Recognitions'
+  Recognitions:
+    type: array
+    items:
+      $ref: '#/definitions/Recognition'
+  Recognition:
+    type: object
+    title: Recognition
+    properties:
+      type:
+        type: string
+        enum:
+          - CARD
+          - VISA
+          - DAI
+      recognitionNumber:
+        type: string
+      validityStartDate:
+        type: string
+      validityEndDate:
+        type: string
+      activities:
+        type: array
+        items:
+          $ref: '#/definitions/ActivityWithPerformances'
+  ActivityWithPerformances:
+    type: object
+    properties:
+      activityDescription:
+        $ref: '#/definitions/ActivityDescription'
+      performances:
+        type: array
+        items:
+          $ref: '#/definitions/Performance'
+  ActivityDescription:
+    type: object
+    properties:
+      activityCode:
+        type: string
+      activityDescription:
+        $ref: '#/definitions/Translation'
+      sectorCode:
+        type: string
+      sectorTranslation:
+        $ref: '#/definitions/Translation'
+  Translation:
+    type: object
+    properties:
+      fr:
+        type: string
+      nl:
+        type: string
+  Performances:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/PerformanceWithActivity'
+  PerformanceWithActivity:
+    type: object
+    properties:
+      performanceDate:
+        type: string
+      performanceCreationDate:
+        type: string
+      remunerationAmount:
+        type: number
+      cancellationDate:
+        type: string
+      employer:
+        $ref: '#/definitions/Employer'
+      activity:
+        $ref: '#/definitions/ActivityDescription'
+  Performance:
+    type: object
+    properties:
+      performanceDate:
+        type: string
+      performanceCreationDate:
+        type: string
+      remunerationAmount:
+        type: number
+      cancellationDate:
+        type: string
+      employer:
+        $ref: '#/definitions/Employer'
+  Employer:
+    type: object
+    properties:
+      employerType:
+        type: string
+        enum:
+          - PERSON
+          - FACTUAL_ASSOCIATION
+          - ENTERPRISE
+      employerId:
+        type: string
+      employerDenomination:
+        type: string
+  Problem:
+    description: A Problem Details object (RFC 7807)
+    type: object
+    properties:
+      type:
+        type: string
+        format: uri
+        description: An URI reference that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type (e.g. using HTML).
+        default: about:blank
+      title:
+        type: string
+        description: A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized)
+        example: Service Unavailable
+      status:
+        type: integer
+        format: int32
+        description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        minimum: 400
+        maximum: 600
+        exclusiveMaximum: true
+        example: 503
+      detail:
+        type: string
+        description: A human-readable explanation specific to this occurrence of the problem
+      instance:
+        type: string
+        format: uri
+        description: A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+responses:
+  "OK":
+    description: "successful operation"
+    schema:
+      $ref: '#/definitions/Problem'

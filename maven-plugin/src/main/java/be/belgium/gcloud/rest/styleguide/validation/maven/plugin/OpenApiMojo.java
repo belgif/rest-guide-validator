@@ -43,7 +43,7 @@ public class OpenApiMojo extends AbstractMojo {
     List<OutputType> outputTypes ;
 
     @Parameter(property = "api-validator.outputDir", defaultValue = "target")
-    String outputDir = "target";
+    File outputDir ;
 
     @Parameter(readonly = true, defaultValue = "${project}")
     MavenProject mavenProject;

@@ -22,10 +22,20 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <files>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swaggerOk.yaml</file>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/petstore.json</file>
-                    </files>
+                    <fileWithExclusions>
+                        <fileWithExclusion>
+                            <file>swagger_bad.yaml</file>
+                            <excludesPaths>
+                                <excludesPath>/health</excludesPath>
+                                <excludesPath>/health/status</excludesPath>
+                                <excludesPath>/doc/swagger.yaml</excludesPath>
+                                <excludesPath>/categories</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}/invalidData</excludesPath>
+                                <excludesPath>/entity/revisions</excludesPath>
+                            </excludesPaths>
+                        </fileWithExclusion>
+                    </fileWithExclusions>
                 </configuration>
             </plugin>
         </plugins>

@@ -4,13 +4,14 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.junit.jupiter.api.Assertions;
 
-public class MojoTest extends AbstractMojoTestCase{
-    protected void setUp()throws Exception{
+// not working ! not compatible with junit 5
+public class MojoTest extends AbstractMojoTestCase {
+    protected void setUp() throws Exception {
         // required
         super.setUp();
     }
 
-    protected void tearDown() throws Exception{
+    protected void tearDown() throws Exception {
         // required
         super.tearDown();
     }
@@ -22,7 +23,7 @@ public class MojoTest extends AbstractMojoTestCase{
 
         var myMojo = (OpenApiMojo) lookupMojo( "api-validator", pom );
         assertNotNull( myMojo );
-        myMojo.execute(); // not working in InteliJ
+        myMojo.execute();
     }
 
     public void testNoProperties() throws Exception {

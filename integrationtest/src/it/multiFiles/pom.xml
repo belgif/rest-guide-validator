@@ -23,8 +23,8 @@
                 </executions>
                 <configuration>
                     <files>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/swagger5.yaml</file>
-                        <file>src/test/resources/be/belgium/gcloud/rest/styleguide/validation/rules/petstore.json</file>
+                        <file>swaggerOk.yaml</file>
+                        <file>petstore.json</file>
                     </files>
                 </configuration>
             </plugin>
