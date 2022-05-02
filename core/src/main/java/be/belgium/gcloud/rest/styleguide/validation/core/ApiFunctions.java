@@ -73,14 +73,18 @@ public class ApiFunctions {
     }
 
     public static Set<String> getPathKeys(OpenAPI openAPI) {
+        if(openAPI.getPaths()==null || openAPI.getPaths().getPathItems()==null)
+            return Collections.emptySet();
         return openAPI.getPaths().getPathItems().keySet();
     }
     public static Paths getPaths(OpenAPI api){
         return api.getPaths();
     }
 
-    public static Set<String> getOperationId(OpenAPI api, OperationEnum verb, String statusCode){
-        return  api.getPaths().getPathItems().values().stream()
+    public static Set<String> getOperationId(OpenAPI openAPI, OperationEnum verb, String statusCode){
+        if(openAPI.getPaths()==null || openAPI.getPaths().getPathItems()==null)
+            return Collections.emptySet();
+        return  openAPI.getPaths().getPathItems().values().stream()
                 .filter(path -> filterPath(path, verb, statusCode))
                 .map(path -> getOperationId(path, verb))
                 .collect(Collectors.toSet());
@@ -116,37 +120,45 @@ public class ApiFunctions {
      * @param pattern
      * @return Map<String, String> The key is the definition name and the value is the property name
      */
-    public static Map<String, List<String>> getDefinitionPropertiesNoMatch(OpenAPI api, String pattern) {
+    public static Map<String, List<String>> getDefinitionPropertiesNoMatch(OpenAPI openAPI, String pattern) {
+        if(openAPI.getComponents()==null || openAPI.getComponents().getSchemas()==null)
+            return Collections.EMPTY_MAP;
         Map<String, List<String>> result = new HashMap<>();
 
-        for (String k : api.getComponents().getSchemas().keySet()) {
-            addNotMatch(pattern, result, api.getComponents().getSchemas().get(k).getProperties(), k);
+        for (String k : openAPI.getComponents().getSchemas().keySet()) {
+            addNotMatch(pattern, result, openAPI.getComponents().getSchemas().get(k).getProperties(), k);
         }
         return result;
     }
 
-    public static Set<String> getServerNotMatch(OpenAPI api, String regex) {
-        return api.getServers().stream()
+    public static Set<String> getServerNotMatch(OpenAPI openAPI, String regex) {
+        if(openAPI.getServers()==null)
+            return Collections.emptySet();
+        return openAPI.getServers().stream()
                 .map(Server::getUrl)
                 .filter(url -> ! url.matches(regex))
                 .collect(Collectors.toSet());
     }
 
-    public static List<ComponentProperties> getPropertiesNotMatch(OpenAPI api, String regex){
+    public static List<ComponentProperties> getPropertiesNotMatch(OpenAPI openAPI, String regex){
         List<ComponentProperties> properties = new ArrayList<>();
-        api.getComponents().getSchemas().forEach((k,v) ->{
-            if(v.getProperties() != null)
-                v.getProperties().keySet().stream()
-                        .filter(s-> ! s.matches(regex))
-                        .forEach(prop ->properties.add(new ComponentProperties(ComponentType.SCHEMA, k, prop)));
-        });
+        if(openAPI.getComponents()!=null && openAPI.getComponents().getSchemas()!=null)
+            openAPI.getComponents().getSchemas().forEach((k,v) ->{
+                if(v.getProperties() != null)
+                    v.getProperties().keySet().stream()
+                            .filter(s-> ! s.matches(regex))
+                            .forEach(prop ->properties.add(new ComponentProperties(ComponentType.SCHEMA, k, prop)));
+            });
         return properties;
     }
 
-    public static List<LineRangePath> getAllPathWithLineRange(OpenAPI api, OpenApiViolationAggregator oas){
+    public static List<LineRangePath> getAllPathWithLineRange(OpenAPI openAPI, OpenApiViolationAggregator oas){
         var paths = new ArrayList<LineRangePath>();
+        var pathKeys = getPathKeys(openAPI);
 
-        var pathKeys = getPathKeys(api);
+        if(pathKeys.isEmpty())
+            return Collections.emptyList();
+
         pathKeys.forEach(p-> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
         Collections.sort(paths);
         for(int i=0; i<pathKeys.size()-1;i++){
