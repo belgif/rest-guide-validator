@@ -1,16 +1,11 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.jsonpath.ApiPathFunctions;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Paths;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -103,7 +98,7 @@ class ApiFunctionsTest {
         var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
         var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
 
-        var paths = ApiFunctions.getAllPathWithLineRange(openApi, oas);
+        var paths = ApiFunctions.buildAllPathWithLineRange(openApi, oas);
         assertNotNull(paths);
         paths.forEach(p-> assertTrue(p.getEnd() > p.getStart()));
         paths.forEach(p-> log.debug(p.toString()));
@@ -115,7 +110,7 @@ class ApiFunctionsTest {
         var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
         var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
 
-        var paths = ApiFunctions.getAllPathWithLineRange(openApi, oas);
+        var paths = ApiFunctions.buildAllPathWithLineRange(openApi, oas);
         assertTrue(ApiFunctions.isInPathList(paths, "/health", 2070));
     }
 }

@@ -13,6 +13,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Slf4j
+/**
+ * Structure that hold the violations.
+ */
 public class OpenApiViolationAggregator {
 
     private File openApiFile;
@@ -39,20 +42,32 @@ public class OpenApiViolationAggregator {
         this.addViolation( ruleName, message,0, ViolationType.MANDATORY);
     }
 
-    public int getLineNumber(String predicat){
-        if(predicat == null)
+    /**
+     * Return the first line number for the predicate in the src.
+     * @param predicate String to find
+     * @return the line number or 0 if not found
+     */
+    public int getLineNumber(String predicate){
+        if(predicate == null)
             return 0;
         for(var i=0; i< src.size(); i++){
-            if (src.get(i).contains(predicat))
+            if (src.get(i).contains(predicate))
                 return i+1; // line start at 1
         }
         return 0;
     }
-    public int getLineNumber(int start, String predicat){
-        if(predicat == null)
+
+    /**
+     * Return the first line number for the predicate in the src but start a line 'start'.
+     * @param start the line number to start the research.
+     * @param predicate String to find
+     * @return the line number or 0 if not found
+     */
+    public int getLineNumber(int start, String predicate){
+        if(predicate == null)
             return 0;
         for(var i=start; i< src.size(); i++){
-            if (src.get(i).contains(predicat))
+            if (src.get(i).contains(predicate))
                 return i+1; // line start at 1
         }
         return 0;

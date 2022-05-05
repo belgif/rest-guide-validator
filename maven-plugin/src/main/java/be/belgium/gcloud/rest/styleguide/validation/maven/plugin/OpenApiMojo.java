@@ -63,6 +63,10 @@ public class OpenApiMojo extends AbstractMojo {
        addExclusions();
     }
 
+    /**
+     * Add a Console ConsoleOutputProcessor if outputTypes is empty.
+     * Instances Processors regarding the outputTypes.
+     */
     private void initOutputProcessor(){
         if ( outputTypes == null || outputTypes.isEmpty())
             outputProcessors = Set.of(new ConsoleOutputProcessor[]{new ConsoleOutputProcessor()});
@@ -82,6 +86,10 @@ public class OpenApiMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Throw an IllegalArgumentException if no file is provided or if a file is not in the maven project.
+     * Add all yaml or gson file from provided directories.
+     */
     private void initFiles(){
         if( files.isEmpty() && fileWithExclusions.isEmpty() )
             throw new IllegalArgumentException("api-validator need at least one file ! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
@@ -97,6 +105,10 @@ public class OpenApiMojo extends AbstractMojo {
         fromDir.forEach(list-> files.addAll(list));
     }
 
+    /**
+     * add global exclusions to all files.
+     * add all files in fileWithExclusions.
+     */
     private void addExclusions(){
         fileWithExclusions.forEach(fileWithExclusion -> fileWithExclusion.getExcludesPaths().addAll(excludeResources));
         fileWithExclusions.addAll( files.stream()
@@ -115,11 +127,13 @@ public class OpenApiMojo extends AbstractMojo {
         AtomicBoolean isValid = new AtomicBoolean(true);
         fileWithExclusions.forEach(fileWithExclusion->{
                     var file = fileWithExclusion.getFile() ;
+                    // build output file for the jUnitOutputProcessor
                     outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
                             .map(o -> (JUnitOutputProcessor)o)
                             .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
                                     new File(outputDir, "TEST-" + file.getName() + ".xml")));
 
+                    // isValid = isValid && OpenApiValidator.isOasValid(...)
                     isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
                 });
 

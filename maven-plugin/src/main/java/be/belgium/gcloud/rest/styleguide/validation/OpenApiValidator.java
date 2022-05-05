@@ -89,7 +89,7 @@ public class OpenApiValidator {
         try {
             openApiViolationAggregator = new OpenApiViolationAggregator();
             var openApi = ApiFunctions.buildOpenApiSpecification(file, openApiViolationAggregator);
-            var paths = ApiFunctions.getAllPathWithLineRange(openApi, openApiViolationAggregator);
+            var paths = ApiFunctions.buildAllPathWithLineRange(openApi, openApiViolationAggregator);
 
             callRuleOAS(openApiViolationAggregator, openApi);
             var excluded = openApiViolationAggregator.getViolations().stream()
