@@ -15,7 +15,7 @@
         <dependency>
             <groupId>be.belgium.gcloud.rest</groupId>
             <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>
