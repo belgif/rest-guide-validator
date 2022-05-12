@@ -1,0 +1,23 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function void pluralViolation(OpenApiViolationAggregator oas, String path){
+    oas.addViolation("pathInPlural",
+           		 "A plural noun SHOULD be used for collection names. \t"+ path,
+           		 oas.getLineNumber(path),
+           		 ViolationType.RECOMMENDED);
+}
+
+rule "Rule-PathInPlural"
+    when
+       $api: OpenAPI()
+       $path: String() from ApiFunctions.getReturnCollectionPathKey($api)
+    then
+      if( ! $path.endsWith("s"))
+        pluralViolation(oas, $path);
+end

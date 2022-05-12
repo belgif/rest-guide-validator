@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -269,5 +270,58 @@ public class ApiFunctions {
     public static boolean isInPathList(List<LineRangePath> lineRangePaths, List<String> paths, int lineNumber){
         return lineRangePaths.stream()
                 .anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
+    }
+
+    /**
+     * Get a list of pathkey that return a collection.
+     * @param openAPI
+     * @return
+     */
+    public static List<String> getReturnCollectionPathKey(OpenAPI openAPI){
+        return getPathKeys(openAPI).stream()
+                .filter(pathKey->isReturnCollection(openAPI, openAPI.getPaths().getPathItem(pathKey)))
+                .collect(Collectors.toList());
+    }
+
+    static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem){
+        try{
+            AtomicBoolean isCollection = new AtomicBoolean(false);
+            pathItem.getGET().getResponses().getAPIResponses().values().forEach(apiResponse -> {
+                apiResponse.getContent().getMediaTypes().values().forEach(mediaType -> {
+                    var schema = mediaType.getSchema();
+                    if (schema.getItems() != null){
+                        isCollection.set(true);
+                    }else if (schema.getProperties()!=null && schema.getProperties().containsKey("items")){
+                        isCollection.set(true);
+                    }
+                    else {
+                        if(isCollection(openAPI, schema.getRef()))
+                            isCollection.set(true);
+                    }
+                });
+            });
+            return isCollection.get();
+        }catch (NullPointerException ex){
+            return false;
+        }
+    }
+
+    private static boolean isCollection(OpenAPI openAPI, String ref){
+        try{
+            if( ! ref.startsWith("#")){
+                log.debug("Cannot check an external reference.");
+                return false;
+            }
+            return openAPI.getComponents().getSchemas().get(getRefName(ref)).getProperties().containsKey("items");
+
+        }catch (NullPointerException ex){
+            return false;
+        }
+    }
+
+    private static String getRefName(String ref){
+        if( ! ref.contains("/"))
+            return ref;
+        return ref.substring(ref.lastIndexOf('/')+1);
     }
 }

@@ -2,10 +2,12 @@ package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -112,5 +114,40 @@ class ApiFunctionsTest {
 
         var paths = ApiFunctions.buildAllPathWithLineRange(openApi, oas);
         assertTrue(ApiFunctions.isInPathList(paths, "/health", 2070));
+    }
+
+    @Test
+    void getItems() throws IOException {
+        var api = getOpenApi();
+        var paths = ApiFunctions.getPaths(api);
+        assertNotNull(paths);
+        var pathItem = paths.getPathItems().get("/entity/contacts");
+        var apiResponse =  pathItem.getGET().getResponses().getAPIResponses().get("200");
+
+        apiResponse.getContent().getMediaTypes().values().forEach(mediaType -> {
+            log.debug("items: {}", mediaType.getSchema().getItems());
+            log.debug("properties: {}", mediaType.getSchema().getProperties());
+
+            var ref = mediaType.getSchema().getRef();
+            log.debug("ref: {}", ref);
+            var schema = api.getComponents().getSchemas().get("ContactsCollection");
+            log.debug("schema.getProperties()..containsKey('items'): {}", schema.getProperties().containsKey("items"));
+        });
+    }
+
+    @Test
+    void testIsReturnCollection() throws IOException {
+        var api = getOpenApi();
+        var pathItem = ApiFunctions.getPaths(api).getPathItems().get("/entity/contacts");
+        var isReturnCollection = ApiFunctions.isReturnCollection(api, pathItem);
+
+        assertTrue(isReturnCollection);
+    }
+
+    @Test
+    void getReturnCollectionPathKey() throws IOException {
+        var paths = ApiFunctions.getReturnCollectionPathKey(getOpenApi());
+        assertNotNull(paths);
+        assertEquals(11, paths.size());
     }
 }

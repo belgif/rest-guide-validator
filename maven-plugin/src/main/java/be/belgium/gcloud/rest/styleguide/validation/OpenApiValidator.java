@@ -2,6 +2,7 @@ package be.belgium.gcloud.rest.styleguide.validation;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -103,6 +104,9 @@ public class OpenApiValidator {
             for (OutputProcessor outputProcessor : outputProcessors) {
                 outputProcessor.process(openApiViolationAggregator);
             }
-        return openApiViolationAggregator.getViolations().isEmpty();
+        return openApiViolationAggregator.getViolations().stream()
+                .filter(violation -> violation.type == ViolationType.MANDATORY)
+                .collect(Collectors.toList())
+                .isEmpty();
     }
 }
