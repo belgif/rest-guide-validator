@@ -4,3 +4,4 @@ metadata:
   name: styleguide-validation
 spec:
   type: service
+  lifecycle: production
