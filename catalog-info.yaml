@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: styleguide-validation
   annotations:
-      git.cloud.extranetdc.be/project-slug: rest/styleguide-validation
+      git-cicd.gcloud.belgium.be/project-slug: rest/styleguide-validation
   links:
     - url: https://git-cicd.gcloud.belgium.be/rest/styleguide-validation
       title: Git Repo
