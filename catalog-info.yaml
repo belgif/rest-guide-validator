@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: styleguide-validation
   annotations:
-      git-cicd.gcloud.belgium.be/project-slug: rest/styleguide-validation
+    git-cicd.gcloud.belgium.be/project-slug: rest/styleguide-validation
 spec:
   type: service
   lifecycle: production
