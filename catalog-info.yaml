@@ -2,7 +2,5 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: styleguide-validation
-  annotations:
-    git-cicd.gcloud.belgium.be/project-slug: rest/styleguide-validation
 spec:
   type: service
