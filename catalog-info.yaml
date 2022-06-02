@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: styleguide-validation
+  annotations:
+      git.cloud.extranetdc.be/project-slug: rest/styleguide-validation
+  links:
+    - url: https://git-cicd.gcloud.belgium.be/rest/styleguide-validation
+      title: Git Repo
+      icon: git
+spec:
+  type: service
+  lifecycle: production
+  owner: ICC
