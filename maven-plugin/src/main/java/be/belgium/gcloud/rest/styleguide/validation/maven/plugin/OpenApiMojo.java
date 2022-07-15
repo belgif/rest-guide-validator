@@ -11,6 +11,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -71,6 +72,12 @@ public class OpenApiMojo extends AbstractMojo {
         if ( outputTypes == null || outputTypes.isEmpty())
             outputProcessors = Set.of(new ConsoleOutputProcessor[]{new ConsoleOutputProcessor()});
         else {
+            try {
+                Files.createDirectories(outputDir.toPath());
+            } catch (IOException e) {
+                getLog().error(outputDir+" directory doesn't exist and cannot be created!", e);
+            }
+
             outputProcessors = new HashSet<>();
             outputTypes.forEach(outputType -> {
                 switch (outputType) {
