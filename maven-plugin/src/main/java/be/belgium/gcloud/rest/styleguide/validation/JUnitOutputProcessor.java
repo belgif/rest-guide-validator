@@ -52,8 +52,8 @@ public class JUnitOutputProcessor implements OutputProcessor {
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
         Testsuite testsuite = Testsuite.builder()
-                .name(this.getClass().getCanonicalName())
-                .pkg(this.getClass().getPackageName())
+                .name("be.belgium.gcloud.rest.styleguide.validation.core.rules")
+              //  .pkg(this.getClass().getPackageName())
                 .timestamp(LocalDateTime.now().toString())
                 .tests(violationAggregator.getRuleNumber())
                 .time(violationAggregator.getTime())
@@ -61,7 +61,7 @@ public class JUnitOutputProcessor implements OutputProcessor {
 
         violationAggregator.getViolations().forEach(violation -> {
             Testcase testcase = Testcase.builder()
-                    .classname("be.belgium.gcloud.rest.styleguide.validation.core.rules")
+                    .classname("be.belgium.gcloud.rest.styleguide.validation.core.rules"+violation.getRuleName())
                     .name(violation.getRuleName())
                     .failure(new Failure(violation.getType().name(), "Line: " + String.valueOf(violation.getLineNumber()), violation.getMessage()))
                     .build();

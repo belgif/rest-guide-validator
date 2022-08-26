@@ -84,6 +84,8 @@ public class OpenApiMojo extends AbstractMojo {
                     case NONE: break;
                     case JUNIT:
                         outputProcessors.add(new JUnitOutputProcessor()); break;
+                    case JUNIT2:
+                        outputProcessors.add(new JUnitOutputProcessor2()); break;
                     case LOG4J:
                         outputProcessors.add(new Log4JOutputProcessor()); break;
                     default:
@@ -139,6 +141,10 @@ public class OpenApiMojo extends AbstractMojo {
                             .map(o -> (JUnitOutputProcessor)o)
                             .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
                                     new File(outputDir, "TEST-" + file.getName() + ".xml")));
+
+                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor2)
+                            .map(o -> (JUnitOutputProcessor2)o)
+                            .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputDir(outputDir));
 
                     // isValid = isValid && OpenApiValidator.isOasValid(...)
                     isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());

@@ -4,5 +4,5 @@ package be.belgium.gcloud.rest.styleguide.validation;
  * Output type for OpenApiValidator.
  */
 public enum OutputType {
-    CONSOLE, JUNIT, LOG4J, NONE
+    CONSOLE, JUNIT, JUNIT2,LOG4J, NONE
 }
