@@ -10,10 +10,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -86,6 +84,8 @@ public class OpenApiMojo extends AbstractMojo {
                         outputProcessors.add(new JUnitOutputProcessor()); break;
                     case JUNIT2:
                         outputProcessors.add(new JUnitOutputProcessor2()); break;
+                    case JUNIT3:
+                        outputProcessors.add(new JUnitOutputProcessor3()); break;
                     case LOG4J:
                         outputProcessors.add(new Log4JOutputProcessor()); break;
                     default:
@@ -133,7 +133,7 @@ public class OpenApiMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         init();
 
-        AtomicBoolean isValid = new AtomicBoolean(true);
+        var isValid = new AtomicBoolean(true);
         fileWithExclusions.forEach(fileWithExclusion->{
                     var file = fileWithExclusion.getFile() ;
                     // build output file for the jUnitOutputProcessor
@@ -142,9 +142,9 @@ public class OpenApiMojo extends AbstractMojo {
                             .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
                                     new File(outputDir, "TEST-" + file.getName() + ".xml")));
 
-                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor2)
-                            .map(o -> (JUnitOutputProcessor2)o)
-                            .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputDir(outputDir));
+                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof DirectoryOutputProcessor)
+                            .map(o -> (DirectoryOutputProcessor)o)
+                            .forEach(processor -> processor.setOutput(outputDir));
 
                     // isValid = isValid && OpenApiValidator.isOasValid(...)
                     isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());

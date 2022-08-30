@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OpenApiValidatorTest {
 
     @Test
-    void isValidTest() throws IOException {
+    void isValidTest()  {
         var file = new File(getClass().getResource("rules/swagger_bad.yaml").getFile());
         assertFalse(OpenApiValidator.isOasValid(file));
 
@@ -22,6 +22,7 @@ public class OpenApiValidatorTest {
 
         assertFalse(OpenApiValidator.isOasValid(file, new ConsoleOutputProcessor(), new Log4JOutputProcessor()));
     }
+
 
     @Test
     void isOasValid() {

@@ -1,9 +1,12 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.junit;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.Violation;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import lombok.*;
+
+import java.util.Objects;
 
 /**
  * Generated class to write a XML output file (junit)

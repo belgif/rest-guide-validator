@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * Output processor to write a junit xml test result.
- * This processor aggregate all tests (ignore the source files).
+ * This processor aggregate all tests (ignore the source files) and group it by rules.
  * DO NOT use it if the files are about different apis.
  */
 @Getter
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
-public class JUnitOutputProcessor2 implements OutputProcessor, DirectoryOutputProcessor {
+public class JUnitOutputProcessor3 implements OutputProcessor, DirectoryOutputProcessor {
     private static final String RULE_PACKAGE = "be.belgium.gcloud.rest.styleguide.validation.core.rules";
 
     /**
@@ -74,19 +74,30 @@ public class JUnitOutputProcessor2 implements OutputProcessor, DirectoryOutputPr
                     .name(getNameUpFirst(k))
                     .timestamp(LocalDateTime.now().toString())
                     .tests(violationList.size())
+                    .failures(violationList.size())
                     .build();
+            var testcase = Testcase.builder().classname(getNameUpFirst(k)).build();
+            testsuite.addTestcase(testcase);
 
             violationList.forEach(v->{
-                Testcase testcase = Testcase.builder()
-                        .classname(getNameUpFirst(k))
-                        .name(" -> line: " + String.valueOf(v.getLineNumber()))
-                        .failure(new Failure(v.getType().name(), v.getMessage(), ""))
-                        .build();
-                testsuite.addTestcase(testcase);
+                    if(testcase.getFailure()!=null){
+                        testcase.getFailure().addMessage(getMessageWithLineNumber(v));
+                    }else {
+                        testcase.setFailure(new Failure(v.getType().name(), getMessageWithLineNumber(v), ""));
+                    }
+
+
             });
 
             write(testsuite);
         });
+    }
 
+    private String getMessageWithLineNumber(Violation violation){
+        var sb = new StringBuffer(" -> line ");
+        sb.append(violation.getLineNumber());
+        sb.append(": ");
+        sb.append(violation.getMessage());
+        return sb.toString();
     }
 }

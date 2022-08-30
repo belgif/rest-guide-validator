@@ -22,4 +22,10 @@ public class Failure {
     private String message;
     @XmlValue
     private String content;
+
+    public void addMessage(String msg){
+        if(message != null)
+            message += "\n" + msg;
+        else message = msg;
+    }
 }

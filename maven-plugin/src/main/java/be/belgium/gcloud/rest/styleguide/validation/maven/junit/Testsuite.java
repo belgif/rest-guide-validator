@@ -103,6 +103,8 @@ public class Testsuite {
 
 
     public List<Testcase> getTestcase() {
+        if(testcase == null)
+            testcase = new ArrayList<>();
         return testcase;
     }
     public void addTestcase(Testcase testcase){
