@@ -19,13 +19,8 @@ public class Failure {
     @XmlAttribute
     private String type;
     @XmlAttribute
-    private String message;
+    private String message; // Error Details in Jenkins
     @XmlValue
     private String content;
 
-    public void addMessage(String msg){
-        if(message != null)
-            message += "\n" + msg;
-        else message = msg;
-    }
 }

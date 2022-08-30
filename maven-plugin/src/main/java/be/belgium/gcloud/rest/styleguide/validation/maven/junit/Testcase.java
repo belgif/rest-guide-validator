@@ -39,4 +39,10 @@ public class Testcase {
     public Failure failure;
     public Error error;
 
+    public void addMSysOut(String msg){
+        if(systemOut != null)
+            systemOut += "\n" + msg;
+        else systemOut = msg;
+    }
+
 }

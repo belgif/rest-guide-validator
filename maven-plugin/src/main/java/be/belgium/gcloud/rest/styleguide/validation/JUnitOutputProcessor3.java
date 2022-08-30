@@ -76,28 +76,32 @@ public class JUnitOutputProcessor3 implements OutputProcessor, DirectoryOutputPr
                     .tests(violationList.size())
                     .failures(violationList.size())
                     .build();
-            var testcase = Testcase.builder().classname(getNameUpFirst(k)).build();
+            var sample = violations.get(k).get(0);
+            var testcase = Testcase.builder()
+                    .classname(getNameUpFirst(k))
+                    .name(sample.getType().name())
+                    .failure(new Failure(sample.getType().name(), sample.getMessage().split("\t")[0], ""))
+                    .build();
             testsuite.addTestcase(testcase);
 
             violationList.forEach(v->{
-                    if(testcase.getFailure()!=null){
-                        testcase.getFailure().addMessage(getMessageWithLineNumber(v));
-                    }else {
-                        testcase.setFailure(new Failure(v.getType().name(), getMessageWithLineNumber(v), ""));
-                    }
-
-
+                testcase.addMSysOut(getMessageDetail(v));
             });
 
             write(testsuite);
         });
     }
 
-    private String getMessageWithLineNumber(Violation violation){
+    private String getMessageDetail(Violation v){
+        var messages = v.getMessage().split("\t");
+
         var sb = new StringBuffer(" -> line ");
-        sb.append(violation.getLineNumber());
-        sb.append(": ");
-        sb.append(violation.getMessage());
+        sb.append(v.getLineNumber());
+        if(messages.length > 1){
+            sb.append(": ");
+            sb.append(messages[1]);
+        }
+
         return sb.toString();
     }
 }
