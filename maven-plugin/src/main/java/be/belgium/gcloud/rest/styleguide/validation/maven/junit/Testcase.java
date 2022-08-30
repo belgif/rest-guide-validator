@@ -1,13 +1,10 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.junit;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.Violation;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.*;
 import lombok.*;
 
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Generated class to write a XML output file (junit)
@@ -24,8 +21,6 @@ public class Testcase {
     private String classname;
     @XmlAttribute
     private String name;
-    @XmlElement(name = "system-out")
-    private String systemOut;
     @XmlAttribute
     private String assertions;
     @XmlAttribute
@@ -34,16 +29,32 @@ public class Testcase {
     private String status;
     @XmlAttribute
     private String skipped;
-    @XmlAttribute(name = "system-err")
+
+    @XmlElement(name = "system-err")
     private String systemErr;
 
-    public Failure failure;
-    public Error error;
+    Failure failure;
+    Error error;
 
-    public void addMSysOut(String msg){
-        if(systemOut != null)
-            systemOut += "\n" + msg;
-        else systemOut = msg;
+    @XmlTransient
+    private Map<Integer, String> sysout = new HashMap<>();
+
+
+    @XmlElement(name = "system-out")
+    public String getSystemOut(){
+        if (sysout == null)
+            return "";
+        return sysout.keySet().stream().sorted()
+                .map(k -> "Line " + k + ": " + sysout.get(k))
+                .collect(Collectors.joining("\n"));
+
+    }
+
+    public void appendSysOut(int line, String msg){
+        if(sysout == null)
+            sysout = new HashMap<>();
+        sysout.put(line, msg!=null?msg:" -- no additional info --");
+
     }
 
 }

@@ -85,7 +85,7 @@ public class JUnitOutputProcessor3 implements OutputProcessor, DirectoryOutputPr
             testsuite.addTestcase(testcase);
 
             violationList.forEach(v->{
-                testcase.addMSysOut(getMessageDetail(v));
+                testcase.appendSysOut(v.getLineNumber(), getMessageDetail(v));
             });
 
             write(testsuite);
@@ -94,14 +94,6 @@ public class JUnitOutputProcessor3 implements OutputProcessor, DirectoryOutputPr
 
     private String getMessageDetail(Violation v){
         var messages = v.getMessage().split("\t");
-
-        var sb = new StringBuffer(" -> line ");
-        sb.append(v.getLineNumber());
-        if(messages.length > 1){
-            sb.append(": ");
-            sb.append(messages[1]);
-        }
-
-        return sb.toString();
+        return messages.length > 1  ? messages[1] : null ;
     }
 }
