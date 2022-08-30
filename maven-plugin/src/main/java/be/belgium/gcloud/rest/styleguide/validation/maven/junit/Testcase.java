@@ -4,6 +4,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.Violation;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
 import lombok.*;
 
 import java.util.Objects;
@@ -23,7 +24,7 @@ public class Testcase {
     private String classname;
     @XmlAttribute
     private String name;
-    @XmlAttribute(name = "system-out")
+    @XmlElement(name = "system-out")
     private String systemOut;
     @XmlAttribute
     private String assertions;
