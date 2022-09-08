@@ -26,6 +26,7 @@ class OpenApiMojoTest {
         openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml"), new File(BAS_DIR + "swagger4.yaml")});
         var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(OpenApiMojo.FAILURE_MESSAGE, exception.getMessage());
+        System.err.println("--Test-- sys.err visible in Jenkins test result ??");
     }
     @Test
     void executeNoFile() {
