@@ -2,6 +2,7 @@
 
 The rest-styleguide-validation Plugin is used to validate a Swagger API to conforms the G-Cloud standards (https://www.gcloud.belgium.be/rest/).
 
+*Note: the services-rest-parent use this plugin and the result is visible in Jenkins Test results*
 ## Goal Overview
 The goal api-validator has as default phase the LifecyclePhase.PREPARE_PACKAGE.
 
@@ -26,7 +27,6 @@ The following example demonstrates a basic plugin configuration for validating o
         <configuration>
             <files>
                 <file>src/main/resources/swagger.yaml</file>
-                <file>src/main/resources/petstore.json</file>
             </files>
         </configuration>
     </plugin>
@@ -163,11 +163,11 @@ The 'fileWithExclusions' is useful with the legacy apis.
 ```   
 ## References
 
-| Parameter | Type | Default | Description |
-| --------- | ---- | ------- | ----------- |
-| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.  |
-| fileWithExclusions | Collection of FileWithExclusion |  | a file and a collection of excludesPath    |
-| excludeResources | Collection of String | | path to exclude from the validation for all files |
-| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.|
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE |
-| outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType) |
+| Parameter | Type | Default | Description                                                                      |
+| --------- | ---- | ------- |----------------------------------------------------------------------------------|
+| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.               |
+| fileWithExclusions | Collection of FileWithExclusion |  | a file and a collection of excludesPath                                          |
+| excludeResources | Collection of String | | path to exclude from the validation for all files                                |
+| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                       |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE |
+| outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                    |

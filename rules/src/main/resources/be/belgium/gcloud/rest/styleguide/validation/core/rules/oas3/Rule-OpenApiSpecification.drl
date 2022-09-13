@@ -1,0 +1,16 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas3;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+
+rule "OpenAPI Specification 3.1"
+	when
+		OpenAPI(getOpenapi().startsWith("3.1"))
+
+	then
+        oas.addViolation("openAPISpecification3.1",
+         "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling."
+        );
+end

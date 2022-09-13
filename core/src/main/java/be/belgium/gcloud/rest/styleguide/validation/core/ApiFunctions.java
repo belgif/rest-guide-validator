@@ -66,6 +66,18 @@ public class ApiFunctions {
 
         var parserResult = openApiParser.readLocation(file.getAbsolutePath(), null, parseOptions);
         var openAPI = parserResult.getOpenAPI();
+
+        // parser return a null value when the spec version is not 2.x -3.0.x
+        // and SwAdapter raise a silent JsonParserException
+        // if spec is 3.1 we need the info to raise a rule violation
+        if(openAPI == null){
+            openAPI = new io.swagger.v3.oas.models.OpenAPI();
+            var version = getLines(file).stream()
+                                                     .filter(line -> line.trim().startsWith("openapi: "))
+                                                     .findFirst().orElseThrow()
+                                                     .substring(9);
+            openAPI.setOpenapi(version);
+        }
         return SwAdapter.toOpenAPI(openAPI);
     }
 
