@@ -166,7 +166,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransactionDetail'
-  '/transactions/{group}/{id}/trace':
+  '/transactions/{group}/{id}/trace.txt':
     get:
       tags:
         - transaction-controller-impl

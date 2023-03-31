@@ -7,8 +7,11 @@ info:
     http://localhost:8080/transactions/sgw-prd-00
   version: '1.7'
 servers:
-  - url: 'http://myorganisation.be:8080'
-    description: Generated server url
+  - url: '/api/v3'
+  - url: 'http://localhost/api/v3'
+  - url: 'http://localhost:8080/api/v3'
+  - url: 'https://myorganisation.be/api/v3'
+  - url: 'https://localhost/api/v3'
 paths:
   '/transactions/{group}':
     get:
@@ -343,7 +346,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CollectionResourceAvailabilityZone'
-  /auth/token:
+  '/doc/openapi.yaml':
     get:
       tags:
         - auth-controller-impl

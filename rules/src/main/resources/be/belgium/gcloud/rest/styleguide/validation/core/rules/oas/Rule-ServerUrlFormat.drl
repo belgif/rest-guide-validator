@@ -7,11 +7,18 @@ global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 
 
 function String urlPattern(){
-    return "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(\\/[A-Za-z0-9]*)*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
+    return "^((http://localhost/?)|(https://)|/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(/[A-Za-z0-9]*)*(/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*/v[0-9]+$";
 }
+
 function void violationServerUrlFormat(OpenApiViolationAggregator oas, String url){
     oas.addViolation("serverUrlFormat",
-                     "The server url (or the basePath) should follow this format: host/[pathPrefix]/apiName/vmajorVersion \t"+ url,
+                     "The server url (or the basePath) should follow this format: host/[pathPrefix]/apiName/vmajorVersion. The path segments must be written in lowerCamelCase. BAD: "+ url,
+                     oas.getLineNumber(url));
+}
+
+function void violationServerSecuredUrl(OpenApiViolationAggregator oas, String url){
+    oas.addViolation("serverUrlFormat",
+                     "The server url (or the basePath) should be at least secured on transport level using a one-way TLS connection.",
                      oas.getLineNumber(url));
 }
 
@@ -21,4 +28,12 @@ rule "Server Url or basePath Format"
 		$serverUrl: String() from ApiFunctions.getServerNotMatch($api, urlPattern())
     then
         violationServerUrlFormat(oas, $serverUrl);
+end
+
+rule "Secured Server Url or secured basePath"
+    when
+		$api: OpenAPI()
+		$serverUrl: String() from ApiFunctions.getServerNotMatch($api, "^(http://localhost|https://|/?).*")
+    then
+        violationServerSecuredUrl(oas, $serverUrl);
 end

@@ -8,6 +8,10 @@ info:
   version: '1.7'
 servers:
   - url: '/api/v3'
+  - url: 'http://localhost/api/v3'
+  - url: 'http://localhost:8080/api/v3'
+  - url: 'https://myorganisation.be/api/v3'
+  - url: 'https://localhost/api/v3'
 paths:
   '/transactions/{group}':
     get:

@@ -79,13 +79,24 @@ class ApiFunctionsTest {
 
     @Test
     void testUrlV3() throws IOException {
-        var pattern = "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(\\/[A-Za-z0-9]*)*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
-        var file = new File(getClass().getResource("../rules/petstore.json").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
-        var url = openApi.getServers().get(0).getUrl();
-        log.debug(url);
+        var pattern = "^((http://localhost/?)|(https://)|/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(\\/[A-Za-z0-9]*)*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
+
+        var url = "/api/v3";
         assertTrue(url.matches(pattern));
+        url = "myserver/api/v3";
+        assertTrue(url.matches(pattern), url);
+        url = "/myserver/api/v3";
+        assertTrue(url.matches(pattern), url);
+        url = "https://myorg/api/v3";
+        assertTrue(url.matches(pattern), url);
+        url = "http://localhost/api/v3";
+        assertTrue(url.matches(pattern), url);
+        url = "http://myorg/api/v3";
+        assertFalse(url.matches(pattern), url);
+        url = "https://myorg/api";
+        assertFalse(url.matches(pattern), url);
     }
+
 
     @Test
     void testProperties()throws IOException {

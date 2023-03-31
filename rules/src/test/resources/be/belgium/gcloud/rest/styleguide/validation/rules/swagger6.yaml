@@ -33,7 +33,7 @@ paths:
           description: "successful operation"
   /api/doc/swagger.yaml:
     get:
-      operationId: "GET /api/doc/swagger.yaml"
+      operationId: "GET /api/doc/openapi.yaml"
       produces:
         - "application/x-yaml"
       parameters: []
