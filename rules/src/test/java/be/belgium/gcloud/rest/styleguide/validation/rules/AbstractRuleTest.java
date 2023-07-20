@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 public abstract class AbstractRuleTest {
     protected int errorCount = 1;
+    protected String ruleName = null;
 
     protected abstract OpenApiViolationAggregator callRules(String fileName) throws IOException ;
 
@@ -32,8 +33,8 @@ public abstract class AbstractRuleTest {
     @Test
     protected void isInvalidTest() throws IOException {
         var apiDetail = callRules("/swagger_bad.yaml");
-
         assertFalse(apiDetail.getViolations().size() < 1);
+        String name = getRuleName();
         var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).collect(Collectors.toSet());
         assertTrue( (getErrorCount() == 1 && violations.size() > 0) | (getErrorCount() > 1 && violations.size() == getErrorCount() ) ,
                 getMessage(violations));
@@ -50,6 +51,10 @@ public abstract class AbstractRuleTest {
     }
 
     protected String getRuleName(){
-        return lowerCaseFirstStripTestSuffix(getClass().getSimpleName());
+        return ((ruleName != null) ? ruleName : lowerCaseFirstStripTestSuffix(getClass().getSimpleName()));
+    }
+
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
     }
 }

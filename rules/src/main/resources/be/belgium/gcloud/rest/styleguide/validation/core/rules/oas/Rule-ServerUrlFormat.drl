@@ -11,7 +11,7 @@ function String urlPattern(){
 }
 
 function void violationServerUrlFormat(OpenApiViolationAggregator oas, String url){
-    oas.addViolation("serverUrlFormat",
+    oas.addViolation("[uri-format]",
                      "The server url (or the basePath) should follow this format: host/[pathPrefix]/apiName/vmajorVersion. The path segments must be written in lowerCamelCase. BAD: "+ url,
                      oas.getLineNumber(url));
 }

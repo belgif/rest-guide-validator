@@ -9,10 +9,10 @@ import java.io.IOException;
 
 @Getter
 public class DefaultMediaTypeTest extends AbstractOasRuleTest {
-    protected String ruleName = "defaultMediaTypeProduce";
+    protected String ruleName = "[med-types]";
 
     @ParameterizedTest
-    @ValueSource(strings = {"defaultMediaTypeProduce", "defaultMediaTypeConsume"})
+    @ValueSource(strings = {"[med-types]"})
     void testGetDefaultMediaTypeProduce(String ruleName) throws IOException {
         this.ruleName = ruleName;
         super.isInvalidTest();

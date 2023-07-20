@@ -9,7 +9,7 @@ function String patternSlash(){
     return ".+\\/$";
 }
 function void violationSlash(OpenApiViolationAggregator oas, String path){
-    oas.addViolation("PathTrailingSlash", "Trailing slashes MUST NOT be used. \t"+ path, oas.getLineNumber(path));
+    oas.addViolation("[uri-notat]", "Trailing slashes MUST NOT be used. \t"+ path, oas.getLineNumber(path));
 }
 
 rule "Path Trailing Slash V2"

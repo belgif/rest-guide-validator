@@ -11,12 +11,12 @@ global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 global java.lang.String jsonString;
 
 function void violationProduce(OpenApiViolationAggregator oas, String operation, String operationId){
-    oas.addViolation("defaultMediaTypeProduce",
+    oas.addViolation("[med-types]",
      "OpenAPI 2.0 specifications SHOULD specify following default media types for produces: 'application/json' and 'application/problem+json'. \t"+ operationId + " ("+operation+")",
       oas.getLineNumber(operationId));
 }
 function void violationConsume(OpenApiViolationAggregator oas, String operation, String operationId){
-    oas.addViolation("defaultMediaTypeConsume",
+    oas.addViolation("[med-types]",
      "OpenAPI 2.0 specifications SHOULD specify following default media types for consumes: 'application/json'. \t"+ operationId + " ("+operation+")",
       oas.getLineNumber(operationId));
 }

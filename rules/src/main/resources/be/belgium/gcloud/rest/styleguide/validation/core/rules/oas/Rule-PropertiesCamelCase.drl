@@ -10,7 +10,7 @@ function String patternCamelCase(){
     return "^[a-z]+([A-Z]?[a-z0-9]+)*$" ;
 }
 function void violationPropertiesCamelCase(OpenApiViolationAggregator oas, ComponentProperties property){
-    oas.addViolation("JsonPropertiesCamelCase",
+    oas.addViolation("[jsn-naming]",
            		 "All JSON property names must be in American English and must be written in lowerCamelCase notation. \t" +
            		    "[" + property.getType() + "]" + property.getPropertyKey() + ":" + property.getPropertyName(),
            		  oas.getLineNumber(oas.getLineNumber(property.getPropertyKey()),property.getPropertyName()));

@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class OpenApiUriExtensionsTest extends AbstractOasRuleTest {
-    protected String ruleName = "uriExtensions";
+    protected String ruleName = "[uri-extens]";
 
 }

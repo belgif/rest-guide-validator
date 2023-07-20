@@ -5,4 +5,5 @@ import lombok.Getter;
 
 @Getter
 public class PathTrailingSlashTest extends AbstractOasRuleTest {
+    private String ruleName = "[uri-notat]";
 }

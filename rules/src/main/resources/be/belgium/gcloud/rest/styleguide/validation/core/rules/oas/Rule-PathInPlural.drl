@@ -7,7 +7,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
 function void pluralViolation(OpenApiViolationAggregator oas, String path){
-    oas.addViolation("pathInPlural",
+    oas.addViolation("[col-name]",
            		 "A plural noun SHOULD be used for collection names. \t"+ path,
            		 oas.getLineNumber(path),
            		 ViolationType.RECOMMENDED);

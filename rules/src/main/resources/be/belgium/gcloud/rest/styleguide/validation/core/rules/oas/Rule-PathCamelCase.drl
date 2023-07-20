@@ -10,7 +10,7 @@ function String patternPath(){
       "^\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*(\\/\\{?[a-z0-9]+([A-Z]?[a-z0-9]+)*\\}?)*\\/?$|(^\\/doc\\/swagger\\.json$)|(^\\/doc\\/swagger\\.yaml)|(^\\/doc\\/openapi\\.json$)|(^\\/doc\\/openapi\\.yaml$)";
 }
 function void violationPath(OpenApiViolationAggregator oas, String path){
-    oas.addViolation("pathCamelCase",
+    oas.addViolation("[uri-notat]",
            		 "The URI notation MUST use lowerCamelCase to enhance readability and to separate compound names. \t"+ path,
            		 oas.getLineNumber(path));
 }

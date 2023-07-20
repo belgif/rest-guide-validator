@@ -11,7 +11,7 @@ function String patternUriExt(){
 function void violationUriExt(OpenApiViolationAggregator oas, String path){
     if (! path.equalsIgnoreCase("/doc/swagger.json") && ! path.equalsIgnoreCase("/doc/swagger.yaml") &&
         ! path.equalsIgnoreCase("/doc/openapi.json") && ! path.equalsIgnoreCase("/doc/openapi.yaml"))
-        oas.addViolation("uriExtensions",
+        oas.addViolation("[uri-extens]",
                          "The URI SHOULD NOT contain a file extension (A notable exception to this rule is the swagger/OpenAPI file). \t"+ path,
                          oas.getLineNumber(path));
 }

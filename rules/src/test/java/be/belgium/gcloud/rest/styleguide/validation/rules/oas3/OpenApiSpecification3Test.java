@@ -5,5 +5,5 @@ import lombok.Getter;
 
 @Getter
 public class OpenApiSpecification3Test extends AbstractOasRuleTest {
-    protected String ruleName = "openAPISpecification3.1";
+    protected String ruleName = "[oas-contra]";
 }
