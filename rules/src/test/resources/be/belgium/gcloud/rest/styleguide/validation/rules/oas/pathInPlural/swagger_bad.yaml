@@ -88,94 +88,130 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
       x-oauth2-required-scopes: any
-    /entity/contacts:
-      get:
-        tags:
-          - contacts
-        summary: Find all the entities' contacts related to matching all the given filters
-        description: Find all the entities' contacts related to matching all the given filters
-        operationId: findEntityContacts
-        produces:
-          - application/json
-          - application/problem+json
-        parameters:
-          - name: nssoNbr
-            in: query
-            description: the NOSS identifier of an employer
-            required: false
-            type: array
-            items:
-              type: string
-            collectionFormat: multi
-            x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.NossRegistrationNumberIterable
-          - name: cbeNbr
-            in: query
-            description: the CBE identifier of a company
-            required: false
-            type: array
-            items:
-              type: string
-            collectionFormat: multi
-            x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.CompanyIdIterable
-          - name: foleenId
-            in: query
-            description: the Foleen identifier of a foreign company
-            required: false
-            type: array
-            items:
-              type: string
-            collectionFormat: multi
-          - name: euid
-            in: query
-            description: the european identifier of a european company
-            required: false
-            type: array
-            items:
-              type: string
-            collectionFormat: multi
-          - name: contextType
-            in: query
-            description: The context related to the contacts (can be multiple)
-            required: false
+  /categorie/{catId}:
+    get:
+      tags:
+        - categories
+      summary: Get the list of available categories
+      description: Get the list of available categories. The list is fixed.
+      operationId: getAllCategories
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CategoriesCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /entity/contacts:
+    get:
+      tags:
+        - contacts
+      summary: Find all the entities' contacts related to matching all the given filters
+      description: Find all the entities' contacts related to matching all the given filters
+      operationId: findEntityContacts
+      produces:
+        - application/json
+        - application/problem+json
+      parameters:
+        - name: nssoNbr
+          in: query
+          description: the NOSS identifier of an employer
+          required: false
+          type: array
+          items:
             type: string
-          - name: contextCode
-            in: query
-            description: The context related to the contacts (can be multiple)
-            required: false
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.NossRegistrationNumberIterable
+        - name: cbeNbr
+          in: query
+          description: the CBE identifier of a company
+          required: false
+          type: array
+          items:
             type: string
-          - name: includeExternalSources
-            in: query
-            description: Flag indicating if the external sources have to be consulted
-            default: true
-            required: false
-            type: boolean
-        responses:
-          200:
-            description: successful operation
-            schema:
-              $ref: '#/definitions/ContactsCollection'
-          400:
-            description: Bad request
-            schema:
-              $ref: '#/definitions/Problem'
-          401:
-            description: Unauthorized
-            schema:
-              $ref: '#/definitions/Problem'
-          403:
-            description: Forbidden
-            schema:
-              $ref: '#/definitions/Problem'
-          500:
-            description: Internal server error
-            schema:
-              $ref: '#/definitions/Problem'
-        security:
-          - contactData_auth:
-              - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
-              - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
-        x-oauth2-required-scopes: any
-      post:
+          collectionFormat: multi
+          x-smalsValidationClassName: be.smals.contactbeheer.contactdata.rest.api.validation.CompanyIdIterable
+        - name: foleenId
+          in: query
+          description: the Foleen identifier of a foreign company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: euid
+          in: query
+          description: the european identifier of a european company
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: contextType
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: contextCode
+          in: query
+          description: The context related to the contacts (can be multiple)
+          required: false
+          type: string
+        - name: includeExternalSources
+          in: query
+          description: Flag indicating if the external sources have to be consulted
+          default: true
+          required: false
+          type: boolean
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContactsCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+    post:
         tags:
           - contacts
         summary: Add a new contact

@@ -10,4 +10,5 @@ import java.io.IOException;
 @Getter
 public class PathInPluralTest extends AbstractOasRuleTest {
     private String ruleName = "[col-name]";
+    int errorCount = 2;
 }
