@@ -26,13 +26,6 @@ rule "Delete Status Code 202 v2"
 	then
         violationDelete(oas, $operationId, "202");
 end
-rule "Delete Status Code 303 v2"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.DELETE, "303")
-	then
-        violationDelete(oas, $operationId, "303");
-end
 rule "Delete Status Code 304 v2"
 	when
 		$api: OpenAPI()

@@ -33,13 +33,6 @@ rule "Get Status Code 204 v3"
 	then
         violationGet(oas, $operationId, "204");
 end
-rule "Get Status Code 303 v3"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.GET, "303")
-	then
-        violationGet(oas, $operationId, "303");
-end
 rule "Get Status Code 409 v3"
 	when
 		$api: OpenAPI()

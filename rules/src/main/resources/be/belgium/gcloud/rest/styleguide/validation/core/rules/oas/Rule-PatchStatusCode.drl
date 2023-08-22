@@ -26,13 +26,6 @@ rule "Patch Status Code 202 v3"
 	then
         violationPatch(oas, $operationId, "202");
 end
-rule "Patch Status Code 303 v3"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PATCH, "303")
-	then
-        violationPatch(oas, $operationId, "303");
-end
 rule "Patch Status Code 304 v3"
 	when
 		$api: OpenAPI()

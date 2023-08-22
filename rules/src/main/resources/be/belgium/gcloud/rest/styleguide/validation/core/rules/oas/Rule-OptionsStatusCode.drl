@@ -26,13 +26,6 @@ rule "Options Status Code 204 v2"
 	then
         violationOptions(oas, $operationId, "204");
 end
-rule "Options Status Code 303 v2"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "303")
-	then
-        violationOptions(oas, $operationId, "303");
-end
 rule "Options Status Code 304 v2"
 	when
 		$api: OpenAPI()

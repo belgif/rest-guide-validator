@@ -19,13 +19,6 @@ rule "Put Status Code 202"
 	then
         violationPut(oas, $operationId, "202");
 end
-rule "Put Status Code 303"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PUT, "303")
-	then
-        violationPut(oas, $operationId, "303");
-end
 rule "Put Status Code 304"
 	when
 		$api: OpenAPI()

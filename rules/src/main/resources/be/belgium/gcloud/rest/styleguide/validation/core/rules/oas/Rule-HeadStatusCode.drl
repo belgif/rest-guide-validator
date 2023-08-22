@@ -26,13 +26,6 @@ rule "Head Status Code 202 v2"
 	then
         violationHead(oas, $operationId, "202");
 end
-rule "Head Status Code 303 v2"
-	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "303")
-	then
-        violationHead(oas, $operationId, "303");
-end
 rule "Head Status Code 409 v2"
 	when
 		$api: OpenAPI()

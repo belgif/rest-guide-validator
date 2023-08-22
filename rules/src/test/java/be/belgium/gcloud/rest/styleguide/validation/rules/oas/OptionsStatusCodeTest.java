@@ -12,7 +12,7 @@ public class OptionsStatusCodeTest extends AbstractOasRuleTest {
     protected String ruleName = "optionsStatusCode201";
 
     @ParameterizedTest
-    @ValueSource(ints = {201, 204, 303, 304, 405, 409, 412, 413})
+    @ValueSource(ints = {201, 204, 304, 405, 409, 412, 413})
     void tests(int statusCode) throws IOException {
         ruleName = "optionsStatusCode"+statusCode;
         super.isInvalidTest();
