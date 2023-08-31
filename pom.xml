@@ -18,6 +18,9 @@
 
     <properties>
         <javaVersion>11</javaVersion>
+        <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to be set using property for kie-maven-plugin -->
+        <maven.compiler.source>${javaVersion}</maven.compiler.source>
+        <maven.compiler.target>${javaVersion}</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -73,10 +76,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>11</release>
                     <fork>true</fork>
-                    <source>${javaVersion}</source>
-                    <target>${javaVersion}</target>
                 </configuration>
             </plugin>
 
