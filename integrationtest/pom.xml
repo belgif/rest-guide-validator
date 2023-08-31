@@ -37,6 +37,7 @@
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <settingsFile>../integrationtest/src/it/settings.xml</settingsFile>
+                    <mergeUserSettings>true</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript> <!-- no extension required -->
                 </configuration>
