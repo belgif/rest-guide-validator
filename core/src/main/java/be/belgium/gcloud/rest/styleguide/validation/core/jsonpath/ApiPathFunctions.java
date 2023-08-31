@@ -4,7 +4,6 @@ import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import net.minidev.json.JSONArray;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,8 +53,7 @@ public class ApiPathFunctions {
 
         Filter producesFilter = Filter.filter(
                 where(PRODUCES).exists(false));
-        JSONArray arr = JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), producesFilter);
-        return arr.stream().collect(Collectors.toList());
+        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), producesFilter);
     }
 
     /**
@@ -70,8 +68,7 @@ public class ApiPathFunctions {
 
         Filter consumesFilter = Filter.filter(
                 where(CONSUMES).exists(false));
-        JSONArray arr = JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), consumesFilter);
-        return arr.stream().collect(Collectors.toList());
+        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), consumesFilter);
     }
 
     /**
@@ -87,11 +84,10 @@ public class ApiPathFunctions {
 
         Filter producesFilter = Filter.filter(
                 where(PRODUCES).noneof(mediaType).and(PRODUCES).exists(true));
-        JSONArray arr = JsonPath.read(jsonString, String.format(PRODUCES_TPL, operation.label), producesFilter);
+        List<Map<String, Object>> arr = JsonPath.read(jsonString, String.format(PRODUCES_TPL, operation.label), producesFilter);
 
-        return arr.stream().map(o ->{
-            Map<String, Object> map = (Map) o;
-            String[] produces = ((JSONArray) map.get(PRODUCES)).toArray(new String[0]);
+        return arr.stream().map(map ->{
+            String[] produces = ((List<String>) map.get(PRODUCES)).toArray(new String[0]);
             return OperationData.builder()
                     .operation(operation)
                     .operationId((String)map.get(OPERATIONID))
@@ -113,11 +109,10 @@ public class ApiPathFunctions {
 
         Filter consumesFilter = Filter.filter(
                 where(CONSUMES).noneof(mediaType).and(CONSUMES).exists(true));
-        JSONArray arr = JsonPath.read(jsonString, String.format(CONSUMES_TPL, operation.label), consumesFilter);
+        List<Map<String,Object>> arr = JsonPath.read(jsonString, String.format(CONSUMES_TPL, operation.label), consumesFilter);
 
-        return arr.stream().map(o ->{
-            Map<String, Object> map = (Map) o;
-            String[] consumes = ((JSONArray) map.get(CONSUMES)).toArray(new String[0]);
+        return arr.stream().map(map ->{
+            String[] consumes = ((List<String>) map.get(CONSUMES)).toArray(new String[0]);
             return OperationData.builder()
                     .operation(operation)
                     .operationId((String)map.get(OPERATIONID))
