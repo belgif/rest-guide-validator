@@ -124,6 +124,48 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
       x-oauth2-required-scopes: any
+  /veryWrong/{catId}:
+    get:
+      tags:
+        - categories
+      summary: Get the list of available categories
+      description: Get the list of available categories. The list is fixed.
+      operationId: getVeryWrongId
+      parameters:
+        - in: path
+          name: catId
+          type: integer
+          required: false
+          description: This is all not good
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+  /veryWrong:
+    get:
+      tags:
+        - categories
+      summary: Get the list of available categories
+      description: Get the list of available categories. The list is fixed.
+      operationId: getVeryWrong
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
   /entity/contacts:
     get:
       tags:

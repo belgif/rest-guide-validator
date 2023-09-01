@@ -52,9 +52,12 @@ paths:
         200:
           description: "successful operation"
           schema:
-            type: "array"
-            items:
-              type: "string"
+            type: "object"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "string"
             uniqueItems: true
   /businessrules/execute/{name}:
     post:
@@ -118,8 +121,11 @@ paths:
           description: "successful operation"
           schema:
             type: "object"
-            additionalProperties:
-              type: "string"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "string"
   /businessvalues/{key}:
     post:
       summary: "Updates the specified business value"
@@ -1012,6 +1018,10 @@ definitions:
       href:
         type: "string"
         format: "uri"
+      items:
+        type: "array"
+        items:
+          type: string
   ValueListConceptDto:
     type: "object"
     properties:

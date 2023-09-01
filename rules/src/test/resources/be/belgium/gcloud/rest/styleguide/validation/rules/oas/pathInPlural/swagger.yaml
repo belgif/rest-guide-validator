@@ -89,6 +89,43 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
       x-oauth2-required-scopes: any
 
+  /env/invalidData:
+    get:
+      tags:
+        - categories
+      summary: Get the list of available categories
+      description: Get the list of available categories. The list is fixed.
+      operationId: getAllCategories
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CategoriesCollection'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Problem'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Problem'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Problem'
+      security:
+        - contactData_auth:
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
+            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
+      x-oauth2-required-scopes: any
+
 
   /health:
     get:

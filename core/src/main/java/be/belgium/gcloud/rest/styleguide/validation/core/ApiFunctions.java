@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 
@@ -18,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -152,13 +156,13 @@ public class ApiFunctions {
 
     private static boolean filterPath(PathItem path, OperationEnum verb, String statusCode){
         switch (verb){
-            case GET: return path.getGET() != null && path.getGET().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case POST: return path.getPOST() != null && path.getPOST().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case PUT: return path.getPUT() != null &&  path.getPUT().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case DELETE: return path.getDELETE() != null &&  path.getDELETE().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case PATCH: return path.getPATCH() != null &&  path.getPATCH().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case HEAD: return path.getHEAD() != null &&  path.getHEAD().getResponses().getAPIResponses().keySet().contains(statusCode);
-            case OPTIONS: return path.getOPTIONS() != null && path.getOPTIONS().getResponses().getAPIResponses().keySet().contains(statusCode);
+            case GET: return path.getGET() != null && path.getGET().getResponses().getAPIResponses().containsKey(statusCode);
+            case POST: return path.getPOST() != null && path.getPOST().getResponses().getAPIResponses().containsKey(statusCode);
+            case PUT: return path.getPUT() != null &&  path.getPUT().getResponses().getAPIResponses().containsKey(statusCode);
+            case DELETE: return path.getDELETE() != null &&  path.getDELETE().getResponses().getAPIResponses().containsKey(statusCode);
+            case PATCH: return path.getPATCH() != null &&  path.getPATCH().getResponses().getAPIResponses().containsKey(statusCode);
+            case HEAD: return path.getHEAD() != null &&  path.getHEAD().getResponses().getAPIResponses().containsKey(statusCode);
+            case OPTIONS: return path.getOPTIONS() != null && path.getOPTIONS().getResponses().getAPIResponses().containsKey(statusCode);
             default: throw new IllegalArgumentException("unknow verb: "+verb);
         }
     }
@@ -290,27 +294,62 @@ public class ApiFunctions {
      * @return
      */
     public static List<String> getReturnCollectionPathKey(OpenAPI openAPI){
-        return getPathKeys(openAPI).stream()
-                .filter(pathKey->isReturnCollection(openAPI, openAPI.getPaths().getPathItem(pathKey)))
-                .collect(Collectors.toList());
+        return new ArrayList<>(getCollectionPathItems(openAPI).keySet());
     }
 
-    static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem){
+    public static Map<String, PathItem> getCollectionPathItems(OpenAPI openAPI) {
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems().size() == 0) {
+            return new HashMap<>();
+        }
+        var allPaths = openAPI.getPaths().getPathItems().entrySet();
+        // Adds all paths before the ones with path params
+        Set<String> collectionPaths = allPaths.stream().filter(path -> endsWithPathParameter(path.getKey()))
+                .map(path -> getPathBeforePathParam(path, openAPI)).filter(Objects::nonNull).collect(Collectors.toSet());
+        // Adds all paths that return an object with an array 'items'
+        collectionPaths.addAll(allPaths.stream().filter(path -> isReturnCollection(openAPI, path.getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
+
+        // Filter out all collections without GET
+        var pathsWithGet = allPaths.stream()
+                .filter(path -> collectionPaths.contains(path.getKey()) &&
+                    path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue ));
+        return pathsWithGet;
+    }
+
+    private static String getPathBeforePathParam(Map.Entry<String, PathItem> path, OpenAPI openAPI) {
+        String pathString = path.getKey();
+        if (pathString.endsWith("}") || pathString.endsWith("}/")) {
+            Pattern pattern = Pattern.compile("(^/.*)/\\{.*}$");
+            Matcher matcher = pattern.matcher(pathString);
+            if (matcher.find()) {
+                String pathBeforePathParam = matcher.group(1);
+                if (pathBeforePathParam != null && openAPI.getPaths().hasPathItem(pathBeforePathParam)) {
+                    return pathBeforePathParam;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean endsWithPathParameter(String path) {
+        return path != null && path.endsWith("}");
+    }
+
+    public static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem){
         try{
             AtomicBoolean isCollection = new AtomicBoolean(false);
-            pathItem.getGET().getResponses().getAPIResponses().values().forEach(apiResponse -> {
-                apiResponse.getContent().getMediaTypes().values().forEach(mediaType -> {
-                    var schema = mediaType.getSchema();
-                    if (schema.getItems() != null){
+            var responseSchemas = pathItem.getGET().getResponses().getAPIResponses().values().stream()
+                    .flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream())
+                    .map(MediaType::getSchema);
+            responseSchemas.forEach(schema -> {
+                if (schema.getProperties()!=null && schema.getProperties().containsKey("items")
+                        && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)){
+                    isCollection.set(true);
+                }
+                else {
+                    if(isCollection(openAPI, schema.getRef()))
                         isCollection.set(true);
-                    }else if (schema.getProperties()!=null && schema.getProperties().containsKey("items")){
-                        isCollection.set(true);
-                    }
-                    else {
-                        if(isCollection(openAPI, schema.getRef()))
-                            isCollection.set(true);
-                    }
-                });
+                }
             });
             return isCollection.get();
         }catch (NullPointerException ex){
@@ -324,7 +363,7 @@ public class ApiFunctions {
                 log.debug("Cannot check an external reference.");
                 return false;
             }
-            return openAPI.getComponents().getSchemas().get(getRefName(ref)).getProperties().containsKey("items");
+            return openAPI.getComponents().getSchemas().get(getRefName(ref)).getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY);
 
         }catch (NullPointerException ex){
             return false;

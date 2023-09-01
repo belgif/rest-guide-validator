@@ -1,0 +1,27 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import java.util.Map;
+import java.util.Map.Entry;
+
+function void representationOfCollectionViolation(OpenApiViolationAggregator oas, String path){
+    oas.addViolation("[col-repres]",
+           		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t"+ path,
+           		 oas.getLineNumber(path));
+}
+
+rule "Rule-Representation Of Collection"
+    when
+       $api: OpenAPI()
+       $paths: Map() from ApiFunctions.getCollectionPathItems($api)
+       $entry: Entry() from $paths.entrySet()
+       $path: PathItem() from $entry.getValue()
+    then
+    if ( !ApiFunctions.isReturnCollection($api, $path) )
+        representationOfCollectionViolation(oas, $entry.getKey().toString());
+end

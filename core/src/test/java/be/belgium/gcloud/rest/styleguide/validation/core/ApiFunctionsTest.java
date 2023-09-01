@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -161,4 +164,11 @@ class ApiFunctionsTest {
         assertNotNull(paths);
         assertEquals(11, paths.size());
     }
+
+    @Test
+    void getCollectionPathItems() throws IOException {
+        Map<String, PathItem> items = ApiFunctions.getCollectionPathItems(getOpenApi());
+        assertEquals(11, items.size());
+    }
+
 }

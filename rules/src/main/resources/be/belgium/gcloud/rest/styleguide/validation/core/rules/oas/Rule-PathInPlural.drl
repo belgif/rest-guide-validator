@@ -18,18 +18,6 @@ rule "Rule-PathInPlural without ID"
        $api: OpenAPI()
        $path: String() from ApiFunctions.getReturnCollectionPathKey($api)
     then
-      if( !  $path.endsWith("}") && ! $path.endsWith("s"))
+      if( !  $path.endsWith("}") && ! $path.endsWith("s") && ! $path.endsWith("data") && ! $path.endsWith("Data"))
         pluralViolation(oas, $path);
-end
-
-rule "Rule-PathInPlural with ID"
-    when
-       $api: OpenAPI()
-       $path: String() from ApiFunctions.getReturnCollectionPathKey($api)
-
-       String( endsWith("}") ) from $path
-       String( $parts : split("/") ) from $path
-       not String ( endsWith("s") ) from $parts
-    then
-       pluralViolation(oas, $path);
 end
