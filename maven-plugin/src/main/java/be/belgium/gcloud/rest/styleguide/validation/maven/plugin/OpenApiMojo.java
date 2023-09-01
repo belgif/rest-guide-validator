@@ -2,7 +2,6 @@ package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
 import be.belgium.gcloud.rest.styleguide.validation.*;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -17,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
- * Maven plugin that check if a Swagger API or an open API is conformed the G-Cloud standards.
+ * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  * The plugin use the following parameters:
  *  - api-validator.files: a list of files to validate
  *  - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
@@ -51,15 +50,17 @@ public class OpenApiMojo extends AbstractMojo {
     List<String> excludeResources = new ArrayList<>();
 
     private Set<OutputProcessor> outputProcessors;
+    private final List<FileWithExclusion> filesToProcess = new ArrayList<>();
 
-    private List<File> addAllFiles(File directory){
-        return List.of(directory.listFiles((dir, name) ->
-                name.endsWith(".yml") || name.endsWith(".yaml") || name.endsWith(".json")));
+    private List<File> getJsonAndYamlFiles(File directory){
+        return getJsonAndYamlFiles(List.of(Objects.requireNonNull(directory.listFiles())));
     }
-    private void init(){
-       initFiles();
+    private List<File> getJsonAndYamlFiles(List<File> fileList) {
+        return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).collect(Collectors.toList());
+    }
+    private void init() {
        initOutputProcessor();
-       addExclusions();
+       addExclusions(initFiles());
     }
 
     /**
@@ -99,42 +100,45 @@ public class OpenApiMojo extends AbstractMojo {
      * Throw an IllegalArgumentException if no file is provided or if a file is not in the maven project.
      * Add all yaml or gson file from provided directories.
      */
-    private void initFiles(){
+    private List<File> initFiles(){
         if( files.isEmpty() && fileWithExclusions.isEmpty() )
             throw new IllegalArgumentException("api-validator need at least one file ! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
         if( files.stream().anyMatch(file -> file.getPath().startsWith(mavenProject.getFile().getPath())) ||
             fileWithExclusions.stream().anyMatch(f -> f.getFile().getPath().startsWith(mavenProject.getFile().getPath())) )
             throw new IllegalArgumentException("All files must be in the maven project structure !");
 
-        // add all file from directories
-        var dirs = files.stream().filter(file -> file.isDirectory()).collect(Collectors.toSet());
-        var fromDir = dirs.stream().map(dir->addAllFiles(dir)).collect(Collectors.toList()).stream().collect(Collectors.toList());
+        // replace directories in list by the json and yaml files in them
+        var dirs = files.stream().filter(File::isDirectory).collect(Collectors.toSet());
+        var filesFromDirs = dirs.stream().flatMap(dir -> getJsonAndYamlFiles(dir).stream()).collect(Collectors.toList());
+        var filesInRootFolder = files.stream().filter(File::isFile).filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).collect(Collectors.toList());
+        List<File> fileList = new ArrayList<>();
 
-        dirs.forEach(dir ->files.remove(dir));
-        fromDir.forEach(list-> files.addAll(list));
+        fileList.addAll(filesInRootFolder);
+        fileList.addAll(filesFromDirs);
+        return fileList;
     }
 
     /**
      * add global exclusions to all files.
      * add all files in fileWithExclusions.
      */
-    private void addExclusions(){
-        fileWithExclusions.forEach(fileWithExclusion -> fileWithExclusion.getExcludesPaths().addAll(excludeResources));
-        fileWithExclusions.addAll( files.stream()
+    private void addExclusions(List<File> fileList){
+        filesToProcess.addAll(fileWithExclusions);
+        filesToProcess.forEach(mutableFileWithExclusion -> mutableFileWithExclusion.getExcludesPaths().addAll(excludeResources));
+        filesToProcess.addAll( fileList.stream()
                 .map(file -> new FileWithExclusion(file, excludeResources))
                 .collect(Collectors.toList()) );
     }
     /**
      * For each file in @files validate using OpenApiValidator.
-     * @throws MojoExecutionException when file cannot be read or parse.
      * @throws MojoFailureException when file is not a valid open-api.
      */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoFailureException {
         init();
 
         var isValid = new AtomicBoolean(true);
-        fileWithExclusions.forEach(fileWithExclusion->{
+        filesToProcess.forEach(fileWithExclusion->{
                     var file = fileWithExclusion.getFile() ;
                     // build output file for the jUnitOutputProcessor
                     outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
@@ -149,6 +153,9 @@ public class OpenApiMojo extends AbstractMojo {
                     // isValid = isValid && OpenApiValidator.isOasValid(...)
                     isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
                 });
+        if ( filesToProcess.isEmpty() ) {
+            isValid.set(false);
+        }
 
         if (! skipOnErrors && ! isValid.get())
             throw new MojoFailureException(FAILURE_MESSAGE);
