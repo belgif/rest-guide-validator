@@ -12,6 +12,11 @@ host: "overseas-identification-process.int.paas.socialsecurity.be"
 basePath: "/resources/v1"
 schemes:
   - "https"
+responses:
+  ProblemResponse:
+    description: a problem
+    schema:
+      $ref: "#/definitions/Problem"
 paths:
   /api/doc:
     get:
@@ -21,7 +26,7 @@ paths:
       parameters: []
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /api/doc/swagger.json:
     get:
       operationId: "GET /api/doc/swagger.json"
@@ -30,7 +35,7 @@ paths:
       parameters: []
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /api/doc/swagger.yaml:
     get:
       operationId: "GET /api/doc/swagger.yaml"
@@ -39,7 +44,7 @@ paths:
       parameters: []
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /businessrules:
     get:
       summary: "Lists the names of all loaded business rules"
@@ -47,6 +52,7 @@ paths:
       operationId: "GET /businessrules"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters: []
       responses:
         200:
@@ -59,6 +65,8 @@ paths:
                 items:
                   type: "string"
             uniqueItems: true
+        default:
+          $ref: '#/responses/ProblemResponse'
   /businessrules/execute/{name}:
     post:
       summary: "Execute the specified business rule using the given input data"
@@ -68,6 +76,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "name"
           in: "path"
@@ -75,7 +84,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /businessrules/{name}:
     get:
       summary: "Retrieve the source code (as a DMN XML) of the specified business\
@@ -94,6 +103,8 @@ paths:
           description: "successful operation"
           schema:
             type: "string"
+        default:
+          $ref: '#/responses/ProblemResponse'
     put:
       summary: "Update the specified business rule"
       description: ""
@@ -107,7 +118,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /businessvalues:
     get:
       summary: "Retrieve all loaded business values"
@@ -115,6 +126,7 @@ paths:
       operationId: "GET /businessvalues"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters: []
       responses:
         200:
@@ -126,6 +138,8 @@ paths:
                 type: "array"
                 items:
                   type: "string"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /businessvalues/{key}:
     post:
       summary: "Updates the specified business value"
@@ -138,7 +152,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /registries/employers:
     get:
       summary: "Find employers in the CBE registry using search criteria"
@@ -146,6 +160,7 @@ paths:
       operationId: "GET /registries/employers"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "enterpriseId"
           in: "query"
@@ -164,6 +179,8 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EmployerDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /registries/familyComposition:
     get:
       summary: "Fetch family composition for specified person in the national registries"
@@ -171,6 +188,7 @@ paths:
       operationId: "GET /registries/familyComposition"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "ssin"
           in: "query"
@@ -184,6 +202,8 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/FamilyMemberDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /registries/person:
     get:
       summary: "Find physical persons in the national registries using search criteria.\
@@ -193,6 +213,7 @@ paths:
       operationId: "GET /registries/person"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "ssin"
           in: "query"
@@ -219,7 +240,9 @@ paths:
         200:
           description: "successful operation"
           schema:
-            $ref: "#/definitions/PersonDto"
+            $ref: '#/definitions/PersonsDto'
+        default:
+          $ref: '#/responses/ProblemResponse'
     post:
       summary: "Create physical person in the bis registry."
       description: ""
@@ -228,6 +251,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - in: "body"
           name: "body"
@@ -237,7 +261,7 @@ paths:
             $ref: "#/definitions/PersonDto"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
     patch:
       summary: "Update physical person in the bis registry."
       description: ""
@@ -246,6 +270,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - in: "body"
           name: "body"
@@ -255,7 +280,7 @@ paths:
             $ref: "#/definitions/PersonDto"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /registries/person/{ssin}:
     get:
       summary: "Find physical person in the national registries by the persons SSIN."
@@ -263,6 +288,7 @@ paths:
       operationId: "GET /registries/person/{ssin}"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "ssin"
           in: "path"
@@ -274,6 +300,8 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/PersonDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /valuelists:
     get:
       summary: "Returns a list of all loaded value list concepts"
@@ -281,6 +309,7 @@ paths:
       operationId: "GET /valuelists"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters: []
       responses:
         200:
@@ -289,16 +318,20 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/ValueListConceptDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
     post:
       summary: "Create a new value list concept"
       description: ""
       operationId: "POST /valuelists"
       consumes:
         - "application/json"
+      produces:
+        - "application/problem+json"
       parameters: []
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /valuelists/{type}/{code}:
     put:
       summary: "Update a value list concept"
@@ -306,6 +339,8 @@ paths:
       operationId: "PUT /valuelists/{type}/{code}"
       consumes:
         - "application/json"
+      produces:
+        - "application/problem+json"
       parameters:
         - name: "type"
           in: "path"
@@ -317,7 +352,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /workflow/employer/start:
     post:
       summary: "Starts a new workflow instance"
@@ -327,6 +362,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "workflow"
           in: "query"
@@ -338,6 +374,8 @@ paths:
           description: "successful operation"
           schema:
             type: "object"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/employer/{subjectId}:
     get:
       summary: "Retrieve the current workflow state of the specified domain object"
@@ -345,6 +383,7 @@ paths:
       operationId: "GET /workflow/employer/{subjectId}"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -357,6 +396,8 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/WorkflowStateDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/employer/{subjectId}/newTasks:
     get:
       summary: "Returns whether or not new workflow tasks have been generated since\
@@ -365,6 +406,7 @@ paths:
       operationId: "GET /workflow/employer/{subjectId}/newTasks"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -383,6 +425,8 @@ paths:
           description: "successful operation"
           schema:
             type: "boolean"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/employer/{subjectId}/tasks/{taskId}/complete:
     post:
       summary: "Completes the specified workflow task with the given input"
@@ -392,6 +436,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -407,7 +452,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /workflow/person/start:
     post:
       summary: "Starts a new workflow instance"
@@ -417,6 +462,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "workflow"
           in: "query"
@@ -428,6 +474,8 @@ paths:
           description: "successful operation"
           schema:
             type: "object"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/person/{subjectId}:
     get:
       summary: "Retrieve the current workflow state of the specified domain object"
@@ -435,6 +483,7 @@ paths:
       operationId: "GET /workflow/person/{subjectId}"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -447,6 +496,8 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/WorkflowStateDto"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/person/{subjectId}/newTasks:
     get:
       summary: "Returns whether or not new workflow tasks have been generated since\
@@ -455,6 +506,7 @@ paths:
       operationId: "GET /workflow/person/{subjectId}/newTasks"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -473,6 +525,8 @@ paths:
           description: "successful operation"
           schema:
             type: "boolean"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /workflow/person/{subjectId}/tasks/{taskId}/complete:
     post:
       summary: "Completes the specified workflow task with the given input"
@@ -482,6 +536,7 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters:
         - name: "subjectId"
           in: "path"
@@ -497,7 +552,7 @@ paths:
           type: "string"
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
 securityDefinitions:
   implicit:
     type: "oauth2"
@@ -517,6 +572,47 @@ security:
   ]
 x-oauth2-required-scopes: any
 definitions:
+  Problem:
+    type: object
+    required:
+      - instance
+      - status
+      - code
+      - title
+    properties:
+      instance:
+        type: string
+        format: uuid
+        example: d9e35127-e9b1-4201-a211-2b52e52508df
+        description: unique identifier of the error
+      type:
+        type: string
+        format: uri
+        description: An URI reference that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type (e.g. using HTML).
+        default: about:blank
+      title:
+        type: string
+        example: "Bad Request"
+        description: A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized)
+      status:
+        type: integer
+        format: int32
+        example: 503
+        description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        minimum: 400
+        maximum: 600
+        exclusiveMaximum: true
+      code:
+        type: string
+        example: CONTACTDATA_ERR_BUS_10
+        description: The error code corresponding to the encountered exception
+      detail:
+        type: string
+        example: No employer with company id 0206731645
+        description: A human-readable explanation specific to this occurrence of the problem
+      stackTrace:
+        type: string
+    description: A Problem Details object (RFC 7807)
   ActivityDto:
     type: "object"
     properties:
@@ -938,6 +1034,13 @@ definitions:
         type: "string"
       en:
         type: "string"
+  PersonsDto:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/PersonDto"
   PersonDto:
     type: "object"
     properties:
@@ -1018,10 +1121,6 @@ definitions:
       href:
         type: "string"
         format: "uri"
-      items:
-        type: "array"
-        items:
-          type: string
   ValueListConceptDto:
     type: "object"
     properties:

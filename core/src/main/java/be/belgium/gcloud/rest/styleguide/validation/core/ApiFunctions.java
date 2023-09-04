@@ -7,11 +7,11 @@ import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 
@@ -368,6 +368,40 @@ public class ApiFunctions {
         }catch (NullPointerException ex){
             return false;
         }
+    }
+
+    public static List<Operation> getOperations(OpenAPI api, OperationEnum[] exclude) {
+        return getOperationsToCheck(api.getPaths().getPathItems().values(), exclude);
+    }
+
+    private static List<Operation> getOperationsToCheck(Collection<PathItem> pathItems, OperationEnum[] exclude) {
+        // Does not check for options, head or trace
+        List<Operation> operations = new ArrayList<>();
+        List<OperationEnum> verbs = Arrays.asList(exclude);
+        for (PathItem pathItem : pathItems) {
+            if (pathItem.getGET() != null && !verbs.contains(OperationEnum.GET)) {
+                operations.add(pathItem.getGET());
+            }
+            if (pathItem.getPUT() != null && !verbs.contains(OperationEnum.PUT)) {
+                operations.add(pathItem.getPUT());
+            }
+            if (pathItem.getPOST() != null && !verbs.contains(OperationEnum.POST)) {
+                operations.add(pathItem.getPOST());
+            }
+            if (pathItem.getDELETE() != null && !verbs.contains(OperationEnum.DELETE)) {
+                operations.add(pathItem.getDELETE());
+            }
+            if (pathItem.getPATCH() != null && !verbs.contains(OperationEnum.PATCH)) {
+                operations.add(pathItem.getPATCH());
+            }
+            if (pathItem.getHEAD() != null && !verbs.contains(OperationEnum.HEAD)) {
+                operations.add(pathItem.getHEAD());
+            }
+            if (pathItem.getOPTIONS() != null && !verbs.contains(OperationEnum.OPTIONS)) {
+                operations.add(pathItem.getOPTIONS());
+            }
+        }
+        return operations;
     }
 
     private static String getRefName(String ref){

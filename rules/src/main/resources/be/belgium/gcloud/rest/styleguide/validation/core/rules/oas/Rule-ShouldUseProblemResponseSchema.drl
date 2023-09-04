@@ -1,0 +1,51 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import be.belgium.gcloud.rest.styleguide.validation.core.ComponentProperties;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.eclipse.microprofile.openapi.models.media.Content
+import org.eclipse.microprofile.openapi.models.media.MediaType;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function String responseStatusProblemResponseSchema(){
+  return "default" ;
+}
+
+function String mediaTypeProblemResponseSchema() {
+  return "application/problem+json";
+}
+
+function String referenceName() {
+  return "/Problem";
+}
+
+function OperationEnum[] excludeProblemResponseSchema() {
+  return new OperationEnum[] {OperationEnum.HEAD, OperationEnum.OPTIONS};
+}
+
+function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator oas, String property){
+  oas.addViolation("[prb-defaul]",
+    "Default problem response SHOULD use the Problem schema of belgif-openapi-problem ($ref to a schema type named Problem)\t" +
+    "[Operation: " + property + "]",
+    oas.getLineNumber(property), ViolationType.RECOMMENDED);
+}
+
+rule "Should use ProblemResponse schema for default responses"
+  when
+    $api: OpenAPI()
+    $operations: Operation() from ApiFunctions.getOperations($api, excludeProblemResponseSchema())
+    $responses: APIResponses() from $operations.getResponses()
+    APIResponse( $content : content) from $responses.getAPIResponse(responseStatusProblemResponseSchema())
+    Content( $mediaType : getMediaType(mediaTypeProblemResponseSchema()) ) from $content
+    MediaType( $schema : schema ) from $mediaType
+    not Schema( ref.contains(referenceName()) ) from $schema
+  then
+    violationDefaultProblemResponseSchema(oas, $operations.getOperationId());
+end

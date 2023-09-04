@@ -98,6 +98,9 @@
           },
           "405": {
             "description": "Validation exception"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -155,6 +158,9 @@
           },
           "405": {
             "description": "Invalid input"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -217,6 +223,9 @@
           },
           "400": {
             "description": "Invalid status value"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -276,6 +285,9 @@
           },
           "400": {
             "description": "Invalid tag value"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -329,6 +341,9 @@
           },
           "404": {
             "description": "Pet not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -381,6 +396,9 @@
         "responses": {
           "405": {
             "description": "Invalid input"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -423,6 +441,9 @@
         "responses": {
           "400": {
             "description": "Invalid pet value"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -484,6 +505,9 @@
                 }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -518,6 +542,9 @@
                 }
               }
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         },
         "security": [
@@ -567,6 +594,9 @@
           },
           "405": {
             "description": "Invalid input"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -612,6 +642,9 @@
           },
           "404": {
             "description": "Order not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       },
@@ -640,6 +673,9 @@
           },
           "404": {
             "description": "Order not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -674,19 +710,7 @@
         },
         "responses": {
           "default": {
-            "description": "successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -728,7 +752,7 @@
             }
           },
           "default": {
-            "description": "successful operation"
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -795,6 +819,9 @@
           },
           "400": {
             "description": "Invalid username/password supplied"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -810,7 +837,7 @@
         "parameters": [],
         "responses": {
           "default": {
-            "description": "successful operation"
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
@@ -855,6 +882,9 @@
           },
           "404": {
             "description": "User not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       },
@@ -898,7 +928,7 @@
         },
         "responses": {
           "default": {
-            "description": "successful operation"
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       },
@@ -926,13 +956,77 @@
           },
           "404": {
             "description": "User not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemResponse"
           }
         }
       }
     }
   },
   "components": {
+    "responses": {
+      "ProblemResponse": {
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "description": "a problem"
+      }
+    },
     "schemas": {
+      "Problem": {
+        "description": "A Problem Details object (RFC 7807)",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "description": "An absolute URI that identifies the problem type",
+            "default": "about:blank"
+          },
+          "href": {
+            "type": "string",
+            "format": "uri",
+            "description": "An absolute URI that, when dereferenced, provides human-readable documentation for the problem type (e.g. using HTML)."
+          },
+          "title": {
+            "type": "string",
+            "description": "A short summary of the problem type. Written in English and readable for engineers (usually not suited for non technical stakeholders and not localized).",
+            "example": "Service Unavailable"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "minimum": 400,
+            "maximum": 600,
+            "exclusiveMaximum": true,
+            "example": 503
+          },
+          "detail": {
+            "type": "string",
+            "description": "A human-readable explanation specific to this occurrence of the problem"
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri",
+            "description": "An absolute URI that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced."
+          }
+        },
+        "example": {
+          "type": "urn:problem-type:belgif:payloadTooLarge",
+          "href": "https://www.belgif.be/specification/rest/api-guide/problems/payloadTooLarge.html",
+          "title": "Payload Too Large",
+          "status": 413,
+          "detail": "Request message must not be larger than 10 MB",
+          "instance": "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
+          "limit": 10485760
+        }
+      },
       "Order": {
         "type": "object",
         "properties": {

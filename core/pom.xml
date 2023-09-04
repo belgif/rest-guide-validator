@@ -16,15 +16,12 @@
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser</artifactId>
-            <version>2.0.31</version>
-            <!-- cannot update because newer swagger-model 2.2 transitive dependency incompatible with empoa-swagger-core 2.1.0 -->
+            <version>2.1.16</version>
         </dependency>
         <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
-            <!-- transitive dependency of swagger-parser; overriding version to solve security vulnerability -->
-            <!-- can be removed if newer swagger-parser pulls in newer commons-codec version -->
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-models</artifactId>
+            <version>2.2.14</version>
         </dependency>
         <dependency>
             <groupId>org.openapitools.empoa</groupId>

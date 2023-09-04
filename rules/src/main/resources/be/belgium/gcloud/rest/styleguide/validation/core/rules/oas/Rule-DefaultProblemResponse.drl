@@ -1,0 +1,45 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import be.belgium.gcloud.rest.styleguide.validation.core.ComponentProperties;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.eclipse.microprofile.openapi.models.media.Content;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function String responseStatus(){
+  return "default" ;
+}
+
+function String mediaTypeWanted() {
+  return "application/problem+json";
+}
+
+function OperationEnum[] exclude() {
+  return new OperationEnum[] {OperationEnum.HEAD, OperationEnum.OPTIONS};
+}
+
+function void violationDefaultResponse(OpenApiViolationAggregator oas, String property){
+  oas.addViolation("[prb-defaul]",
+    "A default Problem response SHOULD be added to each operation with media type \"application/problem+json\" \t" +
+    "[Operation: " + property + "]",
+    oas.getLineNumber(property));
+}
+
+rule "No Default Response with content"
+  when
+    $api: OpenAPI()
+    $operation: Operation() from ApiFunctions.getOperations($api, exclude())
+    $responses: APIResponses() from $operation.getResponses()
+
+    not APIResponses( hasAPIResponse(responseStatus())) from $operation.responses or
+    (APIResponse( content == null ) from $responses.getAPIResponse(responseStatus())) or
+    ((APIResponse( $content : content) from $responses.getAPIResponse(responseStatus())) and
+    (not Content(hasMediaType(mediaTypeWanted())) from $content))
+  then
+    violationDefaultResponse(oas, $operation.getOperationId());
+end

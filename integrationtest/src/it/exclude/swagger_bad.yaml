@@ -14,6 +14,11 @@ tags:
       url: https://confluence.smals.be/display/CONTACTBEH/WS+REST+contactData
 schemes:
   - https
+responses:
+  ProblemResponse:
+    description: a problem
+    schema:
+      $ref: "#/definitions/Problem"
 paths:
   /userInfo:
     get:
@@ -46,6 +51,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -458,6 +465,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -471,6 +480,8 @@ paths:
       operationId: addEntityContactEmail
       consumes:
         - application/json
+      produces:
+        - "application/problem+json"
       parameters:
         - name: contactId
           in: path
@@ -503,6 +514,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
@@ -556,6 +569,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -604,6 +619,8 @@ paths:
             $ref: '#/definitions/Problem'
         500:
           description: DatabasError, InternalServerError
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
@@ -653,6 +670,8 @@ paths:
       operationId: addEmailInvalidData
       consumes:
         - application/json
+      produces:
+        - "application/problem+json"
       parameters:
         - name: contactId
           in: path
@@ -866,6 +885,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -879,6 +900,8 @@ paths:
       operationId: addEntityContactPhoneNumber
       consumes:
         - application/json
+      produces:
+        - "application/problem+json"
       parameters:
         - name: contactId
           in: path
@@ -911,6 +934,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
@@ -959,6 +984,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -972,6 +999,8 @@ paths:
       operationId: addEntityContactLink
       consumes:
         - application/json
+      produces:
+        - "application/problem+json"
       parameters:
         - name: contactId
           in: path
@@ -1004,6 +1033,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
@@ -1057,6 +1088,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -1107,6 +1140,8 @@ paths:
           description: DatabasError, InternalServerError
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
@@ -1156,6 +1191,8 @@ paths:
       operationId: addLinkInvalidData
       consumes:
         - application/json
+      produces:
+        - "application/problem+json"
       parameters:
         - name: contactId
           in: path
@@ -1482,6 +1519,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -1535,6 +1574,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
+        default:
+          $ref: '#/responses/ProblemResponse'
       security:
         - contactData_auth:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
@@ -1591,10 +1632,11 @@ paths:
       operationId: "getDoc"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters: []
       responses:
         default:
-          description: "successful operation"
+          $ref: '#/responses/ProblemResponse'
   /doc/swagger.json:
     get:
       tags:
@@ -1603,12 +1645,15 @@ paths:
       operationId: "getJsonSwagger"
       produces:
         - "application/json"
+        - "application/problem+json"
       parameters: []
       responses:
         200:
           description: "successful operation"
           schema:
             type: "string"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /doc/swagger.yaml:
     get:
       tags:

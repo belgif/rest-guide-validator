@@ -2,6 +2,7 @@ package be.belgium.gcloud.rest.styleguide.validation.rules;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.Violation;
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -18,14 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public abstract class AbstractRuleTest {
     protected int errorCount = 1;
     protected String ruleName = null;
+    protected ViolationType violationType = null;
 
     protected abstract OpenApiViolationAggregator callRules(String fileName) throws IOException ;
 
     @Test
     protected void isValidTest() throws IOException {
         var apiDetail = callRules("/swagger.yaml");
-
-       var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).collect(Collectors.toSet());
+        String name = getRuleName();
+       var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toSet());
         assertTrue(violations.size() < 1 || apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).count() < 1  ,
                 getMessage(violations));
     }
@@ -35,7 +37,7 @@ public abstract class AbstractRuleTest {
         var apiDetail = callRules("/swagger_bad.yaml");
         assertFalse(apiDetail.getViolations().size() < 1);
         String name = getRuleName();
-        var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).collect(Collectors.toSet());
+        var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toSet());
         assertTrue( (getErrorCount() == 1 && violations.size() > 0) | (getErrorCount() > 1 && violations.size() == getErrorCount() ) ,
                 getMessage(violations));
         //violations.forEach(v-> log.warn(v.toString()));
@@ -56,5 +58,13 @@ public abstract class AbstractRuleTest {
 
     public void setRuleName(String ruleName) {
         this.ruleName = ruleName;
+    }
+
+    public void setErrorCount(int errorCount) {
+        this.errorCount = errorCount;
+    }
+
+    public void setViolationType(ViolationType violationType) {
+        this.violationType = violationType;
     }
 }

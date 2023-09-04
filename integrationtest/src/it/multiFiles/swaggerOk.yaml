@@ -24,6 +24,7 @@ paths:
       operationId: "findArtistsDeclaredAtEmployer"
       produces:
         - "application/json"
+        - "application/problem+json"
       security:
         - oauth_accessCode:
             - 'scope:socialsecurity:consultation:ws-restartist:consult'
@@ -57,6 +58,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /artists/{ssin}:
     get:
       tags:
@@ -66,6 +69,7 @@ paths:
       operationId: "findArtistWithRecognitions"
       produces:
         - "application/json"
+        - "application/problem+json"
       security:
         - oauth_accessCode:
             - 'scope:socialsecurity:consultation:ws-restartist:consult'
@@ -96,6 +100,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /artists/{ssin}/performances:
     get:
       tags:
@@ -105,6 +111,7 @@ paths:
       operationId: "findPerformancesForAnArtist"
       produces:
         - "application/json"
+        - "application/problem+json"
       security:
         - oauth_accessCode:
             - 'scope:socialsecurity:consultation:ws-restartist:consult'
@@ -143,6 +150,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+        default:
+          $ref: '#/responses/ProblemResponse'
   /refData/businessParameters:
     get:
       tags:
@@ -152,6 +161,7 @@ paths:
       operationId: "findParametersValue"
       produces:
         - "application/json"
+        - "application/problem+json"
       security:
         - oauth_accessCode:
             - 'scope:socialsecurity:consultation:ws-restartist:consult'
@@ -172,6 +182,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+        default:
+          $ref: '#/responses/ProblemResponse'
 
 definitions:
   BusinessParameters:
@@ -359,3 +371,7 @@ responses:
     description: "successful operation"
     schema:
       $ref: '#/definitions/Problem'
+  ProblemResponse:
+    description: a problem
+    schema:
+      $ref: "#/definitions/Problem"
