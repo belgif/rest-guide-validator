@@ -370,13 +370,9 @@ public class ApiFunctions {
         }
     }
 
-    public static List<Operation> getOperations(OpenAPI api, OperationEnum[] exclude) {
-        return getOperationsToCheck(api.getPaths().getPathItems().values(), exclude);
-    }
-
-    private static List<Operation> getOperationsToCheck(Collection<PathItem> pathItems, OperationEnum[] exclude) {
-        // Does not check for options, head or trace
-        List<Operation> operations = new ArrayList<>();
+    public static Set<Operation> getOperations(OpenAPI api, OperationEnum[] exclude) {
+        Collection<PathItem> pathItems = api.getPaths().getPathItems().values();
+        Set<Operation> operations = new HashSet<>();
         List<OperationEnum> verbs = Arrays.asList(exclude);
         for (PathItem pathItem : pathItems) {
             if (pathItem.getGET() != null && !verbs.contains(OperationEnum.GET)) {

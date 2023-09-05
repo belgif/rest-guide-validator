@@ -14,14 +14,6 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-function String responseStatusProblemResponseSchema(){
-  return "default" ;
-}
-
-function String mediaTypeProblemResponseSchema() {
-  return "application/problem+json";
-}
-
 function String referenceName() {
   return "/Problem";
 }
@@ -42,8 +34,8 @@ rule "Should use ProblemResponse schema for default responses"
     $api: OpenAPI()
     $operations: Operation() from ApiFunctions.getOperations($api, excludeProblemResponseSchema())
     $responses: APIResponses() from $operations.getResponses()
-    APIResponse( $content : content) from $responses.getAPIResponse(responseStatusProblemResponseSchema())
-    Content( $mediaType : getMediaType(mediaTypeProblemResponseSchema()) ) from $content
+    APIResponse( $content : content) from $responses.getAPIResponse("default")
+    Content( $mediaType : getMediaType("application/problem+json") ) from $content
     MediaType( $schema : schema ) from $mediaType
     not Schema( ref.contains(referenceName()) ) from $schema
   then
