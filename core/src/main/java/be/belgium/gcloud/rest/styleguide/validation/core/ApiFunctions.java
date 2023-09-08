@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 
@@ -469,5 +470,12 @@ public class ApiFunctions {
             }
         }
         return false;
+    }
+
+    public static Set<Parameter> getParameters(OpenAPI api) {
+        Set<Parameter> parameters = new HashSet<>();
+        api.getPaths().getPathItems().values().forEach(pathItem -> { if(pathItem.getParameters() != null) { parameters.addAll(pathItem.getParameters());}});
+        getOperations(api, new OperationEnum[]{}).forEach(operation -> { if(operation.getParameters() != null) { parameters.addAll(operation.getParameters());}});
+        return parameters;
     }
 }

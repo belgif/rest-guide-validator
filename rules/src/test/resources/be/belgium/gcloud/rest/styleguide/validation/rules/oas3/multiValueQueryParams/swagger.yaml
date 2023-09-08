@@ -1,0 +1,41 @@
+openapi: 3.0.1
+info:
+  title: multiValueQueryParams
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /everythingIsGoodHere:
+    get:
+      summary: This path is completely compliant with the guidelines
+      description: Nice path
+      operationId: getEverythingIsGoodHere
+      parameters:
+        - name: embed
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - employees
+                - mainAddress
+        - name: embedTwo
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - employees
+                - mainAddress
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                type: object

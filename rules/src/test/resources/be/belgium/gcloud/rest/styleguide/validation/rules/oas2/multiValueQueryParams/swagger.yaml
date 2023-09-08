@@ -1,0 +1,34 @@
+---
+swagger: "2.0"
+info:
+  description: multiValueQueryParam
+  version: "1.0"
+  title: multiValueQueryParam
+basePath: /REST/multiValueQueryParam
+paths:
+  /correctMultiValueQueryParam:
+    get:
+      tags:
+        - user
+      summary: Get connected user's info
+      description: Get the user's info of the connected user like the scopes
+      operationId: getUserInfo
+      parameters:
+        - name: embed
+          in: query
+          type: string
+          enum:
+            - employees
+            - mainAddress
+        - name: embedTwo
+          in: query
+          collectionFormat: multi
+          type: array
+          enum:
+            - employees
+            - mainAddress
+      produces:
+        - application/json
+      responses:
+        200:
+          description: successful operation
