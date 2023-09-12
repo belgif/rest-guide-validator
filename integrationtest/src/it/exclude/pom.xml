@@ -29,10 +29,14 @@
                                 <excludesPath>/health</excludesPath>
                                 <excludesPath>/health/status</excludesPath>
                                 <excludesPath>/doc/swagger.yaml</excludesPath>
+                                <excludesPath>/doc/swagger.json</excludesPath>
                                 <excludesPath>/categories</excludesPath>
                                 <excludesPath>/entity/contacts/{contactId}</excludesPath>
                                 <excludesPath>/entity/contacts/{contactId}/invalidData</excludesPath>
                                 <excludesPath>/entity/revisions</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}/emailAddresses/{email}</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}/links</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}/revisions/{revisionId}</excludesPath>
                             </excludesPaths>
                         </fileWithExclusion>
                     </fileWithExclusions>

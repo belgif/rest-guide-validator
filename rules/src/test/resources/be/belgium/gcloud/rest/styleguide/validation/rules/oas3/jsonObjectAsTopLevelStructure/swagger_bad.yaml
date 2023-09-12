@@ -1,0 +1,53 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Here all the request and responsebodies are not of type object
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /faultyInlineResponse:
+    get:
+      operationId: getFaultyInlineResponse
+      responses:
+        '200':
+          description: Very bad
+          content:
+            application/json:
+              schema:
+                type: array
+  /faultyRequestBody:
+    post:
+      operationId: faultyRequestBody
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+        required: true
+      responses:
+        "201":
+          description: Created
+  /faultyProblemResponse:
+      get:
+        operationId: getProblemResponse
+        responses:
+          default:
+            description: a problem
+            content:
+              application/problem+json:
+                schema:
+                  $ref: '#/components/schemas/Problem'
+            x-content-type: application/json
+components:
+  schemas:
+    Problem:
+      description: A Problem Details object (RFC 7807)
+      type: string
+  responses:
+    ProblemResponse:
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+      description: a problem

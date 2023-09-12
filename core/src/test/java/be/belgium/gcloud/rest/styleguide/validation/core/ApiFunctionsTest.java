@@ -4,13 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -171,4 +169,29 @@ class ApiFunctionsTest {
         assertEquals(11, items.size());
     }
 
+    @Test
+    void isCompatibleMediaType() {
+        List<MediaType> mediaTypes = new ArrayList<>();
+        mediaTypes.add(MediaType.APPLICATION_JSON);
+        mediaTypes.add(MediaType.parseMediaType("multipart/*"));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+json", mediaTypes));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/json", mediaTypes));
+        assertFalse(ApiFunctions.isMediaTypeIncluded("application/problem+xml", mediaTypes));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/*", mediaTypes));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/form-data", mediaTypes));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/chunked", mediaTypes));
+        List<MediaType> all = new ArrayList<>();
+        all.add(MediaType.ALL);
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+json", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/json", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+xml", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/*", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/form-data", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/chunked", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("*/*", all));
+        assertTrue(ApiFunctions.isMediaTypeIncluded("application/*", all));
+
+        assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON)));
+
+    }
 }

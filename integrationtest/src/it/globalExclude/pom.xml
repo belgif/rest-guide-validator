@@ -26,10 +26,14 @@
                         <excludeResource>/health</excludeResource>
                         <excludeResource>/health/status</excludeResource>
                         <excludeResource>/doc/swagger.yaml</excludeResource>
+                        <excludeResource>/doc/swagger.json</excludeResource>
                         <excludeResource>/categories</excludeResource>
                         <excludeResource>/entity/contacts/{contactId}</excludeResource>
                         <excludeResource>/entity/contacts/{contactId}/invalidData</excludeResource>
                         <excludeResource>/entity/revisions</excludeResource>
+                        <excludesPath>/entity/contacts/{contactId}/emailAddresses/{email}</excludesPath>
+                        <excludesPath>/entity/contacts/{contactId}/links</excludesPath>
+                        <excludesPath>/entity/contacts/{contactId}/revisions/{revisionId}</excludesPath>
                     </excludeResources>
                     <files>
                         <file>swagger_bad.yaml</file>

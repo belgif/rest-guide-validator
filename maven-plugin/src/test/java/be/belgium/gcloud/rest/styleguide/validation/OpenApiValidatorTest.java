@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,8 +28,7 @@ public class OpenApiValidatorTest {
     @Test
     void isOasValid() {
         var file = new File(getClass().getResource("rules/swagger6.yaml").getFile());
-        List<String> excludedPaths = List.of(new String[]{"/api/doc/swagger.json", "/api/doc/swagger.yaml", "/api/doc",
-                "/businessrules/{name}", "/businessvalues/{key}"});
+        List<String> excludedPaths = new ArrayList<>();
         assertTrue(OpenApiValidator.isOasValid(file, excludedPaths, new ConsoleOutputProcessor()));
     }
 }

@@ -10,6 +10,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.servers.Server;
@@ -30,11 +31,13 @@ public class ApiFunctions {
     /**
      * avoid instance creation.
      */
-    private ApiFunctions(){}
+    private ApiFunctions() {
+    }
 
     /**
      * Read a file and store each line in a list.
      * If the file has only one line this function use a GSon librairy to build a pretty list of line.
+     *
      * @param file must be a yaml or a json file
      * @return a list of line
      * @throws IOException
@@ -43,22 +46,23 @@ public class ApiFunctions {
         var lines = Files.readAllLines(file.toPath());
 
         // lines > 1 then is a yaml or a pretty json file
-        if(lines.size() > 1)
+        if (lines.size() > 1)
             return lines;
 
         // else is a ugly json file
         var gson = new GsonBuilder().setPrettyPrinting().create();
-        var pretty = gson.toJson( JsonParser.parseString(lines.get(0)) );
+        var pretty = gson.toJson(JsonParser.parseString(lines.get(0)));
         return pretty.lines().collect(Collectors.toList());
     }
 
     /**
      * Build the java object structure from the file.
-     * @side-effect add the file and a list of line from the file to oas.
+     *
      * @param file a openApi yaml or json file.
-     * @param oas OpenApiViolationAggregator used to add file and list of line from the file.
+     * @param oas  OpenApiViolationAggregator used to add file and list of line from the file.
      * @return OpenAPI, the java object structure
      * @throws IOException
+     * @side-effect add the file and a list of line from the file to oas.
      */
     public static OpenAPI buildOpenApiSpecification(File file, OpenApiViolationAggregator oas) throws IOException {
         oas.setOpenApiFile(file);
@@ -74,12 +78,12 @@ public class ApiFunctions {
         // parser return a null value when the spec version is not 2.x -3.0.x
         // and SwAdapter raise a silent JsonParserException
         // if spec is 3.1 we need the info to raise a rule violation
-        if(openAPI == null){
+        if (openAPI == null) {
             openAPI = new io.swagger.v3.oas.models.OpenAPI();
             var version = getLines(file).stream()
-                                                     .filter(line -> line.trim().startsWith("openapi: "))
-                                                     .findFirst().orElseThrow()
-                                                     .substring(9);
+                    .filter(line -> line.trim().startsWith("openapi: "))
+                    .findFirst().orElseThrow()
+                    .substring(9);
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
@@ -100,92 +104,113 @@ public class ApiFunctions {
 
     /**
      * In the openAPI get all Path keys that match the pattern.
+     *
      * @param openAPI
      * @param pattern
      * @return a set path keys
      */
-    public static Set<String> getPathMatch(OpenAPI openAPI, String pattern){
-        return getPathKeys(openAPI).stream().filter(k-> k.matches(pattern)).collect(Collectors.toSet());
+    public static Set<String> getPathMatch(OpenAPI openAPI, String pattern) {
+        return getPathKeys(openAPI).stream().filter(k -> k.matches(pattern)).collect(Collectors.toSet());
     }
 
     /**
      * In the openAPI get all Path keys that NOT match the pattern.
+     *
      * @param openAPI
      * @param pattern
      * @return a set path keys
      */
-    public static Set<String> getPathNoMatch(OpenAPI openAPI, String pattern){
-        return getPathKeys(openAPI).stream().filter(k-> ! k.matches(pattern)).collect(Collectors.toSet());
+    public static Set<String> getPathNoMatch(OpenAPI openAPI, String pattern) {
+        return getPathKeys(openAPI).stream().filter(k -> !k.matches(pattern)).collect(Collectors.toSet());
     }
 
     /**
      * Return all path key for openAPI
+     *
      * @param openAPI
      * @return a set path keys
      */
     public static Set<String> getPathKeys(OpenAPI openAPI) {
-        if(openAPI.getPaths()==null || openAPI.getPaths().getPathItems()==null)
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null)
             return Collections.emptySet();
         return openAPI.getPaths().getPathItems().keySet();
     }
 
     /**
      * Return all path for openAPI
+     *
      * @param api
      * @return
      */
-    public static Paths getPaths(OpenAPI api){
+    public static Paths getPaths(OpenAPI api) {
         return api.getPaths();
     }
 
     /**
      * For the openapi get all path.operationId that match the verb and the status code.
+     *
      * @param openAPI
      * @param verb
      * @param statusCode
      * @return
      */
-    public static Set<String> getOperationId(OpenAPI openAPI, OperationEnum verb, String statusCode){
-        if(openAPI.getPaths()==null || openAPI.getPaths().getPathItems()==null)
+    public static Set<String> getOperationId(OpenAPI openAPI, OperationEnum verb, String statusCode) {
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null)
             return Collections.emptySet();
-        return  openAPI.getPaths().getPathItems().values().stream()
+        return openAPI.getPaths().getPathItems().values().stream()
                 .filter(path -> filterPath(path, verb, statusCode))
                 .map(path -> getOperationId(path, verb))
                 .collect(Collectors.toSet());
     }
 
-    private static boolean filterPath(PathItem path, OperationEnum verb, String statusCode){
-        switch (verb){
-            case GET: return path.getGET() != null && path.getGET().getResponses().getAPIResponses().containsKey(statusCode);
-            case POST: return path.getPOST() != null && path.getPOST().getResponses().getAPIResponses().containsKey(statusCode);
-            case PUT: return path.getPUT() != null &&  path.getPUT().getResponses().getAPIResponses().containsKey(statusCode);
-            case DELETE: return path.getDELETE() != null &&  path.getDELETE().getResponses().getAPIResponses().containsKey(statusCode);
-            case PATCH: return path.getPATCH() != null &&  path.getPATCH().getResponses().getAPIResponses().containsKey(statusCode);
-            case HEAD: return path.getHEAD() != null &&  path.getHEAD().getResponses().getAPIResponses().containsKey(statusCode);
-            case OPTIONS: return path.getOPTIONS() != null && path.getOPTIONS().getResponses().getAPIResponses().containsKey(statusCode);
-            default: throw new IllegalArgumentException("unknow verb: "+verb);
+    private static boolean filterPath(PathItem path, OperationEnum verb, String statusCode) {
+        switch (verb) {
+            case GET:
+                return path.getGET() != null && path.getGET().getResponses().getAPIResponses().containsKey(statusCode);
+            case POST:
+                return path.getPOST() != null && path.getPOST().getResponses().getAPIResponses().containsKey(statusCode);
+            case PUT:
+                return path.getPUT() != null && path.getPUT().getResponses().getAPIResponses().containsKey(statusCode);
+            case DELETE:
+                return path.getDELETE() != null && path.getDELETE().getResponses().getAPIResponses().containsKey(statusCode);
+            case PATCH:
+                return path.getPATCH() != null && path.getPATCH().getResponses().getAPIResponses().containsKey(statusCode);
+            case HEAD:
+                return path.getHEAD() != null && path.getHEAD().getResponses().getAPIResponses().containsKey(statusCode);
+            case OPTIONS:
+                return path.getOPTIONS() != null && path.getOPTIONS().getResponses().getAPIResponses().containsKey(statusCode);
+            default:
+                throw new IllegalArgumentException("unknow verb: " + verb);
         }
     }
-    private static String getOperationId(PathItem path, OperationEnum verb){
-        switch (verb){
-            case GET: return path.getGET().getOperationId();
-            case POST: return path.getPOST().getOperationId();
-            case PUT: return  path.getPUT().getOperationId();
-            case DELETE: return path.getDELETE().getOperationId();
-            case PATCH: return path.getPATCH().getOperationId();
-            case HEAD: return path.getHEAD().getOperationId();
-            case OPTIONS: return path.getOPTIONS().getOperationId();
-            default: throw new IllegalArgumentException("unknow verb: "+verb);
+
+    private static String getOperationId(PathItem path, OperationEnum verb) {
+        switch (verb) {
+            case GET:
+                return path.getGET().getOperationId();
+            case POST:
+                return path.getPOST().getOperationId();
+            case PUT:
+                return path.getPUT().getOperationId();
+            case DELETE:
+                return path.getDELETE().getOperationId();
+            case PATCH:
+                return path.getPATCH().getOperationId();
+            case HEAD:
+                return path.getHEAD().getOperationId();
+            case OPTIONS:
+                return path.getOPTIONS().getOperationId();
+            default:
+                throw new IllegalArgumentException("unknow verb: " + verb);
         }
     }
 
     /**
-     *
      * @param pattern
      * @return Map<String, String> The key is the definition name and the value is the property name
      */
     public static Map<String, List<String>> getDefinitionPropertiesNoMatch(OpenAPI openAPI, String pattern) {
-        if(openAPI.getComponents()==null || openAPI.getComponents().getSchemas()==null)
+        if (openAPI.getComponents() == null || openAPI.getComponents().getSchemas() == null)
             return Collections.EMPTY_MAP;
         Map<String, List<String>> result = new HashMap<>();
 
@@ -197,103 +222,100 @@ public class ApiFunctions {
 
     /**
      * For openAPI, get all server.url that NOT match the regex.
+     *
      * @param openAPI
      * @param regex
      * @return
      */
     public static Set<String> getServerNotMatch(OpenAPI openAPI, String regex) {
-        if(openAPI.getServers()==null)
+        if (openAPI.getServers() == null)
             return Collections.emptySet();
         return openAPI.getServers().stream()
                 .map(Server::getUrl)
-                .filter(url -> ! url.matches(regex))
+                .filter(url -> !url.matches(regex))
                 .collect(Collectors.toSet());
     }
 
     /**
      * For openAPI get all component.schema.properties that NOT match the regex.
+     *
      * @param openAPI
      * @param regex
      * @return
      */
-    public static List<ComponentProperties> getPropertiesNotMatch(OpenAPI openAPI, String regex){
+    public static List<ComponentProperties> getPropertiesNotMatch(OpenAPI openAPI, String regex) {
         List<ComponentProperties> properties = new ArrayList<>();
-        if(openAPI.getComponents()!=null && openAPI.getComponents().getSchemas()!=null)
-            openAPI.getComponents().getSchemas().forEach((k,v) ->{
-                if(v.getProperties() != null)
+        if (openAPI.getComponents() != null && openAPI.getComponents().getSchemas() != null)
+            openAPI.getComponents().getSchemas().forEach((k, v) -> {
+                if (v.getProperties() != null)
                     v.getProperties().keySet().stream()
-                            .filter(s-> ! s.matches(regex))
-                            .forEach(prop ->properties.add(new ComponentProperties(ComponentType.SCHEMA, k, prop)));
+                            .filter(s -> !s.matches(regex))
+                            .forEach(prop -> properties.add(new ComponentProperties(ComponentType.SCHEMA, k, prop)));
             });
         return properties;
     }
 
     /**
      * For all openAPI.path.key build a LineRangePath whith the start and end line of the path.
-     * @pre: Assume that in the file, after the paths we found nothing or a next element in ("components", "security", "securityDefinitions", "definitions", "externalDocs")
+     *
      * @param openAPI
      * @param oas
      * @return
+     * @pre: Last path in openAPI, does not have a 'real' end-line, last line of file is set as end.
      */
-    public static List<LineRangePath> buildAllPathWithLineRange(OpenAPI openAPI, OpenApiViolationAggregator oas){
+    public static List<LineRangePath> buildAllPathWithLineRange(OpenAPI openAPI, OpenApiViolationAggregator oas) {
         var paths = new ArrayList<LineRangePath>();
         var pathKeys = getPathKeys(openAPI);
 
-        if(pathKeys.isEmpty())
+        if (pathKeys.isEmpty())
             return Collections.emptyList();
 
-        pathKeys.forEach(p-> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
+        pathKeys.forEach(p -> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
         Collections.sort(paths);
-        for(int i=0; i<pathKeys.size()-1;i++){
-            paths.get(i).setEnd(paths.get(i+1).getStart()-1);
+        for (int i = 0; i < pathKeys.size() - 1; i++) {
+            paths.get(i).setEnd(paths.get(i + 1).getStart() - 1);
         }
 
-        var last = paths.get(paths.size()-1);
+        var last = paths.get(paths.size() - 1);
 
-        var others = List.of(new String[]{"components", "security", "securityDefinitions", "definitions", "externalDocs"});
-        var otherRanges = others.stream()
-                .map(other -> new LineRangePath(other, oas.getLineNumber(other)))
-                .filter(range -> range.getStart() > last.getStart())
-                .sorted()
-                .collect(Collectors.toList());
-        if (otherRanges.isEmpty())
-            last.setEnd(oas.src.size()-1);
-        else
-            last.setEnd(otherRanges.get(0).getStart());
+        last.setEnd(oas.src.size() - 1);
 
-        return  paths;
+        return paths;
     }
 
     /**
      * Return true if at least one element that {LineRangePath.path == path and LineRangePath.start >= lineNumber < LineRangePath.end}
+     *
      * @param lineRangePaths
      * @param path
      * @param lineNumber
      * @return
      */
-    public static boolean isInPathList(List<LineRangePath> lineRangePaths, String path, int lineNumber){
+    public static boolean isInPathList(List<LineRangePath> lineRangePaths, String path, int lineNumber) {
         return lineRangePaths.stream()
                 .anyMatch(lineRangePath -> lineRangePath.getPath().equals(path) && lineRangePath.inRange(lineNumber));
     }
 
     /**
      * Return true if at least one element that {LineRangePath.path IN paths and LineRangePath.start >= lineNumber < LineRangePath.end}
+     *
      * @param lineRangePaths
      * @param paths
      * @param lineNumber
      * @return
      */
-    public static boolean isInPathList(List<LineRangePath> lineRangePaths, List<String> paths, int lineNumber){
+    public static boolean isInPathList(List<LineRangePath> lineRangePaths, List<String> paths, int lineNumber) {
         return lineRangePaths.stream()
                 .anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
     }
 
     /**
      * Get a list of pathkey that return a collection.
+     *
      * @param openAPI
      * @return
      */
-    public static List<String> getReturnCollectionPathKey(OpenAPI openAPI){
+    public static List<String> getReturnCollectionPathKey(OpenAPI openAPI) {
         return new ArrayList<>(getCollectionPathItems(openAPI).keySet());
     }
 
@@ -311,8 +333,8 @@ public class ApiFunctions {
         // Filter out all collections without GET
         var pathsWithGet = allPaths.stream()
                 .filter(path -> collectionPaths.contains(path.getKey()) &&
-                    path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue ));
+                        path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return pathsWithGet;
     }
 
@@ -335,39 +357,42 @@ public class ApiFunctions {
         return path != null && path.endsWith("}");
     }
 
-    public static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem){
-        try{
+    public static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem) {
+        try {
             AtomicBoolean isCollection = new AtomicBoolean(false);
             var responseSchemas = pathItem.getGET().getResponses().getAPIResponses().values().stream()
                     .flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream())
                     .map(MediaType::getSchema);
             responseSchemas.forEach(schema -> {
-                if (schema.getProperties()!=null && schema.getProperties().containsKey("items")
-                        && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)){
+                if (schema.getProperties() != null && schema.getProperties().containsKey("items")
+                        && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
                     isCollection.set(true);
-                }
-                else {
-                    if(isCollection(openAPI, schema.getRef()))
+                } else {
+                    if (isCollection(openAPI, schema.getRef()))
                         isCollection.set(true);
                 }
             });
             return isCollection.get();
-        }catch (NullPointerException ex){
+        } catch (NullPointerException ex) {
             return false;
         }
     }
 
-    private static boolean isCollection(OpenAPI openAPI, String ref){
-        try{
-            if( ! ref.startsWith("#")){
+    private static boolean isCollection(OpenAPI openAPI, String ref) {
+        try {
+            if (!ref.startsWith("#")) {
                 log.debug("Cannot check an external reference.");
                 return false;
             }
             return openAPI.getComponents().getSchemas().get(getRefName(ref)).getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY);
 
-        }catch (NullPointerException ex){
+        } catch (NullPointerException ex) {
             return false;
         }
+    }
+
+    public static Set<Operation> getOperations(OpenAPI api){
+        return getOperations(api, new OperationEnum[] {});
     }
 
     public static Set<Operation> getOperations(OpenAPI api, OperationEnum[] exclude) {
@@ -400,9 +425,49 @@ public class ApiFunctions {
         return operations;
     }
 
-    private static String getRefName(String ref){
-        if( ! ref.contains("/"))
+    private static String getRefName(String ref) {
+        if (!ref.contains("/"))
             return ref;
-        return ref.substring(ref.lastIndexOf('/')+1);
+        return ref.substring(ref.lastIndexOf('/') + 1);
+    }
+
+    public static Set<Schema> getSchemaFromContent(OpenAPI api, Content content, Set<String> contentTypes) {
+        List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
+        for (String contentType : contentTypes) {
+            mediaTypeList.add(org.springframework.http.MediaType.parseMediaType(contentType));
+        }
+        Set<Schema> schemas = content.getMediaTypes().entrySet().stream().filter(set -> isMediaTypeIncluded(set.getKey(), mediaTypeList)).map(set -> set.getValue().getSchema()).collect(Collectors.toSet());
+        Set<Schema> outputSchemas = new HashSet<>();
+        for (Schema schema : schemas) {
+            if (schema.getType() == null && schema.getRef() != null) {
+                Schema refSchema = getReferenceSchema(api, schema.getRef());
+                outputSchemas.add(refSchema);
+            } else {
+                outputSchemas.add(schema);
+            }
+        }
+        return outputSchemas;
+    }
+
+    private static Schema getReferenceSchema(OpenAPI api, String ref) {
+        // input files are pre-merged by swagger-parser setResolve(true), so all references should be in the parsed OpenAPI model
+        if (api.getComponents() == null || api.getComponents().getSchemas() == null) {
+            throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference " + ref + ". /components/schemas is missing.");
+        }
+        Schema resolvedSchema = api.getComponents().getSchemas().get(getRefName(ref));
+        if(resolvedSchema == null) {
+            throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference to schema: " + ref + ", or reference does not point to schema.");
+        }
+        return resolvedSchema;
+    }
+
+    public static boolean isMediaTypeIncluded(String mediaTypeStr, List<org.springframework.http.MediaType> allowedMediaTypes) {
+        org.springframework.http.MediaType mediaType = org.springframework.http.MediaType.parseMediaType(mediaTypeStr);
+        for (org.springframework.http.MediaType allowedMediaType : allowedMediaTypes) {
+            if (allowedMediaType.includes(mediaType) || (mediaType.getSubtypeSuffix() != null && allowedMediaType.includes(org.springframework.http.MediaType.parseMediaType(mediaType.getType()+"/"+mediaType.getSubtypeSuffix())))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

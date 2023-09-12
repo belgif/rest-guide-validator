@@ -1,86 +1,41 @@
 openapi: 3.0.1
 info:
-  title: PresenceOfPayloadFailingOpenApi
+  title: TestCase
+  description: Here all the request and responsebodies are of type object
   version: '1.0'
 servers:
   - url: '/api/v1'
 paths:
-  /statusCode200WithoutResponsePayload :
+  /properInlineResponse:
     get:
-      summary: Very wrong
-      description: This should not happen
-      operationId: statusCode200WithoutResponsePayload
-      responses:
-        200:
-          description: Yes
-  /aLotIsWrongHere:
-    get:
-      summary: Multiple issues on this path
-      description: Multiple issues on this path
-      operationId: aLotIsWrongHere
-      requestBody:
-        description: requestDescription
-        required: true
-        content:
-          multipart/* :
-            schema:
-              type: string
+      operationId: getProperInlineResponse
       responses:
         '200':
-          description: No response payload here
-        204:
-          description: 204 with payload
+          description: Very good response
           content:
             application/json:
               schema:
                 type: object
         default:
           $ref: '#/components/responses/ProblemResponse'
-    head:
-      summary: head summary
-      operationId: headOperation
-      parameters:
-        - name: group
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: requestDescription
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Problem'
+  /properRefResponse:
+    get:
+      operationId: getProperRefResponse
       responses:
         default:
           $ref: '#/components/responses/ProblemResponse'
-    delete:
-      summary: delete summary
-      operationId: deleteOperation
+  /properRequestBody:
+    post:
+      operationId: faultyRequestBody
       requestBody:
-        description: requestDescription
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Problem'
-      responses:
-        default:
-          $ref: '#/components/responses/ProblemResponse'
-    options:
-      summary: options summary
-      operationId: optionsOperation
-      requestBody:
-        description: requestDescription
+              type: object
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Problem'
       responses:
-        default:
-          $ref: '#/components/responses/ProblemResponse'
+        "201":
+          description: Created
 components:
   schemas:
     Problem:

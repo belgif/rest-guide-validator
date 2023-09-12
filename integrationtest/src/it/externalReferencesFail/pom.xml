@@ -22,15 +22,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <excludeResources>
-                        <excludeResource>/pet/findByStatus</excludeResource>
-                        <excludeResource>/pet/findByTags</excludeResource>
-                        <excludeResource>/user/createWithList</excludeResource>
-                        <excludeResource>/user/login</excludeResource>
-                    </excludeResources>
                     <files>
-                        <file>swaggerOk.yaml</file>
-                        <file>petstore.json</file>
+                        <file>openapi.yaml</file>
                     </files>
                 </configuration>
             </plugin>

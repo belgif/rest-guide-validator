@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: types related to location
+  version: 1.1.0
+servers: []
+paths: {}
+components:
+  schemas:
+    CountryNisCode:
+      description: NIS code representing a country as defined by statbel.fgov.be
+      type: integer
+      minimum: 100
+      maximum: 999
+    MunicipalityCode:
+      description: Numeric code to identify a Belgian municipality
+      #municipality codes are the same in BeSt address and NIS code list
+      type: integer
+      minimum: 10000
+      maximum: 99999
+    BelgianRegionCode:
+      description: Belgian Region represented by an ISO 3166-2:BE code
+      type: string
+      enum: 
+        - BE-BRU
+        - BE-WAL
+        - BE-VLG
+    CountryIsoCode:
+      description: Country represented by an ISO 3166-1 alpha-2 code
+      type: string
+      pattern: "^[A-Z]{2}$"
+    CountryWithHistoricIsoCode:
+      description: Country represented by an ISO 3166-1 alpha-2 (current country) or ISO 3166-3 alpha-4 (former country) code
+      type: string
+      pattern: "^[A-Z]{2}([A-Z]{2})?$"
+    StreetRrnCode:
+      description: Street code assigned by National Registry #not part of BeST address
+      type: integer
+      minimum: 1
+      maximum: 9999

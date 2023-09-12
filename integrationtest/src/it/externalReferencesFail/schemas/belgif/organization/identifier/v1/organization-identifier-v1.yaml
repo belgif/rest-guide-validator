@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  title: data types related to organizations
+  version: 1.0.1
+servers: []
+paths: {}
+components:
+  schemas:
+    CbeNumber:
+      description: Identifier issued by CBE for either an organization or a site (establishment) of an organization
+      type: string
+      pattern: '^[0-8]\d{9}$'
+      deprecated: true # Use either EnterpriseNumber or EstablishmentUnitNumber, as two separate properties if needed
+    EnterpriseNumber:
+      description: Identifier issued by CBE for a registered organization
+      type: string
+      pattern: '^[0|1]\d{9}$'
+    EstablishmentUnitNumber:
+      description: Identifier issued by CBE for a site (establishment) of an organization
+      type: string
+      pattern: '^[2-8]\d{9}$'
