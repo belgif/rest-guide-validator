@@ -7,7 +7,7 @@ public class CodesShouldBeLowerCamelCaseTest extends AbstractOasRuleTest {
     protected String ruleName = "[cod-design]";
     protected ViolationType violationType = ViolationType.MANDATORY;
 
-    int errorCount = 7;
+    int errorCount = 2;
 
     public CodesShouldBeLowerCamelCaseTest() {
         this.setRuleName(ruleName);

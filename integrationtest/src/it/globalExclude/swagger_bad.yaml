@@ -1928,7 +1928,7 @@ definitions:
         description: the phone number
       phoneNumberRole:
         type: string
-        enum: [PHONE,FAX]
+        enum: [phone,fax]
       invalidData:
         type: array
         items:

@@ -8,10 +8,10 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinition;
 
-function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oas, String path){
+function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oas, SchemaDefinition schema){
     oas.addViolation("[cod-design]",
-    "New code types SHOULD be represented as string values in lowerCamelCase. \t"+ path,
-    oas.getLineNumber(path));
+    "New code types SHOULD be represented as string values in lowerCamelCase. \t"+ schema.getParentName() + "." + schema.getSchema().getEnumeration(),
+    oas.getLineNumber(schema.getParentName()));
 }
 
 rule "Codes should be lowerCamelCase"
@@ -23,5 +23,5 @@ rule "Codes should be lowerCamelCase"
         $code: String() from $schema.getSchema().getEnumeration()
         Boolean( this == false ) from ApiFunctions.isLowerCamelCase($code)
     then
-        violationCodesShouldBeLowerCamelCase(oas, $code);
+        violationCodesShouldBeLowerCamelCase(oas, $schema);
 end
