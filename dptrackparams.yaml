@@ -1,0 +1,5 @@
+jenkins:
+    tenant : cicd
+    buildurl : https://jenkins-cicd.gcloud.belgium.be/job/rest/job/MvnRelease_rest-styleguide-validation_main/7/
+    host : lpgcdpla002a.services.gcloud.belgium.be
+    group : rest
