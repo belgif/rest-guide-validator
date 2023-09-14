@@ -21,7 +21,7 @@ function void violationMultiValueQueryParams(OpenApiViolationAggregator oas, Str
 rule "Multi Value Query Params"
   when
     $api: OpenAPI()
-    $parameter: Parameter(`in` == In.QUERY) from ApiFunctions.getParameters($api)
+    $parameter: Parameter( this.getIn() == In.QUERY ) from ApiFunctions.getParameters($api)
     $schema: Schema(type == SchemaType.ARRAY) from $parameter.getSchema()
     Parameter(style != Style.FORM || explode == false) from $parameter
   then
