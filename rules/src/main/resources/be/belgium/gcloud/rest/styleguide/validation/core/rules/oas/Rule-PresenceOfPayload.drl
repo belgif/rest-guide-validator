@@ -55,7 +55,7 @@ rule "Status code 200 should have response payload"
     (Content( $mediaMap : mediaTypes ) from $content) and
     (Map( size == 0 ) from $mediaMap))
   then
-    violationPresenceOfPayload(oas, "Status code 200 should have response payload \t", $operation.getOperationId());
+    violationPresenceOfPayload(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $operation.getOperationId());
 end
 
 rule "Status code 204 should not have response payload"
