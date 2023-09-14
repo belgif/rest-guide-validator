@@ -200,9 +200,9 @@ definitions:
       requestType:
         type: string
         enum:
-          - C
-          - V
-          - D
+          - c
+          - v
+          - d
       parameter:
         type: string
       value:
@@ -250,9 +250,9 @@ definitions:
       type:
         type: string
         enum:
-          - CARD
-          - VISA
-          - DAI
+          - card
+          - visa
+          - dai
       recognitionNumber:
         type: string
       validityStartDate:
@@ -331,9 +331,9 @@ definitions:
       employerType:
         type: string
         enum:
-          - PERSON
-          - FACTUAL_ASSOCIATION
-          - ENTERPRISE
+          - person
+          - factualAssociation
+          - enterprise
       employerId:
         type: string
       employerDenomination:

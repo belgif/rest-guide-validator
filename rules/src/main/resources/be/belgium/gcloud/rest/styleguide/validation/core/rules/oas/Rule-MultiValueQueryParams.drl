@@ -2,7 +2,6 @@ package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
-import be.belgium.gcloud.rest.styleguide.validation.core.ComponentProperties;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;

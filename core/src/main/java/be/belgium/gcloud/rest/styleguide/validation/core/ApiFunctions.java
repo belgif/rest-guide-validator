@@ -206,20 +206,6 @@ public class ApiFunctions {
         }
     }
 
-    /**
-     * @param pattern
-     * @return Map<String, String> The key is the definition name and the value is the property name
-     */
-    public static Map<String, List<String>> getDefinitionPropertiesNoMatch(OpenAPI openAPI, String pattern) {
-        if (openAPI.getComponents() == null || openAPI.getComponents().getSchemas() == null)
-            return Collections.EMPTY_MAP;
-        Map<String, List<String>> result = new HashMap<>();
-
-        for (String k : openAPI.getComponents().getSchemas().keySet()) {
-            addNotMatch(pattern, result, openAPI.getComponents().getSchemas().get(k).getProperties(), k);
-        }
-        return result;
-    }
 
     /**
      * For openAPI, get all server.url that NOT match the regex.
@@ -238,21 +224,16 @@ public class ApiFunctions {
     }
 
     /**
-     * For openAPI get all component.schema.properties that NOT match the regex.
-     *
-     * @param openAPI
-     * @param regex
-     * @return
+     * Get all properties defined anywhere in the OpenAPI
      */
-    public static List<ComponentProperties> getPropertiesNotMatch(OpenAPI openAPI, String regex) {
-        List<ComponentProperties> properties = new ArrayList<>();
-        if (openAPI.getComponents() != null && openAPI.getComponents().getSchemas() != null)
-            openAPI.getComponents().getSchemas().forEach((k, v) -> {
-                if (v.getProperties() != null)
-                    v.getProperties().keySet().stream()
-                            .filter(s -> !s.matches(regex))
-                            .forEach(prop -> properties.add(new ComponentProperties(ComponentType.SCHEMA, k, prop)));
-            });
+    public static Set<PropertyDefinition> getProperties(OpenAPI api) {
+        Set<PropertyDefinition> properties = new HashSet<>();
+        getSchemas(api).forEach(schemaDef -> {
+            if (schemaDef.getSchema().getProperties() != null) {
+                schemaDef.getSchema().getProperties().forEach((k, v) ->
+                        properties.add(new PropertyDefinition(schemaDef.getParentDefinitionLocation(), schemaDef.getParentName(), k, v)));
+            }
+        });
         return properties;
     }
 
@@ -392,34 +373,33 @@ public class ApiFunctions {
         }
     }
 
-    public static Set<Operation> getOperations(OpenAPI api){
-        return getOperations(api, new OperationEnum[] {});
+    public static Set<Operation> getOperations(OpenAPI api) {
+        return getOperations(api, Set.of());
     }
 
-    public static Set<Operation> getOperations(OpenAPI api, OperationEnum[] exclude) {
+    public static Set<Operation> getOperations(OpenAPI api, Set<OperationEnum> exclude) {
         Collection<PathItem> pathItems = api.getPaths().getPathItems().values();
         Set<Operation> operations = new HashSet<>();
-        List<OperationEnum> verbs = Arrays.asList(exclude);
         for (PathItem pathItem : pathItems) {
-            if (pathItem.getGET() != null && !verbs.contains(OperationEnum.GET)) {
+            if (pathItem.getGET() != null && !exclude.contains(OperationEnum.GET)) {
                 operations.add(pathItem.getGET());
             }
-            if (pathItem.getPUT() != null && !verbs.contains(OperationEnum.PUT)) {
+            if (pathItem.getPUT() != null && !exclude.contains(OperationEnum.PUT)) {
                 operations.add(pathItem.getPUT());
             }
-            if (pathItem.getPOST() != null && !verbs.contains(OperationEnum.POST)) {
+            if (pathItem.getPOST() != null && !exclude.contains(OperationEnum.POST)) {
                 operations.add(pathItem.getPOST());
             }
-            if (pathItem.getDELETE() != null && !verbs.contains(OperationEnum.DELETE)) {
+            if (pathItem.getDELETE() != null && !exclude.contains(OperationEnum.DELETE)) {
                 operations.add(pathItem.getDELETE());
             }
-            if (pathItem.getPATCH() != null && !verbs.contains(OperationEnum.PATCH)) {
+            if (pathItem.getPATCH() != null && !exclude.contains(OperationEnum.PATCH)) {
                 operations.add(pathItem.getPATCH());
             }
-            if (pathItem.getHEAD() != null && !verbs.contains(OperationEnum.HEAD)) {
+            if (pathItem.getHEAD() != null && !exclude.contains(OperationEnum.HEAD)) {
                 operations.add(pathItem.getHEAD());
             }
-            if (pathItem.getOPTIONS() != null && !verbs.contains(OperationEnum.OPTIONS)) {
+            if (pathItem.getOPTIONS() != null && !exclude.contains(OperationEnum.OPTIONS)) {
                 operations.add(pathItem.getOPTIONS());
             }
         }
@@ -456,7 +436,7 @@ public class ApiFunctions {
             throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference " + ref + ". /components/schemas is missing.");
         }
         Schema resolvedSchema = api.getComponents().getSchemas().get(getRefName(ref));
-        if(resolvedSchema == null) {
+        if (resolvedSchema == null) {
             throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference to schema: " + ref + ", or reference does not point to schema.");
         }
         return resolvedSchema;
@@ -465,7 +445,7 @@ public class ApiFunctions {
     public static boolean isMediaTypeIncluded(String mediaTypeStr, List<org.springframework.http.MediaType> allowedMediaTypes) {
         org.springframework.http.MediaType mediaType = org.springframework.http.MediaType.parseMediaType(mediaTypeStr);
         for (org.springframework.http.MediaType allowedMediaType : allowedMediaTypes) {
-            if (allowedMediaType.includes(mediaType) || (mediaType.getSubtypeSuffix() != null && allowedMediaType.includes(org.springframework.http.MediaType.parseMediaType(mediaType.getType()+"/"+mediaType.getSubtypeSuffix())))) {
+            if (allowedMediaType.includes(mediaType) || (mediaType.getSubtypeSuffix() != null && allowedMediaType.includes(org.springframework.http.MediaType.parseMediaType(mediaType.getType() + "/" + mediaType.getSubtypeSuffix())))) {
                 return true;
             }
         }
@@ -474,8 +454,58 @@ public class ApiFunctions {
 
     public static Set<Parameter> getParameters(OpenAPI api) {
         Set<Parameter> parameters = new HashSet<>();
-        api.getPaths().getPathItems().values().forEach(pathItem -> { if(pathItem.getParameters() != null) { parameters.addAll(pathItem.getParameters());}});
-        getOperations(api, new OperationEnum[]{}).forEach(operation -> { if(operation.getParameters() != null) { parameters.addAll(operation.getParameters());}});
+        api.getPaths().getPathItems().values().forEach(pathItem -> {
+            if (pathItem.getParameters() != null) {
+                parameters.addAll(pathItem.getParameters());
+            }
+        });
+        getOperations(api).forEach(operation -> {
+            if (operation.getParameters() != null) {
+                parameters.addAll(operation.getParameters());
+            }
+        });
         return parameters;
     }
+
+    public static Set<SchemaDefinition> getSchemas(OpenAPI api) {
+        // This method is incomplete, and does not actually get all the schemas in an openapi file
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        if (api.getComponents() != null && api.getComponents().getSchemas() != null) {
+            api.getComponents().getSchemas().forEach((schemaName, schema) -> {
+                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schemaName, schema));
+            });
+        }
+        Set<Parameter> parameters = new HashSet<>();
+        getOperations(api).stream().filter(operation -> operation.getParameters() != null).forEach(operation -> parameters.addAll(operation.getParameters()));
+        api.getPaths().getPathItems().values().stream().filter(pathItem -> pathItem.getParameters() != null).forEach(pathItem -> parameters.addAll(pathItem.getParameters()));
+
+        parameters.forEach(parameter ->
+                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()))
+        );
+
+        Set<SchemaDefinition> nestedSchemas = new HashSet<>();
+        schemas.forEach(schema -> nestedSchemas.addAll(getNestedSchemas(schema)));
+        schemas.addAll(nestedSchemas);
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getNestedSchemas(SchemaDefinition parentSchemaDefinition) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        var parentSchema = parentSchemaDefinition.getSchema();
+        if (parentSchema.getProperties() != null) {
+            parentSchema.getProperties().values().forEach(schema ->
+                    {
+                        var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName, schema);
+                        schemas.add(schemaOfProperty);
+                        schemas.addAll(getNestedSchemas(schemaOfProperty));
+                    }
+            );
+        }
+        return schemas;
+    }
+
+    public static boolean isLowerCamelCase(String string) {
+        return string.matches("^[a-z0-9]+([A-Z]?[a-z0-9]+)*$");
+    }
+
 }

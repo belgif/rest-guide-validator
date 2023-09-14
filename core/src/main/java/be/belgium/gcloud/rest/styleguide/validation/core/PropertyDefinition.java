@@ -4,17 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import org.eclipse.microprofile.openapi.models.media.Schema;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @ToString
-public class ComponentProperties {
-    ComponentType type;
-    String propertyKey;
+public class PropertyDefinition {
+    OpenApiDefinitionLocation parentDefinitionLocation;
+    String parentName;
     String propertyName;
+    Schema propertySchema;
 }
 
-enum ComponentType{
-    SCHEMA
-}

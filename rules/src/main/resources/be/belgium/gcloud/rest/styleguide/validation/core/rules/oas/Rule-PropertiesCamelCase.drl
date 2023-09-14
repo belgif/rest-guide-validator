@@ -2,24 +2,22 @@ package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
-import be.belgium.gcloud.rest.styleguide.validation.core.ComponentProperties;
+import be.belgium.gcloud.rest.styleguide.validation.core.PropertyDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-function String patternCamelCase(){
-    return "^[a-z]+([A-Z]?[a-z0-9]+)*$" ;
-}
-function void violationPropertiesCamelCase(OpenApiViolationAggregator oas, ComponentProperties property){
+function void violationPropertiesCamelCase(OpenApiViolationAggregator oas, PropertyDefinition property){
     oas.addViolation("[jsn-naming]",
            		 "All JSON property names must be in American English and must be written in lowerCamelCase notation. \t" +
-           		    "[" + property.getType() + "]" + property.getPropertyKey() + ":" + property.getPropertyName(),
-           		  oas.getLineNumber(oas.getLineNumber(property.getPropertyKey()),property.getPropertyName()));
+           		    "[" + property.getParentDefinitionLocation() + "]" + property.getParentName() + ":" + property.getPropertyName(),
+           		  oas.getLineNumber(oas.getLineNumber(property.getParentName()),property.getPropertyName()));
 }
 
-rule "Path Properties CamelCase"
+rule "Properties CamelCase"
 	when
         $api: OpenAPI()
-        $property: ComponentProperties() from ApiFunctions.getPropertiesNotMatch($api, patternCamelCase())
+        $property: PropertyDefinition( $propertyName: propertyName ) from ApiFunctions.getProperties($api)
+        Boolean( this == false ) from ApiFunctions.isLowerCamelCase($propertyName)
     then
         violationPropertiesCamelCase(oas, $property);
 end

@@ -2,7 +2,6 @@ package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
-import be.belgium.gcloud.rest.styleguide.validation.core.ComponentProperties;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -13,6 +12,7 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import java.util.Map;
+import java.util.Set;
 
 function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String errorMessage, String property){
   oas.addViolation("[presenceOfPayload]",
@@ -24,7 +24,7 @@ function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String 
 rule "GET/HEAD/DELETE/OPTIONS should have no request payload"
   when
     $api: OpenAPI()
-    $operation: Operation() from ApiFunctions.getOperations($api, new OperationEnum[] {OperationEnum.PATCH, OperationEnum.POST, OperationEnum.PUT})
+    $operation: Operation() from ApiFunctions.getOperations($api, Set.of(OperationEnum.PATCH, OperationEnum.POST, OperationEnum.PUT))
     $requestBody: RequestBody() from $operation.getRequestBody()
     not RequestBody( $requestBody.getContent() == null )
   then
@@ -34,7 +34,7 @@ end
 rule "HEAD should have no response payload"
   when
     $api: OpenAPI()
-    $operation: Operation() from ApiFunctions.getOperations($api, new OperationEnum[] {OperationEnum.PATCH, OperationEnum.POST, OperationEnum.PUT, OperationEnum.GET, OperationEnum.DELETE, OperationEnum.OPTIONS})
+    $operation: Operation() from ApiFunctions.getOperations($api, Set.of(OperationEnum.PATCH, OperationEnum.POST, OperationEnum.PUT, OperationEnum.GET, OperationEnum.DELETE, OperationEnum.OPTIONS))
     $responses: APIResponses() from $operation.getResponses()
     $response: APIResponse() from $responses.getAPIResponses().values()
     not APIResponse( $response.getContent() == null )
@@ -48,7 +48,7 @@ end
 rule "Status code 200 should have response payload"
   when
     $api: OpenAPI()
-    $operation: Operation() from ApiFunctions.getOperations($api, new OperationEnum[] {})
+    $operation: Operation() from ApiFunctions.getOperations($api, Set.of())
     $response: APIResponse() from $operation.getResponses().getAPIResponse("200")
     APIResponse( content == null ) from $response or
     ((APIResponse( $content : content) from $response ) and
@@ -61,7 +61,7 @@ end
 rule "Status code 204 should not have response payload"
   when
     $api: OpenAPI()
-    $operation: Operation() from ApiFunctions.getOperations($api, new OperationEnum[] {})
+    $operation: Operation() from ApiFunctions.getOperations($api, Set.of())
     APIResponses( hasAPIResponse("204") ) from $operation.getResponses()
     Content( $mediaMap : mediaTypes ) from $operation.getResponses().getAPIResponse("204").getContent()
     Map( size != 0 ) from $mediaMap

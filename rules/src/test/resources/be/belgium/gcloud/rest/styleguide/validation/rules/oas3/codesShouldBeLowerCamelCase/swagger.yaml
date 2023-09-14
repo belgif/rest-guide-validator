@@ -1,0 +1,55 @@
+openapi: 3.0.0
+info:
+  title: Working testcase for CodesShouldBeLowerCamelCase
+  description: This is the reference implementation of a REST API following the G-Cloud
+    style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+tags:
+  - name: ReferenceData
+  - name: Organization
+  - name: Employer
+  - name: Logos
+  - name: Documentation
+  - name: Monitoring
+paths:
+  /myFirstPath:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            description: description
+            enum:
+              - nl
+              - fr
+              - creditCard
+      responses:
+        default:
+          description: a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/SomethingWithEnum'
+components:
+  schemas:
+    SomethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard

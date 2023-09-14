@@ -1043,8 +1043,8 @@ components:
         mediaType:
           type: string
           enum:
-            - image/png
-            - image/jpeg
+            - png
+            - jpeg
         height:
           type: integer
         width:
