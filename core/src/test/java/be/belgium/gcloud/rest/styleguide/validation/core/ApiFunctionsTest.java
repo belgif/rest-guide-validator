@@ -23,6 +23,12 @@ class ApiFunctionsTest {
         return openApi;
     }
 
+    private OpenAPI getSchemasOpenApi() throws IOException {
+        var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
+        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
+        return openApi;
+    }
+
     @Test
     void buildOpenApiSpecification() throws IOException {
         assertNotNull(getOpenApi());
@@ -169,8 +175,8 @@ class ApiFunctionsTest {
 
     @Test
     void getSchemasTest() throws IOException {
-        Set<SchemaDefinition> schemas = ApiFunctions.getSchemas(getOpenApi());
-        assertTrue(schemas.size() > 242);
+        Set<SchemaDefinition> schemas = ApiFunctions.getSchemas(getSchemasOpenApi());
+        assertEquals(29, schemas.size());
     }
 
     @Test

@@ -6,10 +6,7 @@ import com.google.gson.JsonParser;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
-import org.eclipse.microprofile.openapi.models.PathItem;
-import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.*;
 import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -90,18 +87,6 @@ public class ApiFunctions {
         return SwAdapter.toOpenAPI(openAPI);
     }
 
-    private static void addNotMatch(String pattern, Map<String, List<String>> result, Map<String, Schema> properties, String k) {
-        if (properties != null) {
-            List<String> list = new LinkedList<>();
-            properties.keySet().forEach(s -> {
-                if (!s.matches(pattern)) {
-                    list.add(s);
-                }
-            });
-            if (!list.isEmpty())
-                result.put(k, list);
-        }
-    }
 
     /**
      * In the openAPI get all Path keys that match the pattern.
@@ -302,7 +287,7 @@ public class ApiFunctions {
     }
 
     public static Map<String, PathItem> getCollectionPathItems(OpenAPI openAPI) {
-        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems().size() == 0) {
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems().isEmpty()) {
             return new HashMap<>();
         }
         var allPaths = openAPI.getPaths().getPathItems().entrySet();
@@ -313,11 +298,10 @@ public class ApiFunctions {
         collectionPaths.addAll(allPaths.stream().filter(path -> isReturnCollection(openAPI, path.getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
 
         // Filter out all collections without GET
-        var pathsWithGet = allPaths.stream()
+        return allPaths.stream()
                 .filter(path -> collectionPaths.contains(path.getKey()) &&
                         path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return pathsWithGet;
     }
 
     private static String getPathBeforePathParam(Map.Entry<String, PathItem> path, OpenAPI openAPI) {
@@ -468,24 +452,161 @@ public class ApiFunctions {
     }
 
     public static Set<SchemaDefinition> getSchemas(OpenAPI api) {
-        // This method is incomplete, and does not actually get all the schemas in an openapi file
         Set<SchemaDefinition> schemas = new HashSet<>();
-        if (api.getComponents() != null && api.getComponents().getSchemas() != null) {
-            api.getComponents().getSchemas().forEach((schemaName, schema) -> {
-                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schemaName, schema));
-            });
+        Components components = api.getComponents();
+        if (components != null) {
+            // Gets schemas from top-level components
+            if (components.getSchemas() != null) {
+                components.getSchemas().forEach((schemaName, schema) -> schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schemaName, schema)));
+            }
+            schemas.addAll(getResponseSchemas(components));
+            schemas.addAll(getRequestBodySchemas(components));
+            schemas.addAll(getHeaderSchemas(components));
+            schemas.addAll(getCallbackSchemas(components));
+            schemas.addAll(getTopLevelParameterSchemas(components));
         }
+        // Gets schemas from parameters declared on PathItem level
         Set<Parameter> parameters = new HashSet<>();
-        getOperations(api).stream().filter(operation -> operation.getParameters() != null).forEach(operation -> parameters.addAll(operation.getParameters()));
         api.getPaths().getPathItems().values().stream().filter(pathItem -> pathItem.getParameters() != null).forEach(pathItem -> parameters.addAll(pathItem.getParameters()));
-
         parameters.forEach(parameter ->
                 schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()))
+        );
+        // Get schemas from operations
+        getOperations(api).forEach(operation ->
+                schemas.addAll(getSchemasFromOperation(operation))
         );
 
         Set<SchemaDefinition> nestedSchemas = new HashSet<>();
         schemas.forEach(schema -> nestedSchemas.addAll(getNestedSchemas(schema)));
         schemas.addAll(nestedSchemas);
+
+        return schemas.stream().filter(schemaDefinition -> schemaDefinition.getSchema().getRef() == null).collect(Collectors.toSet());
+    }
+
+    private static Set<SchemaDefinition> getCallbackSchemas(Components components) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        if (components.getCallbacks() != null) {
+            components.getCallbacks().forEach((callbackName, callback) ->
+                    callback.getPathItems().forEach((pathItemName, pathItem) ->
+                            pathItem.getOperations().forEach(((httpMethod, operation) ->
+                                    schemas.addAll(getSchemasFromOperation(operation))
+                            ))
+                    )
+            );
+        }
+
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getRequestBodySchemas(Components components) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        // Get top level requestBodies
+        if (components.getRequestBodies() != null) {
+            components.getRequestBodies().forEach((requestName, request) -> {
+                if (request.getContent() != null && request.getContent().getMediaTypes() != null) {
+                    request.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
+                        if (mediaType.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_REQUESTBODY, requestName + ":" + mediaTypeName, mediaType.getSchema()));
+                        }
+                    });
+                }
+            });
+        }
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getHeaderSchemas(Components components) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        // Get top level header schemas
+        if (components.getHeaders() != null) {
+            components.getHeaders().forEach((headerName, header) -> {
+                if (header.getSchema() != null) {
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_HEADER, headerName, header.getSchema()));
+                }
+            });
+        }
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getTopLevelParameterSchemas(Components components) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        if (components.getParameters() != null) {
+            components.getParameters().forEach((parameterName, parameter) ->
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()))
+            );
+        }
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getResponseSchemas(Components components) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        // Get top level responses
+        if (components.getResponses() != null) {
+            components.getResponses().forEach((responseName, response) -> {
+                if (response.getContent().getMediaTypes() != null) {
+                    response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
+                        if (mediaType.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_RESPONSES, responseName + ":" + mediaTypeName, mediaType.getSchema()));
+                        }
+                    });
+                }
+                if (response.getHeaders() != null) {
+                    response.getHeaders().forEach((headerName, header) -> {
+                        if (header.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_HEADER, responseName + ":" + headerName, header.getSchema()));
+                        }
+                    });
+                }
+            });
+        }
+        return schemas;
+    }
+
+    private static Set<SchemaDefinition> getSchemasFromOperation(Operation operation) {
+        Set<SchemaDefinition> schemas = new HashSet<>();
+        // Get responses
+        if (operation.getResponses() != null && operation.getResponses().getAPIResponses() != null) {
+            operation.getResponses().getAPIResponses().forEach((responseName, response) -> {
+                if (response.getContent() != null && response.getContent().getMediaTypes() != null) {
+                    response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) ->
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()))
+                    );
+                }
+                if (response.getHeaders() != null) {
+                    response.getHeaders().forEach((headerName, header) -> {
+                        if (header.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_HEADER, operation.getOperationId() + ":" + responseName + ":" + headerName, header.getSchema()));
+                        }
+                    });
+                }
+            });
+        }
+        // Get requestbodies
+        if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().getMediaTypes() != null) {
+            operation.getRequestBody().getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
+                if (mediaType.getSchema() != null) {
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_REQUESTBODY, operation.getOperationId() + ":" + mediaTypeName, mediaType.getSchema()));
+                }
+            });
+        }
+        // Get parameters
+        if (operation.getParameters() != null) {
+            Set<Parameter> parameters = new HashSet<>(operation.getParameters());
+            parameters.forEach(parameter ->
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()))
+            );
+        }
+        // Get callbacks
+        if (operation.getCallbacks() != null) {
+            operation.getCallbacks().forEach((callbackName, callback) ->
+                    callback.getPathItems().forEach((pathItemName, pathItem) ->
+                            pathItem.getOperations().forEach((httpMethod, callbackOperation) ->
+                                    schemas.addAll(getSchemasFromOperation(callbackOperation))
+                            )
+                    )
+            );
+        }
+
         return schemas;
     }
 
@@ -493,13 +614,44 @@ public class ApiFunctions {
         Set<SchemaDefinition> schemas = new HashSet<>();
         var parentSchema = parentSchemaDefinition.getSchema();
         if (parentSchema.getProperties() != null) {
-            parentSchema.getProperties().values().forEach(schema ->
+            parentSchema.getProperties().forEach((schemaName, schema) ->
                     {
-                        var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName, schema);
+                        var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":" + schemaName, schema);
                         schemas.add(schemaOfProperty);
                         schemas.addAll(getNestedSchemas(schemaOfProperty));
                     }
             );
+        }
+        if (parentSchema.getItems() != null) {
+            var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":items", parentSchema.getItems());
+            schemas.add(schemaOfProperty);
+            schemas.addAll(getNestedSchemas(schemaOfProperty));
+        }
+        if (parentSchema.getAllOf() != null) {
+            parentSchema.getAllOf().forEach(schema -> {
+                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":allOf", schema);
+                schemas.add(schemaOfProperty);
+                schemas.addAll(getNestedSchemas(schemaOfProperty));
+            });
+        }
+        if (parentSchema.getAnyOf() != null) {
+            parentSchema.getAnyOf().forEach(schema -> {
+                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":anyOf", schema);
+                schemas.add(schemaOfProperty);
+                schemas.addAll(getNestedSchemas(schemaOfProperty));
+            });
+        }
+        if (parentSchema.getOneOf() != null) {
+            parentSchema.getOneOf().forEach(schema -> {
+                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":oneOf", schema);
+                schemas.add(schemaOfProperty);
+                schemas.addAll(getNestedSchemas(schemaOfProperty));
+            });
+        }
+        if (parentSchema.getAdditionalPropertiesSchema() != null) {
+            var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":additionalProperties", parentSchema.getAdditionalPropertiesSchema());
+            schemas.add(schemaOfProperty);
+            schemas.addAll(getNestedSchemas(schemaOfProperty));
         }
         return schemas;
     }
