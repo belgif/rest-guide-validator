@@ -9,6 +9,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
@@ -18,10 +19,10 @@ import java.util.stream.Collectors;
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  * The plugin use the following parameters:
- *  - api-validator.files: a list of files to validate
- *  - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
- *  - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
- *  - ${project} root directory for api-validator.files
+ * - api-validator.files: a list of files to validate
+ * - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
+ * - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
+ * - ${project} root directory for api-validator.files
  */
 @Mojo(name = "api-validator", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class OpenApiMojo extends AbstractMojo {
@@ -38,10 +39,10 @@ public class OpenApiMojo extends AbstractMojo {
     boolean skipOnErrors = false;
 
     @Parameter(property = "api-validator.outputTypes")
-    List<OutputType> outputTypes ;
+    List<OutputType> outputTypes;
 
     @Parameter(property = "api-validator.outputDir", defaultValue = "target")
-    File outputDir ;
+    File outputDir;
 
     @Parameter(readonly = true, defaultValue = "${project}")
     MavenProject mavenProject;
@@ -52,43 +53,50 @@ public class OpenApiMojo extends AbstractMojo {
     private Set<OutputProcessor> outputProcessors;
     private final List<FileWithExclusion> filesToProcess = new ArrayList<>();
 
-    private List<File> getJsonAndYamlFiles(File directory){
+    private List<File> getJsonAndYamlFiles(File directory) {
         return getJsonAndYamlFiles(List.of(Objects.requireNonNull(directory.listFiles())));
     }
+
     private List<File> getJsonAndYamlFiles(List<File> fileList) {
         return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).collect(Collectors.toList());
     }
-    private void init() {
-       initOutputProcessor();
-       addExclusions(initFiles());
+
+    private void init() throws FileNotFoundException {
+        initOutputProcessor();
+        addExclusions(initFiles());
     }
 
     /**
      * Add a Console ConsoleOutputProcessor if outputTypes is empty.
      * Instances Processors regarding the outputTypes.
      */
-    private void initOutputProcessor(){
-        if ( outputTypes == null || outputTypes.isEmpty())
+    private void initOutputProcessor() {
+        if (outputTypes == null || outputTypes.isEmpty())
             outputProcessors = Set.of(new ConsoleOutputProcessor[]{new ConsoleOutputProcessor()});
         else {
             try {
                 Files.createDirectories(outputDir.toPath());
             } catch (IOException e) {
-                getLog().error(outputDir+" directory doesn't exist and cannot be created!", e);
+                getLog().error(outputDir + " directory doesn't exist and cannot be created!", e);
             }
 
             outputProcessors = new HashSet<>();
             outputTypes.forEach(outputType -> {
                 switch (outputType) {
-                    case NONE: break;
+                    case NONE:
+                        break;
                     case JUNIT:
-                        outputProcessors.add(new JUnitOutputProcessor()); break;
+                        outputProcessors.add(new JUnitOutputProcessor());
+                        break;
                     case JUNIT2:
-                        outputProcessors.add(new JUnitOutputProcessor2()); break;
+                        outputProcessors.add(new JUnitOutputProcessor2());
+                        break;
                     case JUNIT3:
-                        outputProcessors.add(new JUnitOutputProcessor3()); break;
+                        outputProcessors.add(new JUnitOutputProcessor3());
+                        break;
                     case LOG4J:
-                        outputProcessors.add(new Log4JOutputProcessor()); break;
+                        outputProcessors.add(new Log4JOutputProcessor());
+                        break;
                     default:
                         outputProcessors.add(new ConsoleOutputProcessor());
                 }
@@ -100,12 +108,20 @@ public class OpenApiMojo extends AbstractMojo {
      * Throw an IllegalArgumentException if no file is provided or if a file is not in the maven project.
      * Add all yaml or gson file from provided directories.
      */
-    private List<File> initFiles(){
-        if( files.isEmpty() && fileWithExclusions.isEmpty() )
+    private List<File> initFiles() throws FileNotFoundException {
+        if (files.isEmpty() && fileWithExclusions.isEmpty())
             throw new IllegalArgumentException("api-validator need at least one file ! Add the 'api-validator.files' or 'api-validator.fileWithExclusions' in the plugin configuration.");
-        if( files.stream().anyMatch(file -> file.getPath().startsWith(mavenProject.getFile().getPath())) ||
-            fileWithExclusions.stream().anyMatch(f -> f.getFile().getPath().startsWith(mavenProject.getFile().getPath())) )
+        if (files.stream().anyMatch(file -> file.getPath().startsWith(mavenProject.getFile().getPath())) ||
+                fileWithExclusions.stream().anyMatch(f -> f.getFile().getPath().startsWith(mavenProject.getFile().getPath())))
             throw new IllegalArgumentException("All files must be in the maven project structure !");
+        Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();
+        Optional<FileWithExclusion> fileWithExclusionNotFound = fileWithExclusions.stream().filter(file -> !file.getFile().exists()).findAny();
+        if (fileNotFound.isPresent()) {
+            throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());
+        }
+        if (fileWithExclusionNotFound.isPresent()) {
+            throw new FileNotFoundException("File not found: " + fileWithExclusionNotFound.get().getFile().getAbsolutePath());
+        }
 
         // replace directories in list by the json and yaml files in them
         var dirs = files.stream().filter(File::isDirectory).collect(Collectors.toSet());
@@ -122,42 +138,48 @@ public class OpenApiMojo extends AbstractMojo {
      * add global exclusions to all files.
      * add all files in fileWithExclusions.
      */
-    private void addExclusions(List<File> fileList){
+    private void addExclusions(List<File> fileList) {
         filesToProcess.addAll(fileWithExclusions);
         filesToProcess.forEach(mutableFileWithExclusion -> mutableFileWithExclusion.getExcludesPaths().addAll(excludeResources));
-        filesToProcess.addAll( fileList.stream()
+        filesToProcess.addAll(fileList.stream()
                 .map(file -> new FileWithExclusion(file, excludeResources))
-                .collect(Collectors.toList()) );
+                .collect(Collectors.toList()));
     }
+
     /**
      * For each file in @files validate using OpenApiValidator.
+     *
      * @throws MojoFailureException when file is not a valid open-api.
      */
     @Override
     public void execute() throws MojoFailureException {
-        init();
+        try {
+            init();
+        } catch (FileNotFoundException e) {
+            throw new MojoFailureException(e.getMessage());
+        }
 
         var isValid = new AtomicBoolean(true);
-        filesToProcess.forEach(fileWithExclusion->{
-                    var file = fileWithExclusion.getFile() ;
-                    // build output file for the jUnitOutputProcessor
-                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
-                            .map(o -> (JUnitOutputProcessor)o)
-                            .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
-                                    new File(outputDir, "TEST-" + file.getName() + ".xml")));
+        filesToProcess.forEach(fileWithExclusion -> {
+            var file = fileWithExclusion.getFile();
+            // build output file for the jUnitOutputProcessor
+            outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof JUnitOutputProcessor)
+                    .map(o -> (JUnitOutputProcessor) o)
+                    .forEach(jUnitOutputProcessor -> jUnitOutputProcessor.setOutputFile(
+                            new File(outputDir, "TEST-" + file.getName() + ".xml")));
 
-                    outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof DirectoryOutputProcessor)
-                            .map(o -> (DirectoryOutputProcessor)o)
-                            .forEach(processor -> processor.setOutput(outputDir));
+            outputProcessors.stream().filter(outputProcessor -> outputProcessor instanceof DirectoryOutputProcessor)
+                    .map(o -> (DirectoryOutputProcessor) o)
+                    .forEach(processor -> processor.setOutput(outputDir));
 
-                    // isValid = isValid && OpenApiValidator.isOasValid(...)
-                    isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
-                });
-        if ( filesToProcess.isEmpty() ) {
+            // isValid = isValid && OpenApiValidator.isOasValid(...)
+            isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
+        });
+        if (filesToProcess.isEmpty()) {
             isValid.set(false);
         }
 
-        if (! skipOnErrors && ! isValid.get())
+        if (!skipOnErrors && !isValid.get())
             throw new MojoFailureException(FAILURE_MESSAGE);
     }
 }
