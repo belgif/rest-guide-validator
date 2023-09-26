@@ -11,7 +11,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinition;
 function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oas, SchemaDefinition schema){
     oas.addViolation("[cod-design]",
     "New code types SHOULD be represented as string values in lowerCamelCase. \t"+ schema.getParentName() + "." + schema.getSchema().getEnumeration(),
-    oas.getLineNumber(schema.getParentName()));
+    oas.getLineNumber(schema.getParentName().split(":")[0]));
 }
 
 rule "Codes should be lowerCamelCase"
@@ -20,8 +20,8 @@ rule "Codes should be lowerCamelCase"
         $schema: SchemaDefinition() from ApiFunctions.getSchemas($api)
         not String( this.equals("BelgianRegionCode") ) from $schema.getParentName()
         SchemaType( equals(SchemaType.STRING) ) from $schema.getSchema().getType()
-        $code: String() from $schema.getSchema().getEnumeration()
-        Boolean( this == false ) from ApiFunctions.isLowerCamelCase($code)
+        Schema( getEnumeration() != null ) from $schema.getSchema()
+        Boolean( this == false ) from ApiFunctions.isLowerCamelCase($schema.getSchema().getEnumeration())
     then
         violationCodesShouldBeLowerCamelCase(oas, $schema);
 end

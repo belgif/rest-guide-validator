@@ -17,16 +17,18 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.apache.http.entity.ContentType
 import java.util.List
 import java.util.Set;
+import java.util.Map.Entry;
+import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinition;
 
 
 function Set includeContentTypes() {
   return Set.of("application/json", "multipart/*");
 }
 
-function void violationJsonObjectAsTopLevelStructure(OpenApiViolationAggregator oas, String property){
+function void violationJsonObjectAsTopLevelStructure(OpenApiViolationAggregator oas, SchemaDefinition schema, String operationId, String requestOrResponse, String findAfter){
   oas.addViolation("[evo-object]",
-    "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility.",
-    oas.getLineNumber(property));
+    "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility. \t"+ operationId + " => " + requestOrResponse + " => " + schema.getParentName() + " => " + schema.getSchema().getType(),
+    oas.getLineNumber(oas.getLineNumber(oas.getLineNumber(operationId), findAfter), "schema"));
 }
 
 rule "JSON object as top level structure in requestBodies"
@@ -35,10 +37,10 @@ rule "JSON object as top level structure in requestBodies"
     $operation: Operation() from ApiFunctions.getOperations($api)
     $requestBody: RequestBody() from $operation.getRequestBody()
     $content: Content() from $requestBody.getContent()
-    $schema: Schema() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
-    not Schema( getType() == SchemaType.OBJECT ) from $schema
+    $schema: SchemaDefinition() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
+    not Schema( getType() == SchemaType.OBJECT ) from $schema.getSchema()
   then
-    violationJsonObjectAsTopLevelStructure(oas, $operation.getOperationId());
+    violationJsonObjectAsTopLevelStructure(oas, $schema, $operation.getOperationId(), "request", "requestBody");
 end
 
 rule "JSON object as top level structure in responses"
@@ -46,10 +48,11 @@ rule "JSON object as top level structure in responses"
     $api: OpenAPI()
     $operation: Operation() from ApiFunctions.getOperations($api)
     $responses: APIResponses() from $operation.getResponses()
-    $response: APIResponse() from $responses.getAPIResponses().values()
-    $content: Content() from $response.getContent()
-    $schema: Schema() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
-    not Schema( getType() == SchemaType.OBJECT ) from $schema
+    $response: Entry() from $responses.getAPIResponses().entrySet()
+    $responseValue: APIResponse() from $response.getValue()
+    $content: Content() from $responseValue.getContent()
+    $schema: SchemaDefinition() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
+    not Schema( getType() == SchemaType.OBJECT ) from $schema.getSchema()
   then
-    violationJsonObjectAsTopLevelStructure(oas, $operation.getOperationId());
+    violationJsonObjectAsTopLevelStructure(oas, $schema, $operation.getOperationId(), "response: " + $response.getKey(), $response.getKey().toString());
 end

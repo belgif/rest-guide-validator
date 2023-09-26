@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,7 +27,7 @@ public abstract class AbstractRuleTest {
     protected void isValidTest() throws IOException {
         var apiDetail = callRules("/swagger.yaml");
         String name = getRuleName();
-       var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toSet());
+       var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toList());
         assertTrue(violations.size() < 1 || apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName())).count() < 1  ,
                 getMessage(violations));
     }
@@ -37,13 +37,13 @@ public abstract class AbstractRuleTest {
         var apiDetail = callRules("/swagger_bad.yaml");
         assertFalse(apiDetail.getViolations().size() < 1);
         String name = getRuleName();
-        var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toSet());
+        var violations = apiDetail.getViolations().stream().filter(v-> v.getRuleName().equalsIgnoreCase(getRuleName()) && (violationType == null || v.type == violationType)).collect(Collectors.toList());
         assertTrue( (getErrorCount() == 1 && violations.size() > 0) | (getErrorCount() > 1 && violations.size() == getErrorCount() ) ,
                 getMessage(violations));
         //violations.forEach(v-> log.warn(v.toString()));
     }
 
-    protected String getMessage(Set<Violation> violations){
+    protected String getMessage(List<Violation> violations){
         return "Number of errors for the rule '"+getRuleName()+"' : "+ violations.size() +"\n"
                 + violations.stream().map(Violation::toString).collect(Collectors.joining("\n")) ;
     }

@@ -396,19 +396,19 @@ public class ApiFunctions {
         return ref.substring(ref.lastIndexOf('/') + 1);
     }
 
-    public static Set<Schema> getSchemaFromContent(OpenAPI api, Content content, Set<String> contentTypes) {
+    public static Set<SchemaDefinition> getSchemaFromContent(OpenAPI api, Content content, Set<String> contentTypes) {
         List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
         for (String contentType : contentTypes) {
             mediaTypeList.add(org.springframework.http.MediaType.parseMediaType(contentType));
         }
-        Set<Schema> schemas = content.getMediaTypes().entrySet().stream().filter(set -> isMediaTypeIncluded(set.getKey(), mediaTypeList)).map(set -> set.getValue().getSchema()).collect(Collectors.toSet());
-        Set<Schema> outputSchemas = new HashSet<>();
-        for (Schema schema : schemas) {
-            if (schema.getType() == null && schema.getRef() != null) {
-                Schema refSchema = getReferenceSchema(api, schema.getRef());
-                outputSchemas.add(refSchema);
+        Set<Map.Entry<String, MediaType>> schemas = content.getMediaTypes().entrySet().stream().filter(set -> isMediaTypeIncluded(set.getKey(), mediaTypeList)).collect(Collectors.toSet());
+        Set<SchemaDefinition> outputSchemas = new HashSet<>();
+        for (Map.Entry<String, MediaType> schema : schemas) {
+            if (schema.getValue().getSchema().getType() == null && schema.getValue().getSchema().getRef() != null) {
+                Schema refSchema = getReferenceSchema(api, schema.getValue().getSchema().getRef());
+                outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schema.getKey(), refSchema));
             } else {
-                outputSchemas.add(schema);
+                outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schema.getKey(), schema.getValue().getSchema()));
             }
         }
         return outputSchemas;
@@ -656,6 +656,15 @@ public class ApiFunctions {
         return schemas;
     }
 
+    public static boolean isLowerCamelCase(List<Object> objects) {
+        for (Object object : objects) {
+            String string = (String) object;
+            if (!isLowerCamelCase(string)) {
+                return false;
+            }
+        }
+        return true;
+    }
     public static boolean isLowerCamelCase(String string) {
         return string.matches("^[a-z0-9]+([A-Z]?[a-z0-9]+)*$");
     }

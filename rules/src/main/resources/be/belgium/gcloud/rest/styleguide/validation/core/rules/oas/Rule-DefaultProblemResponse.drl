@@ -12,13 +12,6 @@ import org.eclipse.microprofile.openapi.models.media.Content;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import java.util.Set;
 
-function String responseStatus(){
-  return "default" ;
-}
-
-function String mediaTypeWanted() {
-  return "application/problem+json";
-}
 
 function Set exclude() {
   return Set.of(OperationEnum.HEAD, OperationEnum.OPTIONS);
@@ -31,16 +24,12 @@ function void violationDefaultResponse(OpenApiViolationAggregator oas, String pr
     oas.getLineNumber(property));
 }
 
-rule "No Default Response with content"
+rule "Default Response with problem+json media type is missing"
   when
     $api: OpenAPI()
-    $operation: Operation() from ApiFunctions.getOperations($api, exclude())
-    $responses: APIResponses() from $operation.getResponses()
+    $operation: Operation($operationId : operationId) from ApiFunctions.getOperations($api, exclude())
+    not(Operation(responses!.defaultValue!.content!.mediaTypes!.keySet contains "application/problem+json") from $operation)
 
-    not APIResponses( hasAPIResponse(responseStatus())) from $operation.responses or
-    (APIResponse( content == null ) from $responses.getAPIResponse(responseStatus())) or
-    ((APIResponse( $content : content) from $responses.getAPIResponse(responseStatus())) and
-    (not Content(hasMediaType(mediaTypeWanted())) from $content))
   then
-    violationDefaultResponse(oas, $operation.getOperationId());
+    violationDefaultResponse(oas, $operationId);
 end
