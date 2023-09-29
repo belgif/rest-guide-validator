@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
@@ -15,14 +15,14 @@ function void violationPut(OpenApiViolationAggregator oas, String operationId, S
 rule "Put Status Code 202"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PUT, "202")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.PUT, "202")
 	then
         violationPut(oas, $operationId, "202");
 end
 rule "Put Status Code 304"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.PUT, "304")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.PUT, "304")
 	then
         violationPut(oas, $operationId, "304");
 end

@@ -4,7 +4,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.PropertyDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
@@ -20,7 +20,7 @@ function String referenceName() {
 }
 
 function Set excludeProblemResponseSchema() {
-  return Set.of(OperationEnum.HEAD, OperationEnum.OPTIONS);
+  return Set.of(HttpMethod.HEAD, HttpMethod.OPTIONS);
 }
 
 function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator oas, String property){

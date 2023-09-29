@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
@@ -15,49 +15,49 @@ function void violationOptions(OpenApiViolationAggregator oas, String operationI
 rule "Options Status Code 201 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "201")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "201")
 	then
         violationOptions(oas, $operationId, "201");
 end
 rule "Options Status Code 204 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "204")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "204")
 	then
         violationOptions(oas, $operationId, "204");
 end
 rule "Options Status Code 304 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "304")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "304")
 	then
         violationOptions(oas, $operationId, "304");
 end
 rule "Options Status Code 405 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "405")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "405")
 	then
         violationOptions(oas, $operationId, "405");
 end
 rule "Options Status Code 409 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "409")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "409")
 	then
         violationOptions(oas, $operationId, "409");
 end
 rule "Options Status Code 412 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "412")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "412")
 	then
         violationOptions(oas, $operationId, "412");
 end
 rule "Options Status Code 413 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.OPTIONS, "413")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.OPTIONS, "413")
 	then
         violationOptions(oas, $operationId, "413");
 end

@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
@@ -15,28 +15,28 @@ function void violationDelete(OpenApiViolationAggregator oas, String operationId
 rule "Delete Status Code 201 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.DELETE, "201")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "201")
 	then
         violationDelete(oas, $operationId, "201");
 end
 rule "Delete Status Code 202 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.DELETE, "202")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "202")
 	then
         violationDelete(oas, $operationId, "202");
 end
 rule "Delete Status Code 304 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.DELETE, "304")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "304")
 	then
         violationDelete(oas, $operationId, "304");
 end
 rule "Delete Status Code 413 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.DELETE, "413")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "413")
 	then
         violationDelete(oas, $operationId, "413");
 end

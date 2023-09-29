@@ -2,7 +2,6 @@ package be.belgium.gcloud.rest.styleguide.validation.core.jsonpath;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -10,6 +9,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -67,28 +67,28 @@ class ApiPathFunctionsTest {
     @Test
     void operationDontHaveProduce() {
         assertNotNull(jsonString);
-        List<OperationData> list = ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.GET, ApiPathFunctions.PRODUCES_MEDIATYPE);
+        List<OperationData> list = ApiPathFunctions.operationDataDontHaveProduce(jsonString, PathItem.HttpMethod.GET, ApiPathFunctions.PRODUCES_MEDIATYPE);
         assertFalse(list.isEmpty());
     }
 
     @Test
     void operationDontHaveConsume() {
         assertNotNull(jsonString);
-        List<OperationData> list = ApiPathFunctions.operationDataDontHaveConsume(jsonString, OperationEnum.POST, ApiPathFunctions.CONSUMES_MEDIATYPE);
+        List<OperationData> list = ApiPathFunctions.operationDataDontHaveConsume(jsonString, PathItem.HttpMethod.POST, ApiPathFunctions.CONSUMES_MEDIATYPE);
         assertFalse(list.isEmpty());
     }
 
     @Test
     void testOperationDontHaveProduce() {
         assertNotNull(jsonString);
-        List<Object> list = ApiPathFunctions.operationIdDontHaveProduce(jsonString, OperationEnum.GET);
+        List<Object> list = ApiPathFunctions.operationIdDontHaveProduce(jsonString, PathItem.HttpMethod.GET);
         assertFalse(list.isEmpty());
     }
 
     @Test
     void testOperationDontHaveConsume() {
         assertNotNull(jsonString);
-        List<Object> list = ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.POST);
+        List<Object> list = ApiPathFunctions.operationIdDontHaveConsume(jsonString, PathItem.HttpMethod.POST);
         assertFalse(list.isEmpty());
     }
 

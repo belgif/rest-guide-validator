@@ -1,0 +1,46 @@
+package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas3;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import static be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions.isMediaTypeIncluded;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import org.eclipse.microprofile.openapi.models.Operation;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.apache.http.entity.ContentType
+import java.util.List
+import java.util.Set;
+import java.util.Map.Entry;
+import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinition;
+
+function void violationJsonRequestOrResponseHasNoSchema(OpenApiViolationAggregator oas, String operationId, String requestOrResponse, String findAfter){
+  oas.addViolation("[evo-object]",
+    "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility. \t"+ operationId + " => " + requestOrResponse,
+    oas.getLineNumber(oas.getLineNumber(operationId), findAfter));
+}
+
+rule "Application/Json in requestBodies should have a schema for OAS3"
+  when
+    $api: OpenAPI()
+    $operation: Operation( $mediaType: /requestBody/content/mediaTypes/entrySet[isMediaTypeIncluded(key#String, Set.of("application/json"))]/value#MediaType) from ApiFunctions.getOperations($api)
+    MediaType(schema == null) from $mediaType
+  then
+    violationJsonRequestOrResponseHasNoSchema(oas, $operation.getOperationId(), "request", "requestBody");
+end
+
+rule "Application/Json in responses should have a schema for OAS3"
+  when
+    $api: OpenAPI()
+    $operation: Operation( $response: /responses/APIResponses/entrySet ) from ApiFunctions.getOperations($api)
+    APIResponse( $mediaType: /content/mediaTypes/entrySet[isMediaTypeIncluded(key#String, Set.of("application/json"))]/value#MediaType ) from $response.getValue()
+    MediaType( schema == null ) from $mediaType
+  then
+    violationJsonRequestOrResponseHasNoSchema(oas, $operation.getOperationId(), "response: " + $response.getKey(), $response.getKey().toString());
+end

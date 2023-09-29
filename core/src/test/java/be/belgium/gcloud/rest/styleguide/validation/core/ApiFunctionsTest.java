@@ -45,7 +45,7 @@ class ApiFunctionsTest {
 
     @Test
     void getOperationId() throws IOException {
-        var operationIds = ApiFunctions.getOperationId(getOpenApi(), OperationEnum.GET, "200");
+        var operationIds = ApiFunctions.getOperationId(getOpenApi(), PathItem.HttpMethod.GET, "200");
         assertNotNull(operationIds);
         assertTrue(operationIds.size() > 0);
     }

@@ -1,7 +1,7 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas2;
 
 import java.util.List;
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.jsonpath.ApiPathFunctions;
@@ -25,93 +25,93 @@ function void violationConsume(OpenApiViolationAggregator oas, String operation,
 rule "Rule-defaultMediaType-getDontHaveProduces"
     when
         $api: OpenAPI()
-        $operationId: String() from ApiPathFunctions.operationIdDontHaveProduce(jsonString, OperationEnum.GET)
+        $operationId: String() from ApiPathFunctions.operationIdDontHaveProduce(jsonString, HttpMethod.GET)
     then
-        violationProduce(oas,OperationEnum.GET.name(), $operationId);
+        violationProduce(oas,HttpMethod.GET.name(), $operationId);
 end
 
 rule "Rule-defaultMediaType-getDontHaveCorrectProduces"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.GET, ApiPathFunctions.PRODUCES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, HttpMethod.GET, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        violationProduce(oas, OperationEnum.GET.name(), $operationData.getOperationId());
+        violationProduce(oas, HttpMethod.GET.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-posttDontHaveCorrectProduces"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.POST, ApiPathFunctions.PRODUCES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, HttpMethod.POST, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        violationProduce(oas, OperationEnum.POST.name(), $operationData.getOperationId());
+        violationProduce(oas, HttpMethod.POST.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-putDontHaveCorrectProduces"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.PUT, ApiPathFunctions.PRODUCES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, HttpMethod.PUT, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        violationProduce(oas, OperationEnum.PUT.name(), $operationData.getOperationId());
+        violationProduce(oas, HttpMethod.PUT.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-patchDontHaveCorrectProduces"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.PATCH, ApiPathFunctions.PRODUCES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, HttpMethod.PATCH, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        violationProduce(oas, OperationEnum.PATCH.name(), $operationData.getOperationId());
+        violationProduce(oas, HttpMethod.PATCH.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-optionsDontHaveCorrectProduces"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, OperationEnum.OPTIONS, ApiPathFunctions.PRODUCES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveProduce(jsonString, HttpMethod.OPTIONS, ApiPathFunctions.PRODUCES_MEDIATYPE)
     then
-        violationProduce(oas, OperationEnum.OPTIONS.name(), $operationData.getOperationId());
+        violationProduce(oas, HttpMethod.OPTIONS.name(), $operationData.getOperationId());
 end
 
 // consumes
 rule "Rule-defaultMediaType-postDontHaveConsumes"
     when
         $api: OpenAPI()
-        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.POST)
+        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, HttpMethod.POST)
     then
-        violationConsume(oas, OperationEnum.POST.name(), $operationId);
+        violationConsume(oas, HttpMethod.POST.name(), $operationId);
 end
 rule "Rule-defaultMediaType-postDontHaveCorrectConsumes"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, OperationEnum.POST, ApiPathFunctions.CONSUMES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, HttpMethod.POST, ApiPathFunctions.CONSUMES_MEDIATYPE)
     then
-        violationConsume(oas, OperationEnum.POST.name(), $operationData.getOperationId());
+        violationConsume(oas, HttpMethod.POST.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-putDontHaveConsumes"
     when
         $api: OpenAPI()
-        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.PUT)
+        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, HttpMethod.PUT)
     then
-        violationConsume(oas, OperationEnum.PUT.name(), $operationId);
+        violationConsume(oas, HttpMethod.PUT.name(), $operationId);
 end
 rule "Rule-defaultMediaType-putDontHaveCorrectConsumes"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, OperationEnum.PUT, ApiPathFunctions.CONSUMES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, HttpMethod.PUT, ApiPathFunctions.CONSUMES_MEDIATYPE)
     then
-        violationConsume(oas, OperationEnum.PUT.name(), $operationData.getOperationId());
+        violationConsume(oas, HttpMethod.PUT.name(), $operationData.getOperationId());
 end
 
 rule "Rule-defaultMediaType-patchDontHaveConsumes"
     when
         $api: OpenAPI()
-        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, OperationEnum.PATCH)
+        $operationId: String() from ApiPathFunctions.operationIdDontHaveConsume(jsonString, HttpMethod.PATCH)
     then
-        violationConsume(oas, OperationEnum.PATCH.name(), $operationId);
+        violationConsume(oas, HttpMethod.PATCH.name(), $operationId);
 end
 rule "Rule-defaultMediaType-patchDontHaveCorrectConsumes"
     when
         $api: OpenAPI()
-        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, OperationEnum.PATCH, ApiPathFunctions.CONSUMES_MEDIATYPE)
+        $operationData: OperationData() from ApiPathFunctions.operationDataDontHaveConsume(jsonString, HttpMethod.PATCH, ApiPathFunctions.CONSUMES_MEDIATYPE)
     then
-        violationConsume(oas, OperationEnum.PATCH.name(), $operationData.getOperationId());
+        violationConsume(oas, HttpMethod.PATCH.name(), $operationData.getOperationId());
 end

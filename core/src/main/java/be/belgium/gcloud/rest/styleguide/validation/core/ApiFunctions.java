@@ -140,7 +140,7 @@ public class ApiFunctions {
      * @param statusCode
      * @return
      */
-    public static Set<String> getOperationId(OpenAPI openAPI, OperationEnum verb, String statusCode) {
+    public static Set<String> getOperationId(OpenAPI openAPI, PathItem.HttpMethod verb, String statusCode) {
         if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null)
             return Collections.emptySet();
         return openAPI.getPaths().getPathItems().values().stream()
@@ -149,46 +149,12 @@ public class ApiFunctions {
                 .collect(Collectors.toSet());
     }
 
-    private static boolean filterPath(PathItem path, OperationEnum verb, String statusCode) {
-        switch (verb) {
-            case GET:
-                return path.getGET() != null && path.getGET().getResponses().getAPIResponses().containsKey(statusCode);
-            case POST:
-                return path.getPOST() != null && path.getPOST().getResponses().getAPIResponses().containsKey(statusCode);
-            case PUT:
-                return path.getPUT() != null && path.getPUT().getResponses().getAPIResponses().containsKey(statusCode);
-            case DELETE:
-                return path.getDELETE() != null && path.getDELETE().getResponses().getAPIResponses().containsKey(statusCode);
-            case PATCH:
-                return path.getPATCH() != null && path.getPATCH().getResponses().getAPIResponses().containsKey(statusCode);
-            case HEAD:
-                return path.getHEAD() != null && path.getHEAD().getResponses().getAPIResponses().containsKey(statusCode);
-            case OPTIONS:
-                return path.getOPTIONS() != null && path.getOPTIONS().getResponses().getAPIResponses().containsKey(statusCode);
-            default:
-                throw new IllegalArgumentException("unknow verb: " + verb);
-        }
+    private static boolean filterPath(PathItem path, PathItem.HttpMethod verb, String statusCode) {
+        return path.getOperations() != null && path.getOperations().get(verb) != null && path.getOperations().get(verb).getResponses() != null && path.getOperations().get(verb).getResponses().getAPIResponses().containsKey(statusCode);
     }
 
-    private static String getOperationId(PathItem path, OperationEnum verb) {
-        switch (verb) {
-            case GET:
-                return path.getGET().getOperationId();
-            case POST:
-                return path.getPOST().getOperationId();
-            case PUT:
-                return path.getPUT().getOperationId();
-            case DELETE:
-                return path.getDELETE().getOperationId();
-            case PATCH:
-                return path.getPATCH().getOperationId();
-            case HEAD:
-                return path.getHEAD().getOperationId();
-            case OPTIONS:
-                return path.getOPTIONS().getOperationId();
-            default:
-                throw new IllegalArgumentException("unknow verb: " + verb);
-        }
+    private static String getOperationId(PathItem path, PathItem.HttpMethod verb) {
+        return path.getOperations().get(verb).getOperationId();
     }
 
 
@@ -361,31 +327,15 @@ public class ApiFunctions {
         return getOperations(api, Set.of());
     }
 
-    public static Set<Operation> getOperations(OpenAPI api, Set<OperationEnum> exclude) {
+    public static Set<Operation> getOperations(OpenAPI api, Set<PathItem.HttpMethod> exclude) {
         Collection<PathItem> pathItems = api.getPaths().getPathItems().values();
         Set<Operation> operations = new HashSet<>();
         for (PathItem pathItem : pathItems) {
-            if (pathItem.getGET() != null && !exclude.contains(OperationEnum.GET)) {
-                operations.add(pathItem.getGET());
-            }
-            if (pathItem.getPUT() != null && !exclude.contains(OperationEnum.PUT)) {
-                operations.add(pathItem.getPUT());
-            }
-            if (pathItem.getPOST() != null && !exclude.contains(OperationEnum.POST)) {
-                operations.add(pathItem.getPOST());
-            }
-            if (pathItem.getDELETE() != null && !exclude.contains(OperationEnum.DELETE)) {
-                operations.add(pathItem.getDELETE());
-            }
-            if (pathItem.getPATCH() != null && !exclude.contains(OperationEnum.PATCH)) {
-                operations.add(pathItem.getPATCH());
-            }
-            if (pathItem.getHEAD() != null && !exclude.contains(OperationEnum.HEAD)) {
-                operations.add(pathItem.getHEAD());
-            }
-            if (pathItem.getOPTIONS() != null && !exclude.contains(OperationEnum.OPTIONS)) {
-                operations.add(pathItem.getOPTIONS());
-            }
+            pathItem.getOperations().forEach((verb, operation) -> {
+                if (!exclude.contains(verb)) {
+                    operations.add(operation);
+                }
+            });
         }
         return operations;
     }
@@ -403,12 +353,14 @@ public class ApiFunctions {
         }
         Set<Map.Entry<String, MediaType>> schemas = content.getMediaTypes().entrySet().stream().filter(set -> isMediaTypeIncluded(set.getKey(), mediaTypeList)).collect(Collectors.toSet());
         Set<SchemaDefinition> outputSchemas = new HashSet<>();
-        for (Map.Entry<String, MediaType> schema : schemas) {
-            if (schema.getValue().getSchema().getType() == null && schema.getValue().getSchema().getRef() != null) {
-                Schema refSchema = getReferenceSchema(api, schema.getValue().getSchema().getRef());
-                outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schema.getKey(), refSchema));
-            } else {
-                outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schema.getKey(), schema.getValue().getSchema()));
+        for (Map.Entry<String, MediaType> mediaType : schemas) {
+            if (mediaType.getValue() != null && mediaType.getValue().getSchema() != null) {
+                if (mediaType.getValue().getSchema().getType() == null && mediaType.getValue().getSchema().getRef() != null) {
+                    Schema refSchema = getReferenceSchema(api, mediaType.getValue().getSchema().getRef());
+                    outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), refSchema));
+                } else {
+                    outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), mediaType.getValue().getSchema()));
+                }
             }
         }
         return outputSchemas;
@@ -424,6 +376,14 @@ public class ApiFunctions {
             throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference to schema: " + ref + ", or reference does not point to schema.");
         }
         return resolvedSchema;
+    }
+
+    public static boolean isMediaTypeIncluded(String mediaTypeStr, Set<String> contentTypes) {
+        List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
+        for (String contentType : contentTypes) {
+            mediaTypeList.add(org.springframework.http.MediaType.parseMediaType(contentType));
+        }
+        return isMediaTypeIncluded(mediaTypeStr, mediaTypeList);
     }
 
     public static boolean isMediaTypeIncluded(String mediaTypeStr, List<org.springframework.http.MediaType> allowedMediaTypes) {
@@ -468,8 +428,11 @@ public class ApiFunctions {
         // Gets schemas from parameters declared on PathItem level
         Set<Parameter> parameters = new HashSet<>();
         api.getPaths().getPathItems().values().stream().filter(pathItem -> pathItem.getParameters() != null).forEach(pathItem -> parameters.addAll(pathItem.getParameters()));
-        parameters.forEach(parameter ->
-                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()))
+        parameters.forEach(parameter -> {
+                    if (parameter.getSchema() != null) {
+                        schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+                    }
+                }
         );
         // Get schemas from operations
         getOperations(api).forEach(operation ->
@@ -531,8 +494,11 @@ public class ApiFunctions {
     private static Set<SchemaDefinition> getTopLevelParameterSchemas(Components components) {
         Set<SchemaDefinition> schemas = new HashSet<>();
         if (components.getParameters() != null) {
-            components.getParameters().forEach((parameterName, parameter) ->
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()))
+            components.getParameters().forEach((parameterName, parameter) -> {
+                        if (parameter.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()));
+                        }
+                    }
             );
         }
         return schemas;
@@ -568,8 +534,11 @@ public class ApiFunctions {
         if (operation.getResponses() != null && operation.getResponses().getAPIResponses() != null) {
             operation.getResponses().getAPIResponses().forEach((responseName, response) -> {
                 if (response.getContent() != null && response.getContent().getMediaTypes() != null) {
-                    response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) ->
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()))
+                    response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
+                                if (mediaType.getSchema() != null) {
+                                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()));
+                                }
+                            }
                     );
                 }
                 if (response.getHeaders() != null) {
@@ -592,8 +561,11 @@ public class ApiFunctions {
         // Get parameters
         if (operation.getParameters() != null) {
             Set<Parameter> parameters = new HashSet<>(operation.getParameters());
-            parameters.forEach(parameter ->
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()))
+            parameters.forEach(parameter -> {
+                        if (parameter.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+                        }
+                    }
             );
         }
         // Get callbacks
@@ -665,6 +637,7 @@ public class ApiFunctions {
         }
         return true;
     }
+
     public static boolean isLowerCamelCase(String string) {
         return string.matches("^[a-z0-9]+([A-Z]?[a-z0-9]+)*$");
     }

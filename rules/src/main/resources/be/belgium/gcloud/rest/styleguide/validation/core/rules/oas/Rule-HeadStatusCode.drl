@@ -1,6 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
@@ -15,35 +15,35 @@ function void violationHead(OpenApiViolationAggregator oas, String operationId, 
 rule "Head Status Code 201 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "201")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.HEAD, "201")
 	then
         violationHead(oas, $operationId, "201");
 end
 rule "Head Status Code 202 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "202")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.HEAD, "202")
 	then
         violationHead(oas, $operationId, "202");
 end
 rule "Head Status Code 409 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "409")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.HEAD, "409")
 	then
         violationHead(oas, $operationId, "409");
 end
 rule "Head Status Code 412 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "412")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.HEAD, "412")
 	then
         violationHead(oas, $operationId, "412");
 end
 rule "Head Status Code 413 v2"
 	when
 		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, OperationEnum.HEAD, "413")
+		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.HEAD, "413")
 	then
         violationHead(oas, $operationId, "413");
 end

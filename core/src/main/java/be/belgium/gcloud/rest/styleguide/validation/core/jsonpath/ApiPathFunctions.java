@@ -1,9 +1,9 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.jsonpath;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import org.eclipse.microprofile.openapi.models.PathItem;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,13 +47,13 @@ public class ApiPathFunctions {
      * @param operation
      * @return a list of operationId (String)
      */
-    public static List<Object> operationIdDontHaveProduce(String jsonString, OperationEnum operation){
+    public static List<Object> operationIdDontHaveProduce(String jsonString, PathItem.HttpMethod operation){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
 
         Filter producesFilter = Filter.filter(
                 where(PRODUCES).exists(false));
-        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), producesFilter);
+        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.name().toLowerCase()), producesFilter);
     }
 
     /**
@@ -62,13 +62,13 @@ public class ApiPathFunctions {
      * @param operation
      * @return a list of operationId (String)
      */
-    public static List<Object> operationIdDontHaveConsume(String jsonString, OperationEnum operation){
+    public static List<Object> operationIdDontHaveConsume(String jsonString, PathItem.HttpMethod operation){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
 
         Filter consumesFilter = Filter.filter(
                 where(CONSUMES).exists(false));
-        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.label), consumesFilter);
+        return JsonPath.read(jsonString, String.format(DONT_HAVE_TPL, operation.name().toLowerCase()), consumesFilter);
     }
 
     /**
@@ -78,13 +78,13 @@ public class ApiPathFunctions {
      * @param mediaType
      * @return a list of operationId (String)
      */
-    public static List<OperationData> operationDataDontHaveProduce(String jsonString, OperationEnum operation, String[] mediaType){
+    public static List<OperationData> operationDataDontHaveProduce(String jsonString, PathItem.HttpMethod operation, String[] mediaType){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
 
         Filter producesFilter = Filter.filter(
                 where(PRODUCES).noneof(mediaType).and(PRODUCES).exists(true));
-        List<Map<String, Object>> arr = JsonPath.read(jsonString, String.format(PRODUCES_TPL, operation.label), producesFilter);
+        List<Map<String, Object>> arr = JsonPath.read(jsonString, String.format(PRODUCES_TPL, operation.name().toLowerCase()), producesFilter);
 
         return arr.stream().map(map ->{
             String[] produces = ((List<String>) map.get(PRODUCES)).toArray(new String[0]);
@@ -103,13 +103,13 @@ public class ApiPathFunctions {
      * @param mediaType
      * @return a list of operationId (String)
      */
-    public static List<OperationData> operationDataDontHaveConsume(String jsonString, OperationEnum operation, String[] mediaType){
+    public static List<OperationData> operationDataDontHaveConsume(String jsonString, PathItem.HttpMethod operation, String[] mediaType){
         if( ! isSwaggerV2(jsonString))
             return Collections.emptyList();
 
         Filter consumesFilter = Filter.filter(
                 where(CONSUMES).noneof(mediaType).and(CONSUMES).exists(true));
-        List<Map<String,Object>> arr = JsonPath.read(jsonString, String.format(CONSUMES_TPL, operation.label), consumesFilter);
+        List<Map<String,Object>> arr = JsonPath.read(jsonString, String.format(CONSUMES_TPL, operation.name().toLowerCase()), consumesFilter);
 
         return arr.stream().map(map ->{
             String[] consumes = ((List<String>) map.get(CONSUMES)).toArray(new String[0]);

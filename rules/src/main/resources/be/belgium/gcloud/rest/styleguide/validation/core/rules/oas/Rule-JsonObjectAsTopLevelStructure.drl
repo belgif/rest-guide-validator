@@ -4,7 +4,6 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import org.eclipse.microprofile.openapi.models.Operation
-import be.belgium.gcloud.rest.styleguide.validation.core.OperationEnum;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.Paths;
