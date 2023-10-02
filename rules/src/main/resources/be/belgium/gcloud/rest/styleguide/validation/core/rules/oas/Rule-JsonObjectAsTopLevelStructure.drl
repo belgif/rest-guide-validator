@@ -37,7 +37,7 @@ rule "JSON object as top level structure in requestBodies"
     $requestBody: RequestBody() from $operation.getRequestBody()
     $content: Content() from $requestBody.getContent()
     $schema: SchemaDefinition() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
-    not Schema( getType() == SchemaType.OBJECT ) from $schema.getSchema()
+    eval( ApiFunctions.schemaIsExtendedType($api, $schema.getSchema(), SchemaType.OBJECT) == false )
   then
     violationJsonObjectAsTopLevelStructure(oas, $schema, $operation.getOperationId(), "request", "requestBody");
 end
@@ -51,7 +51,7 @@ rule "JSON object as top level structure in responses"
     $responseValue: APIResponse() from $response.getValue()
     $content: Content() from $responseValue.getContent()
     $schema: SchemaDefinition() from ApiFunctions.getSchemaFromContent($api, $content, includeContentTypes())
-    not Schema( getType() == SchemaType.OBJECT ) from $schema.getSchema()
+    eval( ApiFunctions.schemaIsExtendedType($api, $schema.getSchema(), SchemaType.OBJECT) == false )
   then
     violationJsonObjectAsTopLevelStructure(oas, $schema, $operation.getOperationId(), "response: " + $response.getKey(), $response.getKey().toString());
 end

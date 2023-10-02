@@ -366,6 +366,15 @@ public class ApiFunctions {
         return outputSchemas;
     }
 
+    private static Schema getResolvedSchema(OpenAPI api, Schema schema) {
+        if (schema.getRef() == null) {
+            return schema;
+        } else {
+            Schema resolvedSchema = getReferenceSchema(api, schema.getRef());
+            return getResolvedSchema(api, resolvedSchema);
+        }
+    }
+
     private static Schema getReferenceSchema(OpenAPI api, String ref) {
         // input files are pre-merged by swagger-parser setResolve(true), so all references should be in the parsed OpenAPI model
         if (api.getComponents() == null || api.getComponents().getSchemas() == null) {
@@ -376,6 +385,26 @@ public class ApiFunctions {
             throw new IllegalStateException("Input OpenAPI file is invalid. Could not resolve reference to schema: " + ref + ", or reference does not point to schema.");
         }
         return resolvedSchema;
+    }
+
+    public static boolean schemaIsExtendedType(OpenAPI api, Schema schema, Schema.SchemaType schemaType) {
+        Schema resolvedSchema = getResolvedSchema(api, schema);
+        if (resolvedSchema.getType() == schemaType) {
+            return true;
+        }
+        if (resolvedSchema.getOneOf() != null && !resolvedSchema.getOneOf().isEmpty()) {
+            List<Schema> objectSchemas = resolvedSchema.getOneOf().stream().filter(oneOfSchema -> schemaIsExtendedType(api, oneOfSchema, schemaType)).collect(Collectors.toList());
+            return objectSchemas.size() == resolvedSchema.getOneOf().size();
+        }
+        if (resolvedSchema.getAnyOf() != null && !resolvedSchema.getAnyOf().isEmpty()) {
+            List<Schema> objectSchemas = resolvedSchema.getAnyOf().stream().filter(anyOfSchema -> schemaIsExtendedType(api, anyOfSchema, schemaType)).collect(Collectors.toList());
+            return objectSchemas.size() == resolvedSchema.getAnyOf().size();
+        }
+        if (resolvedSchema.getAllOf() != null && !resolvedSchema.getAllOf().isEmpty()) {
+            List<Schema> objectSchemas = resolvedSchema.getAllOf().stream().filter(allOfSchema -> schemaIsExtendedType(api, allOfSchema, schemaType)).collect(Collectors.toList());
+            return !objectSchemas.isEmpty();
+        }
+        return false;
     }
 
     public static boolean isMediaTypeIncluded(String mediaTypeStr, Set<String> contentTypes) {
