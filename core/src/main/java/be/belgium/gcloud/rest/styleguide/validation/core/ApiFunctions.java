@@ -387,22 +387,27 @@ public class ApiFunctions {
         return resolvedSchema;
     }
 
-    public static boolean schemaIsExtendedType(OpenAPI api, Schema schema, Schema.SchemaType schemaType) {
+    /**
+     * Returns true if schematype or any indirectly referenced type (allOf, anyOf, oneOf) is schemaType.
+     * Returns false if schema allows more types than the specified one.
+     *
+     * @param api        The openapi specification
+     * @param schema     Schema that has to be validated
+     * @param schemaType type of the schema wanted, eg. object, string, array etc.
+     */
+    public static boolean isSchemaOfType(OpenAPI api, Schema schema, Schema.SchemaType schemaType) {
         Schema resolvedSchema = getResolvedSchema(api, schema);
         if (resolvedSchema.getType() == schemaType) {
             return true;
         }
         if (resolvedSchema.getOneOf() != null && !resolvedSchema.getOneOf().isEmpty()) {
-            List<Schema> objectSchemas = resolvedSchema.getOneOf().stream().filter(oneOfSchema -> schemaIsExtendedType(api, oneOfSchema, schemaType)).collect(Collectors.toList());
-            return objectSchemas.size() == resolvedSchema.getOneOf().size();
+            return resolvedSchema.getOneOf().stream().allMatch(oneOfSchema -> isSchemaOfType(api, oneOfSchema, schemaType));
         }
         if (resolvedSchema.getAnyOf() != null && !resolvedSchema.getAnyOf().isEmpty()) {
-            List<Schema> objectSchemas = resolvedSchema.getAnyOf().stream().filter(anyOfSchema -> schemaIsExtendedType(api, anyOfSchema, schemaType)).collect(Collectors.toList());
-            return objectSchemas.size() == resolvedSchema.getAnyOf().size();
+            return resolvedSchema.getAnyOf().stream().allMatch(anyOfSchema -> isSchemaOfType(api, anyOfSchema, schemaType));
         }
         if (resolvedSchema.getAllOf() != null && !resolvedSchema.getAllOf().isEmpty()) {
-            List<Schema> objectSchemas = resolvedSchema.getAllOf().stream().filter(allOfSchema -> schemaIsExtendedType(api, allOfSchema, schemaType)).collect(Collectors.toList());
-            return !objectSchemas.isEmpty();
+            return resolvedSchema.getAllOf().stream().anyMatch(allOfSchema -> isSchemaOfType(api, allOfSchema, schemaType));
         }
         return false;
     }
