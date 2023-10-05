@@ -6,7 +6,7 @@ import be.belgium.gcloud.rest.styleguide.validation.rules.AbstractOasRuleTest;
 public class PresenceOfPayloadTest extends AbstractOasRuleTest {
 
     protected String ruleName = "[presenceOfPayload]";
-    int errorCount = 8;
+    int errorCount = 9;
     protected ViolationType violationType = ViolationType.MANDATORY;
 
     public PresenceOfPayloadTest() {

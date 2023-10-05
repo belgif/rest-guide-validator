@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,6 +39,9 @@ public class OpenApiViolationAggregator {
     public void addViolation( String ruleName, String message, int lineNumber){
         this.addViolation( ruleName, message, lineNumber, ViolationType.MANDATORY);
     }
+    public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition){
+        this.addViolation( ruleName, message + "\t"+openApiDefinition.getJsonPointer(), openApiDefinition.getLineNumber(this), ViolationType.MANDATORY);
+    }
     public void addViolation( String ruleName, String message){
         this.addViolation( ruleName, message,0, ViolationType.MANDATORY);
     }
@@ -48,6 +52,7 @@ public class OpenApiViolationAggregator {
      * @return the line number or 0 if not found
      */
     public int getLineNumber(String predicate){
+        // TODO: after, refactoring, move line number logic to other class. Maybe create something like a RuleContext object to pass around instead
         if(predicate == null)
             return 0;
         for(var i=0; i< src.size(); i++){

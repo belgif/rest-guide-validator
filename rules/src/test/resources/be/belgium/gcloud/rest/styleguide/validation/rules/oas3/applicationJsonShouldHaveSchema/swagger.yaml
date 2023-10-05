@@ -30,3 +30,16 @@ paths:
             application/json:
               schema:
                 type: object
+components:
+  requestBodies:
+    RequestBodyWithSchema:
+      content:
+        application/json:
+          schema:
+            type: object
+  responses:
+    ProblemResponseWithSchema:
+      content:
+        application/problem+json:
+          schema:
+            type: object

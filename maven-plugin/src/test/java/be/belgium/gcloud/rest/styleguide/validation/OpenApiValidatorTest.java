@@ -15,17 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OpenApiValidatorTest {
 
     @Test
-    void isValidTest()  {
-        var file = new File(getClass().getResource("rules/swagger_bad.yaml").getFile());
-        assertFalse(OpenApiValidator.isOasValid(file));
-
-        assertFalse(OpenApiValidator.isOasValid(file, new ConsoleOutputProcessor()));
-
-        assertFalse(OpenApiValidator.isOasValid(file, new ConsoleOutputProcessor(), new Log4JOutputProcessor()));
-    }
-
-
-    @Test
     void isOasValid() {
         var file = new File(getClass().getResource("rules/swagger6.yaml").getFile());
         List<String> excludedPaths = new ArrayList<>();

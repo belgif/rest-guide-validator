@@ -6,10 +6,13 @@ import be.belgium.gcloud.rest.styleguide.validation.core.PropertyDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.Operation;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.media.Content;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseDefinition;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import java.util.Set;
 
 
@@ -17,19 +20,25 @@ function Set exclude() {
   return Set.of(HttpMethod.HEAD, HttpMethod.OPTIONS);
 }
 
-function void violationDefaultResponse(OpenApiViolationAggregator oas, String property){
+function void violationDefaultResponse(OpenApiViolationAggregator oas, OperationDefinition operation){
   oas.addViolation("[prb-defaul]",
     "A default Problem response SHOULD be added to each operation with media type \"application/problem+json\" \t" +
-    "[Operation: " + property + "]",
-    oas.getLineNumber(property));
+    "[Operation: " + operation.getIdentifier() + "]",
+    operation);
 }
 
 rule "Default Response with problem+json media type is missing"
   when
-    $api: OpenAPI()
-    $operation: Operation($operationId : operationId) from ApiFunctions.getOperations($api, exclude())
-    not(Operation(responses!.defaultValue!.content!.mediaTypes!.keySet contains "application/problem+json") from $operation)
-
+    $operationDefinition: OperationDefinition($response: /model/responses/defaultValue)
+    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
   then
-    violationDefaultResponse(oas, $operationId);
+    violationDefaultResponse(oas, $operationDefinition);
+end
+
+rule "Default Response is missing"
+  when
+    $operationDefinition: OperationDefinition(/model/responses[defaultValue == null])
+  then
+    violationDefaultResponse(oas, $operationDefinition);
 end

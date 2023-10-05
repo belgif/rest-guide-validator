@@ -44,8 +44,7 @@ public class ApiFunctions {
         var lines = Files.readAllLines(file.toPath());
 
         // lines > 1 then is a yaml or a pretty json file
-        if (lines.size() > 1)
-            return lines;
+        if (lines.size() > 1) return lines;
 
         // else is a ugly json file
         var gson = new GsonBuilder().setPrettyPrinting().create();
@@ -78,10 +77,7 @@ public class ApiFunctions {
         // if spec is 3.1 we need the info to raise a rule violation
         if (openAPI == null) {
             openAPI = new io.swagger.v3.oas.models.OpenAPI();
-            var version = getLines(file).stream()
-                    .filter(line -> line.trim().startsWith("openapi: "))
-                    .findFirst().orElseThrow()
-                    .substring(9);
+            var version = getLines(file).stream().filter(line -> line.trim().startsWith("openapi: ")).findFirst().orElseThrow().substring(9);
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
@@ -117,8 +113,7 @@ public class ApiFunctions {
      * @return a set path keys
      */
     public static Set<String> getPathKeys(OpenAPI openAPI) {
-        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null)
-            return Collections.emptySet();
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null) return Collections.emptySet();
         return openAPI.getPaths().getPathItems().keySet();
     }
 
@@ -141,12 +136,8 @@ public class ApiFunctions {
      * @return
      */
     public static Set<String> getOperationId(OpenAPI openAPI, PathItem.HttpMethod verb, String statusCode) {
-        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null)
-            return Collections.emptySet();
-        return openAPI.getPaths().getPathItems().values().stream()
-                .filter(path -> filterPath(path, verb, statusCode))
-                .map(path -> getOperationId(path, verb))
-                .collect(Collectors.toSet());
+        if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems() == null) return Collections.emptySet();
+        return openAPI.getPaths().getPathItems().values().stream().filter(path -> filterPath(path, verb, statusCode)).map(path -> getOperationId(path, verb)).collect(Collectors.toSet());
     }
 
     private static boolean filterPath(PathItem path, PathItem.HttpMethod verb, String statusCode) {
@@ -166,12 +157,8 @@ public class ApiFunctions {
      * @return
      */
     public static Set<String> getServerNotMatch(OpenAPI openAPI, String regex) {
-        if (openAPI.getServers() == null)
-            return Collections.emptySet();
-        return openAPI.getServers().stream()
-                .map(Server::getUrl)
-                .filter(url -> !url.matches(regex))
-                .collect(Collectors.toSet());
+        if (openAPI.getServers() == null) return Collections.emptySet();
+        return openAPI.getServers().stream().map(Server::getUrl).filter(url -> !url.matches(regex)).collect(Collectors.toSet());
     }
 
     /**
@@ -181,8 +168,7 @@ public class ApiFunctions {
         Set<PropertyDefinition> properties = new HashSet<>();
         getSchemas(api).forEach(schemaDef -> {
             if (schemaDef.getSchema().getProperties() != null) {
-                schemaDef.getSchema().getProperties().forEach((k, v) ->
-                        properties.add(new PropertyDefinition(schemaDef.getParentDefinitionLocation(), schemaDef.getParentName(), k, v)));
+                schemaDef.getSchema().getProperties().forEach((k, v) -> properties.add(new PropertyDefinition(schemaDef.getParentDefinitionLocation(), schemaDef.getParentName(), k, v)));
             }
         });
         return properties;
@@ -200,8 +186,7 @@ public class ApiFunctions {
         var paths = new ArrayList<LineRangePath>();
         var pathKeys = getPathKeys(openAPI);
 
-        if (pathKeys.isEmpty())
-            return Collections.emptyList();
+        if (pathKeys.isEmpty()) return Collections.emptyList();
 
         pathKeys.forEach(p -> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
         Collections.sort(paths);
@@ -225,8 +210,7 @@ public class ApiFunctions {
      * @return
      */
     public static boolean isInPathList(List<LineRangePath> lineRangePaths, String path, int lineNumber) {
-        return lineRangePaths.stream()
-                .anyMatch(lineRangePath -> lineRangePath.getPath().equals(path) && lineRangePath.inRange(lineNumber));
+        return lineRangePaths.stream().anyMatch(lineRangePath -> lineRangePath.getPath().equals(path) && lineRangePath.inRange(lineNumber));
     }
 
     /**
@@ -238,8 +222,7 @@ public class ApiFunctions {
      * @return
      */
     public static boolean isInPathList(List<LineRangePath> lineRangePaths, List<String> paths, int lineNumber) {
-        return lineRangePaths.stream()
-                .anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
+        return lineRangePaths.stream().anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
     }
 
     /**
@@ -258,16 +241,12 @@ public class ApiFunctions {
         }
         var allPaths = openAPI.getPaths().getPathItems().entrySet();
         // Adds all paths before the ones with path params
-        Set<String> collectionPaths = allPaths.stream().filter(path -> endsWithPathParameter(path.getKey()))
-                .map(path -> getPathBeforePathParam(path, openAPI)).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<String> collectionPaths = allPaths.stream().filter(path -> endsWithPathParameter(path.getKey())).map(path -> getPathBeforePathParam(path, openAPI)).filter(Objects::nonNull).collect(Collectors.toSet());
         // Adds all paths that return an object with an array 'items'
         collectionPaths.addAll(allPaths.stream().filter(path -> isReturnCollection(openAPI, path.getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
 
         // Filter out all collections without GET
-        return allPaths.stream()
-                .filter(path -> collectionPaths.contains(path.getKey()) &&
-                        path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return allPaths.stream().filter(path -> collectionPaths.contains(path.getKey()) && path.getValue().getOperations().containsKey(PathItem.HttpMethod.GET)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private static String getPathBeforePathParam(Map.Entry<String, PathItem> path, OpenAPI openAPI) {
@@ -292,16 +271,12 @@ public class ApiFunctions {
     public static boolean isReturnCollection(OpenAPI openAPI, PathItem pathItem) {
         try {
             AtomicBoolean isCollection = new AtomicBoolean(false);
-            var responseSchemas = pathItem.getGET().getResponses().getAPIResponses().values().stream()
-                    .flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream())
-                    .map(MediaType::getSchema);
+            var responseSchemas = pathItem.getGET().getResponses().getAPIResponses().values().stream().flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
             responseSchemas.forEach(schema -> {
-                if (schema.getProperties() != null && schema.getProperties().containsKey("items")
-                        && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
+                if (schema.getProperties() != null && schema.getProperties().containsKey("items") && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
                     isCollection.set(true);
                 } else {
-                    if (isCollection(openAPI, schema.getRef()))
-                        isCollection.set(true);
+                    if (isCollection(openAPI, schema.getRef())) isCollection.set(true);
                 }
             });
             return isCollection.get();
@@ -341,8 +316,7 @@ public class ApiFunctions {
     }
 
     private static String getRefName(String ref) {
-        if (!ref.contains("/"))
-            return ref;
+        if (!ref.contains("/")) return ref;
         return ref.substring(ref.lastIndexOf('/') + 1);
     }
 
@@ -463,15 +437,12 @@ public class ApiFunctions {
         Set<Parameter> parameters = new HashSet<>();
         api.getPaths().getPathItems().values().stream().filter(pathItem -> pathItem.getParameters() != null).forEach(pathItem -> parameters.addAll(pathItem.getParameters()));
         parameters.forEach(parameter -> {
-                    if (parameter.getSchema() != null) {
-                        schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
-                    }
-                }
-        );
+            if (parameter.getSchema() != null) {
+                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+            }
+        });
         // Get schemas from operations
-        getOperations(api).forEach(operation ->
-                schemas.addAll(getSchemasFromOperation(operation))
-        );
+        getOperations(api).forEach(operation -> schemas.addAll(getSchemasFromOperation(operation)));
 
         Set<SchemaDefinition> nestedSchemas = new HashSet<>();
         schemas.forEach(schema -> nestedSchemas.addAll(getNestedSchemas(schema)));
@@ -483,13 +454,7 @@ public class ApiFunctions {
     private static Set<SchemaDefinition> getCallbackSchemas(Components components) {
         Set<SchemaDefinition> schemas = new HashSet<>();
         if (components.getCallbacks() != null) {
-            components.getCallbacks().forEach((callbackName, callback) ->
-                    callback.getPathItems().forEach((pathItemName, pathItem) ->
-                            pathItem.getOperations().forEach(((httpMethod, operation) ->
-                                    schemas.addAll(getSchemasFromOperation(operation))
-                            ))
-                    )
-            );
+            components.getCallbacks().forEach((callbackName, callback) -> callback.getPathItems().forEach((pathItemName, pathItem) -> pathItem.getOperations().forEach(((httpMethod, operation) -> schemas.addAll(getSchemasFromOperation(operation))))));
         }
 
         return schemas;
@@ -529,11 +494,10 @@ public class ApiFunctions {
         Set<SchemaDefinition> schemas = new HashSet<>();
         if (components.getParameters() != null) {
             components.getParameters().forEach((parameterName, parameter) -> {
-                        if (parameter.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()));
-                        }
-                    }
-            );
+                if (parameter.getSchema() != null) {
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()));
+                }
+            });
         }
         return schemas;
     }
@@ -543,8 +507,10 @@ public class ApiFunctions {
         // Get top level responses
         if (components.getResponses() != null) {
             components.getResponses().forEach((responseName, response) -> {
-                if (response.getContent().getMediaTypes() != null) {
-                    response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
+
+                Content content = response.getContent();
+                if (content != null && content.getMediaTypes() != null) {
+                    content.getMediaTypes().forEach((mediaTypeName, mediaType) -> {
                         if (mediaType.getSchema() != null) {
                             schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_RESPONSES, responseName + ":" + mediaTypeName, mediaType.getSchema()));
                         }
@@ -569,11 +535,10 @@ public class ApiFunctions {
             operation.getResponses().getAPIResponses().forEach((responseName, response) -> {
                 if (response.getContent() != null && response.getContent().getMediaTypes() != null) {
                     response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
-                                if (mediaType.getSchema() != null) {
-                                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()));
-                                }
-                            }
-                    );
+                        if (mediaType.getSchema() != null) {
+                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()));
+                        }
+                    });
                 }
                 if (response.getHeaders() != null) {
                     response.getHeaders().forEach((headerName, header) -> {
@@ -596,21 +561,14 @@ public class ApiFunctions {
         if (operation.getParameters() != null) {
             Set<Parameter> parameters = new HashSet<>(operation.getParameters());
             parameters.forEach(parameter -> {
-                        if (parameter.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
-                        }
-                    }
-            );
+                if (parameter.getSchema() != null) {
+                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+                }
+            });
         }
         // Get callbacks
         if (operation.getCallbacks() != null) {
-            operation.getCallbacks().forEach((callbackName, callback) ->
-                    callback.getPathItems().forEach((pathItemName, pathItem) ->
-                            pathItem.getOperations().forEach((httpMethod, callbackOperation) ->
-                                    schemas.addAll(getSchemasFromOperation(callbackOperation))
-                            )
-                    )
-            );
+            operation.getCallbacks().forEach((callbackName, callback) -> callback.getPathItems().forEach((pathItemName, pathItem) -> pathItem.getOperations().forEach((httpMethod, callbackOperation) -> schemas.addAll(getSchemasFromOperation(callbackOperation)))));
         }
 
         return schemas;
@@ -620,13 +578,11 @@ public class ApiFunctions {
         Set<SchemaDefinition> schemas = new HashSet<>();
         var parentSchema = parentSchemaDefinition.getSchema();
         if (parentSchema.getProperties() != null) {
-            parentSchema.getProperties().forEach((schemaName, schema) ->
-                    {
-                        var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":" + schemaName, schema);
-                        schemas.add(schemaOfProperty);
-                        schemas.addAll(getNestedSchemas(schemaOfProperty));
-                    }
-            );
+            parentSchema.getProperties().forEach((schemaName, schema) -> {
+                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":" + schemaName, schema);
+                schemas.add(schemaOfProperty);
+                schemas.addAll(getNestedSchemas(schemaOfProperty));
+            });
         }
         if (parentSchema.getItems() != null) {
             var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":items", parentSchema.getItems());

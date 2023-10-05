@@ -10,7 +10,10 @@ import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseDefinition;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,12 +24,20 @@ function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String 
     oas.getLineNumber(property));
 }
 
+function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String errorMessage, ResponseDefinition response, OperationDefinition operation){
+  oas.addViolation("[presenceOfPayload]",
+    errorMessage +
+    "[Operation: " + operation.getIdentifier() + "]", response);
+}
+
 rule "GET/HEAD/DELETE/OPTIONS should have no request payload"
   when
     $api: OpenAPI()
     $operation: Operation() from ApiFunctions.getOperations($api, Set.of(HttpMethod.PATCH, HttpMethod.POST, HttpMethod.PUT))
     $requestBody: RequestBody() from $operation.getRequestBody()
     not RequestBody( $requestBody.getContent() == null )
+
+
   then
     violationPresenceOfPayload(oas, "GET/HEAD/DELETE/OPTIONS should have no request payload \t", $operation.getOperationId());
 end
@@ -47,11 +58,11 @@ end
 
 rule "Status code 200 should have response payload"
   when
-    $api: OpenAPI()
-    $operation: Operation( $response : /responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse ) from ApiFunctions.getOperations($api, Set.of())
-    not (APIResponse(/content/mediaTypes[size != 0]) from $response)
+    $operationDefinition : OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse)
+    $responseDefinition : ResponseDefinition() from parserResult.resolve($response)
+    not(ResponseDefinition(/model/content/mediaTypes[size != 0]) from $responseDefinition)
   then
-    violationPresenceOfPayload(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $operation.getOperationId());
+    violationPresenceOfPayload(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $responseDefinition, $operationDefinition);
 end
 
 rule "Status code 204 should not have response payload"

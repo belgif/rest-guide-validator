@@ -5,11 +5,9 @@ info:
 servers:
   - url: '/api/v1'
 paths:
-  /everythingIsGoodHere:
+  /responseWithoutSchema:
     get:
-      summary: This path is completely compliant with the guidelines
-      description: Nice path
-      operationId: getEverythingIsGoodHere
+      operationId: responseWithoutSchema
       responses:
         '200':
           description: Very good 200
@@ -20,8 +18,7 @@ paths:
                   value:
                     status: UP
     post:
-      operationId: postOperation
-      summary: post where everything is good
+      operationId: requestWithoutSchema
       requestBody:
         content:
           application/json:
@@ -29,3 +26,17 @@ paths:
               response:
                 value:
                   status: UP
+      responses:
+        200:
+          description: OK
+components:
+  requestBodies:
+    RequestBodyWithoutSchema:
+      content:
+        application/json:
+          example: Nothing to see here
+  responses:
+    ProblemResponseWithoutSchema:
+      content:
+        application/problem+json:
+          example: Please move along

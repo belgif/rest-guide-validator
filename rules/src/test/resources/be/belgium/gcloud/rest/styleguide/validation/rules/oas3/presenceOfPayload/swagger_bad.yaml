@@ -36,6 +36,10 @@ paths:
                 type: object
         default:
           $ref: '#/components/responses/ProblemResponse'
+    post:
+      responses:
+        "200":
+          $ref: '#/components/responses/ResponseWithoutSchema'
     head:
       summary: head summary
       operationId: headOperation
@@ -132,3 +136,6 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
       description: a problem
+    ResponseWithoutSchema:
+      description: response
+
