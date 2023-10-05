@@ -20,9 +20,16 @@ function Set exclude() {
   return Set.of(HttpMethod.HEAD, HttpMethod.OPTIONS);
 }
 
-function void violationDefaultResponse(OpenApiViolationAggregator oas, OperationDefinition operation){
+function void violationNoDefaultResponse(OpenApiViolationAggregator oas, OperationDefinition operation){
   oas.addViolation("[prb-defaul]",
     "A default Problem response SHOULD be added to each operation with media type \"application/problem+json\" \t" +
+    "[Operation: " + operation.getIdentifier() + "]",
+    operation);
+}
+
+function void violationDefaultResponseWrongMediaType(OpenApiViolationAggregator oas, OperationDefinition operation){
+  oas.addViolation("[prb-defaul]",
+    "The default response of each operation SHOULD have a media type \"application/problem+json\" \t" +
     "[Operation: " + operation.getIdentifier() + "]",
     operation);
 }
@@ -33,12 +40,12 @@ rule "Default Response with problem+json media type is missing"
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
     not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
   then
-    violationDefaultResponse(oas, $operationDefinition);
+    violationDefaultResponseWrongMediaType(oas, $operationDefinition);
 end
 
 rule "Default Response is missing"
   when
     $operationDefinition: OperationDefinition(/model/responses[defaultValue == null])
   then
-    violationDefaultResponse(oas, $operationDefinition);
+    violationNoDefaultResponse(oas, $operationDefinition);
 end
