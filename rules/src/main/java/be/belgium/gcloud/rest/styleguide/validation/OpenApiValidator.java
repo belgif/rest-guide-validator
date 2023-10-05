@@ -43,10 +43,7 @@ public class OpenApiValidator {
         kSession.setGlobal("parserResult", parserResult);
         var start = System.currentTimeMillis();
         List<Command> commands = new ArrayList<>();
-        commands.add(CommandFactory.newInsertElements(parserResult.getOperations()));
-        commands.add(CommandFactory.newInsertElements(parserResult.getRequestBodies()));
-        commands.add(CommandFactory.newInsertElements(parserResult.getResponses()));
-        commands.add(CommandFactory.newInsertElements(parserResult.getMediaTypes()));
+        commands.add(CommandFactory.newInsertElements(parserResult.getAllDefinitions()));
         commands.add(CommandFactory.newInsert(parserResult.getOpenAPI()));
         kSession.execute(CommandFactory.newBatchExecution(commands));
         oas.setTime((System.currentTimeMillis() - start) / 1000f);
