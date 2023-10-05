@@ -14,7 +14,7 @@
     <packaging>kjar</packaging>
 
     <properties>
-        <drools.version>8.43.0.Final</drools.version>
+        <drools.version>8.44.0.Final</drools.version>
     </properties>
 
     <dependencyManagement>
