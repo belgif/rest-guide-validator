@@ -40,7 +40,8 @@ public class OpenApiViolationAggregator {
         this.addViolation( ruleName, message, lineNumber, ViolationType.MANDATORY);
     }
     public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition){
-        this.addViolation( ruleName, message + "\t"+openApiDefinition.getJsonPointer(), openApiDefinition.getLineNumber(this), ViolationType.MANDATORY);
+        int lineNumber = openApiDefinition.getLineNumber(this);
+        this.addViolation( ruleName, message + "\t"+openApiDefinition.getJsonPointer(), lineNumber, ViolationType.MANDATORY);
     }
     public void addViolation( String ruleName, String message){
         this.addViolation( ruleName, message,0, ViolationType.MANDATORY);
@@ -75,6 +76,7 @@ public class OpenApiViolationAggregator {
             if (src.get(i).contains(predicate))
                 return i+1; // line start at 1
         }
-        return 0;
+        //todo: Does not work with multifiles
+        return start;
     }
 }

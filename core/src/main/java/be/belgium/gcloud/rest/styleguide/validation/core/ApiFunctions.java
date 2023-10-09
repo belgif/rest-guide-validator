@@ -1,6 +1,8 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import io.swagger.parser.OpenAPIParser;
@@ -320,20 +322,20 @@ public class ApiFunctions {
         return ref.substring(ref.lastIndexOf('/') + 1);
     }
 
-    public static Set<SchemaDefinition> getSchemaFromContent(OpenAPI api, Content content, Set<String> contentTypes) {
+    public static Set<SchemaDefinitionDeprecated> getSchemaFromContent(OpenAPI api, Content content, Set<String> contentTypes) {
         List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
         for (String contentType : contentTypes) {
             mediaTypeList.add(org.springframework.http.MediaType.parseMediaType(contentType));
         }
         Set<Map.Entry<String, MediaType>> schemas = content.getMediaTypes().entrySet().stream().filter(set -> isMediaTypeIncluded(set.getKey(), mediaTypeList)).collect(Collectors.toSet());
-        Set<SchemaDefinition> outputSchemas = new HashSet<>();
+        Set<SchemaDefinitionDeprecated> outputSchemas = new HashSet<>();
         for (Map.Entry<String, MediaType> mediaType : schemas) {
             if (mediaType.getValue() != null && mediaType.getValue().getSchema() != null) {
                 if (mediaType.getValue().getSchema().getType() == null && mediaType.getValue().getSchema().getRef() != null) {
                     Schema refSchema = getReferenceSchema(api, mediaType.getValue().getSchema().getRef());
-                    outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), refSchema));
+                    outputSchemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), refSchema));
                 } else {
-                    outputSchemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), mediaType.getValue().getSchema()));
+                    outputSchemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, mediaType.getKey(), mediaType.getValue().getSchema()));
                 }
             }
         }
@@ -386,6 +388,32 @@ public class ApiFunctions {
         return false;
     }
 
+    public static boolean isSchemaOfType(Schema schema, Schema.SchemaType schemaType, Parser.ParserResult result) {
+        SchemaDefinition resolvedSchema = recursiveResolve(schema, result);
+        if (resolvedSchema.getModel().getType() == schemaType) {
+            return true;
+        }
+        if (resolvedSchema.getModel().getOneOf() != null && !resolvedSchema.getModel().getOneOf().isEmpty()) {
+            return resolvedSchema.getModel().getOneOf().stream().allMatch(oneOfSchema -> isSchemaOfType(oneOfSchema, schemaType, result));
+        }
+        if (resolvedSchema.getModel().getAnyOf() != null && !resolvedSchema.getModel().getAnyOf().isEmpty()) {
+            return resolvedSchema.getModel().getAnyOf().stream().allMatch(anyOfSchema -> isSchemaOfType(anyOfSchema, schemaType, result));
+        }
+        if (resolvedSchema.getModel().getAllOf() != null && !resolvedSchema.getModel().getAllOf().isEmpty()) {
+            return resolvedSchema.getModel().getAllOf().stream().anyMatch(allOfSchema -> isSchemaOfType(allOfSchema, schemaType, result));
+        }
+        return false;
+    }
+
+    private static SchemaDefinition recursiveResolve(Schema schema, Parser.ParserResult result) {
+        SchemaDefinition resolvedSchema = (SchemaDefinition) result.resolve(schema);
+        if (resolvedSchema.getModel().getRef() == null) {
+            return resolvedSchema;
+        } else {
+            return recursiveResolve(resolvedSchema.getModel(), result);
+        }
+    }
+
     public static boolean isMediaTypeIncluded(String mediaTypeStr, Set<String> contentTypes) {
         List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
         for (String contentType : contentTypes) {
@@ -419,13 +447,13 @@ public class ApiFunctions {
         return parameters;
     }
 
-    public static Set<SchemaDefinition> getSchemas(OpenAPI api) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    public static Set<SchemaDefinitionDeprecated> getSchemas(OpenAPI api) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         Components components = api.getComponents();
         if (components != null) {
             // Gets schemas from top-level components
             if (components.getSchemas() != null) {
-                components.getSchemas().forEach((schemaName, schema) -> schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schemaName, schema)));
+                components.getSchemas().forEach((schemaName, schema) -> schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_SCHEMAS, schemaName, schema)));
             }
             schemas.addAll(getResponseSchemas(components));
             schemas.addAll(getRequestBodySchemas(components));
@@ -438,21 +466,21 @@ public class ApiFunctions {
         api.getPaths().getPathItems().values().stream().filter(pathItem -> pathItem.getParameters() != null).forEach(pathItem -> parameters.addAll(pathItem.getParameters()));
         parameters.forEach(parameter -> {
             if (parameter.getSchema() != null) {
-                schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+                schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
             }
         });
         // Get schemas from operations
         getOperations(api).forEach(operation -> schemas.addAll(getSchemasFromOperation(operation)));
 
-        Set<SchemaDefinition> nestedSchemas = new HashSet<>();
+        Set<SchemaDefinitionDeprecated> nestedSchemas = new HashSet<>();
         schemas.forEach(schema -> nestedSchemas.addAll(getNestedSchemas(schema)));
         schemas.addAll(nestedSchemas);
 
         return schemas.stream().filter(schemaDefinition -> schemaDefinition.getSchema().getRef() == null).collect(Collectors.toSet());
     }
 
-    private static Set<SchemaDefinition> getCallbackSchemas(Components components) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getCallbackSchemas(Components components) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         if (components.getCallbacks() != null) {
             components.getCallbacks().forEach((callbackName, callback) -> callback.getPathItems().forEach((pathItemName, pathItem) -> pathItem.getOperations().forEach(((httpMethod, operation) -> schemas.addAll(getSchemasFromOperation(operation))))));
         }
@@ -460,15 +488,15 @@ public class ApiFunctions {
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getRequestBodySchemas(Components components) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getRequestBodySchemas(Components components) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         // Get top level requestBodies
         if (components.getRequestBodies() != null) {
             components.getRequestBodies().forEach((requestName, request) -> {
                 if (request.getContent() != null && request.getContent().getMediaTypes() != null) {
                     request.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
                         if (mediaType.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_REQUESTBODY, requestName + ":" + mediaTypeName, mediaType.getSchema()));
+                            schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_REQUESTBODY, requestName + ":" + mediaTypeName, mediaType.getSchema()));
                         }
                     });
                 }
@@ -477,33 +505,33 @@ public class ApiFunctions {
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getHeaderSchemas(Components components) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getHeaderSchemas(Components components) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         // Get top level header schemas
         if (components.getHeaders() != null) {
             components.getHeaders().forEach((headerName, header) -> {
                 if (header.getSchema() != null) {
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_HEADER, headerName, header.getSchema()));
+                    schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_HEADER, headerName, header.getSchema()));
                 }
             });
         }
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getTopLevelParameterSchemas(Components components) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getTopLevelParameterSchemas(Components components) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         if (components.getParameters() != null) {
             components.getParameters().forEach((parameterName, parameter) -> {
                 if (parameter.getSchema() != null) {
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()));
+                    schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.PARAMETER, parameterName, parameter.getSchema()));
                 }
             });
         }
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getResponseSchemas(Components components) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getResponseSchemas(Components components) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         // Get top level responses
         if (components.getResponses() != null) {
             components.getResponses().forEach((responseName, response) -> {
@@ -512,14 +540,14 @@ public class ApiFunctions {
                 if (content != null && content.getMediaTypes() != null) {
                     content.getMediaTypes().forEach((mediaTypeName, mediaType) -> {
                         if (mediaType.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.COMPONENT_RESPONSES, responseName + ":" + mediaTypeName, mediaType.getSchema()));
+                            schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.COMPONENT_RESPONSES, responseName + ":" + mediaTypeName, mediaType.getSchema()));
                         }
                     });
                 }
                 if (response.getHeaders() != null) {
                     response.getHeaders().forEach((headerName, header) -> {
                         if (header.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_HEADER, responseName + ":" + headerName, header.getSchema()));
+                            schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.INLINE_HEADER, responseName + ":" + headerName, header.getSchema()));
                         }
                     });
                 }
@@ -528,22 +556,22 @@ public class ApiFunctions {
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getSchemasFromOperation(Operation operation) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getSchemasFromOperation(Operation operation) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         // Get responses
         if (operation.getResponses() != null && operation.getResponses().getAPIResponses() != null) {
             operation.getResponses().getAPIResponses().forEach((responseName, response) -> {
                 if (response.getContent() != null && response.getContent().getMediaTypes() != null) {
                     response.getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
                         if (mediaType.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()));
+                            schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.INLINE_RESPONSES, operation.getOperationId() + ":" + responseName + ":" + mediaTypeName, mediaType.getSchema()));
                         }
                     });
                 }
                 if (response.getHeaders() != null) {
                     response.getHeaders().forEach((headerName, header) -> {
                         if (header.getSchema() != null) {
-                            schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_HEADER, operation.getOperationId() + ":" + responseName + ":" + headerName, header.getSchema()));
+                            schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.INLINE_HEADER, operation.getOperationId() + ":" + responseName + ":" + headerName, header.getSchema()));
                         }
                     });
                 }
@@ -553,7 +581,7 @@ public class ApiFunctions {
         if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().getMediaTypes() != null) {
             operation.getRequestBody().getContent().getMediaTypes().forEach((mediaTypeName, mediaType) -> {
                 if (mediaType.getSchema() != null) {
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.INLINE_REQUESTBODY, operation.getOperationId() + ":" + mediaTypeName, mediaType.getSchema()));
+                    schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.INLINE_REQUESTBODY, operation.getOperationId() + ":" + mediaTypeName, mediaType.getSchema()));
                 }
             });
         }
@@ -562,7 +590,7 @@ public class ApiFunctions {
             Set<Parameter> parameters = new HashSet<>(operation.getParameters());
             parameters.forEach(parameter -> {
                 if (parameter.getSchema() != null) {
-                    schemas.add(new SchemaDefinition(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
+                    schemas.add(new SchemaDefinitionDeprecated(OpenApiDefinitionLocation.PARAMETER, parameter.getName(), parameter.getSchema()));
                 }
             });
         }
@@ -574,44 +602,44 @@ public class ApiFunctions {
         return schemas;
     }
 
-    private static Set<SchemaDefinition> getNestedSchemas(SchemaDefinition parentSchemaDefinition) {
-        Set<SchemaDefinition> schemas = new HashSet<>();
+    private static Set<SchemaDefinitionDeprecated> getNestedSchemas(SchemaDefinitionDeprecated parentSchemaDefinition) {
+        Set<SchemaDefinitionDeprecated> schemas = new HashSet<>();
         var parentSchema = parentSchemaDefinition.getSchema();
         if (parentSchema.getProperties() != null) {
             parentSchema.getProperties().forEach((schemaName, schema) -> {
-                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":" + schemaName, schema);
+                var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":" + schemaName, schema);
                 schemas.add(schemaOfProperty);
                 schemas.addAll(getNestedSchemas(schemaOfProperty));
             });
         }
         if (parentSchema.getItems() != null) {
-            var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":items", parentSchema.getItems());
+            var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":items", parentSchema.getItems());
             schemas.add(schemaOfProperty);
             schemas.addAll(getNestedSchemas(schemaOfProperty));
         }
         if (parentSchema.getAllOf() != null) {
             parentSchema.getAllOf().forEach(schema -> {
-                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":allOf", schema);
+                var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":allOf", schema);
                 schemas.add(schemaOfProperty);
                 schemas.addAll(getNestedSchemas(schemaOfProperty));
             });
         }
         if (parentSchema.getAnyOf() != null) {
             parentSchema.getAnyOf().forEach(schema -> {
-                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":anyOf", schema);
+                var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":anyOf", schema);
                 schemas.add(schemaOfProperty);
                 schemas.addAll(getNestedSchemas(schemaOfProperty));
             });
         }
         if (parentSchema.getOneOf() != null) {
             parentSchema.getOneOf().forEach(schema -> {
-                var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":oneOf", schema);
+                var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":oneOf", schema);
                 schemas.add(schemaOfProperty);
                 schemas.addAll(getNestedSchemas(schemaOfProperty));
             });
         }
         if (parentSchema.getAdditionalPropertiesSchema() != null) {
-            var schemaOfProperty = new SchemaDefinition(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":additionalProperties", parentSchema.getAdditionalPropertiesSchema());
+            var schemaOfProperty = new SchemaDefinitionDeprecated(parentSchemaDefinition.getParentDefinitionLocation(), parentSchemaDefinition.parentName + ":additionalProperties", parentSchema.getAdditionalPropertiesSchema());
             schemas.add(schemaOfProperty);
             schemas.addAll(getNestedSchemas(schemaOfProperty));
         }

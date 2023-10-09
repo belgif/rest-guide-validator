@@ -18,6 +18,13 @@ public class MediaTypeDefinition extends OpenApiDefinition<MediaType> {
         super(openApiObject, parent, mediaType, "/content/" + mediaType);
     }
 
+    /**
+     * Constructor for an inline definition in parameter object
+     */
+    public MediaTypeDefinition(MediaType openApiObject, ParameterDefinition parent, String mediaType) {
+        super(openApiObject, parent, mediaType, "/content/" + mediaType);
+    }
+
     @Override
     public MediaType getModel() { //override needed because of Drools' lack of generics support
         return super.getModel();

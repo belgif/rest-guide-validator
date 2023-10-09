@@ -5,14 +5,14 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 
 import java.io.File;
 
-public class ParameterDefinition<T extends Constructible> extends OpenApiDefinition<Parameter> {
+public class ParameterDefinition extends OpenApiDefinition<Parameter> {
     /**
      * Constructor for an inline definition
      *
      * @param openApiObject
      * @param parent
      */
-    protected ParameterDefinition(Parameter openApiObject, OpenApiDefinition<?> parent, String name, String relativeJsonPath) {
+    public ParameterDefinition(Parameter openApiObject, OpenApiDefinition<?> parent, String name, String relativeJsonPath) {
         super(openApiObject, parent, name, relativeJsonPath);
     }
 
@@ -23,7 +23,12 @@ public class ParameterDefinition<T extends Constructible> extends OpenApiDefinit
      * @param name
      * @param openApiFile
      */
-    protected ParameterDefinition(Parameter openApiObject, String name, File openApiFile, String jsonPath) {
+    public ParameterDefinition(Parameter openApiObject, String name, File openApiFile, String jsonPath) {
         super(openApiObject, name, openApiFile, jsonPath);
+    }
+
+    @Override
+    public Parameter getModel() {
+        return super.getModel();
     }
 }

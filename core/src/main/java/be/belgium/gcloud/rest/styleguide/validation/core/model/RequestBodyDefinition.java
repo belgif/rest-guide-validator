@@ -23,4 +23,9 @@ public class RequestBodyDefinition extends OpenApiDefinition<RequestBody> {
     public RequestBodyDefinition(RequestBody openApiObject, String name, File openApiFile) {
         super(openApiObject, name, openApiFile, "/components/requestBodies/" + name);
     }
+
+    @Override
+    public RequestBody getModel() {
+        return super.getModel();
+    }
 }

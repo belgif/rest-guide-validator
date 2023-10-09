@@ -6,9 +6,9 @@ import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
-import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.SchemaDefinitionDeprecated;
 
-function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oas, SchemaDefinition schema){
+function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oas, SchemaDefinitionDeprecated schema){
     oas.addViolation("[cod-design]",
     "New code types SHOULD be represented as string values in lowerCamelCase. \t"+ schema.getParentName() + "." + schema.getSchema().getEnumeration(),
     oas.getLineNumber(schema.getParentName().split(":")[0]));
@@ -17,7 +17,7 @@ function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oa
 rule "Codes should be lowerCamelCase"
 	when
         $api: OpenAPI()
-        $schema: SchemaDefinition() from ApiFunctions.getSchemas($api)
+        $schema: SchemaDefinitionDeprecated() from ApiFunctions.getSchemas($api)
         not String( this.equals("BelgianRegionCode") ) from $schema.getParentName()
         SchemaType( equals(SchemaType.STRING) ) from $schema.getSchema().getType()
         Schema( getEnumeration() != null ) from $schema.getSchema()

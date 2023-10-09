@@ -10,7 +10,7 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 @Builder
 @AllArgsConstructor
 @ToString
-public class SchemaDefinition {
+public class SchemaDefinitionDeprecated {
     OpenApiDefinitionLocation parentDefinitionLocation;
     String parentName;
     Schema schema;

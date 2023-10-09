@@ -11,6 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.openapi.models.*;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
@@ -33,6 +36,8 @@ public class Parser {
         private Set<RequestBodyDefinition> requestBodies = new HashSet<>();
         private Set<ResponseDefinition> responses = new HashSet<>();
         private Set<OperationDefinition> operations = new HashSet<>();
+        private Set<SchemaDefinition> schemas = new HashSet<>();
+        private Set<ParameterDefinition> parameters = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         public String jsonString;
@@ -44,14 +49,30 @@ public class Parser {
             allDefinitions.addAll(responses);
             allDefinitions.addAll(operations);
             allDefinitions.addAll(mediaTypes);
+            allDefinitions.addAll(schemas);
+            allDefinitions.addAll(parameters);
         }
 
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
             if (model instanceof Reference) {
-                String ref = ((Reference) model).getRef();
+                String ref = ((Reference<?>) model).getRef();
                 if (ref != null) {
-                    String id = getRefName(ref); //possible improvement: to avoid problems with naming collisions, also take type into account when resolve (response, requestBody, ...)
-                    var defMatch = allDefinitions.stream().filter(def -> def.getIdentifier() == id).findAny();
+                    String id = getRefName(ref);
+                    List<OpenApiDefinition<? extends Constructible>> foundRefMatches = allDefinitions.stream().filter(def -> id.equals(def.getIdentifier())).collect(Collectors.toList());
+                    Optional<OpenApiDefinition<? extends Constructible>> defMatch;
+                    if (model instanceof Parameter) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof ParameterDefinition).findAny();
+                    } else if (model instanceof RequestBody) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof RequestBodyDefinition).findAny();
+                    } else if (model instanceof APIResponse) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof ResponseDefinition).findAny();
+                    } else if (model instanceof Schema) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof SchemaDefinition).findAny();
+                    } else if (model instanceof MediaType) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof MediaTypeDefinition).findAny();
+                    } else {
+                        defMatch = foundRefMatches.stream().findAny();
+                    }
                     if (defMatch.isPresent()) {
                         return (OpenApiDefinition<T>) defMatch.get();
                     } else {
@@ -73,6 +94,7 @@ public class Parser {
             if (!ref.contains("/")) return ref;
             return ref.substring(ref.lastIndexOf('/') + 1);
         }
+
     }
 
     public ParserResult parse(OpenApiViolationAggregator openApiViolationAggregator) {
@@ -94,7 +116,7 @@ public class Parser {
 
     private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
         var yamlReader = new ObjectMapper(new YAMLFactory());
-        var obj = yamlReader.readValue(oas.getSrc().stream().collect(Collectors.joining("\n")), Object.class);
+        var obj = yamlReader.readValue(String.join("\n", oas.getSrc()), Object.class);
         return new ObjectMapper().writeValueAsString(obj);
     }
 
@@ -104,12 +126,39 @@ public class Parser {
         }
         Map<String, PathItem> pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            pathitem.getOperations().forEach((method, operation) -> {
-                var operationDef = new OperationDefinition(operation, path, method, openApiFile);
-                result.operations.add(operationDef);
-                parseOperation(operationDef, result);
-            });
+            if (pathitem.getOperations() != null) {
+                pathitem.getOperations().forEach((method, operation) -> {
+                    var operationDef = new OperationDefinition(operation, path, method, openApiFile);
+                    result.operations.add(operationDef);
+                    parseOperation(operationDef, result);
+                });
+            }
+            if (pathitem.getParameters() != null) {
+                pathitem.getParameters().forEach(parameter -> {
+                    var paramDef = new ParameterDefinition(parameter, path, openApiFile, "/paths/" + path + "/parameters/" + parameter.getName());
+                    result.parameters.add(paramDef);
+                    parseParameter(paramDef, result);
+                });
+            }
         });
+    }
+
+    private void parseParameter(ParameterDefinition parameterDefinition, ParserResult result) {
+        Parameter param = parameterDefinition.getModel();
+        if (param != null && param.getRef() == null) {
+            if (param.getSchema() != null && param.getSchema().getRef() == null) {
+                var schemaDefinition = new SchemaDefinition(param.getSchema(), parameterDefinition, param.getSchema().getTitle());
+                result.schemas.add(schemaDefinition);
+            }
+            if (param.getContent() != null && param.getContent().getMediaTypes() != null) {
+                Map<String, MediaType> mediaTypes = param.getContent().getMediaTypes();
+                mediaTypes.forEach((mediaType, mediaTypeObject) -> {
+                    var mediaTypeDef = new MediaTypeDefinition(mediaTypeObject, parameterDefinition, mediaType);
+                    result.mediaTypes.add(mediaTypeDef);
+                    parseMediaType(mediaTypeDef, result);
+                });
+            }
+        }
     }
 
     private void parseOperation(OperationDefinition operationDef, ParserResult result) {
@@ -118,6 +167,17 @@ public class Parser {
             var requestBodyDefinition = new RequestBodyDefinition(requestBody, operationDef);
             result.requestBodies.add(requestBodyDefinition);
             parseRequestBody(requestBodyDefinition, result);
+        }
+
+        List<Parameter> parameters = operationDef.getModel().getParameters();
+        if (parameters != null) {
+            for (Parameter parameter : parameters) {
+                if (parameter.getRef() == null) {
+                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), "/parameters");
+                    result.parameters.add(parameterDefinition);
+                    parseParameter(parameterDefinition, result);
+                }
+            }
         }
 
         APIResponses apiResponses = operationDef.getModel().getResponses();
@@ -154,6 +214,16 @@ public class Parser {
                 parseRequestBody(requestBodyDef, result);
             });
         }
+
+        Map<String, Schema> schemas = components.getSchemas();
+        if (schemas != null) {
+            schemas.forEach((name, schema) -> {
+                var schemaDef = new SchemaDefinition(schema, name, openApiFile);
+                result.schemas.add(schemaDef);
+                parseSchema(schemaDef, result);
+            });
+        }
+
     }
 
     public void parseRequestBody(RequestBodyDefinition requestBodyDef, ParserResult result) {
@@ -161,7 +231,9 @@ public class Parser {
         if (content != null) {
             var mediaTypes = content.getMediaTypes();
             mediaTypes.forEach((mediaType, mediaTypeObject) -> {
-                result.mediaTypes.add(new MediaTypeDefinition(mediaTypeObject, requestBodyDef, mediaType));
+                var mediaTypeDef = new MediaTypeDefinition(mediaTypeObject, requestBodyDef, mediaType);
+                result.mediaTypes.add(mediaTypeDef);
+                parseMediaType(mediaTypeDef, result);
             });
         }
     }
@@ -171,8 +243,52 @@ public class Parser {
         if (content != null) {
             var mediaTypes = content.getMediaTypes();
             mediaTypes.forEach((mediaType, mediaTypeObject) -> {
-                result.mediaTypes.add(new MediaTypeDefinition(mediaTypeObject, responseDef, mediaType));
+                var mediaTypeDef = new MediaTypeDefinition(mediaTypeObject, responseDef, mediaType);
+                result.mediaTypes.add(mediaTypeDef);
+                parseMediaType(mediaTypeDef, result);
             });
+        }
+    }
+
+    public void parseMediaType(MediaTypeDefinition mediaTypeDefinition, ParserResult result) {
+        var schema = mediaTypeDefinition.getModel().getSchema();
+        if (schema != null) {
+            if (schema.getRef() == null) {
+                var schemaDef = new SchemaDefinition(schema, mediaTypeDefinition, schema.getTitle());
+                result.schemas.add(schemaDef);
+                parseSchema(schemaDef, result);
+            }
+        }
+    }
+
+    public void parseSchema(SchemaDefinition schemaDefinition, ParserResult result) {
+        var parentSchema = schemaDefinition.getModel();
+        constructNestedSchema(parentSchema.getAllOf(), "/allOf", schemaDefinition, result);
+        constructNestedSchema(parentSchema.getOneOf(), "/oneOf", schemaDefinition, result);
+        constructNestedSchema(parentSchema.getAnyOf(), "/anyOf", schemaDefinition, result);
+        constructNestedSchema(parentSchema.getAdditionalPropertiesSchema(), "/additionalProperties", schemaDefinition, result);
+        constructNestedSchema(parentSchema.getItems(), "/items", schemaDefinition, result);
+        if (parentSchema.getProperties() != null) {
+            parentSchema.getProperties().forEach((propertyName, propertyObject) ->
+                    constructNestedSchema(propertyObject, "/properties/" + propertyName, schemaDefinition, result));
+        }
+    }
+
+    private void constructNestedSchema(List<Schema> schemas, String namePrefix, SchemaDefinition parentSchema, ParserResult result) {
+        if (schemas != null) {
+            int index = 0;
+            while (index < schemas.size()) {
+                constructNestedSchema(schemas.get(index), namePrefix+"/"+index, parentSchema, result);
+                index ++;
+            }
+        }
+    }
+
+    private void constructNestedSchema(Schema schema, String namePrefix, SchemaDefinition parentSchema, ParserResult result) {
+        if (schema != null && schema.getRef() == null) {
+            var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), namePrefix);
+            result.schemas.add(schemaDef);
+            parseSchema(schemaDef, result);
         }
     }
 

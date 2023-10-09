@@ -175,7 +175,7 @@ class ApiFunctionsTest {
 
     @Test
     void getSchemasTest() throws IOException {
-        Set<SchemaDefinition> schemas = ApiFunctions.getSchemas(getSchemasOpenApi());
+        Set<SchemaDefinitionDeprecated> schemas = ApiFunctions.getSchemas(getSchemasOpenApi());
         assertEquals(29, schemas.size());
     }
 
