@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class PathCamelCaseTest extends AbstractOasRuleTest {
-    int errorCount = 3;
+    int errorCount = 4;
     private String ruleName = "[uri-notat]";
 }

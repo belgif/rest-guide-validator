@@ -98,17 +98,6 @@ public class ApiFunctions {
     }
 
     /**
-     * In the openAPI get all Path keys that NOT match the pattern.
-     *
-     * @param openAPI
-     * @param pattern
-     * @return a set path keys
-     */
-    public static Set<String> getPathNoMatch(OpenAPI openAPI, String pattern) {
-        return getPathKeys(openAPI).stream().filter(k -> !k.matches(pattern)).collect(Collectors.toSet());
-    }
-
-    /**
      * Return all path key for openAPI
      *
      * @param openAPI

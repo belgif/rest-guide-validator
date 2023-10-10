@@ -213,7 +213,7 @@ paths:
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:update
             - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate
       x-oauth2-required-scopes: any
-  /entity/contacts/{contactId}:
+  /entity/contacts/{contactId}:{contactName}:
     get:
       tags:
         - contacts
@@ -230,6 +230,11 @@ paths:
           required: true
           type: integer
           format: int64
+        - name: contactName
+          in: path
+          description: name of contact
+          required: true
+          type: string
       responses:
         200:
           description: successful operation
