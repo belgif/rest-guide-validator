@@ -19,6 +19,13 @@ public class MediaTypeDefinition extends OpenApiDefinition<MediaType> {
     }
 
     /**
+     * Constructor for an inline definition in responseHeader object
+     */
+    public MediaTypeDefinition(MediaType openApiObject, ResponseHeaderDefinition parent, String mediaType) {
+        super(openApiObject, parent, mediaType, "/content/" + mediaType);
+    }
+
+    /**
      * Constructor for an inline definition in parameter object
      */
     public MediaTypeDefinition(MediaType openApiObject, ParameterDefinition parent, String mediaType) {

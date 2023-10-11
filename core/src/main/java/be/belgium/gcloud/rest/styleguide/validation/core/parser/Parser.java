@@ -7,6 +7,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.eclipse.microprofile.openapi.models.headers.Header;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,7 @@ public class Parser {
         private Set<OperationDefinition> operations = new HashSet<>();
         private Set<SchemaDefinition> schemas = new HashSet<>();
         private Set<ParameterDefinition> parameters = new HashSet<>();
+        private Set<ResponseHeaderDefinition> headers = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         public String jsonString;
@@ -51,6 +53,7 @@ public class Parser {
             allDefinitions.addAll(mediaTypes);
             allDefinitions.addAll(schemas);
             allDefinitions.addAll(parameters);
+            allDefinitions.addAll(headers);
         }
 
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
@@ -173,7 +176,7 @@ public class Parser {
         if (parameters != null) {
             for (Parameter parameter : parameters) {
                 if (parameter.getRef() == null) {
-                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), "/parameters");
+                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), "/parameters/" + parameter.getName());
                     result.parameters.add(parameterDefinition);
                     parseParameter(parameterDefinition, result);
                 }
@@ -224,6 +227,15 @@ public class Parser {
             });
         }
 
+        Map<String, Header> headers = components.getHeaders();
+        if (headers != null) {
+            headers.forEach((name, header) -> {
+                var headerDef = new ResponseHeaderDefinition(header, name, openApiFile);
+                result.headers.add(headerDef);
+                parseHeaders(headerDef, result);
+            });
+        }
+
     }
 
     public void parseRequestBody(RequestBodyDefinition requestBodyDef, ParserResult result) {
@@ -247,6 +259,34 @@ public class Parser {
                 result.mediaTypes.add(mediaTypeDef);
                 parseMediaType(mediaTypeDef, result);
             });
+        }
+        var headers = responseDef.getModel().getHeaders();
+        if (headers != null) {
+            headers.forEach((name, header) -> {
+                if (header.getRef() == null) {
+                    var headerDef = new ResponseHeaderDefinition(header, responseDef, name);
+                    result.headers.add(headerDef);
+                    parseHeaders(headerDef, result);
+                }
+            });
+        }
+    }
+
+    public void parseHeaders(ResponseHeaderDefinition responseHeaderDefinition, ParserResult result) {
+        var schema = responseHeaderDefinition.getModel().getSchema();
+        if (schema != null && schema.getRef() == null) {
+            var schemaDef = new SchemaDefinition(schema, responseHeaderDefinition, schema.getTitle());
+            result.schemas.add(schemaDef);
+            parseSchema(schemaDef, result);
+        } else if (responseHeaderDefinition.getModel().getContent() != null) {
+            var mediaTypes = responseHeaderDefinition.getModel().getContent().getMediaTypes();
+            if (mediaTypes != null) {
+                mediaTypes.forEach((mediaType, mediaTypeObject) -> {
+                    var mediaTypeDef = new MediaTypeDefinition(mediaTypeObject, responseHeaderDefinition, mediaType);
+                    result.mediaTypes.add(mediaTypeDef);
+                    parseMediaType(mediaTypeDef, result);
+                });
+            }
         }
     }
 
@@ -278,8 +318,8 @@ public class Parser {
         if (schemas != null) {
             int index = 0;
             while (index < schemas.size()) {
-                constructNestedSchema(schemas.get(index), namePrefix+"/"+index, parentSchema, result);
-                index ++;
+                constructNestedSchema(schemas.get(index), namePrefix + "/" + index, parentSchema, result);
+                index++;
             }
         }
     }

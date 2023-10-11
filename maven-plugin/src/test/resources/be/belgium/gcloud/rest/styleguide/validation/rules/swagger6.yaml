@@ -464,7 +464,7 @@ paths:
           schema:
             pattern: "^[\\w-]+$"
             type: string
-        - name: accept
+        - name: Accept
           in: header
           required: false
           style: simple

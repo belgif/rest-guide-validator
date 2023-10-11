@@ -419,7 +419,7 @@
         "operationId": "deletePet",
         "parameters": [
           {
-            "name": "api_key",
+            "name": "Api-Key",
             "in": "header",
             "description": "",
             "required": false,

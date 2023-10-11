@@ -646,7 +646,26 @@ public class ApiFunctions {
     }
 
     public static boolean isLowerCamelCase(String string) {
-        return string.matches("^[a-z0-9]+([A-Z]?[a-z0-9]+)*$");
+//        return string.matches("^[a-z0-9]+([A-Z]?[a-z0-9]+)*$");
+        return isLowerCamelCase(string, null);
+    }
+
+    public static boolean isLowerCamelCase(String string, List<String> extraCharacters) {
+        String regexStart = "^[a-z0-9]+([A-Z";
+        String regexEnd = "]?[a-z0-9]+)*$";
+        StringBuilder sb = new StringBuilder();
+        sb.append(regexStart);
+        if (extraCharacters != null) {
+            for (String character : extraCharacters) {
+                sb.append("\\").append(character);
+            }
+        }
+        sb.append(regexEnd);
+        return string.matches(sb.toString());
+    }
+
+    public static boolean isUpperKebabCase(String string) {
+        return string.matches("^[A-Z0-9]([a-zA-Z0-9](-[A-Z0-9])?)*$");
     }
 
 }

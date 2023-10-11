@@ -5,6 +5,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import java.util.Set;
+import java.util.List;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.ParameterDefinition;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
@@ -37,6 +38,15 @@ rule "Path Parameter CamelCase"
     $parameterDefinition: ParameterDefinition(getModel().getIn().equals(In.PATH))
     ParameterDefinition($parameterName: /model/name) from $parameterDefinition
     eval( !ApiFunctions.isLowerCamelCase($parameterName) )
+  then
+    violationPathParam(oas, $parameterDefinition);
+end
+
+rule "Query Parameter lowerCamelCase with extra characters"
+  when
+    $parameterDefinition: ParameterDefinition(getModel().getIn().equals(In.QUERY))
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
+    eval( !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_")) )
   then
     violationPathParam(oas, $parameterDefinition);
 end

@@ -365,7 +365,7 @@ paths:
           schema:
             type: string
             pattern: ^[\w-]+$
-        - name: accept
+        - name: Accept
           in: header
           required: false
           schema:
