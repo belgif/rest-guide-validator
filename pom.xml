@@ -7,7 +7,7 @@
     <parent>
         <groupId>be.belgium.gcloud.master</groupId>
         <artifactId>master-pom</artifactId>
-        <version>4.4.6</version>
+        <version>4.4.10</version>
     </parent>
 
     <groupId>be.belgium.gcloud.rest</groupId>
