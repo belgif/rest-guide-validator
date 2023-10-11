@@ -24,7 +24,7 @@ function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String 
     oas.getLineNumber(property));
 }
 
-function void violationPresenceOfPayload(OpenApiViolationAggregator oas, String errorMessage, ResponseDefinition response, OperationDefinition operation){
+function void violationPresenceOfPayloadDefinition(OpenApiViolationAggregator oas, String errorMessage, ResponseDefinition response, OperationDefinition operation){
   oas.addViolation("[presenceOfPayload]",
     errorMessage +
     "[Operation: " + operation.getIdentifier() + "]", response);
@@ -62,7 +62,7 @@ rule "Status code 200 should have response payload"
     $responseDefinition : ResponseDefinition() from parserResult.resolve($response)
     not(ResponseDefinition(/model/content/mediaTypes[size != 0]) from $responseDefinition)
   then
-    violationPresenceOfPayload(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $responseDefinition, $operationDefinition);
+    violationPresenceOfPayloadDefinition(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $responseDefinition, $operationDefinition);
 end
 
 rule "Status code 204 should not have response payload"

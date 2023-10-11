@@ -10,13 +10,13 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 
-function void violationHeaderParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
+function void violationRequestHeaderParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
   oas.addViolation("[hdr-case]",
     "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ",
     parameterDefinition);
 }
 
-function void violationHeaderParam(OpenApiViolationAggregator oas, ResponseDefinition headerDefinition, String headerName){
+function void violationResponseHeaderParam(OpenApiViolationAggregator oas, ResponseDefinition headerDefinition, String headerName){
   oas.addViolation("[hdr-case]",
     "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ["+headerName+"]",
     headerDefinition);
@@ -28,7 +28,7 @@ rule "RequestHeader parameter should be Upper-Kebab-Case"
     ParameterDefinition($parameterName: /identifier) from $parameterDefinition
     eval( !ApiFunctions.isUpperKebabCase($parameterName) )
   then
-    violationHeaderParam(oas, $parameterDefinition);
+    violationRequestHeaderParam(oas, $parameterDefinition);
 end
 
 rule "ResponseHeader should be Upper-Kebab-Case"
@@ -36,5 +36,5 @@ rule "ResponseHeader should be Upper-Kebab-Case"
     $response: ResponseDefinition($headerName: /model/headers/keySet#String)
     eval( !ApiFunctions.isUpperKebabCase($headerName) )
   then
-    violationHeaderParam(oas, $response, $headerName);
+    violationResponseHeaderParam(oas, $response, $headerName);
 end
