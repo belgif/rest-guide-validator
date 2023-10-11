@@ -35,7 +35,7 @@ function void violationJsonObjectAsTopLevelStructure(OpenApiViolationAggregator 
 rule "JSON object as top level structure"
   when
     $mediaTypeDefinition: MediaTypeDefinition()
-    eval(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.identifier, includeContentTypes()))
+    eval(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includeContentTypes()))
     MediaTypeDefinition($schema: /model/schema) from $mediaTypeDefinition
     eval( ApiFunctions.isSchemaOfType($schema, SchemaType.OBJECT, parserResult) == false )
   then
