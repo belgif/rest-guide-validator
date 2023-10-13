@@ -7,7 +7,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
 function void violationOptions(OpenApiViolationAggregator oas, String operationId, String code){
-    oas.addViolation("optionsStatusCode"+code, "OPTIONS operation should not have a status code: "+code,
+    oas.addViolation("[stat-codes]", "OPTIONS operation should not have a status code: "+code,
                      oas.getLineNumber(oas.getLineNumber(operationId), code));
 }
 
