@@ -47,6 +47,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/Problem'
+        409:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Problem'
         303:
           description: Forbidden
           schema:
@@ -55,118 +59,15 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Problem'
-      security:
-        - contactData_auth:
-            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult
-            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult
-      x-oauth2-required-scopes: any
-
-
-  /health:
-    get:
-      tags:
-        - "Monitoring"
-      summary: "Check health of this REST API"
-      description: "This resource is only available to supervision users"
-      operationId: "healthCheck"
-      produces:
-        - "text/xml"
-      parameters:
-        - name: "type"
-          in: "query"
-          description: "Defines the which sanity checks must be ran"
-          required: false
-          type: "string"
-          default: "default"
-          enum:
-            - "ping"
-            - "default"
-            - "deep"
-      responses:
-        default:
-          description: "successful operation"
-      security:
-        - contactData_auth:
-            - scope:rsz-onss:gestion:company-data:ws-restcontactdata:monitoring
-  /health/status:
-    get:
-      tags:
-        - "Monitoring"
-      summary: "HealthCheck Status"
-      description: "This resource returns an http status indicating if the service is up or down"
-      operationId: "healthStatus"
-      produces:
-        - application/problem+json
-      responses:
-        204:
-          description: The service is up and running
-        409:
-          description: The service is up and running
         412:
-          description: The service is up and running
-        413:
-          description: The service is up and running
-        500:
-          description: The service is down
+          description: Unauthorized
           schema:
             $ref: '#/definitions/Problem'
-  /doc:
-    get:
-      tags:
-        - "Documentation"
-      summary: "List links"
-      description: ""
-      operationId: "getDoc"
-      produces:
-        - "application/json"
-      parameters: []
-      responses:
-        default:
-          description: "successful operation"
-  /doc/swagger.json:
-    get:
-      tags:
-        - "Documentation"
-      summary: "Returns the API documentation in JSON Swagger format"
-      operationId: "getJsonSwagger"
-      produces:
-        - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
+        413:
+          description: Unauthorized
           schema:
-            type: "string"
-  /doc/swagger.yaml:
-    get:
-      tags:
-        - "Documentation"
-      summary: "Returns the API documentation in YAML Swagger format"
-      operationId: "getSwagger"
-      produces:
-        - "application/yaml" # TODO yaml
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "string"
-security: []
-securityDefinitions:
-  contactData_auth:
-    type: oauth2
-    authorizationUrl: http://xxx/oauth/dialog
-    flow: implicit
-    scopes:
-      scope:rsz-onss:gestion:company-data:ws-restcontactdata:consult: consult contact
-      scope:rsz-onss:gestion:company-data:ws-restcontactdata:update: manage contacts
-      scope:rsz-onss:gestion:company-data:ws-restcontactdata:monitoring: monitoring
-      scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyconsult: self service company consult
-      scope:rsz-onss:gestion:company-data:ws-restcontactdata:cdcompanyupdate: self service company update
-  api_key:
-    type: apiKey
-    name: api_key
-    in: header
+            $ref: '#/definitions/Problem'
+
 definitions:
   EntityIdentifier:
     type: object

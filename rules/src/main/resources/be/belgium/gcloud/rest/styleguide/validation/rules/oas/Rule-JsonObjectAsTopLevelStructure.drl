@@ -32,7 +32,7 @@ function void violationJsonObjectAsTopLevelStructure(OpenApiViolationAggregator 
     mediaTypeDefinition);
 }
 
-rule "JSON object as top level structure"
+rule "[evo-object] JSON object as top level structure"
   when
     $mediaTypeDefinition: MediaTypeDefinition()
     eval(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includeContentTypes()))

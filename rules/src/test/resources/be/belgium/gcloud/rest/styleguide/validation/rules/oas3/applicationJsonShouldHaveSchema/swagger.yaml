@@ -1,45 +1,35 @@
-openapi: 3.0.1
+---
+swagger: "2.0"
 info:
-  title: PresenceOfPayloadFailingOpenApi
-  version: '1.0'
-servers:
-  - url: '/api/v1'
+  description: Service that manages the non-formal contact data (email, phone) of companies.
+  version: "${artifact.version}"
+  title: contactData
+  contact:
+    email: contactDataTeam@smals.be
+basePath: /REST/contactData/v1
+schemes:
+  - https
 paths:
-  /everythingIsGoodHere:
+  /userInfo:
     get:
-      summary: This path is completely compliant with the guidelines
-      description: Nice path
-      operationId: getEverythingIsGoodHere
+      tags:
+        - user
+      summary: Get connected user's info
+      description: Get the user's info of the connected user like the scopes
+      operationId: getUserInfo
+      produces:
+        - application/json
+        - application/problem+json
       responses:
-        '200':
-          description: Very good 200
-          content:
-            application/json:
-              schema:
-                type: object
-    post:
-      summary: post where everything is good
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
+        200:
+          description: successful operation
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal server error
         default:
-          content:
-            application/json:
-              schema:
-                type: object
-components:
-  requestBodies:
-    RequestBodyWithSchema:
-      content:
-        application/json:
-          schema:
-            type: object
-  responses:
-    ProblemResponseWithSchema:
-      content:
-        application/problem+json:
-          schema:
-            type: object
+          description: default response

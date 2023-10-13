@@ -1,17 +1,26 @@
 package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 import be.belgium.gcloud.rest.styleguide.validation.rules.AbstractOasRuleTest;
+import org.junit.jupiter.api.Test;
 
 public class DefaultProblemResponseTest extends AbstractOasRuleTest {
-    protected String ruleName = "[prb-defaul]";
-    protected ViolationType violationType = ViolationType.MANDATORY;
+    @Test
+    public void testValid() {
+        assertNoViolations(callRules("openapi.yaml"));
+    }
 
-    int errorCount = 4;
+    @Test
+    public void testValidSwagger() {
+        assertNoViolations(callRules("swagger.yaml"));
+    }
 
-    public DefaultProblemResponseTest() {
-        this.setRuleName(ruleName);
-        this.setErrorCount(errorCount);
-        this.setViolationType(violationType);
+    @Test
+    public void testInvalidOpenApi() {
+        assertErrorCount(8, callRules("openapi_bad.yaml"));
+    }
+
+    @Test
+    public void testInvalidSwagger() {
+        assertErrorCount(4, callRules("swagger_bad.yaml"));
     }
 }
