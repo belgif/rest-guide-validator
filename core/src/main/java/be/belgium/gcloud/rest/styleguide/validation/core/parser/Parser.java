@@ -119,9 +119,10 @@ public class Parser {
 
     private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
         var yamlReader = new ObjectMapper(new YAMLFactory());
-        var obj = yamlReader.readValue(String.join("\n", oas.getSrc()), Object.class);
+        var obj = yamlReader.readValue(oas.getSrc().get(oas.getOpenApiFile().getName()).stream().collect(Collectors.joining("\n")), Object.class);
         return new ObjectMapper().writeValueAsString(obj);
     }
+
 
     private void parsePaths(Paths paths, ParserResult result) {
         if (paths == null) {

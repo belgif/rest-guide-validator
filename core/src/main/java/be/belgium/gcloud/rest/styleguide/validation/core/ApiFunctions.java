@@ -3,6 +3,10 @@ package be.belgium.gcloud.rest.styleguide.validation.core;
 import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import io.swagger.parser.OpenAPIParser;
@@ -19,6 +23,7 @@ import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -54,6 +59,85 @@ public class ApiFunctions {
         return pretty.lines().collect(Collectors.toList());
     }
 
+    public static Set<File> getReferencedFiles(File file) throws IOException {
+        Set<File> refFiles = new HashSet<>();
+        resolveReferences(file, refFiles);
+        return refFiles;
+    }
+
+    private static void resolveReferences(File file, Set<File> files) throws IOException {
+        Path basePath = java.nio.file.Paths.get(file.getAbsolutePath().split(file.getName())[0]);
+        Set<String> refs = getExternalReferencesFromFile(file);
+        for (String ref : refs) {
+            File refFile = resolveFileFromRef(ref, basePath);
+            if (files.add(refFile)) {
+                resolveReferences(refFile, files);
+            }
+        }
+    }
+
+    private static File resolveFileFromRef(String ref, Path basePath) {
+        File refFile = new File(String.valueOf(basePath.resolve(ref).normalize()));
+        if (refFile.exists() && refFile.isFile()) {
+            return refFile;
+        } else {
+            throw new RuntimeException("File not found: " + refFile.getAbsolutePath());
+        }
+    }
+
+    private static Set<String> getExternalReferencesFromFile(File file) throws IOException {
+        Set<String> references = new HashSet<>();
+        ObjectMapper mapper;
+
+        if (file.getName().endsWith("yaml") || file.getName().endsWith("yml")) {
+            mapper = new ObjectMapper(new YAMLFactory());
+        } else {
+            mapper = new ObjectMapper();
+        }
+
+        JsonNode jsonNode = mapper.readTree(file);
+        findRefFields(jsonNode, references);
+        return references;
+    }
+
+    private static boolean isExternalReference(String ref) {
+        return !ref.startsWith("#");
+    }
+
+    private static void findRefFields(JsonNode node, Set<String> refs) {
+        if (node.isObject()) {
+            var fields = node.fields();
+            fields.forEachRemaining(field -> {
+                if (field.getKey().equals("$ref")) {
+                    String ref = field.getValue().textValue();
+                    if (isExternalReference(ref)) {
+                        refs.add(ref.split("#")[0]);
+                    }
+                } else {
+                    findRefFields(field.getValue(), refs);
+                }
+            });
+        }
+        if (node.isArray()) {
+            var arrayField = (ArrayNode) node;
+            arrayField.forEach(field -> {
+                findRefFields(field, refs);
+            });
+        }
+    }
+
+
+    public static Map<String, List<String>> getAllLines(File file) throws IOException {
+        Map<String, List<String>> allLines = new HashMap<>();
+        allLines.put(file.getName(), getLines(file));
+        Set<File> refFiles = getReferencedFiles(file);
+        for (File refFile : refFiles) {
+            allLines.put(refFile.getName(), getLines(refFile));
+        }
+
+        return allLines;
+    }
+
     /**
      * Build the java object structure from the file.
      *
@@ -65,7 +149,7 @@ public class ApiFunctions {
      */
     public static OpenAPI buildOpenApiSpecification(File file, OpenApiViolationAggregator oas) throws IOException {
         oas.setOpenApiFile(file);
-        oas.setSrc(getLines(file));
+        oas.setSrc(getAllLines(file));
 
         var openApiParser = new OpenAPIParser();
         var parseOptions = new ParseOptions();
@@ -179,7 +263,7 @@ public class ApiFunctions {
 
         if (pathKeys.isEmpty()) return Collections.emptyList();
 
-        pathKeys.forEach(p -> paths.add(new LineRangePath(p, oas.getLineNumber(p))));
+        pathKeys.forEach(p -> paths.add(new LineRangePath(p, oas.getLineNumber(p).getLineNumber())));
         Collections.sort(paths);
         for (int i = 0; i < pathKeys.size() - 1; i++) {
             paths.get(i).setEnd(paths.get(i + 1).getStart() - 1);
@@ -187,7 +271,7 @@ public class ApiFunctions {
 
         var last = paths.get(paths.size() - 1);
 
-        last.setEnd(oas.src.size() - 1);
+        last.setEnd(oas.src.get(oas.getLineNumber(last.getPath()).getFileName()).size() - 1);
 
         return paths;
     }

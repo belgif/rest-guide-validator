@@ -1,6 +1,7 @@
 package be.belgium.gcloud.rest.styleguide.validation.maven.plugin;
 
 import be.belgium.gcloud.rest.styleguide.validation.JUnitOutputProcessor;
+import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Error;
 import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Failure;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -72,7 +74,7 @@ class JUnitOutputWriterTest {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         openApiViolationAggregator.setTime(0.55f);
         openApiViolationAggregator.setRuleNumber(5);
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", 155);
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155));
 
         return openApiViolationAggregator;
     }

@@ -33,7 +33,14 @@ public class RuleRunner {
         kSession.execute(CommandFactory.newBatchExecution(commands));
         oas.setTime((System.currentTimeMillis() - start) / 1000f);
 
-        var excluded = oas.getViolations().stream().filter(violation -> ApiFunctions.isInPathList(parserResult.getPaths(), excludedPaths, violation.getLineNumber())).collect(Collectors.toSet());
+        var excluded = oas.getViolations().stream().filter(violation -> {
+            if (violation.getLineNumber().getFileName().equals(oas.getOpenApiFile().getName())) {
+                return ApiFunctions.isInPathList(parserResult.getPaths(), excludedPaths, violation.getLineNumber().getLineNumber());
+            } else {
+                return false;
+            }
+        }).collect(Collectors.toSet());
+
         oas.getViolations().removeAll(excluded);
 
         return oas;

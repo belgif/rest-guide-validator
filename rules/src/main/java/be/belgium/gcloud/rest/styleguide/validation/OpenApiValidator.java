@@ -1,29 +1,14 @@
 package be.belgium.gcloud.rest.styleguide.validation;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
-import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
-import org.drools.core.base.RuleNameStartsWithAgendaFilter;
-import org.drools.model.Rule;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieRepository;
-import org.kie.api.builder.Message;
-import org.kie.api.command.Command;
-import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.StatelessKieSession;
-import org.kie.api.runtime.rule.AgendaFilter;
-import org.kie.internal.command.CommandFactory;
-import org.kie.internal.io.ResourceFactory;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +29,7 @@ public class OpenApiValidator {
      * @return
      */
     public static boolean isOasValid(@NotNull File file, List<String> excludedPaths, @Nullable OutputProcessor... outputProcessors) {
-        var oas = callRuleOAS(file,excludedPaths);
+        var oas = callRuleOAS(file, excludedPaths);
 
         if (outputProcessors != null) for (OutputProcessor outputProcessor : outputProcessors) {
             outputProcessor.process(oas);

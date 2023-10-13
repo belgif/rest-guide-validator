@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 
 import java.io.File;
+import java.util.Map;
 
 public class OperationDefinition extends OpenApiDefinition<Operation> {
 
@@ -30,7 +32,7 @@ public class OperationDefinition extends OpenApiDefinition<Operation> {
     }
 
     @Override
-    public int getLineNumber(OpenApiViolationAggregator aggregator) {
+    public Line getLineNumber(OpenApiViolationAggregator aggregator) {
         return aggregator.getLineNumber(getModel().getOperationId());
     }
 }

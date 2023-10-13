@@ -3,7 +3,8 @@ package be.belgium.gcloud.rest.styleguide.validation.maven.junit;
 import jakarta.xml.bind.annotation.*;
 import lombok.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,11 +38,11 @@ public class Testcase {
     Error error;
 
     @XmlTransient
-    private Map<Integer, String> sysout = new HashMap<>();
+    private Map<String, String> sysout = new HashMap<>();
 
 
     @XmlElement(name = "system-out")
-    public String getSystemOut(){
+    public String getSystemOut() {
         if (sysout == null)
             return "";
         return sysout.keySet().stream().sorted()
@@ -50,10 +51,10 @@ public class Testcase {
 
     }
 
-    public void appendSysOut(int line, String msg){
-        if(sysout == null)
+    public void appendSysOut(String fileName, int line, String msg) {
+        if (sysout == null)
             sysout = new HashMap<>();
-        sysout.put(line, msg!=null?msg:" -- no additional info --");
+        sysout.put(fileName + ":" + line, msg != null ? msg : " -- no additional info --");
 
     }
 

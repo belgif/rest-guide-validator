@@ -8,10 +8,7 @@ import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +37,7 @@ class ApiFunctionsTest {
         var file = new File(getClass().getResource("../rules/ugly.json").getFile());
         var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
         assertNotNull(openApi);
-        assertTrue(oas.src.size() > 1);
+        assertTrue(oas.src.get("ugly.json").size() > 1);
     }
 
     @Test
@@ -212,4 +209,31 @@ class ApiFunctionsTest {
         assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON)));
 
     }
+
+    @Test
+    void getReferencedFilesTest() throws IOException {
+        var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
+        Set<File> files = ApiFunctions.getReferencedFiles(file);
+        Set<String> noDuplicates = new HashSet<>();
+        for (File fileFound : files) {
+            String abPath = fileFound.getAbsolutePath();
+            noDuplicates.add(abPath);
+        }
+        assertEquals(noDuplicates.size(), files.size());
+        assertEquals(5, files.size());
+    }
+
+    @Test
+    void getReferencedFilesTestJson() throws IOException {
+        var file = new File(getClass().getResource("../rules/ugly.json").getFile());
+        Set<File> files = ApiFunctions.getReferencedFiles(file);
+        Set<String> noDuplicates = new HashSet<>();
+        for (File fileFound : files) {
+            String abPath = fileFound.getAbsolutePath();
+            noDuplicates.add(abPath);
+        }
+        assertEquals(noDuplicates.size(), files.size());
+        assertEquals(0, files.size());
+    }
+
 }

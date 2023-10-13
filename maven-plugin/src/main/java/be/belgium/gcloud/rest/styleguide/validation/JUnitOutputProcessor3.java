@@ -85,7 +85,7 @@ public class JUnitOutputProcessor3 implements OutputProcessor, DirectoryOutputPr
             testsuite.addTestcase(testcase);
 
             violationList.forEach(v->{
-                testcase.appendSysOut(v.getLineNumber(), getMessageDetail(v));
+                testcase.appendSysOut(v.getLineNumber().getFileName(), v.getLineNumber().getLineNumber(), getMessageDetail(v));
             });
 
             write(testsuite);

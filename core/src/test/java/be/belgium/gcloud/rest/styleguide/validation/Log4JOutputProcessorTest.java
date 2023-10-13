@@ -1,10 +1,12 @@
 package be.belgium.gcloud.rest.styleguide.validation;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -25,7 +27,7 @@ class Log4JOutputProcessorTest {
         openApiViolationAggregator.setOpenApiFile(File.createTempFile("test", ""));
         openApiViolationAggregator.setTime(0.55f);
         openApiViolationAggregator.setRuleNumber(5);
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", 155);
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155));
 
         return openApiViolationAggregator;
     }

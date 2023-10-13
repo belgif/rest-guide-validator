@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  title: Employer schemas
+  version: "1.0"
+paths: { }
+components:
+  schemas:
+    EmployerClasses:
+      description: A collection of employerClasses
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployerClassLink"
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+        problem:
+#          tests loopback / infinite loop protection
+          $ref: '../../logo.yaml#/components/schemas/Logo'
+    EmployerClassLink:
+      allOf:
+        - $ref: "#/components/schemas/EmployerClass"
+        - type: object
+          properties:
+            href:
+              type: string
+              format: uri
+    EmployerClass:
+      description: The employer class as defined here
+      type: object
+      properties:
+        value:
+          type: string
+        description:
+          type: string
+        self:
+          type: string
+          format: uri
+      required:
+        - value

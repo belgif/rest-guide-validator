@@ -5,26 +5,32 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Getter
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
-public class Violation implements Comparable<Violation>{
+public class Violation implements Comparable<Violation> {
     String ruleName;
     String message;
     public ViolationType type;
-    int lineNumber;
+    Line lineNumber;
 
     @Override
     public String toString() {
-        return  (lineNumber > 0 ? String.format("line %6d:", lineNumber) : "")+
+        return (lineNumber.getLineNumber() > 0 ? String.format("file: %13s: ln%4d:", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
                 String.format("  %-14S ", ("[" + type + "]")) +
                 String.format("%-17s ", ruleName) +
-                message ;
+                message;
     }
 
     @Override
     public int compareTo(Violation o) {
-        return Integer.compare(lineNumber, o.lineNumber);
+        if (lineNumber.getFileName().equals(o.lineNumber.getFileName())) {
+            return Integer.compare(lineNumber.getLineNumber(), o.lineNumber.getLineNumber());
+        } else {
+            return 0;
+        }
     }
 }

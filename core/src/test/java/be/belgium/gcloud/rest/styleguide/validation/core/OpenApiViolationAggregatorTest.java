@@ -21,7 +21,7 @@ class OpenApiViolationAggregatorTest {
     @Test
     void getLineNumber() throws IOException {
         var line = getOAS().getLineNumber("swagger:");
-        assertTrue(line > 0);
+        assertTrue(line.getLineNumber() > 0);
     }
 
     @Test
@@ -29,8 +29,8 @@ class OpenApiViolationAggregatorTest {
         var openApiViolationAggregator = getOAS();
         var pathLine = openApiViolationAggregator.getLineNumber("/userInfo/");
         var getLine = openApiViolationAggregator.getLineNumber(pathLine, "get");
-        assertTrue(pathLine > 0);
-        assertTrue(getLine > pathLine);
+        assertTrue(pathLine.getLineNumber() > 0);
+        assertTrue(getLine.getLineNumber() > pathLine.getLineNumber());
     }
 
 }

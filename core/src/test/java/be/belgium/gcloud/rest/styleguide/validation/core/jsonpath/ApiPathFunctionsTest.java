@@ -31,9 +31,10 @@ class ApiPathFunctionsTest {
         ApiFunctions.buildOpenApiSpecification(file, oas);
         jsonString = getJsonString(oas);
     }
+
     private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
         var yamlReader = new ObjectMapper(new YAMLFactory());
-        var obj = yamlReader.readValue(oas.getSrc().stream().collect(Collectors.joining("\n")), Object.class);
+        var obj = yamlReader.readValue(oas.getSrc().get(oas.getOpenApiFile().getName()).stream().collect(Collectors.joining("\n")), Object.class);
 
         var jsonWriter = new ObjectMapper();
         return jsonWriter.writeValueAsString(obj);
