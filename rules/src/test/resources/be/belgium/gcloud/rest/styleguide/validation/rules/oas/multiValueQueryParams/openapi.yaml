@@ -32,6 +32,13 @@ paths:
               enum:
                 - employees
                 - mainAddress
+        - name: refParam
+          in: query
+          explode: true
+          schema:
+            $ref: '#/components/schemas/myFirstArray'
+        - name: topLevelParam
+          $ref: '#/components/parameters/topLevelParam'
       responses:
         '200':
           description: Very good 200
@@ -39,3 +46,18 @@ paths:
             application/json:
               schema:
                 type: object
+components:
+  schemas:
+    myFirstArray:
+      type: array
+      items:
+        type: string
+        enum:
+          - firstOption
+          - secondOption
+  parameters:
+    topLevelParam:
+      in: query
+      explode: true
+      schema:
+        $ref: '#/components/schemas/myFirstArray'

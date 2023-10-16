@@ -20,7 +20,7 @@ function void violationConsume(OpenApiViolationAggregator oas, String operation,
      "OpenAPI 2.0 specifications SHOULD specify following default media types for consumes: 'application/json'. \t"+ operationId + " ("+operation+")",
       oas.getLineNumber(operationId));
 }
-
+//TODO: Should be refactored
 // produces
 rule "Rule-defaultMediaType-getDontHaveProduces"
     when

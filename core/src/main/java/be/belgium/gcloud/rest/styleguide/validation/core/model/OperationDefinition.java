@@ -7,23 +7,15 @@ import lombok.Setter;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 
-import java.io.File;
-import java.util.Map;
-
 public class OperationDefinition extends OpenApiDefinition<Operation> {
 
     @Getter
     @Setter
     private PathItem.HttpMethod method;
 
-    @Getter
-    @Setter
-    private String path;
-
-    public OperationDefinition(Operation openApiObject, String path, PathItem.HttpMethod method, File openApiFile) {
-        super(openApiObject, method.toString() + " " + path, openApiFile, "/paths/" + path + "/" + method.toString().toLowerCase());
+    public OperationDefinition(Operation model, OpenApiDefinition<?> parent, String identifier, String relativeJsonPointer, PathItem.HttpMethod method) {
+        super(model, parent, identifier, relativeJsonPointer);
         this.method = method;
-        this.path = path;
     }
 
     @Override
@@ -33,6 +25,7 @@ public class OperationDefinition extends OpenApiDefinition<Operation> {
 
     @Override
     public Line getLineNumber(OpenApiViolationAggregator aggregator) {
-        return aggregator.getLineNumber(getModel().getOperationId());
+        Line lineNumber = this.getParent().getLineNumber(aggregator);
+        return aggregator.getLineNumber(lineNumber, getModel().getOperationId());
     }
 }

@@ -27,8 +27,18 @@ paths:
           enum:
             - employees
             - mainAddress
+        - $ref: '#/parameters/topLevelParam'
       produces:
         - application/json
       responses:
         200:
           description: successful operation
+parameters:
+  topLevelParam:
+    name: topLevelParam
+    in: query
+    collectionFormat: multi
+    type: array
+    enum:
+      - firstOption
+      - secondOption

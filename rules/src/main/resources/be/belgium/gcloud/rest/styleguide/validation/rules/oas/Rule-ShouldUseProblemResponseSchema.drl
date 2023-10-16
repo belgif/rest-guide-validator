@@ -29,7 +29,7 @@ function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator o
     "[Operation: " + property + "]",
     oas.getLineNumber(property), ViolationType.RECOMMENDED);
 }
-
+//TODO: Should be refactored
 rule "Should use ProblemResponse schema for default responses"
   when
     $api: OpenAPI()

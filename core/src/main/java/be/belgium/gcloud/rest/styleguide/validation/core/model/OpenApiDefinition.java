@@ -92,13 +92,16 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
     private Line getTopLevelLineNumber(OpenApiViolationAggregator aggregator) {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            List<String> pointers = Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).collect(Collectors.toList());
+            List<String> pointers = Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(OpenApiDefinition::replaceEscapedSlashesOnPaths).collect(Collectors.toList());
             if (pointers.isEmpty()) {
                 log.warn("Invalid location for definition: " + jsonPointer);
                 return new Line(openApiFile.getName(), 0);
             }
             if (getSrcVersion(aggregator) == 2 && "components".equals(pointers.get(0))) {
-                pointers.set(0, "definitions");
+                pointers.remove(0);
+                if ("schemas".equals(pointers.get(0))) {
+                    pointers.set(0, "definitions");
+                }
             }
             for (String fileName : aggregator.getSrc().keySet()) {
                 Line line = searchObjectInFile(fileName, aggregator, pointers);
@@ -111,6 +114,14 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         } else {
             return getTopLevelParent().getTopLevelLineNumber(aggregator);
         }
+    }
+
+    private static String replaceEscapedSlashesOnPaths(String jsonPointer) {
+        // ~1 is used to represent / character in jsonPointer
+        if (jsonPointer.contains("~1")) {
+            return jsonPointer.replaceAll("~1", "/");
+        }
+        return jsonPointer;
     }
 
     private Line searchObjectInFile(String fileName, OpenApiViolationAggregator aggregator, List<String> pointers) {

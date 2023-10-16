@@ -1,5 +1,8 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.PathItem;
@@ -234,6 +237,33 @@ class ApiFunctionsTest {
         }
         assertEquals(noDuplicates.size(), files.size());
         assertEquals(0, files.size());
+    }
+
+    @Test
+    void isCollectionTestWithArrayResponse() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(this.getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<PathDefinition> defs = result.getPathDefinitions();
+
+        var refData = defs.stream().filter(definition -> "/refData/employerClasses".equals(definition.getIdentifier())).findAny();
+        assertTrue(refData.isPresent());
+        assertTrue(ApiFunctions.isCollection(refData.get(), result));
+    }
+
+    @Test
+    void isCollectionTestWithOtherPathParam() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<PathDefinition> defs = result.getPathDefinitions();
+
+
+        var logos = defs.stream().filter(definition -> "/logos".equals(definition.getIdentifier())).findAny();
+        assertTrue(logos.isPresent());
+        assertTrue(ApiFunctions.isCollection(logos.get(), result));
     }
 
 }

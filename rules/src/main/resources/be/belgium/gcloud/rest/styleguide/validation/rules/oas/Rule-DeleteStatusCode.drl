@@ -4,39 +4,44 @@ import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-function void violationDelete(OpenApiViolationAggregator oas, String operationId, String code){
+function void violationDelete(OpenApiViolationAggregator oas, OperationDefinition operation, String code){
     oas.addViolation("[stat-codes]", "DELETE operation should not have a status code: "+code,
-                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+                     operation);
 }
 
-//v2
 rule "Delete Status Code 201 v2"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "201")
+		$operation: OperationDefinition( method == HttpMethod.DELETE )
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "201"]) from $operation
 	then
-        violationDelete(oas, $operationId, "201");
+        violationDelete(oas, $operation, "201");
 end
 rule "Delete Status Code 202 v2"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "202")
+		$operation: OperationDefinition( method == HttpMethod.DELETE )
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "202"]) from $operation
 	then
-        violationDelete(oas, $operationId, "202");
+        violationDelete(oas, $operation, "202");
 end
 rule "Delete Status Code 304 v2"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "304")
+		$operation: OperationDefinition( method == HttpMethod.DELETE )
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "304"]) from $operation
 	then
-        violationDelete(oas, $operationId, "304");
+        violationDelete(oas, $operation, "304");
 end
 rule "Delete Status Code 413 v2"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.DELETE, "413")
+		$operation: OperationDefinition( method == HttpMethod.DELETE )
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "413"]) from $operation
 	then
-        violationDelete(oas, $operationId, "413");
+        violationDelete(oas, $operation, "413");
 end

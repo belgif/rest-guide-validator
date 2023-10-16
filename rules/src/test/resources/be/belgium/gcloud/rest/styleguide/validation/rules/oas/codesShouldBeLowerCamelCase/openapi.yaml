@@ -35,6 +35,11 @@ paths:
               - fr
               - creditCard
       responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BelgianRegionCode'
         default:
           description: a problem
           content:
@@ -53,3 +58,10 @@ components:
             - wireTransfer
             - creditCard
             - debitCard
+    BelgianRegionCode:
+      type: string
+      description: Belgian Region represented by an ISO 3166-2:BE code
+      enum:
+        - BE-BRU
+        - BE-WAL
+        - BE-VLG

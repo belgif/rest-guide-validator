@@ -2,7 +2,10 @@ package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
-import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ParameterDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
@@ -10,20 +13,19 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-
-function void violationMultiValueQueryParams(OpenApiViolationAggregator oas, String property){
+function void violationMultiValueQueryParams(OpenApiViolationAggregator oas, ParameterDefinition parameter){
   oas.addViolation("[qry-multi]",
     "When a single query parameter can have multiple values, the parameter SHOULD be repeated for each value. (explode: true for OpenAPI 3.0 or collectionFormat:multi  for OpenAPI 2.0)\t" +
-    "[Parameter: " + property + "]",
-    oas.getLineNumber(property));
+    "[Parameter: " + parameter.getIdentifier() + "]",
+    parameter);
 }
 
 rule "Multi Value Query Params"
   when
-    $api: OpenAPI()
-    $parameter: Parameter( this.getIn() == In.QUERY ) from ApiFunctions.getParameters($api)
-    $schema: Schema(type == SchemaType.ARRAY) from $parameter.getSchema()
-    Parameter(style != Style.FORM || explode == false) from $parameter
+    $parameterDefinition : ParameterDefinition( model.getIn() == In.QUERY )
+    ParameterDefinition($schema: /model/schema) from $parameterDefinition
+    SchemaDefinition(model.getType() == SchemaType.ARRAY) from parserResult.resolve($schema)
+    Parameter(style != Style.FORM || explode == false) from $parameterDefinition.getModel()
   then
-    violationMultiValueQueryParams(oas, $parameter.getName());
+    violationMultiValueQueryParams(oas, $parameterDefinition);
 end

@@ -14,7 +14,7 @@ function void representationOfCollectionViolation(OpenApiViolationAggregator oas
            		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t"+ path,
            		 oas.getLineNumber(path));
 }
-
+//TODO: Should be refactored
 rule "Rule-Representation Of Collection"
     when
        $api: OpenAPI()

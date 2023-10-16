@@ -21,7 +21,7 @@ function void violationServerSecuredUrl(OpenApiViolationAggregator oas, String u
                      "The server url (or the basePath) should be at least secured on transport level using a one-way TLS connection.",
                      oas.getLineNumber(url));
 }
-
+//TODO: Should be refactored
 rule "Server Url or basePath Format"
     when
 		$api: OpenAPI()

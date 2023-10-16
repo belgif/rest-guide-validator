@@ -43,9 +43,25 @@ public class OpenApiViolationAggregator {
         this.addViolation(ruleName, message, lineNumber, ViolationType.MANDATORY);
     }
 
-    public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition) {
+    public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition, ViolationType violationType) {
         Line lineNumber = openApiDefinition.getLineNumber(this);
-        this.addViolation(ruleName, message + "\t" + openApiDefinition.getJsonPointer(), lineNumber, ViolationType.MANDATORY);
+        this.addViolation(ruleName, message + "\t" + resolveJsonPointer(openApiDefinition.getJsonPointer()), lineNumber, violationType);
+    }
+
+    public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition) {
+        this.addViolation(ruleName, message, openApiDefinition, ViolationType.MANDATORY);
+    }
+
+    private static String resolveJsonPointer(String jsonPointer) {
+        // ~1 is used to represent / character in jsonPointer
+        String modifiedString = jsonPointer;
+        if (jsonPointer.contains("~1")) {
+            modifiedString = jsonPointer.replaceAll("~1", "/");
+        }
+        if (modifiedString.contains("//")) {
+            modifiedString = modifiedString.replaceAll("//", "/");
+        }
+        return modifiedString;
     }
 
     public void addViolation(String ruleName, String message) {

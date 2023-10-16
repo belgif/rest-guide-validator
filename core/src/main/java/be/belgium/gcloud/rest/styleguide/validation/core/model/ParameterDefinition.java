@@ -1,6 +1,5 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
-import org.eclipse.microprofile.openapi.models.Constructible;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 
 import java.io.File;

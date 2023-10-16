@@ -2,34 +2,39 @@ package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-function void violationPatch(OpenApiViolationAggregator oas, String operationId, String code){
+function void violationPatch(OpenApiViolationAggregator oas, OperationDefinition operation, String code){
     oas.addViolation("[stat-codes]", "PATCH operation should not have a status code: "+code,
-                     oas.getLineNumber(oas.getLineNumber(operationId), code));
+                     operation);
 }
 
-//v3
 rule "Patch Status Code 201 v3"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.PATCH, "201")
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "201"]) from $operation
 	then
-        violationPatch(oas, $operationId, "201");
+        violationPatch(oas, $operation, "201");
 end
 rule "Patch Status Code 202 v3"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.PATCH, "202")
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "202"]) from $operation
 	then
-        violationPatch(oas, $operationId, "202");
+        violationPatch(oas, $operation, "202");
 end
 rule "Patch Status Code 304 v3"
 	when
-		$api: OpenAPI()
-		$operationId: String() from ApiFunctions.getOperationId($api, HttpMethod.PATCH, "304")
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "304"]) from $operation
 	then
-        violationPatch(oas, $operationId, "304");
+        violationPatch(oas, $operation, "304");
 end

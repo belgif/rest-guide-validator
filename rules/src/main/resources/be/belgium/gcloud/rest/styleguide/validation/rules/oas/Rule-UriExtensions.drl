@@ -15,7 +15,7 @@ function void violationUriExt(OpenApiViolationAggregator oas, String path){
                          "The URI SHOULD NOT contain a file extension (A notable exception to this rule is the swagger/OpenAPI file). \t"+ path,
                          oas.getLineNumber(path));
 }
-
+//TODO: Should be refactored
 rule "Uri Extensions V3"
    	when
         $api: OpenAPI()

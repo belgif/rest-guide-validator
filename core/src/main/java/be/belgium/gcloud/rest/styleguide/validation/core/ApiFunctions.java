@@ -1,6 +1,8 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -311,6 +313,7 @@ public class ApiFunctions {
     }
 
     public static Map<String, PathItem> getCollectionPathItems(OpenAPI openAPI) {
+        //TODO Going to be deprecated
         if (openAPI.getPaths() == null || openAPI.getPaths().getPathItems().isEmpty()) {
             return new HashMap<>();
         }
@@ -339,6 +342,21 @@ public class ApiFunctions {
         return null;
     }
 
+    public static boolean hasPathWithPathParam(String pathString, Parser.ParserResult result) {
+        Set<String> paths = result.getPathDefinitions().stream().filter(path -> path.getIdentifier().startsWith(pathString)).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
+        if (paths.isEmpty()) {
+            return false;
+        } else {
+            for (String path : paths) {
+                String strippedString = path.substring(pathString.length());
+                if (strippedString.startsWith("/{")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean endsWithPathParameter(String path) {
         return path != null && path.endsWith("}");
     }
@@ -358,6 +376,28 @@ public class ApiFunctions {
         } catch (NullPointerException ex) {
             return false;
         }
+    }
+
+    public static boolean isCollection(PathDefinition path, Parser.ParserResult result) {
+        AtomicBoolean isCollection = new AtomicBoolean(false);
+        if (path.getModel().getGET() != null) {
+            isCollection.set(hasPathWithPathParam(path.getIdentifier(), result));
+        }
+        if (!isCollection.get()) {
+            try {
+                var responses = path.getModel().getGET().getResponses().getAPIResponses().values().stream().flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
+                responses.forEach(inlineSchema -> {
+                    SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
+                    Schema schema = schemaDefinition.getModel();
+                    if (schema.getProperties() != null && schema.getProperties().containsKey("items") && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
+                        isCollection.set(true);
+                    }
+                });
+            } catch (NullPointerException ex) {
+                return false;
+            }
+        }
+        return isCollection.get();
     }
 
     private static boolean isCollection(OpenAPI openAPI, String ref) {
@@ -750,6 +790,13 @@ public class ApiFunctions {
 
     public static boolean isUpperKebabCase(String string) {
         return string.matches("^[A-Z0-9]([a-zA-Z0-9](-[A-Z0-9])?)*$");
+    }
+
+    public static boolean isIncluded(String string, Set<String> set) {
+        if (string == null || set == null) {
+            return true;
+        }
+        return !set.contains(string);
     }
 
 }

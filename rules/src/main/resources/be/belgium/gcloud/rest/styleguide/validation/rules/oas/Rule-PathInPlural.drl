@@ -4,20 +4,23 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
+import org.eclipse.microprofile.openapi.models.PathItem;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
-function void pluralViolation(OpenApiViolationAggregator oas, String path){
+function void pluralViolation(OpenApiViolationAggregator oas, PathDefinition path){
     oas.addViolation("[col-name]",
-           		 "A plural noun SHOULD be used for collection names. \t"+ path,
-           		 oas.getLineNumber(path),
+           		 "A plural noun SHOULD be used for collection names. ",
+           		 path,
            		 ViolationType.RECOMMENDED);
 }
 
 rule "Rule-PathInPlural without ID"
     when
-       $api: OpenAPI()
-       $path: String() from ApiFunctions.getReturnCollectionPathKey($api)
+        $path: PathDefinition($pathName: getIdentifier())
+        eval( ApiFunctions.isCollection($path, parserResult) )
+        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") ) from $pathName
     then
-      if( !  $path.endsWith("}") && ! $path.endsWith("s") && ! $path.endsWith("data") && ! $path.endsWith("Data"))
         pluralViolation(oas, $path);
 end

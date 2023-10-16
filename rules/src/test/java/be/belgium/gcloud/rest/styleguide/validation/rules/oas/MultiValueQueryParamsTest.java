@@ -11,7 +11,7 @@ public class MultiValueQueryParamsTest extends AbstractOasRuleTest {
 
     @Test
     public void testInvalidSwagger() {
-        assertErrorCount(2, callRules("swagger_bad.yaml"));
+        assertErrorCount(3, callRules("swagger_bad.yaml"));
     }
 
     @Test
@@ -21,7 +21,7 @@ public class MultiValueQueryParamsTest extends AbstractOasRuleTest {
 
     @Test
     public void testInvalidOpenApi() {
-        assertErrorCount(2, callRules("openapi_bad.yaml"));
+        assertErrorCount(4, callRules("openapi_bad.yaml"));
     }
 
 }

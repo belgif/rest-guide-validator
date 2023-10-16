@@ -33,6 +33,7 @@ public class Parser {
     @Getter
     @Setter
     public static class ParserResult {
+        private Set<PathDefinition> pathDefinitions = new HashSet<>();
         private Set<MediaTypeDefinition> mediaTypes = new HashSet<>();
         private Set<RequestBodyDefinition> requestBodies = new HashSet<>();
         private Set<ResponseDefinition> responses = new HashSet<>();
@@ -47,6 +48,7 @@ public class Parser {
         private List<LineRangePath> paths;
 
         private void assembleAllDefinitions() {
+            allDefinitions.addAll(pathDefinitions);
             allDefinitions.addAll(requestBodies);
             allDefinitions.addAll(responses);
             allDefinitions.addAll(operations);
@@ -130,16 +132,18 @@ public class Parser {
         }
         Map<String, PathItem> pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
+            PathDefinition pathDef = new PathDefinition(pathitem, path, openApiFile);
+            result.pathDefinitions.add(pathDef);
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
-                    var operationDef = new OperationDefinition(operation, path, method, openApiFile);
+                    var operationDef = new OperationDefinition(operation, pathDef, method.name()+" "+path, "/" + method.toString().toLowerCase(), method);
                     result.operations.add(operationDef);
                     parseOperation(operationDef, result);
                 });
             }
             if (pathitem.getParameters() != null) {
                 pathitem.getParameters().forEach(parameter -> {
-                    var paramDef = new ParameterDefinition(parameter, path, openApiFile, "/paths/" + path + "/parameters/" + parameter.getName());
+                    var paramDef = new ParameterDefinition(parameter, pathDef, parameter.getName(), "/parameters/" + parameter.getName());
                     result.parameters.add(paramDef);
                     parseParameter(paramDef, result);
                 });

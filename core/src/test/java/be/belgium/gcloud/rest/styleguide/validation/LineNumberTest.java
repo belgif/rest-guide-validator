@@ -23,7 +23,7 @@ public class LineNumberTest {
         var result = new Parser(file).parse(oas);
 
         Set<OperationDefinition> operations = result.getOperations();
-        var operation = operations.stream().filter(op -> op.getPath().equals("/logos") && op.getMethod().equals(PathItem.HttpMethod.GET)).findAny();
+        var operation = operations.stream().filter(op -> op.getParent().getIdentifier().equals("/logos") && op.getMethod().equals(PathItem.HttpMethod.GET)).findAny();
         assertTrue(operation.isPresent());
 
         // Assert on lineNumber of operationId
@@ -66,7 +66,7 @@ public class LineNumberTest {
         var result = new Parser(file).parse(oas);
 
         Set<MediaTypeDefinition> defs = result.getMediaTypes();
-        var def = defs.stream().filter(definition -> "/paths//logos/post/requestBody/content/multipart/form-data".equals(definition.getJsonPointer())).findAny();
+        var def = defs.stream().filter(definition -> "/paths/~1logos/post/requestBody/content/multipart/form-data".equals(definition.getJsonPointer())).findAny();
         assertTrue(def.isPresent());
 
         assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
@@ -80,7 +80,7 @@ public class LineNumberTest {
         var result = new Parser(file).parse(oas);
 
         Set<RequestBodyDefinition> defs = result.getRequestBodies();
-        var def = defs.stream().filter(definition -> "/paths//logos/post/requestBody".equals(definition.getJsonPointer())).findAny();
+        var def = defs.stream().filter(definition -> "/paths/~1logos/post/requestBody".equals(definition.getJsonPointer())).findAny();
         assertTrue(def.isPresent());
 
         assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
@@ -94,7 +94,7 @@ public class LineNumberTest {
         var result = new Parser(file).parse(oas);
 
         Set<ParameterDefinition> defs = result.getParameters();
-        var def = defs.stream().filter(definition -> "/paths//logos/get/parameters/test".equals(definition.getJsonPointer())).findAny();
+        var def = defs.stream().filter(definition -> "/paths/~1logos/get/parameters/test".equals(definition.getJsonPointer())).findAny();
         assertTrue(def.isPresent());
 
         assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
