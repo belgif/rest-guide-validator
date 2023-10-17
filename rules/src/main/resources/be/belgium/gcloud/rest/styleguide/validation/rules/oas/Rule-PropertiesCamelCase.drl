@@ -9,7 +9,7 @@ global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggrega
 
 function void violationPropertiesCamelCase(OpenApiViolationAggregator oas, String propertyName, SchemaDefinition schema){
     oas.addViolation("[jsn-naming]",
-           		 "All JSON property names must be in American English and must be written in lowerCamelCase notation. \t" +
+           		 "All JSON property names SHOULD be written in lowerCamelCase notation. \t" +
            		    "[propertyName: " + propertyName + "]",
            		  schema);
 }
