@@ -1,6 +1,6 @@
 # Rest-styleguide-validation plugin
 
-The rest-styleguide-validation Plugin is used to validate a Swagger API to conforms the G-Cloud standards (https://www.gcloud.belgium.be/rest/).
+The rest-styleguide-validation Plugin is used to validate a Swagger API to conforms the Belgif standards (https://www.belgif.be/specification/rest/api-guide/).
 
 *Note: the services-rest-parent use this plugin and the result is visible in Jenkins Test results*
 ## Goal Overview
