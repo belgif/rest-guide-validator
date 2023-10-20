@@ -15,4 +15,9 @@ public class PathInPluralTest extends AbstractOasRuleTest {
     public void testInvalidSwagger() {
         assertErrorCount(2, callRules("swagger_bad.yaml"));
     }
+
+    @Test
+    public void historyAllowedExceptionTest() {
+        assertNoViolations(callRules("historyAllowed.yaml"));
+    }
 }

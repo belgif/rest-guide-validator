@@ -20,7 +20,7 @@ rule "Rule-PathInPlural without ID"
     when
         $path: PathDefinition($pathName: getIdentifier())
         eval( ApiFunctions.isCollection($path, parserResult) )
-        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") ) from $pathName
+        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName
     then
         pluralViolation(oas, $path);
 end
