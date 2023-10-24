@@ -37,6 +37,7 @@
                                 <excludesPath>/entity/contacts/{contactId}/emailAddresses/{email}</excludesPath>
                                 <excludesPath>/entity/contacts/{contactId}/links</excludesPath>
                                 <excludesPath>/entity/contacts/{contactId}/revisions/{revisionId}</excludesPath>
+                                <excludesPath>/entity/contacts/{contactId}/invalidData/{invalidDataId}</excludesPath>
                             </excludesPaths>
                         </fileWithExclusion>
                     </fileWithExclusions>

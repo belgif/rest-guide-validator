@@ -1701,7 +1701,7 @@ definitions:
   Contact:
     type: object
     properties:
-      ID:
+      id:
         type: integer
         format: int64
         example: 841557
@@ -1717,7 +1717,7 @@ definitions:
         readOnly: true
       entityId:
         $ref: '#/definitions/EntityIdentifier'
-      Name:
+      name:
         type: string
         maxLength: 100
         example: Mr Jean Dupont

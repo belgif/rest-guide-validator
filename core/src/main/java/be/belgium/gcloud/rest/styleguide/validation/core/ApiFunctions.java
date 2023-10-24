@@ -5,6 +5,8 @@ import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -273,9 +275,48 @@ public class ApiFunctions {
 
         var last = paths.get(paths.size() - 1);
 
-        last.setEnd(oas.src.get(oas.getLineNumber(last.getPath()).getFileName()).size() - 1);
+        last.setEnd(getEndOfObjectLineNumber("paths", oas, 1));
 
         return paths;
+    }
+
+    //TODO refactor to take in JsonPointer or refactor exclusion completely
+    private static int getEndOfObjectLineNumber(String objectName, OpenApiViolationAggregator oas, int nestedLevelWanted) {
+        File file = oas.getOpenApiFile();
+        JsonFactory factory;
+        if (file.getName().endsWith("yaml") || file.getName().endsWith("yml")) {
+            factory = new YAMLFactory();
+        } else {
+            factory = new JsonFactory();
+        }
+
+        try {
+            com.fasterxml.jackson.core.JsonParser jsonParser = factory.createParser(file);
+            boolean objectFound = false;
+            int nestedObjectCounter = 0;
+            while (!jsonParser.isClosed()) {
+                jsonParser.nextToken();
+                if (jsonParser.getCurrentToken() == JsonToken.FIELD_NAME && !objectFound) {
+                    if (objectName.equals(jsonParser.getCurrentName())) {
+                        objectFound = true;
+                        continue;
+                    }
+                }
+                if (jsonParser.getCurrentToken() == JsonToken.START_OBJECT || jsonParser.getCurrentToken() == JsonToken.START_ARRAY) {
+                    nestedObjectCounter++;
+                }
+                if ((jsonParser.getCurrentToken() == JsonToken.END_OBJECT || jsonParser.getCurrentToken() == JsonToken.END_ARRAY) && nestedObjectCounter > 0) {
+                    nestedObjectCounter--;
+                }
+                if (objectFound && jsonParser.getCurrentToken() == JsonToken.END_OBJECT && nestedObjectCounter == nestedLevelWanted) {
+                    return jsonParser.getCurrentLocation().getLineNr();
+                }
+            }
+
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not parse " + file.getName() + " for linenumber calculation", ex);
+        }
+        return 0;
     }
 
     /**

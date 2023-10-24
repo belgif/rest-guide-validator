@@ -140,7 +140,12 @@ public class OpenApiMojo extends AbstractMojo {
      */
     private void addExclusions(List<File> fileList) {
         filesToProcess.addAll(fileWithExclusions);
-        filesToProcess.forEach(mutableFileWithExclusion -> mutableFileWithExclusion.getExcludesPaths().addAll(excludeResources));
+        filesToProcess.forEach(mutableFileWithExclusion -> {
+            if (mutableFileWithExclusion.getExcludesPaths() == null) {
+                mutableFileWithExclusion.setExcludesPaths(new ArrayList<>());
+            }
+            mutableFileWithExclusion.getExcludesPaths().addAll(excludeResources);
+        });
         filesToProcess.addAll(fileList.stream()
                 .map(file -> new FileWithExclusion(file, excludeResources))
                 .collect(Collectors.toList()));

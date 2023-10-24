@@ -22,9 +22,11 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <files>
+                    <fileWithExclusions>
+                      <fileWithExclusion>
                         <file>openapi.yaml</file>
-                    </files>
+                      </fileWithExclusion>
+                    </fileWithExclusions>
                 </configuration>
             </plugin>
         </plugins>
