@@ -16,11 +16,11 @@ public class DefaultProblemResponseTest extends AbstractOasRuleTest {
 
     @Test
     public void testInvalidOpenApi() {
-        assertErrorCount(8, callRules("openapi_bad.yaml"));
+        assertErrorCount(6, callRules("openapi_bad.yaml"));
     }
 
     @Test
     public void testInvalidSwagger() {
-        assertErrorCount(4, callRules("swagger_bad.yaml"));
+        assertErrorCount(2, callRules("swagger_bad.yaml"));
     }
 }

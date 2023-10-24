@@ -58,6 +58,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+          schema:
+            $ref: '#/definitions/Problem'
         default:
           $ref: '#/responses/ProblemResponse'
   /artists/{ssin}:
@@ -100,6 +102,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+          schema:
+            $ref: '#/definitions/Problem'
         default:
           $ref: '#/responses/ProblemResponse'
   /artists/{ssin}/performances:
@@ -150,6 +154,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+          schema:
+            $ref: '#/definitions/Problem'
         default:
           $ref: '#/responses/ProblemResponse'
   /refData/businessParameters:
@@ -182,6 +188,8 @@ paths:
             $ref: '#/definitions/Problem'
         404:
           description: "Not Found"
+          schema:
+            $ref: '#/definitions/Problem'
         default:
           $ref: '#/responses/ProblemResponse'
 

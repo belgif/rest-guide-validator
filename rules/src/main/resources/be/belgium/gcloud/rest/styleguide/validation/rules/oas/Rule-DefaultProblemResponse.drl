@@ -1,4 +1,4 @@
-package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
@@ -26,22 +26,6 @@ function void violationNoDefaultResponse(OpenApiViolationAggregator oas, Operati
     "[Operation: " + operation.getIdentifier() + "]",
     operation);
 }
-
-function void violationDefaultResponseWrongMediaType(OpenApiViolationAggregator oas, OperationDefinition operation){
-  oas.addViolation("[prb-defaul]",
-    "The default response of each operation SHOULD have a media type \"application/problem+json\" \t" +
-    "[Operation: " + operation.getIdentifier() + "]",
-    operation);
-}
-
-rule "Default Response with problem+json media type is missing"
-  when
-    $operationDefinition: OperationDefinition($response: /model/responses/defaultValue)
-    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
-    not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
-  then
-    violationDefaultResponseWrongMediaType(oas, $operationDefinition);
-end
 
 rule "Default Response is missing"
   when

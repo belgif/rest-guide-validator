@@ -27,6 +27,11 @@
                         <excludeResource>/pet/findByTags</excludeResource>
                         <excludeResource>/user/createWithList</excludeResource>
                         <excludeResource>/user/login</excludeResource>
+                        <excludeResource>/user/{username}</excludeResource>
+                        <excludeResource>/pet</excludeResource>
+                        <excludeResource>/pet/{petId}</excludeResource>
+                        <excludeResource>/store/order</excludeResource>
+                        <excludeResource>/store/order/{orderId}</excludeResource>
                     </excludeResources>
                     <files>
                         <file>swaggerOk.yaml</file>

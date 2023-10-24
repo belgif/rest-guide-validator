@@ -661,13 +661,13 @@ paths:
         "500":
           description: The service cannot generate a health response.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
         "503":
           description: The service is DOWN
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/HealthStatus'
               examples:
