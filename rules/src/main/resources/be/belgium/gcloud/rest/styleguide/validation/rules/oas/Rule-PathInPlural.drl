@@ -1,4 +1,4 @@
-package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
@@ -19,7 +19,7 @@ function void pluralViolation(OpenApiViolationAggregator oas, PathDefinition pat
 rule "Rule-PathInPlural without ID"
     when
         $path: PathDefinition($pathName: getIdentifier())
-        eval( ApiFunctions.isCollection($path, parserResult) )
+        eval( ApiFunctions.hasCollectionResponse($path, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
         String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName
     then
         pluralViolation(oas, $path);

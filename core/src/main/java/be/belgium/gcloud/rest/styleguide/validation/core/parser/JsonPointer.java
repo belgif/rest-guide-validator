@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 @Getter
 public class JsonPointer {
-    //TODO implement
     private final String jsonPointer;
 
     public JsonPointer(@Nonnull String jsonPointer) {
@@ -25,23 +24,54 @@ public class JsonPointer {
      * @return new JsonPointer with property added
      */
     public JsonPointer add(String propertyName) {
-        return new JsonPointer(this.jsonPointer + "/" + escape(propertyName));
+        if (propertyName != null) {
+            return new JsonPointer(this.jsonPointer + "/" + escape(propertyName));
+        }
+        return this;
     }
 
     public JsonPointer add(int arrayIndex) {
         return new JsonPointer(this.jsonPointer + "/" + arrayIndex);
     }
 
+    public JsonPointer add (JsonPointer jsonPointer) {
+        return new JsonPointer(this.jsonPointer+jsonPointer);
+    }
+
+    public static JsonPointer relative(String propertyName) {
+        return new JsonPointer("").add(propertyName);
+    }
+
+    public static JsonPointer relative(int arrayIndex) {
+        return new JsonPointer("").add(arrayIndex);
+    }
+
     public static String escape(String unescaped) {
-        // replace all ~ with ~0 and / by ~1
-        throw new RuntimeException("TODO");
+        return unescaped.replaceAll("~", "~0").replaceAll("/", "~1");
     }
 
     public static String unescape(String escaped) {
-        throw new RuntimeException("TODO");
+        return escaped.replaceAll("~1", "/").replaceAll("~0", "~");
     }
 
     public List<String> splitSegments() {
         return Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(JsonPointer::unescape).collect(Collectors.toList());
     }
+
+    @Override
+    public String toString() {
+        return jsonPointer;
+    }
+
+    public String toPrettyString() {
+        StringBuilder sb= new StringBuilder();
+        Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(JsonPointer::unescape).forEach(segment -> {
+            if(segment.startsWith("/")) {
+                segment = segment.substring(1);
+            }
+            sb.append("/").append(segment);
+        });
+        return sb.toString();
+    }
+
 }

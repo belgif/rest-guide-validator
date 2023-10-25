@@ -1,0 +1,32 @@
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import java.util.Set;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition.DefinitionType;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.MediaTypeDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
+
+function Set includedMediaTypes() {
+  return Set.of("application/json", "multipart/*", "text/xml", "application/xml");
+}
+
+function void violationMandatoryMediaType(OpenApiViolationAggregator oas, MediaTypeDefinition mediaTypeDefinition){
+  oas.addViolation("[rep-struct]",
+    "Response has a schema of non-binary type, but doesn't specify a structured media type (one compatible with application/json, application/xml, multipart/*, text/xml)",
+    mediaTypeDefinition);
+}
+
+rule "Mandatory Mediatype"
+  when
+    $mediaTypeDefinition: MediaTypeDefinition($schema: /model/schema)
+    eval( $schema != null )
+    eval( parserResult.oasVersion != 2 || $mediaTypeDefinition.getParent().getDefinitionType() == DefinitionType.INLINE )
+    $schemaDefinition: SchemaDefinition(model.getType() != SchemaType.STRING || (model.getFormat() != "binary" && model.getFormat != "byte" && model.getFormat != "base64")) from parserResult.resolve($schema)
+    eval( !ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includedMediaTypes()) )
+  then
+    violationMandatoryMediaType(oas, $mediaTypeDefinition);
+end

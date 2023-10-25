@@ -1,7 +1,7 @@
-package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ServerDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 
@@ -10,30 +10,30 @@ function String urlPattern(){
     return "^((http://localhost/?)|(https://)|/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(/[A-Za-z0-9]*)*(/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*/v[0-9]+$";
 }
 
-function void violationServerUrlFormat(OpenApiViolationAggregator oas, String url){
+function void violationServerUrlFormat(OpenApiViolationAggregator oas, ServerDefinition server){
     oas.addViolation("[uri-format]",
-                     "The server url (or the basePath) should follow this format: host/[pathPrefix]/apiName/vmajorVersion. The path segments must be written in lowerCamelCase. BAD: "+ url,
-                     oas.getLineNumber(url));
+                     "The server url (or the basePath) should follow this format: host/[pathPrefix]/apiName/vmajorVersion. The path segments must be written in lowerCamelCase. BAD: ",
+                     server);
 }
 
-function void violationServerSecuredUrl(OpenApiViolationAggregator oas, String url){
+function void violationServerSecuredUrl(OpenApiViolationAggregator oas, ServerDefinition server){
     oas.addViolation("serverUrlFormat",
                      "The server url (or the basePath) should be at least secured on transport level using a one-way TLS connection.",
-                     oas.getLineNumber(url));
+                     server);
 }
-//TODO: Should be refactored
+
 rule "Server Url or basePath Format"
     when
-		$api: OpenAPI()
-		$serverUrl: String() from ApiFunctions.getServerNotMatch($api, urlPattern())
+		$server: ServerDefinition($url: /model/url)
+		not String( this matches(urlPattern()) ) from $url
     then
-        violationServerUrlFormat(oas, $serverUrl);
+        violationServerUrlFormat(oas, $server);
 end
 
 rule "Secured Server Url or secured basePath"
     when
-		$api: OpenAPI()
-		$serverUrl: String() from ApiFunctions.getServerNotMatch($api, "^(http://localhost|https://|/?).*")
+		$server: ServerDefinition($url: /model/url)
+		not String( this matches("^(http://localhost|https://|/?).*") ) from $url
     then
-        violationServerSecuredUrl(oas, $serverUrl);
+        violationServerSecuredUrl(oas, $server);
 end

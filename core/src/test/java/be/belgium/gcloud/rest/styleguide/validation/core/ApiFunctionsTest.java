@@ -1,11 +1,9 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
-import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.PathItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -19,12 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class ApiFunctionsTest {
     private OpenAPI getOpenApi() throws IOException {
         var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
-        return openApi;
-    }
-
-    private OpenAPI getSchemasOpenApi() throws IOException {
-        var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
         var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
         return openApi;
     }
@@ -44,13 +36,6 @@ class ApiFunctionsTest {
     }
 
     @Test
-    void getOperationId() throws IOException {
-        var operationIds = ApiFunctions.getOperationId(getOpenApi(), PathItem.HttpMethod.GET, "200");
-        assertNotNull(operationIds);
-        assertTrue(operationIds.size() > 0);
-    }
-
-    @Test
     void getPathKeys() throws IOException {
         var keys = ApiFunctions.getPathKeys(getOpenApi());
         assertNotNull(keys);
@@ -62,14 +47,6 @@ class ApiFunctionsTest {
         var paths = ApiFunctions.getPaths(getOpenApi());
         assertNotNull(paths);
         assertFalse(paths.getPathItems().isEmpty());
-    }
-
-    @Test
-    void getServerNotMatch() throws IOException {
-        var pattern = "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}\\/[A-Za-z0-9]*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
-        var servers = ApiFunctions.getServerNotMatch(getOpenApi(), pattern);
-        assertNotNull(servers);
-        assertFalse(servers.isEmpty());
     }
 
     @Test
@@ -99,15 +76,6 @@ class ApiFunctionsTest {
         assertFalse(url.matches(pattern), url);
         url = "https://myorg/api";
         assertFalse(url.matches(pattern), url);
-    }
-
-
-    @Test
-    void testProperties() throws IOException {
-        var properties = ApiFunctions.getProperties(getOpenApi());
-        assertNotNull(properties);
-        assertFalse(properties.isEmpty());
-        assertEquals(102, properties.size());
     }
 
     @Test
@@ -152,34 +120,6 @@ class ApiFunctionsTest {
     }
 
     @Test
-    void testIsReturnCollection() throws IOException {
-        var api = getOpenApi();
-        var pathItem = ApiFunctions.getPaths(api).getPathItems().get("/entity/contacts");
-        var isReturnCollection = ApiFunctions.isReturnCollection(api, pathItem);
-
-        assertTrue(isReturnCollection);
-    }
-
-    @Test
-    void getReturnCollectionPathKey() throws IOException {
-        var paths = ApiFunctions.getReturnCollectionPathKey(getOpenApi());
-        assertNotNull(paths);
-        assertEquals(11, paths.size());
-    }
-
-    @Test
-    void getCollectionPathItems() throws IOException {
-        Map<String, PathItem> items = ApiFunctions.getCollectionPathItems(getOpenApi());
-        assertEquals(11, items.size());
-    }
-
-    @Test
-    void getSchemasTest() throws IOException {
-        Set<SchemaDefinitionDeprecated> schemas = ApiFunctions.getSchemas(getSchemasOpenApi());
-        assertEquals(29, schemas.size());
-    }
-
-    @Test
     void isLowerCamelCase() {
         assertTrue(ApiFunctions.isLowerCamelCase("creditCard"));
         assertTrue(ApiFunctions.isLowerCamelCase("cash"));
@@ -210,6 +150,7 @@ class ApiFunctionsTest {
         assertTrue(ApiFunctions.isMediaTypeIncluded("application/*", all));
 
         assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON)));
+        assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON, MediaType.TEXT_XML, MediaType.APPLICATION_XML, MediaType.parseMediaType("multipart/*"))));
 
     }
 
@@ -249,11 +190,11 @@ class ApiFunctionsTest {
 
         var refData = defs.stream().filter(definition -> "/refData/employerClasses".equals(definition.getIdentifier())).findAny();
         assertTrue(refData.isPresent());
-        assertTrue(ApiFunctions.isCollection(refData.get(), result));
+        assertTrue(ApiFunctions.hasCollectionResponse(refData.get(), result));
     }
 
     @Test
-    void isCollectionTestWithOtherPathParam() {
+    void existsPathWithPathParamAfterTest() {
         var oas = new OpenApiViolationAggregator();
         var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
         var result = new Parser(file).parse(oas);
@@ -263,7 +204,7 @@ class ApiFunctionsTest {
 
         var logos = defs.stream().filter(definition -> "/logos".equals(definition.getIdentifier())).findAny();
         assertTrue(logos.isPresent());
-        assertTrue(ApiFunctions.isCollection(logos.get(), result));
+        assertTrue(ApiFunctions.existsPathWithPathParamAfter(logos.get().getIdentifier(), result));
     }
 
 }

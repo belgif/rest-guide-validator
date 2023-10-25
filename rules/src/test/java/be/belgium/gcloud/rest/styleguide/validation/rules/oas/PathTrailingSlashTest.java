@@ -13,6 +13,6 @@ public class PathTrailingSlashTest extends AbstractOasRuleTest {
 
     @Test
     public void testInvalidSwagger() {
-        assertViolations(callRules("swagger_bad.yaml"));
+        assertErrorCount(1,callRules("swagger_bad.yaml"));
     }
 }

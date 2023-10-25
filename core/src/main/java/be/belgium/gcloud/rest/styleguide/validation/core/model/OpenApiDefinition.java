@@ -2,6 +2,7 @@ package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -12,14 +13,12 @@ import org.eclipse.microprofile.openapi.models.Constructible;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 public abstract class OpenApiDefinition<T extends Constructible> {
-    private T model;
+    private final T model;
     protected final DefinitionType definitionType;
 
     private OpenApiDefinition<?> parent; //when definitionType is INLINE
@@ -27,7 +26,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final String identifier; // mandatory when definitionType is TOP_LEVEL, optional otherwise
 
     private final File openApiFile;
-    private String jsonPointer; // relative to parent object. Can be used to calculate line number
+    private final JsonPointer jsonPointer;
 
     /**
      * Constructor for an inline definition
@@ -38,13 +37,30 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.parent = parent;
         this.identifier = identifier;
         this.openApiFile = parent.getOpenApiFile();
-        this.jsonPointer = parent.getJsonPointer() + relativeJsonPointer;
+        this.jsonPointer = new JsonPointer(parent.getJsonPointer() + relativeJsonPointer);
+    }
+
+    protected OpenApiDefinition(T model, OpenApiDefinition<?> parent, String identifier, JsonPointer relativeJsonPointer) {
+        this.model = model;
+        this.definitionType = DefinitionType.INLINE;
+        this.parent = parent;
+        this.identifier = identifier;
+        this.openApiFile = parent.getOpenApiFile();
+        this.jsonPointer = parent.getJsonPointer().add(relativeJsonPointer);
     }
 
     /**
      * Constructor for a definition under components
      */
     protected OpenApiDefinition(T model, String identifier, File openApiFile, String jsonPointer) {
+        this.model = model;
+        this.definitionType = DefinitionType.TOP_LEVEL;
+        this.identifier = identifier;
+        this.openApiFile = openApiFile;
+        this.jsonPointer = new JsonPointer(jsonPointer);
+    }
+
+    protected OpenApiDefinition(T model, String identifier, File openApiFile, JsonPointer jsonPointer) {
         this.model = model;
         this.definitionType = DefinitionType.TOP_LEVEL;
         this.identifier = identifier;
@@ -73,38 +89,23 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public Line getLineNumber(OpenApiViolationAggregator aggregator) {
-        // ideally we could simply search line number using the json pointer, but can't find a way
-
-        Line lineNumber;
-
-        //approximate algorithm, can be improved in subclasses
+        // Searches for lineNumber, in some cases the JsonPointer points further than is in the actual file (because some refs are resolved automatically in the parser)
+        // So for inline objects, it searches as far as it can.
         if (definitionType == DefinitionType.INLINE) {
-            lineNumber = parent.getLineNumber(aggregator);
-            if (identifier != null) {
-                lineNumber = aggregator.getLineNumber(lineNumber, identifier);
-            }
+            return getInlineLineNumber(aggregator);
         } else {
-            lineNumber = getTopLevelLineNumber(aggregator);
+            return getTopLevelLineNumber(aggregator);
         }
-
-        return lineNumber;
     }
 
     private Line getTopLevelLineNumber(OpenApiViolationAggregator aggregator) {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            List<String> pointers = Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(OpenApiDefinition::replaceEscapedSlashesOnPaths).collect(Collectors.toList());
-            if (pointers.isEmpty()) {
-                log.warn("Invalid location for definition: " + jsonPointer);
-                return new Line(openApiFile.getName(), 0);
-            }
-            if (getSrcVersion(aggregator) == 2 && "components".equals(pointers.get(0))) {
-                pointers.remove(0);
-                if ("schemas".equals(pointers.get(0))) {
-                    pointers.set(0, "definitions");
-                }
-            }
             for (String fileName : aggregator.getSrc().keySet()) {
-                Line line = searchObjectInFile(fileName, aggregator, pointers);
+                List<String> pointers = handleJsonPointer(aggregator);
+                if (pointers == null) {
+                    return new Line(openApiFile.getName(), 0);
+                }
+                Line line = searchObjectInFile(fileName, aggregator, pointers, false);
                 if (line != null) {
                     return line;
                 }
@@ -116,15 +117,32 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         }
     }
 
-    private static String replaceEscapedSlashesOnPaths(String jsonPointer) {
-        // ~1 is used to represent / character in jsonPointer
-        if (jsonPointer.contains("~1")) {
-            return jsonPointer.replaceAll("~1", "/");
-        }
-        return jsonPointer;
+    private Line getInlineLineNumber(OpenApiViolationAggregator aggregator) {
+        Line lineNumber = getTopLevelParent().getLineNumber(aggregator);
+        lineNumber = searchObjectInFile(lineNumber.getFileName(), aggregator, handleJsonPointer(aggregator), true);
+        return lineNumber;
     }
 
-    private Line searchObjectInFile(String fileName, OpenApiViolationAggregator aggregator, List<String> pointers) {
+    private List<String> handleJsonPointer(OpenApiViolationAggregator aggregator) {
+        List<String> pointers = jsonPointer.splitSegments();
+        if (pointers.isEmpty()) {
+            log.warn("Invalid location for definition: " + jsonPointer);
+            return null;
+        }
+        if (getSrcVersion(aggregator) == 2 && "components".equals(pointers.get(0))) {
+            pointers.remove(0);
+            if ("schemas".equals(pointers.get(0))) {
+                pointers.set(0, "definitions");
+            }
+        }
+        if (getSrcVersion(aggregator) == 2 && "servers".equals(pointers.get(0))) {
+            pointers.set(0, "basePath");
+            pointers.remove(1);
+        }
+        return pointers;
+    }
+
+    private Line searchObjectInFile(String fileName, OpenApiViolationAggregator aggregator, List<String> pointers, boolean approximate) {
         JsonFactory factory;
         if (isYaml(aggregator)) {
             factory = new YAMLFactory();
@@ -140,27 +158,90 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
         try {
             JsonParser jsonParser = factory.createParser(sb.toString());
-            while (!jsonParser.isClosed()) {
-                if (jsonParser.nextToken() == JsonToken.FIELD_NAME) {
-                    if (pointers.get(0).equals(jsonParser.getCurrentName())) {
-                        pointers.remove(0);
-                        if (pointers.isEmpty()) {
-                            return new Line(fileName, jsonParser.getCurrentLocation().getLineNr());
-                        }
-                    }
-                }
+            int ln = followPointers(pointers, jsonParser, approximate);
+            if (ln != -1) {
+                return new Line(fileName, ln);
             }
         } catch (IOException ex) {
-            log.error("Could not parse " + fileName + " for linenumber calculation");
-            throw new RuntimeException("Could not parse " + fileName + " for linenumber calculation");
+            throw new RuntimeException("Could not parse " + fileName + " for linenumber calculation", ex);
         }
         return null;
+    }
+
+    // This method will return the lineNumber of the closest Object to the JsonPointer, if for example it points to a String value in an array,
+    // It will return the lineNumber of the parent object of the StringValue.
+    // If approximate is set to false, it will return an error if the pointer cannot be found completely in the JsonParser.
+    private int followPointers(List<String> pointers, JsonParser jsonParser, boolean approximate) throws IOException {
+        int lnNumberSoFar = -1;
+        int currentNestingLevel = 0;
+        int wantedNestingLevel = 1;
+        int arrayIndex = 0;
+        boolean inArray = false;
+        while (!jsonParser.isClosed()) {
+            jsonParser.nextToken();
+            var token = jsonParser.getCurrentToken();
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray) {
+                if (pointers.get(0).equals(jsonParser.getCurrentName())) {
+                    pointers.remove(0);
+                    wantedNestingLevel++;
+                    if (jsonParser.getCurrentLocation() != null) {
+                        lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                        if (pointers.isEmpty()) {
+                            return jsonParser.getCurrentLocation().getLineNr();
+                        }
+                    }
+                    continue;
+                }
+            }
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.START_OBJECT) {
+                if (pointers.get(0).equals(arrayIndex + "")) {
+                    pointers.remove(0);
+                    wantedNestingLevel++;
+                    inArray = false;
+                    arrayIndex = 0;
+                    currentNestingLevel ++;
+                    if (jsonParser.getCurrentLocation() != null) {
+                        lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                        if (pointers.isEmpty()) {
+                            return jsonParser.getCurrentLocation().getLineNr();
+                        }
+                    }
+                    continue;
+                }
+            }
+            if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
+                if (token == JsonToken.START_OBJECT && inArray && currentNestingLevel == wantedNestingLevel) {
+                    arrayIndex++;
+                }
+                currentNestingLevel++;
+                if (token == JsonToken.START_ARRAY && currentNestingLevel == wantedNestingLevel) {
+                    inArray = true;
+                }
+            }
+            if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
+                currentNestingLevel--;
+                if (token == JsonToken.END_ARRAY && currentNestingLevel == wantedNestingLevel) {
+                    arrayIndex = 0;
+                    inArray = false;
+                }
+            }
+            if (currentNestingLevel < wantedNestingLevel) {
+                break;
+            }
+        }
+        if (approximate) {
+            return lnNumberSoFar;
+        } else {
+            log.info("LineNumber for " + jsonPointer + " might not be correct!");
+            return -1;
+        }
     }
 
     private boolean isYaml(OpenApiViolationAggregator aggregator) {
         return aggregator.getOpenApiFile().getName().endsWith("yaml") || aggregator.getOpenApiFile().getName().endsWith("yml");
     }
 
+    //TODO: Refactor to get oasVersion from parserResult, when OpenApiViolationAggregator gets refactored
     private int getSrcVersion(OpenApiViolationAggregator aggregator) {
         String mainFile = openApiFile.getName();
         List<String> src = aggregator.getSrc().get(mainFile);

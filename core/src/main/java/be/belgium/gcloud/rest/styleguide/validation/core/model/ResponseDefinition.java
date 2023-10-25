@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
 import lombok.Getter;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 
@@ -19,7 +20,7 @@ public class ResponseDefinition extends OpenApiDefinition<APIResponse> {
      * @param statusCode
      */
     public ResponseDefinition(APIResponse openApiObject, OperationDefinition parent, String statusCode) {
-        super(openApiObject, parent, statusCode, "/responses/" + statusCode);
+        super(openApiObject, parent, statusCode, JsonPointer.relative("responses").add(statusCode));
         this.statusCode = statusCode;
     }
 
@@ -31,7 +32,7 @@ public class ResponseDefinition extends OpenApiDefinition<APIResponse> {
      * @param openApiFile
      */
     public ResponseDefinition(APIResponse openApiObject, String name, File openApiFile) {
-        super(openApiObject, name, openApiFile, "/components/responses/" + name);
+        super(openApiObject, name, openApiFile, new JsonPointer("/components/responses/").add(name));
         this.statusCode = null;
     }
 

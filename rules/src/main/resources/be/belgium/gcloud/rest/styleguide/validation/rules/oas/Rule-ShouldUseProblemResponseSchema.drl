@@ -1,44 +1,35 @@
-package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
-import be.belgium.gcloud.rest.styleguide.validation.core.PropertyDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
-import org.eclipse.microprofile.openapi.models.Operation;
-import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
-import org.eclipse.microprofile.openapi.models.media.Content
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition.DefinitionType;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
-import java.util.Set;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 
 function String referenceName() {
   return "/Problem";
 }
 
-function Set excludeProblemResponseSchema() {
-  return Set.of(HttpMethod.HEAD, HttpMethod.OPTIONS);
+function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator oas, ResponseDefinition response){
+  oas.addViolation("[prb-defaul]",
+    "Default problem response SHOULD use the Problem schema of belgif-openapi-problem ($ref to a schema type named Problem)\t",
+    response, ViolationType.RECOMMENDED);
 }
 
-function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator oas, String property){
-  oas.addViolation("[prb-defaul]",
-    "Default problem response SHOULD use the Problem schema of belgif-openapi-problem ($ref to a schema type named Problem)\t" +
-    "[Operation: " + property + "]",
-    oas.getLineNumber(property), ViolationType.RECOMMENDED);
-}
-//TODO: Should be refactored
 rule "Should use ProblemResponse schema for default responses"
   when
-    $api: OpenAPI()
-    $operations: Operation() from ApiFunctions.getOperations($api, excludeProblemResponseSchema())
-    $responses: APIResponses() from $operations.getResponses()
-    APIResponse( $content : content) from $responses.getAPIResponse("default")
-    Content( $mediaType : getMediaType("application/problem+json") ) from $content
-    MediaType( $schema : schema ) from $mediaType
-    not Schema( ref.contains(referenceName()) ) from $schema
+    $operation: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
+    OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "default"]/value#APIResponse) from $operation
+    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    ResponseDefinition($schema: /model/content/mediaTypes/entrySet[key#String == "application/problem+json"]/value#MediaType/schema) from $responseDefinition
+    Schema( ref == null || !ref.contains(referenceName()) ) from $schema
   then
-    violationDefaultProblemResponseSchema(oas, $operations.getOperationId());
+    violationDefaultProblemResponseSchema(oas, $responseDefinition);
 end

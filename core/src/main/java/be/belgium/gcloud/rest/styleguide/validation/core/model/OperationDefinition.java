@@ -1,7 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
-import be.belgium.gcloud.rest.styleguide.validation.core.Line;
-import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -13,8 +12,8 @@ public class OperationDefinition extends OpenApiDefinition<Operation> {
     @Setter
     private PathItem.HttpMethod method;
 
-    public OperationDefinition(Operation model, OpenApiDefinition<?> parent, String identifier, String relativeJsonPointer, PathItem.HttpMethod method) {
-        super(model, parent, identifier, relativeJsonPointer);
+    public OperationDefinition(Operation model, PathDefinition parent, PathItem.HttpMethod method) {
+        super(model, parent, method.name()+" "+parent.getIdentifier(), JsonPointer.relative(method.toString().toLowerCase()));
         this.method = method;
     }
 
@@ -23,9 +22,4 @@ public class OperationDefinition extends OpenApiDefinition<Operation> {
         return super.getModel();
     }
 
-    @Override
-    public Line getLineNumber(OpenApiViolationAggregator aggregator) {
-        Line lineNumber = this.getParent().getLineNumber(aggregator);
-        return aggregator.getLineNumber(lineNumber, getModel().getOperationId());
-    }
 }

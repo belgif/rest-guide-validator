@@ -14,6 +14,12 @@ servers:
   - url: 'https://localhost/api/v3'
 paths:
   '/transactions/{group}':
+    head:
+      operationId: headTransaction
+      responses:
+        200:
+          schema:
+            type: string
     get:
       tags:
         - transaction-controller-impl

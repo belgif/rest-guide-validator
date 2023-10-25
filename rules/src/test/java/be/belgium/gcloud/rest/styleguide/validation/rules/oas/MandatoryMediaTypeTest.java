@@ -1,0 +1,28 @@
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
+
+import be.belgium.gcloud.rest.styleguide.validation.rules.AbstractOasRuleTest;
+import org.junit.jupiter.api.Test;
+
+public class MandatoryMediaTypeTest extends AbstractOasRuleTest {
+
+    @Test
+    public void testValid() {
+        assertNoViolations(callRules("openapi.yaml"));
+    }
+
+    @Test
+    public void testValidSwagger() {
+        assertNoViolations(callRules("swagger.yaml"));
+    }
+
+    @Test
+    public void testInvalidOpenApi() {
+        assertErrorCount(12, callRules("openapi_bad.yaml"));
+    }
+
+    @Test
+    public void testInvalidSwagger() {
+        assertErrorCount(9, callRules("swagger_bad.yaml"));
+    }
+
+}

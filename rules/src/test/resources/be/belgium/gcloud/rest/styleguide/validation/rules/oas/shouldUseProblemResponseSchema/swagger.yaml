@@ -44,6 +44,16 @@ paths:
             $ref: '#/definitions/Problem'
         default:
           $ref: '#/responses/ProblemResponse'
+    head:
+      operationId: headUserInfo
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        default:
+          description: yes
+          schema:
+            type: string
   /doc/swagger.yaml:
     get:
       tags:

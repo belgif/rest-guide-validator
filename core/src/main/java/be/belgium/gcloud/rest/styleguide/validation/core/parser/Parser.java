@@ -18,6 +18,7 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.servers.Server;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,11 +42,13 @@ public class Parser {
         private Set<SchemaDefinition> schemas = new HashSet<>();
         private Set<ParameterDefinition> parameters = new HashSet<>();
         private Set<ResponseHeaderDefinition> headers = new HashSet<>();
+        private Set<ServerDefinition> servers = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         public String jsonString;
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
+        public int oasVersion;
 
         private void assembleAllDefinitions() {
             allDefinitions.addAll(pathDefinitions);
@@ -56,6 +59,7 @@ public class Parser {
             allDefinitions.addAll(schemas);
             allDefinitions.addAll(parameters);
             allDefinitions.addAll(headers);
+            allDefinitions.addAll(servers);
         }
 
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
@@ -109,9 +113,11 @@ public class Parser {
             result.paths = ApiFunctions.buildAllPathWithLineRange(openAPI, openApiViolationAggregator);
             result.openAPI = openAPI;
             result.jsonString = getJsonString(openApiViolationAggregator);
+            parseServers(result);
             parseComponents(openAPI.getComponents(), result);
             parsePaths(openAPI.getPaths(), result);
             result.assembleAllDefinitions();
+            result.setOasVersion(getOasVersion(result.jsonString));
             return result;
         } catch (IOException e) {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
@@ -125,6 +131,23 @@ public class Parser {
         return new ObjectMapper().writeValueAsString(obj);
     }
 
+    private static int getOasVersion(String jsonString) {
+        if (jsonString.contains("openapi:") || jsonString.contains("\"openapi\":")) {
+            return 3;
+        } else {
+            return 2;
+        }
+    }
+
+    private void parseServers(ParserResult result) {
+        List<Server> serverModels = result.openAPI.getServers();
+        for (Server server : serverModels) {
+            int index = serverModels.indexOf(server);
+            ServerDefinition def = new ServerDefinition(server, server.getUrl(), openApiFile, index);
+            result.servers.add(def);
+        }
+    }
+
 
     private void parsePaths(Paths paths, ParserResult result) {
         if (paths == null) {
@@ -136,14 +159,15 @@ public class Parser {
             result.pathDefinitions.add(pathDef);
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
-                    var operationDef = new OperationDefinition(operation, pathDef, method.name()+" "+path, "/" + method.toString().toLowerCase(), method);
+                    var operationDef = new OperationDefinition(operation, pathDef, method);
                     result.operations.add(operationDef);
                     parseOperation(operationDef, result);
                 });
             }
             if (pathitem.getParameters() != null) {
                 pathitem.getParameters().forEach(parameter -> {
-                    var paramDef = new ParameterDefinition(parameter, pathDef, parameter.getName(), "/parameters/" + parameter.getName());
+                    int index = pathitem.getParameters().indexOf(parameter);
+                    var paramDef = new ParameterDefinition(parameter, pathDef, parameter.getName(), index);
                     result.parameters.add(paramDef);
                     parseParameter(paramDef, result);
                 });
@@ -181,7 +205,8 @@ public class Parser {
         if (parameters != null) {
             for (Parameter parameter : parameters) {
                 if (parameter.getRef() == null) {
-                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), "/parameters/" + parameter.getName());
+                    int index = parameters.indexOf(parameter);
+                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), index);
                     result.parameters.add(parameterDefinition);
                     parseParameter(parameterDefinition, result);
                 }
@@ -308,30 +333,30 @@ public class Parser {
 
     public void parseSchema(SchemaDefinition schemaDefinition, ParserResult result) {
         var parentSchema = schemaDefinition.getModel();
-        constructNestedSchema(parentSchema.getAllOf(), "/allOf", schemaDefinition, result);
-        constructNestedSchema(parentSchema.getOneOf(), "/oneOf", schemaDefinition, result);
-        constructNestedSchema(parentSchema.getAnyOf(), "/anyOf", schemaDefinition, result);
-        constructNestedSchema(parentSchema.getAdditionalPropertiesSchema(), "/additionalProperties", schemaDefinition, result);
-        constructNestedSchema(parentSchema.getItems(), "/items", schemaDefinition, result);
+        constructNestedSchema(parentSchema.getAllOf(), JsonPointer.relative("allOf"), schemaDefinition, result);
+        constructNestedSchema(parentSchema.getOneOf(), JsonPointer.relative("oneOf"), schemaDefinition, result);
+        constructNestedSchema(parentSchema.getAnyOf(), JsonPointer.relative("anyOf"), schemaDefinition, result);
+        constructNestedSchema(parentSchema.getAdditionalPropertiesSchema(), JsonPointer.relative("additionalProperties"), schemaDefinition, result);
+        constructNestedSchema(parentSchema.getItems(), JsonPointer.relative("items"), schemaDefinition, result);
         if (parentSchema.getProperties() != null) {
             parentSchema.getProperties().forEach((propertyName, propertyObject) ->
-                    constructNestedSchema(propertyObject, "/properties/" + propertyName, schemaDefinition, result));
+                    constructNestedSchema(propertyObject, JsonPointer.relative("properties").add(propertyName), schemaDefinition, result));
         }
     }
 
-    private void constructNestedSchema(List<Schema> schemas, String namePrefix, SchemaDefinition parentSchema, ParserResult result) {
+    private void constructNestedSchema(List<Schema> schemas, JsonPointer relativePointer, SchemaDefinition parentSchema, ParserResult result) {
         if (schemas != null) {
             int index = 0;
             while (index < schemas.size()) {
-                constructNestedSchema(schemas.get(index), namePrefix + "/" + index, parentSchema, result);
+                constructNestedSchema(schemas.get(index), relativePointer.add(index), parentSchema, result);
                 index++;
             }
         }
     }
 
-    private void constructNestedSchema(Schema schema, String namePrefix, SchemaDefinition parentSchema, ParserResult result) {
+    private void constructNestedSchema(Schema schema, JsonPointer relativePointer, SchemaDefinition parentSchema, ParserResult result) {
         if (schema != null && schema.getRef() == null) {
-            var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), namePrefix);
+            var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), relativePointer);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         }

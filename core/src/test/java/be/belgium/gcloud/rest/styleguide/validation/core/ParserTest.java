@@ -16,7 +16,7 @@ public class ParserTest {
         var oas = new OpenApiViolationAggregator();
         var openApiFile = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
         var parserResult = new Parser(openApiFile).parse(oas);
-        Optional<SchemaDefinition> jsonPointer = parserResult.getSchemas().stream().filter(def -> def.getJsonPointer().endsWith("anyOf/1")).findAny();
+        Optional<SchemaDefinition> jsonPointer = parserResult.getSchemas().stream().filter(def -> def.getJsonPointer().toString().endsWith("anyOf/1")).findAny();
         assertTrue(jsonPointer.isPresent());
     }
 

@@ -1,27 +1,25 @@
-package be.belgium.gcloud.rest.styleguide.validation.core.rules.oas;
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import org.eclipse.microprofile.openapi.models.PathItem;
-import java.util.Map;
-import java.util.Map.Entry;
 
-function void representationOfCollectionViolation(OpenApiViolationAggregator oas, String path){
+function void representationOfCollectionViolation(OpenApiViolationAggregator oas, PathDefinition path){
     oas.addViolation("[col-repres]",
-           		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t"+ path,
-           		 oas.getLineNumber(path));
+           		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t",
+           		 path);
 }
-//TODO: Should be refactored
+
 rule "Rule-Representation Of Collection"
     when
-       $api: OpenAPI()
-       $paths: Map() from ApiFunctions.getCollectionPathItems($api)
-       $entry: Entry() from $paths.entrySet()
-       $path: PathItem() from $entry.getValue()
+       $path: PathDefinition()
+       eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
+       eval( !ApiFunctions.hasCollectionResponse($path, parserResult))
     then
-    if ( !ApiFunctions.isReturnCollection($api, $path) )
-        representationOfCollectionViolation(oas, $entry.getKey().toString());
+        representationOfCollectionViolation(oas, $path);
 end
