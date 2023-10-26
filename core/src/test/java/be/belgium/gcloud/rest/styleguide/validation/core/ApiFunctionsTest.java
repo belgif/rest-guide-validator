@@ -3,52 +3,20 @@ package be.belgium.gcloud.rest.styleguide.validation.core;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 class ApiFunctionsTest {
-    private OpenAPI getOpenApi() throws IOException {
-        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, new OpenApiViolationAggregator());
-        return openApi;
-    }
-
-    @Test
-    void buildOpenApiSpecification() throws IOException {
-        assertNotNull(getOpenApi());
-    }
-
-    @Test
-    void buildUgly() throws IOException {
-        var oas = new OpenApiViolationAggregator();
-        var file = new File(getClass().getResource("../rules/ugly.json").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
-        assertNotNull(openApi);
-        assertTrue(oas.src.get("ugly.json").size() > 1);
-    }
-
-    @Test
-    void getPathKeys() throws IOException {
-        var keys = ApiFunctions.getPathKeys(getOpenApi());
-        assertNotNull(keys);
-        assertFalse(keys.isEmpty());
-    }
-
-    @Test
-    void getPaths() throws IOException {
-        var paths = ApiFunctions.getPaths(getOpenApi());
-        assertNotNull(paths);
-        assertFalse(paths.getPathItems().isEmpty());
-    }
-
     @Test
     void testUrl() {
         var pattern = "^((https:\\/\\/)|\\/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}\\/[A-Za-z0-9]*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
@@ -59,7 +27,7 @@ class ApiFunctionsTest {
     }
 
     @Test
-    void testUrlV3() throws IOException {
+    void testUrlV3() {
         var pattern = "^((http://localhost/?)|(https://)|/?)[-a-zA-Z0-9@:%._\\+~#=]{1,256}[a-zA-Z0-9()]{1,6}(\\/[A-Za-z0-9]*)*(\\/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*\\/v[0-9]+$";
 
         var url = "/api/v3";
@@ -76,47 +44,6 @@ class ApiFunctionsTest {
         assertFalse(url.matches(pattern), url);
         url = "https://myorg/api";
         assertFalse(url.matches(pattern), url);
-    }
-
-    @Test
-    void getAllPathWithLineRange() throws IOException {
-        var oas = new OpenApiViolationAggregator();
-        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
-
-        var paths = ApiFunctions.buildAllPathWithLineRange(openApi, oas);
-        assertNotNull(paths);
-        paths.forEach(p -> assertTrue(p.getEnd() > p.getStart()));
-        paths.forEach(p -> log.debug(p.toString()));
-    }
-
-    @Test
-    void isInPathList() throws IOException {
-        var oas = new OpenApiViolationAggregator();
-        var file = new File(getClass().getResource("../rules/swagger_bad.yaml").getFile());
-        var openApi = ApiFunctions.buildOpenApiSpecification(file, oas);
-
-        var paths = ApiFunctions.buildAllPathWithLineRange(openApi, oas);
-        assertTrue(ApiFunctions.isInPathList(paths, "/health", 2070));
-    }
-
-    @Test
-    void getItems() throws IOException {
-        var api = getOpenApi();
-        var paths = ApiFunctions.getPaths(api);
-        assertNotNull(paths);
-        var pathItem = paths.getPathItems().get("/entity/contacts");
-        var apiResponse = pathItem.getGET().getResponses().getAPIResponses().get("200");
-
-        apiResponse.getContent().getMediaTypes().values().forEach(mediaType -> {
-            log.debug("items: {}", mediaType.getSchema().getItems());
-            log.debug("properties: {}", mediaType.getSchema().getProperties());
-
-            var ref = mediaType.getSchema().getRef();
-            log.debug("ref: {}", ref);
-            var schema = api.getComponents().getSchemas().get("ContactsCollection");
-            log.debug("schema.getProperties()..containsKey('items'): {}", schema.getProperties().containsKey("items"));
-        });
     }
 
     @Test
@@ -152,32 +79,6 @@ class ApiFunctionsTest {
         assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON)));
         assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(MediaType.APPLICATION_JSON, MediaType.TEXT_XML, MediaType.APPLICATION_XML, MediaType.parseMediaType("multipart/*"))));
 
-    }
-
-    @Test
-    void getReferencedFilesTest() throws IOException {
-        var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
-        Set<File> files = ApiFunctions.getReferencedFiles(file);
-        Set<String> noDuplicates = new HashSet<>();
-        for (File fileFound : files) {
-            String abPath = fileFound.getAbsolutePath();
-            noDuplicates.add(abPath);
-        }
-        assertEquals(noDuplicates.size(), files.size());
-        assertEquals(5, files.size());
-    }
-
-    @Test
-    void getReferencedFilesTestJson() throws IOException {
-        var file = new File(getClass().getResource("../rules/ugly.json").getFile());
-        Set<File> files = ApiFunctions.getReferencedFiles(file);
-        Set<String> noDuplicates = new HashSet<>();
-        for (File fileFound : files) {
-            String abPath = fileFound.getAbsolutePath();
-            noDuplicates.add(abPath);
-        }
-        assertEquals(noDuplicates.size(), files.size());
-        assertEquals(0, files.size());
     }
 
     @Test

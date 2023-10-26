@@ -27,8 +27,8 @@ public class LineNumberTest {
         var operation = operations.stream().filter(op -> op.getParent().getIdentifier().equals("/logos") && op.getMethod().equals(PathItem.HttpMethod.GET)).findAny();
         assertTrue(operation.isPresent());
 
-        assertEquals(43, operation.get().getLineNumber(oas).getLineNumber());
-        assertEquals("openapi.yaml", operation.get().getLineNumber(oas).getFileName());
+        assertEquals(43, operation.get().getLineNumber().getLineNumber());
+        assertEquals("openapi.yaml", operation.get().getLineNumber().getFileName());
     }
 
     @Test
@@ -41,8 +41,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "Problem".equals(definition.getIdentifier())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("problem-v1.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(16, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("problem-v1.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(16, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -55,8 +55,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "arrayItemOne".equals(definition.getIdentifier())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("array.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(8, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("array.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(8, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -69,8 +69,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1logos/post/requestBody/content/multipart~1form-data".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(32, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("openapi.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(32, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -83,8 +83,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1logos/post/requestBody".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(29, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("openapi.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(29, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -97,8 +97,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1logos/get/parameters/0".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(47, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("openapi.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(47, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -111,8 +111,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/servers/0".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("openapi.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(5, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("openapi.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(5, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -125,32 +125,32 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/servers/0".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("multipleServers.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(3, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("multipleServers.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(3, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/servers/1".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("multipleServers.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(8, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("multipleServers.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(8, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/servers/2".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("multipleServers.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(13, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("multipleServers.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(13, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/servers/3".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("multipleServers.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(18, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("multipleServers.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(18, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/servers/4".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("multipleServers.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(19, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("multipleServers.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(19, def.get().getLineNumber().getLineNumber());
 
     }
 
@@ -164,8 +164,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1everythingIsWrongHere/get/parameters/2".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("nestedArrays.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(30, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("nestedArrays.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(30, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -178,8 +178,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1myFirstPath/get/parameters/0/schema".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("enumCounter.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(16, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("enumCounter.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(16, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -192,8 +192,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1everythingIsWrongHere/get/responses/200".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("responseHeader.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(21, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("responseHeader.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(21, def.get().getLineNumber().getLineNumber());
     }
 
     @Test
@@ -206,26 +206,26 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1faultyProblemResponseResponse/get/responses/default/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(40, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(40, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/components/responses/ProblemResponse/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(91, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(91, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/paths/~1faultyProblemResponse/get/responses/default/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(32, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(32, def.get().getLineNumber().getLineNumber());
 
         def = defs.stream().filter(definition -> "/paths/~1faultyInlineResponse/get/responses/200/content/application~1json".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(10, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(10, def.get().getLineNumber().getLineNumber());
 
     }
 
@@ -241,8 +241,8 @@ public class LineNumberTest {
 
         SchemaDefinition schemaDefinition = new SchemaDefinition(null, def.get(), "mySchema", new JsonPointer("/get/parameters/1/schema/items/enum/1"));
 
-        assertEquals("nestedArrays.yaml", schemaDefinition.getLineNumber(oas).getFileName());
-        assertEquals(27, schemaDefinition.getLineNumber(oas).getLineNumber());
+        assertEquals("nestedArrays.yaml", schemaDefinition.getLineNumber().getFileName());
+        assertEquals(27, schemaDefinition.getLineNumber().getLineNumber());
     }
 
     @Test
@@ -255,8 +255,8 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/servers/0".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        assertEquals("swagger.yaml", def.get().getLineNumber(oas).getFileName());
-        assertEquals(9, def.get().getLineNumber(oas).getLineNumber());
+        assertEquals("swagger.yaml", def.get().getLineNumber().getFileName());
+        assertEquals(9, def.get().getLineNumber().getLineNumber());
     }
 
 }

@@ -2,18 +2,13 @@ package be.belgium.gcloud.rest.styleguide.validation;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
-import be.belgium.gcloud.rest.styleguide.validation.maven.junit.Testcase;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class JUnitOutputProcessor3Test {
 
@@ -28,9 +23,8 @@ class JUnitOutputProcessor3Test {
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() throws IOException {
+    private OpenApiViolationAggregator getViolationAggregator() {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setOpenApiFile(File.createTempFile("test", ""));
         openApiViolationAggregator.setTime(0.55f);
         openApiViolationAggregator.setRuleNumber(3);
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 155));

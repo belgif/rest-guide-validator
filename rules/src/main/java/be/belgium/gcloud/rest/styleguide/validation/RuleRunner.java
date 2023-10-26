@@ -34,8 +34,8 @@ public class RuleRunner {
         oas.setTime((System.currentTimeMillis() - start) / 1000f);
 
         var excluded = oas.getViolations().stream().filter(violation -> {
-            if (violation.getLineNumber().getFileName().equals(oas.getOpenApiFile().getName())) {
-                return ApiFunctions.isInPathList(parserResult.getPaths(), excludedPaths, violation.getLineNumber().getLineNumber());
+            if (violation.getLineNumber().getFileName().equals(parserResult.getOpenApiFile().getName())) {
+                return parserResult.isInPathList(excludedPaths, violation.getLineNumber().getLineNumber());
             } else {
                 return false;
             }

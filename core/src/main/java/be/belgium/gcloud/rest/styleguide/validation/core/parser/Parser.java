@@ -1,17 +1,23 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.parser;
 
 import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
-import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions;
+import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.eclipse.microprofile.openapi.models.headers.Header;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.openapi.models.*;
+import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
@@ -19,9 +25,12 @@ import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.servers.Server;
+import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +58,8 @@ public class Parser {
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
         public int oasVersion;
+        public File openApiFile;
+        private Map<String, SourceDefinition> src;
 
         private void assembleAllDefinitions() {
             allDefinitions.addAll(pathDefinitions);
@@ -104,30 +115,82 @@ public class Parser {
             return ref.substring(ref.lastIndexOf('/') + 1);
         }
 
+        /**
+         * Return true if at least one element that {LineRangePath.path IN paths and LineRangePath.start >= lineNumber < LineRangePath.end}
+         *
+         * @param paths
+         * @param lineNumber
+         * @return
+         */
+        public boolean isInPathList(List<String> paths, int lineNumber) {
+            return this.getPaths().stream().anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
+        }
+
     }
 
     public ParserResult parse(OpenApiViolationAggregator openApiViolationAggregator) {
         try {
-            var openAPI = ApiFunctions.buildOpenApiSpecification(openApiFile, openApiViolationAggregator);
+            var openAPI = buildOpenApiSpecification(openApiFile);
             ParserResult result = new ParserResult();
-            result.paths = ApiFunctions.buildAllPathWithLineRange(openAPI, openApiViolationAggregator);
+            result.openApiFile = openApiFile;
+            result.src = getAllLines(openApiFile);
             result.openAPI = openAPI;
-            result.jsonString = getJsonString(openApiViolationAggregator);
+            result.jsonString = getJsonString(result);
             parseServers(result);
             parseComponents(openAPI.getComponents(), result);
             parsePaths(openAPI.getPaths(), result);
             result.assembleAllDefinitions();
             result.setOasVersion(getOasVersion(result.jsonString));
+            buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
-            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage());
+            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0));
             return null;
         }
     }
 
-    private static String getJsonString(OpenApiViolationAggregator oas) throws JsonProcessingException {
+    private boolean checkIsYaml(String fileName) {
+        return fileName.endsWith("yaml") || fileName.endsWith("yml");
+    }
+
+    /**
+     * For all openAPI.path.key build a LineRangePath whith the start and end line of the path.
+     */
+    public void buildAllPathWithLineRange(ParserResult result) {
+        var paths = new ArrayList<LineRangePath>();
+
+        if (result.getPathDefinitions().isEmpty()) {
+            result.paths = Collections.emptyList();
+        } else {
+            result.pathDefinitions.forEach(p -> paths.add(p.getLineRangePath()));
+            Collections.sort(paths);
+
+            result.paths = paths;
+        }
+    }
+
+    public static OpenAPI buildOpenApiSpecification(File file) throws IOException {
+        var openApiParser = new OpenAPIParser();
+        var parseOptions = new ParseOptions();
+        parseOptions.setResolve(true);
+
+        var parserResult = openApiParser.readLocation(file.getAbsolutePath(), null, parseOptions);
+        var openAPI = parserResult.getOpenAPI();
+
+        // parser return a null value when the spec version is not 2.x -3.0.x
+        // and SwAdapter raise a silent JsonParserException
+        // if spec is 3.1 we need the info to raise a rule violation
+        if (openAPI == null) {
+            openAPI = new io.swagger.v3.oas.models.OpenAPI();
+            var version = getLines(file).stream().filter(line -> line.trim().startsWith("openapi: ")).findFirst().orElseThrow().substring(9);
+            openAPI.setOpenapi(version);
+        }
+        return SwAdapter.toOpenAPI(openAPI);
+    }
+
+    private String getJsonString(ParserResult result) throws JsonProcessingException {
         var yamlReader = new ObjectMapper(new YAMLFactory());
-        var obj = yamlReader.readValue(oas.getSrc().get(oas.getOpenApiFile().getName()).stream().collect(Collectors.joining("\n")), Object.class);
+        var obj = yamlReader.readValue(String.join("\n", result.src.get(openApiFile.getName()).getSrc()), Object.class);
         return new ObjectMapper().writeValueAsString(obj);
     }
 
@@ -143,11 +206,10 @@ public class Parser {
         List<Server> serverModels = result.openAPI.getServers();
         for (Server server : serverModels) {
             int index = serverModels.indexOf(server);
-            ServerDefinition def = new ServerDefinition(server, server.getUrl(), openApiFile, index);
+            ServerDefinition def = new ServerDefinition(server, server.getUrl(), openApiFile, index, result);
             result.servers.add(def);
         }
     }
-
 
     private void parsePaths(Paths paths, ParserResult result) {
         if (paths == null) {
@@ -155,7 +217,7 @@ public class Parser {
         }
         Map<String, PathItem> pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            PathDefinition pathDef = new PathDefinition(pathitem, path, openApiFile);
+            PathDefinition pathDef = new PathDefinition(pathitem, path, openApiFile, result);
             result.pathDefinitions.add(pathDef);
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
@@ -233,7 +295,7 @@ public class Parser {
         Map<String, APIResponse> responses = components.getResponses();
         if (responses != null) {
             responses.forEach((name, response) -> {
-                var responseDef = new ResponseDefinition(response, name, openApiFile);
+                var responseDef = new ResponseDefinition(response, name, openApiFile, result);
                 result.responses.add(responseDef);
                 parseResponse(responseDef, result);
             });
@@ -242,7 +304,7 @@ public class Parser {
         Map<String, RequestBody> requestBodies = components.getRequestBodies();
         if (requestBodies != null) {
             requestBodies.forEach((name, requestBody) -> {
-                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApiFile);
+                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApiFile, result);
                 result.requestBodies.add(requestBodyDef);
                 parseRequestBody(requestBodyDef, result);
             });
@@ -251,7 +313,7 @@ public class Parser {
         Map<String, Schema> schemas = components.getSchemas();
         if (schemas != null) {
             schemas.forEach((name, schema) -> {
-                var schemaDef = new SchemaDefinition(schema, name, openApiFile);
+                var schemaDef = new SchemaDefinition(schema, name, openApiFile, result);
                 result.schemas.add(schemaDef);
                 parseSchema(schemaDef, result);
             });
@@ -260,7 +322,7 @@ public class Parser {
         Map<String, Header> headers = components.getHeaders();
         if (headers != null) {
             headers.forEach((name, header) -> {
-                var headerDef = new ResponseHeaderDefinition(header, name, openApiFile);
+                var headerDef = new ResponseHeaderDefinition(header, name, openApiFile, result);
                 result.headers.add(headerDef);
                 parseHeaders(headerDef, result);
             });
@@ -360,6 +422,95 @@ public class Parser {
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         }
+    }
+
+    private static List<String> getLines(File file) throws IOException {
+        var lines = Files.readAllLines(file.toPath());
+
+        // lines > 1 then is a yaml or a pretty json file
+        if (lines.size() > 1) return lines;
+
+        // else is a ugly json file
+        var gson = new GsonBuilder().setPrettyPrinting().create();
+        var pretty = gson.toJson(JsonParser.parseString(lines.get(0)));
+        return pretty.lines().collect(Collectors.toList());
+    }
+
+    private Set<File> getReferencedFiles(File file) throws IOException {
+        Set<File> refFiles = new HashSet<>();
+        resolveReferences(file, refFiles);
+        return refFiles;
+    }
+
+    private void resolveReferences(File file, Set<File> files) throws IOException {
+        Path basePath = java.nio.file.Paths.get(file.getAbsolutePath().split(file.getName())[0]);
+        Set<String> refs = getExternalReferencesFromFile(file);
+        for (String ref : refs) {
+            File refFile = resolveFileFromRef(ref, basePath);
+            if (files.add(refFile)) {
+                resolveReferences(refFile, files);
+            }
+        }
+    }
+
+    private static File resolveFileFromRef(String ref, Path basePath) {
+        File refFile = new File(String.valueOf(basePath.resolve(ref).normalize()));
+        if (refFile.exists() && refFile.isFile()) {
+            return refFile;
+        } else {
+            throw new RuntimeException("File not found: " + refFile.getAbsolutePath());
+        }
+    }
+
+    private Set<String> getExternalReferencesFromFile(File file) throws IOException {
+        Set<String> references = new HashSet<>();
+        ObjectMapper mapper;
+
+        if (this.checkIsYaml(file.getName())) {
+            mapper = new ObjectMapper(new YAMLFactory());
+        } else {
+            mapper = new ObjectMapper();
+        }
+
+        JsonNode jsonNode = mapper.readTree(file);
+        findRefFields(jsonNode, references);
+        return references;
+    }
+
+    private static boolean isExternalReference(String ref) {
+        return !ref.startsWith("#");
+    }
+
+    private static void findRefFields(JsonNode node, Set<String> refs) {
+        if (node.isObject()) {
+            var fields = node.fields();
+            fields.forEachRemaining(field -> {
+                if (field.getKey().equals("$ref")) {
+                    String ref = field.getValue().textValue();
+                    if (isExternalReference(ref)) {
+                        refs.add(ref.split("#")[0]);
+                    }
+                } else {
+                    findRefFields(field.getValue(), refs);
+                }
+            });
+        }
+        if (node.isArray()) {
+            var arrayField = (ArrayNode) node;
+            arrayField.forEach(field -> findRefFields(field, refs));
+        }
+    }
+
+    private Map<String, SourceDefinition> getAllLines(File file) throws IOException {
+        Map<String, SourceDefinition> allLines = new HashMap<>();
+        SourceDefinition mainFile = new SourceDefinition(file.getName(), Files.readString(file.toPath()), checkIsYaml(file.getName()));
+        allLines.put(file.getName(), mainFile);
+        Set<File> refFiles = getReferencedFiles(file);
+        for (File refFile : refFiles) {
+            SourceDefinition refFileDef = new SourceDefinition(refFile.getName(), Files.readString(refFile.toPath()), checkIsYaml(refFile.getName()));
+            allLines.put(refFile.getName(), refFileDef);
+        }
+        return allLines;
     }
 
 

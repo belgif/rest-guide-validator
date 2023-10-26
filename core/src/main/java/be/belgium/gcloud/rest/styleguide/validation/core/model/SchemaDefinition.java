@@ -1,6 +1,7 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.io.File;
@@ -28,8 +29,8 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
      * @param name
      * @param openApiFile
      */
-    public SchemaDefinition(Schema openApiObject, String name, File openApiFile) {
-        super(openApiObject, name, openApiFile, new JsonPointer("/components/schemas").add(name));
+    public SchemaDefinition(Schema openApiObject, String name, File openApiFile, Parser.ParserResult result) {
+        super(openApiObject, name, openApiFile, new JsonPointer("/components/schemas").add(name), result);
     }
 
     @Override

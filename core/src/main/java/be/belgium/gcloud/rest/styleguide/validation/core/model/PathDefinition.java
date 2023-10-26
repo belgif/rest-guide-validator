@@ -1,14 +1,15 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import org.eclipse.microprofile.openapi.models.PathItem;
 
 import java.io.File;
 
 public class PathDefinition extends OpenApiDefinition<PathItem>{
 
-    public PathDefinition(PathItem model, String identifier, File openApiFile) {
-        super(model, identifier, openApiFile, new JsonPointer("/paths").add(identifier));
+    public PathDefinition(PathItem model, String identifier, File openApiFile, Parser.ParserResult result) {
+        super(model, identifier, openApiFile, new JsonPointer("/paths").add(identifier), result);
     }
 
     @Override
