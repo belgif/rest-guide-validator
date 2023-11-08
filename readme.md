@@ -16,7 +16,7 @@ The following example demonstrates a basic plugin configuration for validating o
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version>1.2.1</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -26,7 +26,7 @@ The following example demonstrates a basic plugin configuration for validating o
         </executions>
         <configuration>
             <files>
-                <file>src/main/resources/swagger.yaml</file>
+                <file>src/main/resources/openapi.yaml</file>
             </files>
         </configuration>
     </plugin>
@@ -36,44 +36,15 @@ You can now build you package as usual with:
 ```bash
 mvn package  
 ```
-### Folder with global exclusions
-With the following configuration, the plugin will check all files in a folder.
-It 'll ignore the validation issues for the paths specified in 'excludeResources'.
-
-```xml
-<plugins>
-    <plugin>
-        <groupId>be.belgium.gcloud.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.0.0</version>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>api-validator</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-            <excludeResources>
-                <excludeResource>/health</excludeResource>
-                <excludeResource>/health/readinessProbe</excludeResource>
-                <excludeResource>/health/livenessProbe</excludeResource>
-            </excludeResources>
-            <files>
-                <file>target/classes/</file> 
-            </files>
-        </configuration>
-    </plugin>
-</plugins>
-```
 ### Exclusions in OpenApi file
-The "x-ignore-rules" object can be added inside a yaml object in the openapi file to ignore this object for a specific rule or multiple rules.
+The "x-ignore-rules" object can be added inside a yaml object in the openapi file to ignore this object for one or more rules.
 Example:
 ```yaml
 BelgianRegionCode:
       description: Belgian Region represented by an ISO 3166-2:BE code
       x-ignore-rules:
-         "cod-design": Exempt existing (ISO) code from lowerCamelCase rule
+         "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
+         #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
       type: string
       enum: 
         - BE-BRU
@@ -136,52 +107,13 @@ You can execute the plugin to validate the api files without breaking the build 
     </plugin>
 </plugins>
 ```
-### File with Exclusions
-In the following example '/health' will be ignored in all files. No Exception will be raised if the path doesn't exist.
-The 'fileWithExclusions' is useful with the legacy apis.
-```xml
-<plugins>
-    <plugin>
-        <groupId>be.belgium.gcloud.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>api-validator</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-            <excludeResources>
-                <excludeResource>/health</excludeResource>
-            </excludeResources>
-            <fileWithExclusions>
-                <fileWithExclusion>
-                    <file>swagger-1.yaml</file>
-                    <excludesPaths>
-                        <excludesPath>/categories</excludesPath>
-                    </excludesPaths>
-                </fileWithExclusion>
-                <fileWithExclusion>
-                    <file>swagger-2.yaml</file>
-                    <excludesPaths>
-                        <excludesPath>/entity/contacts/{contactId}</excludesPath>
-                        <excludesPath>/entity/contacts/{contactId}/invalidData</excludesPath>
-                    </excludesPaths>
-                </fileWithExclusion>
-            </fileWithExclusions>
-        </configuration>
-    </plugin>
-</plugins>
-```   
 ## References
 
 | Parameter | Type | Default | Description                                                                      |
 | --------- | ---- | ------- |----------------------------------------------------------------------------------|
 | files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.               |
-| fileWithExclusions | Collection of FileWithExclusion |  | a file and a collection of excludesPath                                          |
-| excludeResources | Collection of String | | path to exclude from the validation for all files                                |
+| fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-files` should be used instead.                                         |
+| excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-files` should be used instead.                                |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                       |
 | outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE |
 | outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                    |
