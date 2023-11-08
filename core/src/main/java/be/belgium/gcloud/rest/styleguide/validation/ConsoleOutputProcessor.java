@@ -1,29 +1,29 @@
 package be.belgium.gcloud.rest.styleguide.validation;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+import be.belgium.gcloud.rest.styleguide.validation.core.Violation;
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ConsoleOutputProcessor implements OutputProcessor {
     @Override
     public void process(OpenApiViolationAggregator violationAggregator) {
-        Collections.sort(violationAggregator.getViolations());
-        System.out.printf("\n%d OpenApi Violations\n", violationAggregator.getViolations().size()); //NOSONAR
 
-        violationAggregator.getViolations().forEach(v -> {
-            switch (v.type) {
-                case MANDATORY:
-                    System.err.println(v);
-                    break; //NOSONAR
-                case RECOMMENDED:
-                    System.out.println(v);
-                    break; //NOSONAR
-                case STYLE:
-                    System.out.println(v);
-                    break; //NOSONAR
-                default:
-                    System.out.println(v); //NOSONAR
+        List<Violation> violations = violationAggregator.getViolations().stream().filter(v -> v.type != ViolationType.IGNORED).sorted().collect(Collectors.toList());
+        List<Violation> ignored = violationAggregator.getViolations().stream().filter(v -> v.type == ViolationType.IGNORED).sorted().collect(Collectors.toList());
+
+        System.out.printf("\n OpenApi validation summary: %d violations and %d ignored violations.", violations.size(), ignored.size());
+
+        violations.forEach(v -> {
+            if (Objects.requireNonNull(v.type) == ViolationType.MANDATORY) {
+                System.err.println(v);
+            } else {
+                System.out.println(v);
             }
         });
+        ignored.forEach(v -> System.out.println(v.toString()));
     }
 }

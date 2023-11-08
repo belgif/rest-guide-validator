@@ -233,7 +233,7 @@ public class LineNumberTest {
         var def = defs.stream().filter(definition -> "/paths/~1everythingIsWrongHere".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
-        SchemaDefinition schemaDefinition = new SchemaDefinition(null, def.get(), "mySchema", new JsonPointer("/get/parameters/1/schema/items/enum/1"));
+        SchemaDefinition schemaDefinition = new SchemaDefinition(def.get().getModel().getGET().getParameters().get(1).getSchema(), def.get(), "mySchema", new JsonPointer("/get/parameters/1/schema/items/enum/1"));
 
         assertEquals("nestedArrays.yaml", schemaDefinition.getLineNumber().getFileName());
         assertEquals(27, schemaDefinition.getLineNumber().getLineNumber());

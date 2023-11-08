@@ -11,10 +11,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Constructible;
+import org.eclipse.microprofile.openapi.models.Extensible;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Getter
@@ -31,18 +34,14 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final JsonPointer jsonPointer;
 
     /**
+     * Key: Name of the ignored rule.
+     * Value: Reason why the rule is ignored.
+     */
+    private final Map<String, String> ignoredRules;
+
+    /**
      * Constructor for an inline definition
      */
-    protected OpenApiDefinition(T model, OpenApiDefinition<?> parent, String identifier, String relativeJsonPointer) {
-        this.result = parent.getResult();
-        this.model = model;
-        this.definitionType = DefinitionType.INLINE;
-        this.parent = parent;
-        this.identifier = identifier;
-        this.openApiFile = parent.getOpenApiFile();
-        this.jsonPointer = new JsonPointer(parent.getJsonPointer() + relativeJsonPointer);
-    }
-
     protected OpenApiDefinition(T model, OpenApiDefinition<?> parent, String identifier, JsonPointer relativeJsonPointer) {
         this.result = parent.getResult();
         this.model = model;
@@ -51,20 +50,12 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.identifier = identifier;
         this.openApiFile = parent.getOpenApiFile();
         this.jsonPointer = parent.getJsonPointer().add(relativeJsonPointer);
+        this.ignoredRules = parseIgnoredRules();
     }
 
     /**
      * Constructor for a definition under components
      */
-    protected OpenApiDefinition(T model, String identifier, File openApiFile, String jsonPointer, Parser.ParserResult result) {
-        this.result = result;
-        this.model = model;
-        this.definitionType = DefinitionType.TOP_LEVEL;
-        this.identifier = identifier;
-        this.openApiFile = openApiFile;
-        this.jsonPointer = new JsonPointer(jsonPointer);
-    }
-
     protected OpenApiDefinition(T model, String identifier, File openApiFile, JsonPointer jsonPointer, Parser.ParserResult result) {
         this.result = result;
         this.model = model;
@@ -72,6 +63,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.identifier = identifier;
         this.openApiFile = openApiFile;
         this.jsonPointer = jsonPointer;
+        this.ignoredRules = parseIgnoredRules();
     }
 
     public enum DefinitionType {
@@ -319,6 +311,35 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         }
         log.info("LineNumber for end of " + jsonPointer + " might not be correct!");
         return -1;
+    }
+
+    private Map<String, String> parseIgnoredRules() {
+        Map<String, Object> extensions;
+        extensions = ((Extensible<?>) model).getExtensions();
+        if (extensions != null && extensions.containsKey("x-ignore-rules")) {
+            Object ignoreObj = extensions.get("x-ignore-rules");
+            if (ignoreObj instanceof Map) {
+                Map<String, String> resultMap = new HashMap<>();
+                Map<?, ?> ignored = (Map<?, ?>) ignoreObj;
+                for (Object key : ignored.keySet()) {
+                    if (key instanceof String) {
+                        String k = (String) key;
+                        if (ignored.get(key) instanceof String) {
+                            String v = (String) ignored.get(key);
+                            resultMap.put(k, v);
+                        } else {
+                            log.error("Value of {} in x-ignored-rules for {} not of type String", k, jsonPointer.toPrettyString());
+                        }
+                    } else {
+                        log.error("Property in x-ignored-rules for {} not of type String", jsonPointer.toPrettyString());
+                    }
+                }
+                return resultMap;
+            } else {
+                log.error("x-ignored-rules for {} not of type Object with rules/reasons as keys and values", jsonPointer.toPrettyString());
+            }
+        }
+        return new HashMap<>();
     }
 
 }

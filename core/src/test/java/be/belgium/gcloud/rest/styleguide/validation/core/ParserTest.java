@@ -84,4 +84,21 @@ public class ParserTest {
         assertEquals(1, files.size());
     }
 
+    @Test
+    void testIgnoreExtensionIsParsed() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/ignoreTests/ignoreTest.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<SchemaDefinition> defs = result.getSchemas();
+        var def = defs.stream().filter(definition -> "/paths/~1myFirstPath/get/parameters/0/schema".equals(definition.getJsonPointer().toString())).findAny();
+        assertTrue(def.isPresent());
+
+        assertFalse(def.get().getIgnoredRules().isEmpty());
+        assertEquals(1, def.get().getIgnoredRules().size());
+        assertTrue(def.get().getIgnoredRules().containsKey("cod-design"));
+        assertEquals("Test reason", def.get().getIgnoredRules().get("cod-design"));
+
+    }
+
 }

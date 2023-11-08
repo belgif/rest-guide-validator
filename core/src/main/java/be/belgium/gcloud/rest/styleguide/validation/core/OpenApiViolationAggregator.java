@@ -40,6 +40,13 @@ public class OpenApiViolationAggregator {
 
     public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition, ViolationType violationType) {
         Line lineNumber = openApiDefinition.getLineNumber();
+        if (!openApiDefinition.getIgnoredRules().isEmpty()) {
+            String lookupRuleName = ruleName.replace("[", "").replace("]", "");
+            if (openApiDefinition.getIgnoredRules().containsKey(lookupRuleName)) {
+                violationType = ViolationType.IGNORED;
+                message = "Ignored: " + openApiDefinition.getIgnoredRules().get(lookupRuleName);
+            }
+        }
         this.addViolation(ruleName, message + "\t" + openApiDefinition.getJsonPointer().toPrettyString(), lineNumber, violationType);
     }
 

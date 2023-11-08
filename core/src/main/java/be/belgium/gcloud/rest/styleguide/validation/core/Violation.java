@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Map;
-
 @Getter
 @AllArgsConstructor
 @Builder
@@ -30,7 +28,7 @@ public class Violation implements Comparable<Violation> {
         if (lineNumber.getFileName().equals(o.lineNumber.getFileName())) {
             return Integer.compare(lineNumber.getLineNumber(), o.lineNumber.getLineNumber());
         } else {
-            return 0;
+            return lineNumber.getFileName().compareTo(o.lineNumber.getFileName());
         }
     }
 }
