@@ -1,7 +1,10 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.model;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.JsonPointer;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+
+import java.io.File;
 
 public class ParameterDefinition extends OpenApiDefinition<Parameter> {
     /**
@@ -10,6 +13,10 @@ public class ParameterDefinition extends OpenApiDefinition<Parameter> {
      */
     public ParameterDefinition(Parameter openApiObject, OpenApiDefinition<?> parent, String name, int index) {
         super(openApiObject, parent, name, JsonPointer.relative("parameters").add(index));
+    }
+
+    public ParameterDefinition(Parameter openApiObject, String name, File openApiFile, Parser.ParserResult result) {
+        super(openApiObject, name, openApiFile, new JsonPointer("/components/parameters").add(name), result);
     }
 
     @Override

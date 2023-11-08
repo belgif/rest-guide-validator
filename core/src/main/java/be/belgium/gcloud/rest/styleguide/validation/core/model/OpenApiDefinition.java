@@ -107,21 +107,16 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     public LineRangePath getLineRangePath() {
         Line startLine = getLineNumber();
         LineRangePath range = new LineRangePath(identifier, startLine.getLineNumber());
-        range.setEnd(getEndLineNumber(startLine.getFileName()));
+        range.setEnd(getEndLineNumber(openApiFile));
         return range;
     }
 
     private Line getTopLevelLineNumber() {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            for (String fileName : result.getSrc().keySet()) {
-                List<String> pointers = handleJsonPointer();
-                if (pointers == null) {
-                    return new Line(openApiFile.getName(), 0);
-                }
-                Line line = searchObjectInFile(fileName, pointers, false);
-                if (line != null) {
-                    return line;
-                }
+            List<String> pointers = handleJsonPointer();
+            Line line = searchObjectInFile(this.openApiFile, pointers, false);
+            if (line != null) {
+                return line;
             }
             log.warn("No correct line number found for: " + jsonPointer);
             return new Line(openApiFile.getName(), 0);
@@ -131,9 +126,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private Line getInlineLineNumber() {
-        Line lineNumber = getTopLevelParent().getLineNumber();
-        lineNumber = searchObjectInFile(lineNumber.getFileName(), handleJsonPointer(), true);
-        return lineNumber;
+        return searchObjectInFile(getTopLevelParent().openApiFile, handleJsonPointer(), true);
     }
 
     private List<String> handleJsonPointer() {
@@ -155,22 +148,22 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         return pointers;
     }
 
-    private Line searchObjectInFile(String fileName, List<String> pointers, boolean approximate) {
+    private Line searchObjectInFile(File file, List<String> pointers, boolean approximate) {
         JsonFactory factory;
-        if (result.getSrc().get(fileName).isYaml()) {
+        if (result.getSrc().get(file.getAbsolutePath()).isYaml()) {
             factory = new YAMLFactory();
         } else {
             factory = new JsonFactory();
         }
 
         try {
-            JsonParser jsonParser = factory.createParser(result.getSrc().get(fileName).getSrc());
+            JsonParser jsonParser = factory.createParser(result.getSrc().get(file.getAbsolutePath()).getSrc());
             int ln = followPointers(pointers, jsonParser, approximate);
             if (ln != -1) {
-                return new Line(fileName, ln);
+                return new Line(file.getName(), ln);
             }
         } catch (IOException ex) {
-            throw new RuntimeException("Could not parse " + fileName + " for linenumber calculation", ex);
+            throw new RuntimeException("Could not parse " + file.getName() + " for linenumber calculation", ex);
         }
         return null;
     }
@@ -244,9 +237,9 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         }
     }
 
-    private int getEndLineNumber(String fileName) {
+    private int getEndLineNumber(File file) {
         JsonFactory factory;
-        if (result.getSrc().get(fileName).isYaml()) {
+        if (result.getSrc().get(file.getAbsolutePath()).isYaml()) {
             factory = new YAMLFactory();
         } else {
             factory = new JsonFactory();
@@ -254,13 +247,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
         List<String> pointers = handleJsonPointer();
         try {
-            JsonParser jsonParser = factory.createParser(result.getSrc().get(fileName).getSrc());
+            JsonParser jsonParser = factory.createParser(result.getSrc().get(file.getAbsolutePath()).getSrc());
             int ln = followPointersEndOfObject(pointers, jsonParser);
             if (ln != -1) {
                 return ln;
             }
         } catch (IOException ex) {
-            throw new RuntimeException("Could not parse " + fileName + " for linenumber calculation", ex);
+            throw new RuntimeException("Could not parse " + file.getName() + " for linenumber calculation", ex);
         }
         return 0;
     }

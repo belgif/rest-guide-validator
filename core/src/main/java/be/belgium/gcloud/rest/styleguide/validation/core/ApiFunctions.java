@@ -43,15 +43,13 @@ public class ApiFunctions {
         try {
             var responses = path.getModel().getGET().getResponses().getAPIResponses().values().stream().flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
             responses.forEach(inlineSchema -> {
-                SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
-                Schema schema = schemaDefinition.getModel();
-                if (schema.getProperties() != null && schema.getProperties().containsKey("items") && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
-                    isCollection.set(true);
-                }
+                    SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
+                    Schema schema = schemaDefinition.getModel();
+                    if (schema.getProperties() != null && schema.getProperties().containsKey("items") && schema.getProperties().get("items").getType() != null && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
+                        isCollection.set(true);
+                    }
             });
-        } catch (NullPointerException ex) {
-            return false;
-        }
+        } catch (NullPointerException ignored) {}
         return isCollection.get();
     }
 

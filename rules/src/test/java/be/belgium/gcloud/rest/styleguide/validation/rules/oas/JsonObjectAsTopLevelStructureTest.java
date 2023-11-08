@@ -17,7 +17,7 @@ public class JsonObjectAsTopLevelStructureTest extends AbstractOasRuleTest {
 
     @Test
     public void testInvalidOpenApi() {
-        assertErrorCount(7, callRules("openapi_bad.yaml"));
+        assertErrorCount(6, callRules("openapi_bad.yaml"));
     }
 
     @Test

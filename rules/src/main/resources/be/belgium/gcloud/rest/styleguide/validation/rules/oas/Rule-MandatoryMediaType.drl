@@ -8,6 +8,7 @@ import java.util.Set;
 global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition.DefinitionType;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.MediaTypeDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 
 function Set includedMediaTypes() {
@@ -16,7 +17,7 @@ function Set includedMediaTypes() {
 
 function void violationMandatoryMediaType(OpenApiViolationAggregator oas, MediaTypeDefinition mediaTypeDefinition){
   oas.addViolation("[rep-struct]",
-    "Response has a schema of non-binary type, but doesn't specify a structured media type (one compatible with application/json, application/xml, multipart/*, text/xml)",
+    "Payload has a schema of non-binary type, but doesn't specify a structured media type (one compatible with application/json, application/xml, multipart/*, text/xml)",
     mediaTypeDefinition);
 }
 

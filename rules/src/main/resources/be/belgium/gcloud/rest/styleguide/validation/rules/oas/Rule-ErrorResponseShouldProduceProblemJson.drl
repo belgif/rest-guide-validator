@@ -11,6 +11,7 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.media.Content;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition.DefinitionType;
 global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import java.util.Set;
 
@@ -22,13 +23,17 @@ function void violationErrorResponseWrongMediaType(OpenApiViolationAggregator oa
     response);
 }
 
+// Check for OAS2 is necessary because top level responses in OAS2 do not have a mediaType. If there is a ref in the inline response, the content is null.
+// Inline responses in OAS2 are still checked.
 rule "Error Response with problem+json media type is missing"
   when
     $operationDefinition: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
     OperationDefinition($statusCode: /model/responses/APIResponses/keySet#String) from $operationDefinition
     String( this.startsWith("4") || this.startsWith("5") || this == "default" ) from $statusCode
     $response: APIResponse() from $operationDefinition.getModel().getResponses().getAPIResponse($statusCode)
+    not(APIResponse(/content/mediaTypes[keySet contains "application/problem+json"]) from $response)
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    eval(parserResult.oasVersion != 2 || $responseDefinition.getDefinitionType() == DefinitionType.INLINE )
     not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
   then
     violationErrorResponseWrongMediaType(oas, $operationDefinition, $responseDefinition);

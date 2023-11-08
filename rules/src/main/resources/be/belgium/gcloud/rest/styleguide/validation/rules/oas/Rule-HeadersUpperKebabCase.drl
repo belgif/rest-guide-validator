@@ -25,7 +25,7 @@ function void violationResponseHeaderParam(OpenApiViolationAggregator oas, Respo
 rule "RequestHeader parameter should be Upper-Kebab-Case"
   when
     $parameterDefinition: ParameterDefinition(getModel().getIn().equals(In.HEADER))
-    ParameterDefinition($parameterName: /identifier) from $parameterDefinition
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
     eval( !ApiFunctions.isUpperKebabCase($parameterName) )
   then
     violationRequestHeaderParam(oas, $parameterDefinition);

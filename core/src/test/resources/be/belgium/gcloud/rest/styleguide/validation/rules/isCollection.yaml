@@ -38,3 +38,36 @@ paths:
             application/json:
               schema:
                 type: string
+  /pathWithItemsWithoutType:
+    get:
+      description: gets items without type
+      operationId: itemsWithoutType
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    description: description
+  /pathWithAndWithoutType:
+    get:
+      description: gets items without type
+      operationId: itemsWithoutType
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    description: description
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    description: description

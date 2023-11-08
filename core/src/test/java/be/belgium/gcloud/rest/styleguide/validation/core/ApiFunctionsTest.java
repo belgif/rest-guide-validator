@@ -108,4 +108,30 @@ class ApiFunctionsTest {
         assertTrue(ApiFunctions.existsPathWithPathParamAfter(logos.get().getIdentifier(), result));
     }
 
+    @Test
+    void testItemsWithoutType() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<PathDefinition> defs = result.getPathDefinitions();
+
+        var items = defs.stream().filter(definition -> "/pathWithItemsWithoutType".equals(definition.getIdentifier())).findAny();
+        assertTrue(items.isPresent());
+        assertFalse(ApiFunctions.hasCollectionResponse(items.get(), result));
+    }
+
+    @Test
+    void testItemsWithAndWithoutType() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<PathDefinition> defs = result.getPathDefinitions();
+
+        var items = defs.stream().filter(definition -> "/pathWithAndWithoutType".equals(definition.getIdentifier())).findAny();
+        assertTrue(items.isPresent());
+        assertTrue(ApiFunctions.hasCollectionResponse(items.get(), result));
+    }
+
 }

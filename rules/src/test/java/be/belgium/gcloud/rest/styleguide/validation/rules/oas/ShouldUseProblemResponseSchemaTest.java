@@ -13,4 +13,15 @@ public class ShouldUseProblemResponseSchemaTest extends AbstractOasRuleTest {
     public void testInvalidSwagger() {
         assertErrorCount(3, callRules("swagger_bad.yaml"));
     }
+
+    @Test
+    public void testValidOpenApi() {
+        assertNoViolations(callRules("openapi.yaml"));
+    }
+
+    @Test
+    public void testInvalidOpenApi() {
+        assertErrorCount(3, callRules("openapi_bad.yaml"));
+    }
+
 }

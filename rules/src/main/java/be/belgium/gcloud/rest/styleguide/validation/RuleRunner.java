@@ -24,7 +24,6 @@ public class RuleRunner {
         }
 
         kSession.setGlobal("oas", oas);
-        kSession.setGlobal("jsonString", parserResult.getJsonString());
         kSession.setGlobal("parserResult", parserResult);
         var start = System.currentTimeMillis();
         List<Command> commands = new ArrayList<>();

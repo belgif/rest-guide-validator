@@ -203,13 +203,7 @@ public class LineNumberTest {
         var result = new Parser(file).parse(oas);
 
         Set<MediaTypeDefinition> defs = result.getMediaTypes();
-        var def = defs.stream().filter(definition -> "/paths/~1faultyProblemResponseResponse/get/responses/default/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
-        assertTrue(def.isPresent());
-
-        assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());
-        assertEquals(40, def.get().getLineNumber().getLineNumber());
-
-        def = defs.stream().filter(definition -> "/components/responses/ProblemResponse/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
+        var def = defs.stream().filter(definition -> "/components/responses/ProblemResponse/content/application~1problem+json".equals(definition.getJsonPointer().toString())).findAny();
         assertTrue(def.isPresent());
 
         assertEquals("mediaTypeDefinitions.yaml", def.get().getLineNumber().getFileName());

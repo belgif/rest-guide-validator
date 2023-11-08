@@ -4,7 +4,6 @@ import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
 import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -54,7 +53,6 @@ public class Parser {
         private Set<ServerDefinition> servers = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
-        public String jsonString;
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
         public int oasVersion;
@@ -130,27 +128,25 @@ public class Parser {
 
     public ParserResult parse(OpenApiViolationAggregator openApiViolationAggregator) {
         try {
-            var openAPI = buildOpenApiSpecification(openApiFile);
             ParserResult result = new ParserResult();
             result.openApiFile = openApiFile;
-            result.src = getAllLines(openApiFile);
-            result.openAPI = openAPI;
-            result.jsonString = getJsonString(result);
-            parseServers(result);
-            parseComponents(openAPI.getComponents(), result);
-            parsePaths(openAPI.getPaths(), result);
+            result.src = readOpenApiFiles(openApiFile);
+            for (SourceDefinition sourceDefinition : result.src.values()) {
+                parseComponents(sourceDefinition, result);
+                if (sourceDefinition.getFile() == result.openApiFile) {
+                    result.openAPI = sourceDefinition.getOpenApi();
+                    result.setOasVersion(getOasVersion(sourceDefinition.getSrc()));
+                    parseServers(result);
+                    parsePaths(sourceDefinition, result);
+                }
+            }
             result.assembleAllDefinitions();
-            result.setOasVersion(getOasVersion(result.jsonString));
             buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0));
             return null;
         }
-    }
-
-    private boolean checkIsYaml(String fileName) {
-        return fileName.endsWith("yaml") || fileName.endsWith("yml");
     }
 
     /**
@@ -172,7 +168,7 @@ public class Parser {
     public static OpenAPI buildOpenApiSpecification(File file) throws IOException {
         var openApiParser = new OpenAPIParser();
         var parseOptions = new ParseOptions();
-        parseOptions.setResolve(true);
+        parseOptions.setResolve(false);
 
         var parserResult = openApiParser.readLocation(file.getAbsolutePath(), null, parseOptions);
         var openAPI = parserResult.getOpenAPI();
@@ -186,12 +182,6 @@ public class Parser {
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
-    }
-
-    private String getJsonString(ParserResult result) throws JsonProcessingException {
-        var yamlReader = new ObjectMapper(new YAMLFactory());
-        var obj = yamlReader.readValue(String.join("\n", result.src.get(openApiFile.getName()).getSrc()), Object.class);
-        return new ObjectMapper().writeValueAsString(obj);
     }
 
     private static int getOasVersion(String jsonString) {
@@ -211,7 +201,9 @@ public class Parser {
         }
     }
 
-    private void parsePaths(Paths paths, ParserResult result) {
+    private void parsePaths(SourceDefinition sourceDefinition, ParserResult result) {
+        Paths paths = sourceDefinition.getOpenApi().getPaths();
+        var openApiFile = sourceDefinition.getFile();
         if (paths == null) {
             return;
         }
@@ -288,7 +280,9 @@ public class Parser {
         }
     }
 
-    public void parseComponents(Components components, ParserResult result) {
+    public void parseComponents(SourceDefinition sourceDefinition, ParserResult result) {
+        Components components = sourceDefinition.getOpenApi().getComponents();
+        var openApiFile = sourceDefinition.getFile();
         if (components == null) {
             return;
         }
@@ -327,7 +321,14 @@ public class Parser {
                 parseHeaders(headerDef, result);
             });
         }
-
+        Map<String, Parameter> parameters = components.getParameters();
+        if (parameters != null) {
+            parameters.forEach((name, parameter) -> {
+                var parameterDef = new ParameterDefinition(parameter, name, openApiFile, result);
+                result.parameters.add(parameterDef);
+                parseParameter(parameterDef, result);
+            });
+        }
     }
 
     public void parseRequestBody(RequestBodyDefinition requestBodyDef, ParserResult result) {
@@ -466,7 +467,7 @@ public class Parser {
         Set<String> references = new HashSet<>();
         ObjectMapper mapper;
 
-        if (this.checkIsYaml(file.getName())) {
+        if (SourceDefinition.checkIsYaml(file.getName())) {
             mapper = new ObjectMapper(new YAMLFactory());
         } else {
             mapper = new ObjectMapper();
@@ -501,16 +502,16 @@ public class Parser {
         }
     }
 
-    private Map<String, SourceDefinition> getAllLines(File file) throws IOException {
-        Map<String, SourceDefinition> allLines = new HashMap<>();
-        SourceDefinition mainFile = new SourceDefinition(file.getName(), Files.readString(file.toPath()), checkIsYaml(file.getName()));
-        allLines.put(file.getName(), mainFile);
+    private Map<String, SourceDefinition> readOpenApiFiles(File file) throws IOException {
+        Map<String, SourceDefinition> openApiFiles = new HashMap<>();
+        SourceDefinition mainFile = new SourceDefinition(file, buildOpenApiSpecification(file));
+        openApiFiles.put(file.getAbsolutePath(), mainFile);
         Set<File> refFiles = getReferencedFiles(file);
         for (File refFile : refFiles) {
-            SourceDefinition refFileDef = new SourceDefinition(refFile.getName(), Files.readString(refFile.toPath()), checkIsYaml(refFile.getName()));
-            allLines.put(refFile.getName(), refFileDef);
+            SourceDefinition refFileDef = new SourceDefinition(refFile, buildOpenApiSpecification(refFile));
+            openApiFiles.put(refFile.getAbsolutePath(), refFileDef);
         }
-        return allLines;
+        return openApiFiles;
     }
 
 
