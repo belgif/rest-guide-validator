@@ -66,6 +66,20 @@ It 'll ignore the validation issues for the paths specified in 'excludeResources
     </plugin>
 </plugins>
 ```
+### Exclusions in OpenApi file
+The "x-ignore-rules" object can be added inside a yaml object in the openapi file to ignore this object for a specific rule or multiple rules.
+Example:
+```yaml
+BelgianRegionCode:
+      description: Belgian Region represented by an ISO 3166-2:BE code
+      x-ignore-rules:
+         "cod-design": Exempt existing (ISO) code from lowerCamelCase rule
+      type: string
+      enum: 
+        - BE-BRU
+        - BE-WAL
+        - BE-VLG
+```
 ### Output
 The plugin can use the following options to write the validation error: 
 * CONSOLE: default option. Write to the console.
