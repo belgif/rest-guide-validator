@@ -28,8 +28,8 @@ public class OpenApiValidator {
      * @param outputProcessors
      * @return
      */
-    public static boolean isOasValid(@NotNull File file, List<String> excludedPaths, @Nullable OutputProcessor... outputProcessors) {
-        var oas = callRuleOAS(file, excludedPaths);
+    public static boolean isOasValid(@NotNull File file, List<String> excludedPaths, List<String> excludedFiles, @Nullable OutputProcessor... outputProcessors) {
+        var oas = callRuleOAS(file, excludedPaths, excludedFiles);
 
         if (outputProcessors != null) for (OutputProcessor outputProcessor : outputProcessors) {
             outputProcessor.process(oas);
@@ -37,9 +37,9 @@ public class OpenApiValidator {
         return oas.getViolations().stream().filter(violation -> violation.type == ViolationType.MANDATORY).collect(Collectors.toList()).isEmpty();
     }
 
-    public static OpenApiViolationAggregator callRuleOAS(File openApiFile, List<String> excludedPaths) {
+    public static OpenApiViolationAggregator callRuleOAS(File openApiFile, List<String> excludedPaths, List<String> excludedFiles) {
         var kSession = kContainer.newStatelessKieSession();
-        var oas = RuleRunner.execute(openApiFile, excludedPaths, kSession);
+        var oas = RuleRunner.execute(openApiFile, excludedPaths, excludedFiles, kSession);
         return oas;
     }
 }

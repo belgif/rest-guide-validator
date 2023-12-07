@@ -98,7 +98,6 @@ public class ParserTest {
         assertEquals(1, def.get().getIgnoredRules().size());
         assertTrue(def.get().getIgnoredRules().containsKey("cod-design"));
         assertEquals("Test reason", def.get().getIgnoredRules().get("cod-design"));
-
     }
 
 }

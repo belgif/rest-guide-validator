@@ -28,8 +28,16 @@ public class StandaloneMojo extends AbstractMojo {
 
     @Parameter(property = "api-validator.files")
     List<File> files = new ArrayList<>();
+
+    /**
+     * @deprecated Please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
+     */
+    @Deprecated(since = "1.2.2")
     @Parameter(property = "api-validator.excludeResources")
     List<String> excludeResources = new ArrayList<>();
+
+    @Parameter(property = "api-validator.excludedFiles")
+    List<String> excludedFiles = new ArrayList<>();
     private Set<OutputProcessor> outputProcessors;
 
     List<FileWithExclusion> filesToProcess = new ArrayList<>();
@@ -89,7 +97,7 @@ public class StandaloneMojo extends AbstractMojo {
         var isValid = new AtomicBoolean(true);
         filesToProcess.forEach(fileWithExclusion -> {
             var file = fileWithExclusion.getFile();
-            isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
+            isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), excludedFiles, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
         });
 
         if (filesToProcess.isEmpty()) {

@@ -514,5 +514,4 @@ public class Parser {
         return openApiFiles;
     }
 
-
 }

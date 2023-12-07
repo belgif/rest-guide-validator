@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * - api-validator.files: a list of files to validate
  * - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
  * - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
+ * - api-validator.excludedFiles: Files that should not be validated.
  * - ${project} root directory for api-validator.files
  */
 @Mojo(name = "api-validator", defaultPhase = LifecyclePhase.TEST_COMPILE)
@@ -32,8 +33,15 @@ public class OpenApiMojo extends AbstractMojo {
     @Parameter(property = "api-validator.files")
     List<File> files = new ArrayList<>();
 
+    /**
+     * @deprecated Please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
+     */
+    @Deprecated(since = "1.2.2")
     @Parameter(property = "api-validator.fileWithExclusions")
     List<FileWithExclusion> fileWithExclusions = new ArrayList<>();
+
+    @Parameter(property = "api-validator.excludedFiles")
+    List<String> excludedFiles = new ArrayList<>();
 
     @Parameter(property = "api-validator.skipOnErrors ")
     boolean skipOnErrors = false;
@@ -47,6 +55,10 @@ public class OpenApiMojo extends AbstractMojo {
     @Parameter(readonly = true, defaultValue = "${project}")
     MavenProject mavenProject;
 
+    /**
+     * @deprecated Please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
+     */
+    @Deprecated(since = "1.2.2")
     @Parameter(property = "api-validator.excludeResources")
     List<String> excludeResources = new ArrayList<>();
 
@@ -177,8 +189,7 @@ public class OpenApiMojo extends AbstractMojo {
                     .map(o -> (DirectoryOutputProcessor) o)
                     .forEach(processor -> processor.setOutput(outputDir));
 
-            // isValid = isValid && OpenApiValidator.isOasValid(...)
-            isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
+            isValid.set(OpenApiValidator.isOasValid(file, fileWithExclusion.getExcludesPaths(), excludedFiles, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get());
         });
         if (filesToProcess.isEmpty()) {
             isValid.set(false);

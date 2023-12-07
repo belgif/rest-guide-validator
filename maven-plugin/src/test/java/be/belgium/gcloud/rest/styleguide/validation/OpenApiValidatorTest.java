@@ -18,6 +18,6 @@ public class OpenApiValidatorTest {
     void isOasValid() {
         var file = new File(getClass().getResource("rules/swagger6.yaml").getFile());
         List<String> excludedPaths = new ArrayList<>();
-        assertTrue(OpenApiValidator.isOasValid(file, excludedPaths, new ConsoleOutputProcessor()));
+        assertTrue(OpenApiValidator.isOasValid(file, excludedPaths, null, new ConsoleOutputProcessor()));
     }
 }

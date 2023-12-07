@@ -109,11 +109,11 @@ You can execute the plugin to validate the api files without breaking the build 
 ```
 ## References
 
-| Parameter | Type | Default | Description                                                                      |
-| --------- | ---- | ------- |----------------------------------------------------------------------------------|
-| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.               |
-| fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-files` should be used instead.                                         |
-| excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-files` should be used instead.                                |
-| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                       |
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE |
-| outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                    |
+| Parameter | Type | Default | Description                                                                                                          |
+| --------- | ---- | ------- |----------------------------------------------------------------------------------------------------------------------|
+| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.                                                   |
+| fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       |
+| excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
+| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                           |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE                                     |
+| outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                                                        |

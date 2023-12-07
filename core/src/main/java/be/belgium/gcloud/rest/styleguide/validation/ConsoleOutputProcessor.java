@@ -15,7 +15,7 @@ public class ConsoleOutputProcessor implements OutputProcessor {
         List<Violation> violations = violationAggregator.getViolations().stream().filter(v -> v.type != ViolationType.IGNORED).sorted().collect(Collectors.toList());
         List<Violation> ignored = violationAggregator.getViolations().stream().filter(v -> v.type == ViolationType.IGNORED).sorted().collect(Collectors.toList());
 
-        System.out.printf("\n OpenApi validation summary: %d violations and %d ignored violations.", violations.size(), ignored.size());
+        System.out.printf("\n OpenApi validation summary: %d violations and %d ignored violations.\n", violations.size(), ignored.size());
 
         violations.forEach(v -> {
             if (Objects.requireNonNull(v.type) == ViolationType.MANDATORY) {

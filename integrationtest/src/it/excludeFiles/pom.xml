@@ -25,6 +25,10 @@
                     <files>
                         <file>openapi.yaml</file>
                     </files>
+                    <excludedFiles>
+                        <excludedFile>schemas/belgif/**</excludedFile>
+                        <excludedFile>**/logo.yaml</excludedFile>
+                    </excludedFiles>
                 </configuration>
             </plugin>
         </plugins>

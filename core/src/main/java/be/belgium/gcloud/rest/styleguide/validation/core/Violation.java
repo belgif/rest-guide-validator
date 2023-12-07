@@ -17,7 +17,8 @@ public class Violation implements Comparable<Violation> {
 
     @Override
     public String toString() {
-        return (lineNumber.getLineNumber() > 0 ? String.format("file: %13s: ln%4d:", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
+        return (lineNumber.getLineNumber() > 0 ? String.format("file: %15s: ln%4d:", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
+                (lineNumber.getLineNumber() == 0 && type.equals(ViolationType.IGNORED) ? String.format("file: %23s:", lineNumber.getFileName()) : "") +
                 String.format("  %-14S ", ("[" + type + "]")) +
                 String.format("%-17s ", ruleName) +
                 message;

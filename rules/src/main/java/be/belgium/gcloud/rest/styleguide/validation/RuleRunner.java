@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class RuleRunner {
-    public static OpenApiViolationAggregator execute(@NotNull File openApiFile, List<String> excludedPaths, StatelessKieSession kSession) {
+    public static OpenApiViolationAggregator execute(@NotNull File openApiFile, List<String> excludedPaths, List<String> excludedFiles, StatelessKieSession kSession) {
         var oas = new OpenApiViolationAggregator();
         oas.setRuleNumber(kSession.getKieBase().getKiePackages().stream().mapToInt(pack -> pack.getRules().size()).sum());
+        oas.setExcludedFiles(excludedFiles);
 
         var parserResult = new Parser(openApiFile).parse(oas);
         if (parserResult == null) {

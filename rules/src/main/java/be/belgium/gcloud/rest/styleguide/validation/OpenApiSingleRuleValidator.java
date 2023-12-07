@@ -20,8 +20,8 @@ public class OpenApiSingleRuleValidator {
     private KieContainer kieContainer;
     private StatelessKieSession kieSession;
 
-    public OpenApiViolationAggregator isOasValid(@NotNull File file, List<String> excludedPaths) {
-        return RuleRunner.execute(file, excludedPaths, kieSession);
+    public OpenApiViolationAggregator isOasValid(@NotNull File file, List<String> excludedPaths, List<String> excludedFiles) {
+        return RuleRunner.execute(file, excludedPaths, excludedFiles, kieSession);
     }
 
     public OpenApiSingleRuleValidator(@NotNull String ruleFile) {
