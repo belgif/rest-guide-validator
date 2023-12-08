@@ -71,3 +71,5 @@ paths:
                   items:
                     type: array
                     description: description
+                    items:
+                      type: object

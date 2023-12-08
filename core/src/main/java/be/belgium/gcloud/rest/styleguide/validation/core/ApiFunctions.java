@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,17 +41,39 @@ public class ApiFunctions {
 
     public static boolean hasCollectionResponse(PathDefinition path, Parser.ParserResult result) {
         AtomicBoolean isCollection = new AtomicBoolean(false);
+        Predicate<SchemaDefinition> condition = (schemaDefinition) -> schemaDefinition.getModel().getProperties() != null &&
+                schemaDefinition.getModel().getProperties().containsKey("items") &&
+                schemaDefinition.getModel().getProperties().get("items").getType() != null &&
+                schemaDefinition.getModel().getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)
+                && isSchemaOfType(recursiveResolve(schemaDefinition.getModel().getProperties().get("items").getItems(), result).getModel(), Schema.SchemaType.OBJECT, result)
+                ;
         try {
             var responses = path.getModel().getGET().getResponses().getAPIResponses().values().stream().flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
             responses.forEach(inlineSchema -> {
-                    SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
-                    Schema schema = schemaDefinition.getModel();
-                    if (schema.getProperties() != null && schema.getProperties().containsKey("items") && schema.getProperties().get("items").getType() != null && schema.getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)) {
-                        isCollection.set(true);
-                    }
+                SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
+                if (schemaMeetsCondition(schemaDefinition, result, condition)) {
+                    isCollection.set(true);
+                }
             });
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
         return isCollection.get();
+    }
+
+    private static boolean schemaMeetsCondition(SchemaDefinition schemaDefinition, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
+        if (condition.test(schemaDefinition)) {
+            return true;
+        }
+        if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty()) {
+            return schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(recursiveResolve(oneOfSchema, result), result, condition));
+        }
+        if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty()) {
+            return schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(recursiveResolve(anyOfSchema, result), result, condition));
+        }
+        if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(recursiveResolve(allOfSchema, result), result, condition));
+        }
+        return false;
     }
 
     /**
@@ -63,19 +86,8 @@ public class ApiFunctions {
      */
     public static boolean isSchemaOfType(Schema schema, Schema.SchemaType schemaType, Parser.ParserResult result) {
         SchemaDefinition resolvedSchema = recursiveResolve(schema, result);
-        if (resolvedSchema.getModel().getType() == schemaType) {
-            return true;
-        }
-        if (resolvedSchema.getModel().getOneOf() != null && !resolvedSchema.getModel().getOneOf().isEmpty()) {
-            return resolvedSchema.getModel().getOneOf().stream().allMatch(oneOfSchema -> isSchemaOfType(oneOfSchema, schemaType, result));
-        }
-        if (resolvedSchema.getModel().getAnyOf() != null && !resolvedSchema.getModel().getAnyOf().isEmpty()) {
-            return resolvedSchema.getModel().getAnyOf().stream().allMatch(anyOfSchema -> isSchemaOfType(anyOfSchema, schemaType, result));
-        }
-        if (resolvedSchema.getModel().getAllOf() != null && !resolvedSchema.getModel().getAllOf().isEmpty()) {
-            return resolvedSchema.getModel().getAllOf().stream().anyMatch(allOfSchema -> isSchemaOfType(allOfSchema, schemaType, result));
-        }
-        return false;
+        Predicate<SchemaDefinition> condition = (schemaDefinition) -> schemaDefinition.getModel().getType() == schemaType;
+        return schemaMeetsCondition(resolvedSchema, result, condition);
     }
 
     private static SchemaDefinition recursiveResolve(Schema schema, Parser.ParserResult result) {

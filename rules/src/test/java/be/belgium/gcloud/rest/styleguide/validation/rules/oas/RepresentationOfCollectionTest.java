@@ -15,4 +15,8 @@ public class RepresentationOfCollectionTest extends AbstractOasRuleTest {
     public void testInvalidSwagger() {
         assertErrorCount(4, callRules("swagger_bad.yaml"));
     }
+    @Test
+    public void testInvalidOpenApi() {
+        assertErrorCount(3, callRules("openapi_bad.yaml"));
+    }
 }
