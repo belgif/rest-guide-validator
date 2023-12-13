@@ -5,12 +5,17 @@ import org.junit.jupiter.api.Test;
 
 public class CodesShouldBeLowerCamelCaseTest extends AbstractOasRuleTest {
     @Test
-    public void testValidSwagger() {
+    public void testValidOpenApi() {
         assertNoViolations(callRules("openapi.yaml"));
     }
 
     @Test
-    public void testInvalidSwagger() {
+    public void testInvalidOpenApi() {
         assertErrorCount(2, callRules("openapi_bad.yaml"));
+    }
+
+    @Test
+    public void testInvalidOpenApiWithSortingEnums() {
+        assertErrorCount(2, callRules("openapi_bad_sorting.yaml"));
     }
 }

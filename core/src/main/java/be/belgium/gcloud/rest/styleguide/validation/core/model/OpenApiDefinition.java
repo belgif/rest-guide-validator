@@ -78,6 +78,14 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         }
     }
 
+    public String getEffectiveIdentifier() {
+        if(this.getIdentifier() == null) {
+            return parent.getEffectiveIdentifier();
+        } else {
+            return identifier;
+        }
+    }
+
     public OpenApiDefinition<?> getTopLevelParent() {
         OpenApiDefinition<?> indirectParent = this.parent;
         while (indirectParent.definitionType == DefinitionType.INLINE) {

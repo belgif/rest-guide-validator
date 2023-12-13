@@ -21,18 +21,21 @@ paths:
       summary: Get the complete reference data list of employer classes
       operationId: getEmployerClasses
       parameters:
-        - name: Accept-Language
-          in: header
-          description: User language
-          required: false
-          style: simple
-          explode: false
+        - name: sort
+          in: query
+          schema:
+            $ref: '#/components/schemas/SortingEnum'
+        - name: BadSJORT
+          in: query
           schema:
             type: string
             enum:
-              - NL
-              - FR
-              - CreditCard
+              - "email"
+              - "date"
+              - "modificationDate"
+              - "-email"
+              - "-date"
+              - "-modificationDate"
       responses:
         default:
           description: a problem
@@ -42,13 +45,12 @@ paths:
                 $ref: '#/components/schemas/SomethingWithEnum'
 components:
   schemas:
-    SomethingWithEnum:
-      type: object
-      properties:
-        myfirstenum:
-          type: string
-          enum:
-            - CASH
-            - WIRETRANSFER
-            - CREDITCARD
-            - DEBITCARD
+    SortingEnum:
+      type: string
+      enum:
+        - "email"
+        - "date"
+        - "modificationDate"
+        - "-Email"
+        - "-Date"
+        - "-ModificationDate"

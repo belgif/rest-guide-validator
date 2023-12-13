@@ -34,6 +34,21 @@ paths:
               - nl
               - fr
               - creditCard
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - "email"
+              - "date"
+              - "modificationDate"
+              - "-email"
+              - "-date"
+              - "-modificationDate"
+        - name: anotherSort
+          in: query
+          schema:
+            $ref: '#/components/schemas/SortingEnum'
       responses:
         200:
           content:
@@ -65,3 +80,12 @@ components:
         - BE-BRU
         - BE-WAL
         - BE-VLG
+    SortingEnum:
+      type: string
+      enum:
+        - "email"
+        - "date"
+        - "modificationDate"
+        - "-email"
+        - "-date"
+        - "-modificationDate"

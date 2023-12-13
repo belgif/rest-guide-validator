@@ -118,8 +118,15 @@ public class ApiFunctions {
     }
 
     public static boolean isLowerCamelCase(List<Object> objects) {
+        return isLowerCamelCase(objects, null);
+    }
+
+    public static boolean isLowerCamelCase(List<Object> objects, String stripCharacter) {
         for (Object object : objects) {
             String string = (String) object;
+            if (stripCharacter != null && !stripCharacter.isEmpty()) {
+                string = string.replaceAll(stripCharacter, "");
+            }
             if (!isLowerCamelCase(string)) {
                 return false;
             }
@@ -149,7 +156,7 @@ public class ApiFunctions {
         return string.matches("^[A-Z0-9]([a-zA-Z0-9](-[A-Z0-9])?)*$");
     }
 
-    public static boolean isIncluded(String string, Set<String> set) {
+    public static boolean isNotInSet(String string, Set<String> set) {
         if (string == null || set == null) {
             return true;
         }
