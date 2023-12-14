@@ -8,6 +8,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Operation;
 
 function void representationOfCollectionViolation(OpenApiViolationAggregator oas, PathDefinition path){
     oas.addViolation("[col-repres]",
@@ -17,7 +18,7 @@ function void representationOfCollectionViolation(OpenApiViolationAggregator oas
 
 rule "Rule-Representation Of Collection"
     when
-       $path: PathDefinition()
+       $path: PathDefinition(getModel().getGET() != null)
        eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
        eval( !ApiFunctions.hasCollectionResponse($path, parserResult))
     then

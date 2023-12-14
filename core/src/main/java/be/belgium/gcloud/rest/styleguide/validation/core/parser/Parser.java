@@ -4,6 +4,8 @@ import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
 import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.*;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -473,8 +475,17 @@ public class Parser {
             mapper = new ObjectMapper();
         }
 
-        JsonNode jsonNode = mapper.readTree(file);
-        findRefFields(jsonNode, references);
+        try {
+            JsonNode jsonNode = mapper.readTree(file);
+            findRefFields(jsonNode, references);
+        } catch (Exception e) {
+            if (e instanceof JsonProcessingException) {
+                int location = ((JsonProcessingException) e).getLocation().getLineNr();
+                throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
+            } else {
+                throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
+            }
+        }
         return references;
     }
 
