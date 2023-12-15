@@ -60,6 +60,7 @@ public class Parser {
         public int oasVersion;
         public File openApiFile;
         private Map<String, SourceDefinition> src;
+        private boolean isParsingValid = true;
 
         private void assembleAllDefinitions() {
             allDefinitions.addAll(pathDefinitions);
@@ -144,7 +145,10 @@ public class Parser {
             }
             result.assembleAllDefinitions();
             buildAllPathWithLineRange(result);
-            return result;
+            if (result.isParsingValid()) {
+                return result;
+            }
+            throw new RuntimeException("Parsing openapi definition failed. Please review logs.");
         } catch (IOException e) {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0));
             return null;
@@ -233,8 +237,8 @@ public class Parser {
 
     private void parseParameter(ParameterDefinition parameterDefinition, ParserResult result) {
         Parameter param = parameterDefinition.getModel();
-        if (param != null && param.getRef() == null) {
-            if (param.getSchema() != null && param.getSchema().getRef() == null) {
+        if (param != null) {
+            if (param.getSchema() != null) {
                 var schemaDefinition = new SchemaDefinition(param.getSchema(), parameterDefinition, param.getSchema().getTitle());
                 result.schemas.add(schemaDefinition);
             }
@@ -251,7 +255,7 @@ public class Parser {
 
     private void parseOperation(OperationDefinition operationDef, ParserResult result) {
         RequestBody requestBody = operationDef.getModel().getRequestBody();
-        if (requestBody != null && requestBody.getRef() == null) {
+        if (requestBody != null) {
             var requestBodyDefinition = new RequestBodyDefinition(requestBody, operationDef);
             result.requestBodies.add(requestBodyDefinition);
             parseRequestBody(requestBodyDefinition, result);
@@ -260,12 +264,10 @@ public class Parser {
         List<Parameter> parameters = operationDef.getModel().getParameters();
         if (parameters != null) {
             for (Parameter parameter : parameters) {
-                if (parameter.getRef() == null) {
-                    int index = parameters.indexOf(parameter);
-                    var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), index);
-                    result.parameters.add(parameterDefinition);
-                    parseParameter(parameterDefinition, result);
-                }
+                int index = parameters.indexOf(parameter);
+                var parameterDefinition = new ParameterDefinition(parameter, operationDef, parameter.getName(), index);
+                result.parameters.add(parameterDefinition);
+                parseParameter(parameterDefinition, result);
             }
         }
 
@@ -273,11 +275,9 @@ public class Parser {
         if (apiResponses != null) {
             var responses = apiResponses.getAPIResponses();
             responses.forEach((statusCode, responseObject) -> {
-                if (responseObject.getRef() == null) {
-                    var responseDef = new ResponseDefinition(responseObject, operationDef, statusCode);
-                    result.responses.add(responseDef);
-                    parseResponse(responseDef, result);
-                }
+                var responseDef = new ResponseDefinition(responseObject, operationDef, statusCode);
+                result.responses.add(responseDef);
+                parseResponse(responseDef, result);
             });
         }
     }
@@ -358,18 +358,16 @@ public class Parser {
         var headers = responseDef.getModel().getHeaders();
         if (headers != null) {
             headers.forEach((name, header) -> {
-                if (header.getRef() == null) {
-                    var headerDef = new ResponseHeaderDefinition(header, responseDef, name);
-                    result.headers.add(headerDef);
-                    parseHeaders(headerDef, result);
-                }
+                var headerDef = new ResponseHeaderDefinition(header, responseDef, name);
+                result.headers.add(headerDef);
+                parseHeaders(headerDef, result);
             });
         }
     }
 
     public void parseHeaders(ResponseHeaderDefinition responseHeaderDefinition, ParserResult result) {
         var schema = responseHeaderDefinition.getModel().getSchema();
-        if (schema != null && schema.getRef() == null) {
+        if (schema != null) {
             var schemaDef = new SchemaDefinition(schema, responseHeaderDefinition, schema.getTitle());
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
@@ -388,11 +386,9 @@ public class Parser {
     public void parseMediaType(MediaTypeDefinition mediaTypeDefinition, ParserResult result) {
         var schema = mediaTypeDefinition.getModel().getSchema();
         if (schema != null) {
-            if (schema.getRef() == null) {
-                var schemaDef = new SchemaDefinition(schema, mediaTypeDefinition, schema.getTitle());
-                result.schemas.add(schemaDef);
-                parseSchema(schemaDef, result);
-            }
+            var schemaDef = new SchemaDefinition(schema, mediaTypeDefinition, schema.getTitle());
+            result.schemas.add(schemaDef);
+            parseSchema(schemaDef, result);
         }
     }
 
@@ -420,7 +416,7 @@ public class Parser {
     }
 
     private void constructNestedSchema(Schema schema, JsonPointer relativePointer, SchemaDefinition parentSchema, ParserResult result) {
-        if (schema != null && schema.getRef() == null) {
+        if (schema != null) {
             var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), relativePointer);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);

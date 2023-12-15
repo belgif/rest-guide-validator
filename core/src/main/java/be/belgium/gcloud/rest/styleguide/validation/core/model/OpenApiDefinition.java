@@ -8,10 +8,21 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.swagger.v3.oas.models.examples.Example;
+import io.swagger.v3.oas.models.links.Link;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Constructible;
 import org.eclipse.microprofile.openapi.models.Extensible;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Reference;
+import org.eclipse.microprofile.openapi.models.callbacks.Callback;
+import org.eclipse.microprofile.openapi.models.headers.Header;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +62,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.openApiFile = parent.getOpenApiFile();
         this.jsonPointer = parent.getJsonPointer().add(relativeJsonPointer);
         this.ignoredRules = parseIgnoredRules();
+        checkRef();
     }
 
     /**
@@ -64,6 +76,51 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.openApiFile = openApiFile;
         this.jsonPointer = jsonPointer;
         this.ignoredRules = parseIgnoredRules();
+        checkRef();
+    }
+
+    private void checkRef() {
+        if (this.getModel() instanceof Reference) {
+            String ref = ((Reference<?>) model).getRef();
+            if (ref != null && !ref.isEmpty()) {
+                String expectedPath = getExpectedRefPath();
+                if (expectedPath == null || !ref.contains(expectedPath)) {
+                    if (expectedPath != null) {
+                        log.error("$ref in this location <{}> should target a definition under \"#{}\" but  '{}' was found.\n" +
+                                "Either location of $ref or referenced definition should be changed.", this.getJsonPointer().toPrettyString(), expectedPath.equals("/components/schemas") && this.result.getOasVersion()==2 ? "/definitions" : expectedPath, ref);
+                        this.result.setParsingValid(false);
+                    } else {
+                        log.warn("[Internal error] Use of $ref is not supported by validator for type {} ({}).", this.getModel().getClass().getName(), ref);
+                    }
+                }
+            }
+        }
+    }
+
+    private String getExpectedRefPath() {
+        if (model instanceof Parameter) {
+            return this.result.oasVersion == 2 ? "/parameters" : "/components/parameters";
+        } else if (model instanceof RequestBody) {
+            return this.result.oasVersion == 2 ? null : "/components/requestBodies";
+        } else if (model instanceof APIResponse) {
+            return this.result.oasVersion == 2 ? "/responses" : "/components/responses";
+        } else if (model instanceof Schema) {
+            // OpenApi Parser sets refs to definitions in oas2 to components/schemas as well
+            return "/components/schemas";
+        } else if (model instanceof PathItem) {
+            return "/paths";
+        } else if (model instanceof Header) {
+            return this.result.oasVersion == 2 ? null : "/components/headers";
+        } else if (model instanceof Example) {
+            return this.result.oasVersion == 2 ? "examples" : "/components/examples";
+        } else if (model instanceof Callback) {
+            return this.result.oasVersion == 2 ? null : "/components/callbacks";
+        } else if (model instanceof Link) {
+            return this.result.oasVersion == 2 ? null : "/components/links";
+        } else if (model instanceof SecurityScheme) {
+            return this.result.oasVersion == 2 ? "/securityDefinitions" : "/components/securitySchemes";
+        }
+        return null;
     }
 
     public enum DefinitionType {

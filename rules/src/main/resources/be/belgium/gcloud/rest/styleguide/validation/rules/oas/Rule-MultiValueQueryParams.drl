@@ -22,7 +22,8 @@ function void violationMultiValueQueryParams(OpenApiViolationAggregator oas, Par
 
 rule "Multi Value Query Params"
   when
-    $parameterDefinition : ParameterDefinition( model.getIn() == In.QUERY )
+    $parameterDefinition : ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.QUERY)) from $in
     ParameterDefinition($schema: /model/schema) from $parameterDefinition
     SchemaDefinition(model.getType() == SchemaType.ARRAY) from parserResult.resolve($schema)
     Parameter(style != Style.FORM || explode == false) from $parameterDefinition.getModel()

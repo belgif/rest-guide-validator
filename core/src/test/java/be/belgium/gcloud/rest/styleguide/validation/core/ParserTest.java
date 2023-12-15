@@ -1,10 +1,19 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.ResponseHeaderDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,5 +108,93 @@ public class ParserTest {
         assertTrue(def.get().getIgnoredRules().containsKey("cod-design"));
         assertEquals("Test reason", def.get().getIgnoredRules().get("cod-design"));
     }
+
+    @Test
+    void testInvalidRef() {
+        Logger logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/invalidRefs.yaml").getFile());
+
+        listAppender.start();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+
+        var errorMessage = "Parsing openapi definition failed. Please review logs.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/logos/get/responses/200> should target a definition under \"#/components/responses\" but  '#/components/schemas/MyResponse' was found.\n" +
+                "Either location of $ref or referenced definition should be changed.")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/logos/get/parameters/1> should target a definition under \"#/components/parameters\" but  '#/components/schemas/MyParam' was found.\n" +
+                "Either location of $ref or referenced definition should be changed.")));
+        assertEquals(3, listAppender.list.size());
+    }
+
+    @Test
+    void testValidButNonExistingRefResolve() {
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/nonExistingRef.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        Set<PathDefinition> defs = result.getPathDefinitions();
+        var def = defs.stream().filter(defenition -> "/paths/~1doesNotExist".equals(defenition.getJsonPointer().toString())).findAny();
+        assertTrue(def.isPresent());
+        var response = def.get().getModel().getGET().getResponses().getAPIResponse("200");
+        assertNotNull(response);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> result.resolve(response));
+        var errorMessage = "[Internal error] Could not find match of #/components/responses/doesNotExist";
+        assertEquals(errorMessage, ex.getMessage());
+    }
+
+    @Test
+    void testInvalidRefSwagger() {
+        Logger logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/invalidRefSwagger.yaml").getFile());
+
+        listAppender.start();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Parsing openapi definition failed. Please review logs.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/userInfo/get/responses/200> should target a definition under \"#/responses\" but  '#/definitions/EntityIdentifier' was found.\n" +
+                "Either location of $ref or referenced definition should be changed.")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/userInfo/get/responses/400/content/application/json/schema> should target a definition under \"#/definitions\" but  '#/responses/MyFirstResponse' was found.\n" +
+                "Either location of $ref or referenced definition should be changed.")));
+        assertEquals(3, listAppender.list.size());
+    }
+
+    @Test
+    void testInValidNonExistingRef() {
+        Logger logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/headersTest.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        result.oasVersion = 2;
+        var parent = result.getResponses().stream().findAny();
+        assertTrue(parent.isPresent());
+
+        var headerOpt = result.getHeaders().stream().filter(header -> "#/components/headers/My-First-Response-Header".equals(header.getModel().getRef())).findFirst();
+        assertTrue(headerOpt.isPresent());
+        var headerModel = headerOpt.get().getModel();
+        headerModel.setRef("#/blabla");
+
+        listAppender.start();
+        var headerDef = new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("[Internal error] Use of $ref is not supported by validator for type org.openapitools.empoa.swagger.core.internal.models.headers.SwHeader (#/blabla).")));
+    }
+
 
 }

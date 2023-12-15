@@ -36,7 +36,8 @@ end
 
 rule "Path Parameter CamelCase"
   when
-    $parameterDefinition: ParameterDefinition(getModel().getIn().equals(In.PATH))
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.PATH)) from $in
     ParameterDefinition($parameterName: /model/name) from $parameterDefinition
     eval( !ApiFunctions.isLowerCamelCase($parameterName) )
   then
@@ -45,7 +46,8 @@ end
 
 rule "Query Parameter lowerCamelCase with extra characters"
   when
-    $parameterDefinition: ParameterDefinition(getModel().getIn().equals(In.QUERY))
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.QUERY)) from $in
     ParameterDefinition($parameterName: /model/name) from $parameterDefinition
     eval( !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_")) )
   then

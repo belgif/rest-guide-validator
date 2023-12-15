@@ -1,0 +1,51 @@
+---
+swagger: "2.0"
+info:
+  description: Test
+  title: test
+  version: "1.0"
+basePath: /REST/test
+paths:
+  /userInfo:
+    get:
+      tags:
+        - user
+      summary: Get connected user's info
+      description: Get the user's info of the connected user like the scopes
+      operationId: getUserInfo
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          $ref: '#/definitions/EntityIdentifier'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/responses/MyFirstResponse'
+        500:
+          description: bad
+          schema:
+            $ref: '#/definitions/EntityIdentifier'
+responses:
+  MyFirstResponse:
+    description: succesfull
+    schema:
+      $ref: '#/definitions/EntityIdentifier'
+definitions:
+  EntityIdentifier:
+    type: object
+    properties:
+      nssoNbr:
+        type: string
+        example: "163190083"
+        description: the NOSS identifier of an employer
+      cbeNbr:
+        type: string
+        description: the CBE identifier of a company
+      foleenId:
+        type: string
+        description: the Foleen identifier of a foreign company
+      euid:
+        type: string
+        description: the european identifier of a european company

@@ -41,7 +41,6 @@ paths:
         - name: number
           in: header
           required: true
-          $ref: '#/components/headers/MyFirstHeader'
         - name: n2
           in: header
           required: true

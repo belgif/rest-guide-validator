@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: REST referenced files test
+servers:
+  - url: /demo/v1
+paths:
+  /logos:
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      parameters:
+        - name: test
+          in: query
+        - $ref: '#/components/schemas/MyParam'
+      tags:
+        - Logos
+      responses:
+        "200":
+          $ref: '#/components/schemas/MyResponse'
+    post:
+      description: post
+      operationId: post
+      requestBody:
+        $ref: '#/components/requestBodies/MyRequestBody'
+    put:
+      description: put
+      operationId: put
+      requestBody:
+        $ref: '#/components/schemas/MyResponse'
+components:
+  schemas:
+    MyResponse:
+      type: object
+      properties:
+        - name:
+            type: string
+    MyParam:
+      type: string
+  requestBodies:
+    MyRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MyResponse'
