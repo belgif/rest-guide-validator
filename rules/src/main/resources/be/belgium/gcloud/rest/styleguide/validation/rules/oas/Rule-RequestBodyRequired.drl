@@ -1,0 +1,21 @@
+package be.belgium.gcloud.rest.styleguide.validation.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
+global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.RequestBodyDefinition
+import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
+
+
+function void violationRequestBodyRequired(OpenApiViolationAggregator oas, RequestBodyDefinition requestBody){
+    oas.addViolation("[reqBodyReq]",
+    "The 'required' property for this requestBody is not explicitly set. It defaults to false which may not be intended. Please review and set the 'required' property explicitly.", requestBody,
+    ViolationType.RECOMMENDED);
+}
+
+rule "requestBody is not set as required"
+    when
+        $requestBody: RequestBodyDefinition(/model[required == null])
+    then
+        violationRequestBodyRequired(oas, $requestBody);
+end

@@ -19,7 +19,7 @@ function void violationCodesShouldBeLowerCamelCase(OpenApiViolationAggregator oa
 }
 
 rule "Codes should be lowerCamelCase"
-	when
+    when
         $schema: SchemaDefinition($schemaType: /model/type)
         SchemaType( equals(SchemaType.STRING) ) from $schemaType
         Schema( getEnumeration() != null ) from $schema.getModel()
