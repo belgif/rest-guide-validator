@@ -35,6 +35,7 @@ rule "Error Response with problem+json media type is missing"
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
     eval(parserResult.oasVersion != 2 || $responseDefinition.getDefinitionType() == DefinitionType.INLINE )
     not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
+    eval( !("GET /health".equals($operationDefinition.getIdentifier()) && "503".equals($statusCode)) )
   then
     violationErrorResponseWrongMediaType(oas, $operationDefinition, $responseDefinition);
 end

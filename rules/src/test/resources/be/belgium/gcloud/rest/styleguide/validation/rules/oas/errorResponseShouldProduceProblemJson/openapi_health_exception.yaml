@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: common technical data types
+  version: 1
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers: []
+paths:
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Check health of the service
+      operationId: checkHealth
+      externalDocs:
+        url: "https://www.belgif.be/specification/rest/api-guide/#health"
+      security: []
+      responses:
+        "200":
+          "$ref": "#/components/responses/HealthUpOrDegradedResponse"
+        "503":
+          "$ref": "#/components/responses/HealthDownResponse"
+        default:
+          content:
+            application/problem+json:
+              schema:
+                type: object
+
+components:
+  responses:
+    HealthUpOrDegradedResponse:
+      description: The service is UP or DEGRADED
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HealthStatus"
+          examples:
+            responseUp:
+              description: API is available
+              value:
+                {
+                  "status": "UP"
+                }
+            responseDegraded:
+              description: API is available, but with reduced functionality
+              value:
+                {
+                  "status": "DEGRADED"
+                }
+    HealthDownResponse:
+      description: The service is DOWN
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HealthStatus"
+          examples:
+            responseDown:
+              value:
+                {
+                  "status": "DOWN"
+                }
+  schemas:
+    HealthStatus:
+      description: Response message for the API health
+      type: object
+      properties:
+        status:
+          description: "Level indicating the health status of the service: UP (functioning as expected), DOWN (suffering unexpected failures), DEGRADED (partly unavailable but service can be continued with reduced functionality), or a custom status value"
+          type: string
+      required:
+        - status

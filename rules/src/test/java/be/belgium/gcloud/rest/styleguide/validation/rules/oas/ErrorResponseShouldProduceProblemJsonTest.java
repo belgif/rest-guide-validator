@@ -20,4 +20,8 @@ public class ErrorResponseShouldProduceProblemJsonTest extends AbstractOasRuleTe
     public void testInvalidSwagger() {
         assertErrorCount(4, callRules("swagger_bad.yaml"));
     }
+    @Test
+    public void testHealthCheck() {
+        assertNoViolations(callRules("openapi_health_exception.yaml"));
+    }
 }
