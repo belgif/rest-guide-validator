@@ -196,7 +196,6 @@ paths:
 definitions:
   BusinessParameters:
     type: object
-    title: BusinessParameters
     properties:
       items:
         type: array
@@ -219,7 +218,6 @@ definitions:
         $ref: '#/definitions/Translation'
   PerformingArtists:
     type: object
-    title: PerformingArtists
     properties:
       items:
         type: array
@@ -227,7 +225,6 @@ definitions:
           $ref: '#/definitions/PerformingArtist'
   PerformingArtist:
     type: object
-    title: PerformingArtist
     properties:
       ssin:
         type: string
@@ -237,7 +234,6 @@ definitions:
         type: string
   Artist:
     type: object
-    title: Artist
     properties:
       ssin:
         type: string
@@ -253,7 +249,6 @@ definitions:
       $ref: '#/definitions/Recognition'
   Recognition:
     type: object
-    title: Recognition
     properties:
       type:
         type: string

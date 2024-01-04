@@ -1,0 +1,27 @@
+openapi: 3.0.0
+info:
+  title: titleShouldNotBeSet
+  version: 1
+paths:
+  /myFirstPath:
+    get:
+      operationId: operationId
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                description: my description, no title
+                properties:
+                  items:
+                    type: array
+                    title: this should not be here
+                    items:
+                      type: string
+components:
+  schemas:
+    myFirstSchema:
+      description: my first description
+      title: this should not be here
+      type: string
