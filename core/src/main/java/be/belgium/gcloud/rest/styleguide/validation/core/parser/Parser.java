@@ -4,7 +4,6 @@ import be.belgium.gcloud.rest.styleguide.validation.LineRangePath;
 import be.belgium.gcloud.rest.styleguide.validation.core.Line;
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.*;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -435,13 +434,13 @@ public class Parser {
         return pretty.lines().collect(Collectors.toList());
     }
 
-    private Set<File> getReferencedFiles(File file) throws IOException {
+    private Set<File> getReferencedFiles(File file) {
         Set<File> refFiles = new HashSet<>();
         resolveReferences(file, refFiles);
         return refFiles;
     }
 
-    private void resolveReferences(File file, Set<File> files) throws IOException {
+    private void resolveReferences(File file, Set<File> files) {
         Path basePath = java.nio.file.Paths.get(file.getAbsolutePath().split(file.getName())[0]);
         Set<String> refs = getExternalReferencesFromFile(file);
         for (String ref : refs) {
@@ -461,7 +460,7 @@ public class Parser {
         }
     }
 
-    private Set<String> getExternalReferencesFromFile(File file) throws IOException {
+    private Set<String> getExternalReferencesFromFile(File file) {
         Set<String> references = new HashSet<>();
         ObjectMapper mapper;
 

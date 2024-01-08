@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,8 +43,7 @@ public class ApiFunctions {
                 schemaDefinition.getModel().getProperties().containsKey("items") &&
                 schemaDefinition.getModel().getProperties().get("items").getType() != null &&
                 schemaDefinition.getModel().getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)
-                && isSchemaOfType(recursiveResolve(schemaDefinition.getModel().getProperties().get("items").getItems(), result).getModel(), Schema.SchemaType.OBJECT, result)
-                ;
+                && isSchemaOfType(recursiveResolve(schemaDefinition.getModel().getProperties().get("items").getItems(), result).getModel(), Schema.SchemaType.OBJECT, result);
         try {
             var responses = path.getModel().getGET().getResponses().getAPIResponses().values().stream().flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
             responses.forEach(inlineSchema -> {
@@ -60,20 +57,122 @@ public class ApiFunctions {
         return isCollection.get();
     }
 
+    /**
+     * Verify if schema meets the predicate. anyOf and oneOf schemas all have to match
+     *
+     * @param result           Result from validationparser
+     * @param schemaDefinition Schema that has to be validated
+     */
     private static boolean schemaMeetsCondition(SchemaDefinition schemaDefinition, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
         if (condition.test(schemaDefinition)) {
             return true;
         }
-        if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty()) {
-            return schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(recursiveResolve(oneOfSchema, result), result, condition));
+        if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
+                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(recursiveResolve(oneOfSchema, result), result, condition))) {
+            return true;
         }
-        if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty()) {
-            return schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(recursiveResolve(anyOfSchema, result), result, condition));
+        if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
+                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(recursiveResolve(anyOfSchema, result), result, condition))) {
+            return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
             return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(recursiveResolve(allOfSchema, result), result, condition));
         }
         return false;
+    }
+
+    /**
+     * Verify if schema could possibly meet the predicate. anyOf and oneOf schemas can match
+     *
+     * @param result           Result from validationparser
+     * @param schemaDefinition Schema that has to be validated
+     */
+    private static boolean schemaCanMeetCondition(SchemaDefinition schemaDefinition, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
+        if (condition.test(schemaDefinition)) {
+            return true;
+        }
+        if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
+                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(recursiveResolve(oneOfSchema, result), result, condition))) {
+            return true;
+        }
+        if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
+                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(recursiveResolve(anyOfSchema, result), result, condition))) {
+            return true;
+        }
+        if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(recursiveResolve(allOfSchema, result), result, condition));
+        }
+        return false;
+    }
+
+    private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+        Set<SchemaDefinition> subSchemas = new HashSet<>();
+        Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) -> includeTopLevelSchemas || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
+        if (schemaDefinition.getModel().getAllOf() != null) {
+            subSchemas.addAll(schemaDefinition.getModel().getAllOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
+        }
+        if (schemaDefinition.getModel().getOneOf() != null) {
+            subSchemas.addAll(schemaDefinition.getModel().getOneOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
+        }
+        if (schemaDefinition.getModel().getAnyOf() != null) {
+            subSchemas.addAll(schemaDefinition.getModel().getAnyOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
+        }
+        return subSchemas;
+    }
+
+    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+        Set<SchemaDefinition> subSchemas = getSubSchemas(schemaDefinition, result, includeTopLevelSchemas);
+        Set<SchemaDefinition> output = new HashSet<>();
+        for (SchemaDefinition schema : subSchemas) {
+            output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas));
+        }
+        output.addAll(subSchemas);
+        return output;
+    }
+
+    /**
+     * Returns all the properties (schemas) in a complex schema
+     *
+     * @param result Result from validationparser
+     * @param schema Schema of which the properties have to be returned
+     */
+    public static Map<String, Schema> getRecursiveProperties(Schema schema, Parser.ParserResult result) {
+        Map<String, Schema> properties = new HashMap<>();
+        SchemaDefinition schemaDef = recursiveResolve(schema, result);
+        if (schemaDef.getModel().getProperties() != null) {
+            properties.putAll(schemaDef.getModel().getProperties());
+        }
+        getRecursiveSubSchemas(schemaDef, result, true).forEach(schemaDefinition -> {
+            if (schemaDefinition.getModel().getProperties() != null) {
+                properties.putAll(schemaDefinition.getModel().getProperties());
+            }
+        });
+        return properties;
+    }
+
+    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        Set<String> requiredValues = new HashSet<>();
+        if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
+            requiredValues.addAll(schemaDefinition.getModel().getRequired());
+        }
+        getRecursiveSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
+        return requiredValues;
+    }
+
+    public static boolean isPropertyRequiredAndReadOnly(SchemaDefinition schemaDefinition, String propertyName, Parser.ParserResult result) {
+        if (schemaDefinition == null || propertyName == null) {
+            return false;
+        }
+
+        Predicate<SchemaDefinition> propertyRequired = (schemaDef) -> schemaDef.getModel().getRequired() != null && schemaDef.getModel().getRequired().contains(propertyName);
+        Predicate<SchemaDefinition> propertyReadOnly = (schemaDef) -> schemaDef.getModel().getProperties() != null && schemaDef.getModel().getProperties().containsKey(propertyName) &&
+                schemaDef.getModel().getProperties().get(propertyName).getReadOnly() != null && schemaDef.getModel().getProperties().get(propertyName).getReadOnly();
+
+        Predicate<SchemaDefinition> propertyRequiredAndReadOnly = (schemaDef) -> ((schemaMeetsCondition(schemaDef, result, propertyReadOnly) && schemaCanMeetCondition(schemaDef, result, propertyRequired)) ||
+                (schemaCanMeetCondition(schemaDef, result, propertyReadOnly) && schemaMeetsCondition(schemaDef, result, propertyRequired)));
+
+        return propertyRequiredAndReadOnly.test(schemaDefinition) &&
+                getSubSchemas(schemaDefinition, result, true).stream().noneMatch(propertyRequiredAndReadOnly);
     }
 
     /**

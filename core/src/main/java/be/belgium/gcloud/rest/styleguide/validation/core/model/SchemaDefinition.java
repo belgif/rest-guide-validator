@@ -33,6 +33,10 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
         super(openApiObject, name, openApiFile, new JsonPointer("/components/schemas").add(name), result);
     }
 
+    public boolean isHighLevelSchema() {
+        return this.definitionType.equals(DefinitionType.TOP_LEVEL) || this.getParent() == null || !(this.getParent() instanceof SchemaDefinition) || !this.getJsonPointer().toString().matches("^.*/(all|any|one)Of/\\d*?$");
+    }
+
     @Override
     public Schema getModel() {
         return super.getModel();
