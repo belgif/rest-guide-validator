@@ -16,7 +16,7 @@ The following example demonstrates a basic plugin configuration for validating o
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version><!-- specify current plugin version here --></version>
+        <version>1.3.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -51,8 +51,40 @@ BelgianRegionCode:
         - BE-WAL
         - BE-VLG
 ```
+
+### Exclude an external OpenApi file
+The excludedFiles maven parameter can be used to exclude certain imported openapi files.
+The intended use is to exclude validation of imported openapi files which are conform Belgif standards and are not under the developers influence to modify.
+Wildcards could be used.
+Example:
+```xml
+<plugins>
+  <plugin>
+    <groupId>be.belgium.gcloud.rest</groupId>
+    <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+    <version>1.3.0</version>
+    <executions>
+      <execution>
+        <goals>
+          <goal>api-validator</goal>
+        </goals>
+      </execution>
+    </executions>
+    <configuration>
+      <files>
+        <file>openapi.yaml</file>
+      </files>
+      <excludedFiles>
+        <excludedFile>schemas/belgif/**</excludedFile>
+        <excludedFile>**/logo.yaml</excludedFile>
+      </excludedFiles>
+    </configuration>
+  </plugin>
+</plugins>
+```
+
 ### Output
-The plugin can use the following options to write the validation error: 
+The plugin can use the following options to write the validation error:
 * CONSOLE: default option. Write to the console.
 * JUNIT: generate a junit xml file.
 * LOG4J: use log4j.
@@ -62,7 +94,7 @@ The plugin can use the following options to write the validation error:
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version><!-- specify current plugin version here --></version>
+        <version>1.3.0</version>
         <executions>
             <execution>
                 <goals>
@@ -90,7 +122,7 @@ You can execute the plugin to validate the api files without breaking the build 
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version><!-- specify current plugin version here --></version>
+        <version>1.3.0</version>
         <executions>
             <execution>
                 <goals>
@@ -112,6 +144,7 @@ You can execute the plugin to validate the api files without breaking the build 
 | Parameter | Type | Default | Description                                                                                                          |
 | --------- | ---- | ------- |----------------------------------------------------------------------------------------------------------------------|
 | files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.                                                   |
+| excludedFiles | Collection of File | | File(s) or folder(s) to exclude from validation. Use of wildcards is possible. | 
 | fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       |
 | excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                           |
