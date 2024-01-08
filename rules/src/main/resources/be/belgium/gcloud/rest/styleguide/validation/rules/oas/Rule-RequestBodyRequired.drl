@@ -15,7 +15,7 @@ function void violationRequestBodyRequired(OpenApiViolationAggregator oas, Reque
 
 rule "requestBody is not set as required"
     when
-        $requestBody: RequestBodyDefinition(/model[required == null])
+        $requestBody: RequestBodyDefinition(/model[required == null && ref == null])
     then
         violationRequestBodyRequired(oas, $requestBody);
 end

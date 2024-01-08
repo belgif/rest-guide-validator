@@ -16,12 +16,26 @@ paths:
               properties:
                 first:
                   type: string
+      responses:
+        default:
+          $ref: '#/components/responses/defaultResponse'
 
+    put:
+      operationId: putPath1
+      requestBody:
+        $ref: '#/components/requestBodies/myFirstRequestBody'
       responses:
         default:
           $ref: '#/components/responses/defaultResponse'
 
 components:
+  requestBodies:
+    myFirstRequestBody:
+      description: very descriptive sentence
+      content:
+        application/json:
+          schema:
+            type: object
   responses:
     defaultResponse:
       content:
