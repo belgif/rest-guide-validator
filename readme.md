@@ -16,7 +16,7 @@ The following example demonstrates a basic plugin configuration for validating o
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.2.1</version> <!-- update this to the latest version -->
+        <version><!-- specify current plugin version here --></version>
         <executions>
             <execution>
                 <goals>
@@ -62,7 +62,7 @@ The plugin can use the following options to write the validation error:
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version><!-- specify current plugin version here --></version>
         <executions>
             <execution>
                 <goals>
@@ -90,7 +90,7 @@ You can execute the plugin to validate the api files without breaking the build 
     <plugin>
         <groupId>be.belgium.gcloud.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version><!-- specify current plugin version here --></version>
         <executions>
             <execution>
                 <goals>
