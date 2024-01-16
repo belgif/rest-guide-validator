@@ -137,7 +137,7 @@ public class Parser {
                 parseComponents(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
-                    result.setOasVersion(getOasVersion(sourceDefinition.getSrc()));
+                    result.setOasVersion(getOasVersion(sourceDefinition));
                     parseServers(result);
                     parsePaths(sourceDefinition, result);
                 }
@@ -189,11 +189,23 @@ public class Parser {
         return SwAdapter.toOpenAPI(openAPI);
     }
 
-    private static int getOasVersion(String jsonString) {
-        if (jsonString.contains("openapi:") || jsonString.contains("\"openapi\":")) {
-            return 3;
+    private static int getOasVersion(SourceDefinition sourceDefinition) {
+        ObjectMapper mapper;
+
+        if (sourceDefinition.isYaml()) {
+            mapper = new ObjectMapper(new YAMLFactory());
         } else {
-            return 2;
+            mapper = new ObjectMapper();
+        }
+        try {
+            JsonNode jsonNode = mapper.readTree(sourceDefinition.getFile());
+            if (jsonNode.has("openapi")) {
+                return 3;
+            } else {
+                return 2;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error finding oas version for: " + sourceDefinition.getFile().getName(), e);
         }
     }
 
