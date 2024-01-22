@@ -37,19 +37,32 @@ You can now build you package as usual with:
 mvn package  
 ```
 ### Exclusions in OpenApi file
-The "x-ignore-rules" object can be added inside a yaml object in the openapi file to ignore this object for one or more rules.
-Example:
+
+The `x-ignore-rules` property can be added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
+
+
+_Example_
+
+To ignore following `cod-design` validation error, add the `x-ignore-rules` property to the exact object mentioned in the error message (`/components/schemas/BelgianRegionCode`).
+
+Error message:
+```
+file: location-v1.yaml: ln 23:  [MANDATORY]    [cod-design]      New code types SHOULD be represented as string values in lowerCamelCase.       /components/schemas/BelgianRegionCode
+```
+
+OpenAPI document:
+
 ```yaml
 BelgianRegionCode:
-      description: Belgian Region represented by an ISO 3166-2:BE code
-      x-ignore-rules:
-         "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
-         #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
-      type: string
-      enum: 
-        - BE-BRU
-        - BE-WAL
-        - BE-VLG
+  description: Belgian Region represented by an ISO 3166-2:BE code
+    x-ignore-rules:
+      "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
+      #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
+    type: string
+    enum: 
+      - BE-BRU
+      - BE-WAL
+      - BE-VLG
 ```
 
 ### Exclude an external OpenApi file
