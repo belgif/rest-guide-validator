@@ -55,14 +55,14 @@ OpenAPI document:
 ```yaml
 BelgianRegionCode:
   description: Belgian Region represented by an ISO 3166-2:BE code
-    x-ignore-rules:
-      "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
-      #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
-    type: string
-    enum: 
-      - BE-BRU
-      - BE-WAL
-      - BE-VLG
+  x-ignore-rules:
+    "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
+    #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
+  type: string
+  enum: 
+    - BE-BRU
+    - BE-WAL
+    - BE-VLG
 ```
 
 ### Exclude an external OpenApi file
