@@ -5,6 +5,7 @@ import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.PathItem;
 global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
@@ -18,8 +19,9 @@ function void pluralViolation(OpenApiViolationAggregator oas, PathDefinition pat
 
 rule "Rule-PathInPlural without ID"
     when
-        $path: PathDefinition($pathName: getIdentifier())
-        eval( ApiFunctions.hasCollectionResponse($path, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
+        $path: PathDefinition($pathName: getIdentifier(), $operation: /model/GET)
+        $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
+        eval( ApiFunctions.hasCollectionResponse($operationDefinition, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
         String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName
     then
         pluralViolation(oas, $path);

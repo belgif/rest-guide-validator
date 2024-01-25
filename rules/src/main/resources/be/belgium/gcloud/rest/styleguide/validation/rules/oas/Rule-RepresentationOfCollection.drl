@@ -5,22 +5,24 @@ import be.belgium.gcloud.rest.styleguide.validation.core.ApiFunctions
 import be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator
 import be.belgium.gcloud.rest.styleguide.validation.core.ViolationType;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 global be.belgium.gcloud.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
 global be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Operation;
 
-function void representationOfCollectionViolation(OpenApiViolationAggregator oas, PathDefinition path){
+function void representationOfCollectionViolation(OpenApiViolationAggregator oas, OperationDefinition operation){
     oas.addViolation("[col-repres]",
            		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t",
-           		 path);
+           		 operation);
 }
 
 rule "Rule-Representation Of Collection"
     when
-       $path: PathDefinition(getModel().getGET() != null)
+       $path: PathDefinition($operation: /model/GET)
+       $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
        eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
-       eval( !ApiFunctions.hasCollectionResponse($path, parserResult))
+       eval( !ApiFunctions.hasCollectionResponse($operationDefinition, parserResult))
     then
-        representationOfCollectionViolation(oas, $path);
+        representationOfCollectionViolation(oas, $operationDefinition);
 end

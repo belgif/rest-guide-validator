@@ -15,6 +15,8 @@ servers:
 paths:
   /refData/employerClasses:
     get:
+      x-ignore-rules:
+        "col-repres": This proves that it is now possible to ignore col-repres from the operation
       tags:
         - ReferenceData
       summary: Get the complete reference data list of employer classes
@@ -37,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: 'schemas/employer.yaml#/components/schemas/EmployerClasses'
+                  type: string
         default:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
   "/refData/employerClasses/{employerClass}":

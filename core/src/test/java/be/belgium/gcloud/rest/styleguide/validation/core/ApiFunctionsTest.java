@@ -1,5 +1,6 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -86,9 +87,9 @@ class ApiFunctionsTest {
         var file = new File(this.getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        Set<PathDefinition> defs = result.getPathDefinitions();
+        Set<OperationDefinition> defs = result.getOperations();
 
-        var refData = defs.stream().filter(definition -> "/refData/employerClasses".equals(definition.getIdentifier())).findAny();
+        var refData = defs.stream().filter(definition -> "GET /refData/employerClasses".equals(definition.getIdentifier())).findAny();
         assertTrue(refData.isPresent());
         assertTrue(ApiFunctions.hasCollectionResponse(refData.get(), result));
     }
@@ -113,9 +114,9 @@ class ApiFunctionsTest {
         var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        Set<PathDefinition> defs = result.getPathDefinitions();
+        Set<OperationDefinition> defs = result.getOperations();
 
-        var items = defs.stream().filter(definition -> "/pathWithItemsWithoutType".equals(definition.getIdentifier())).findAny();
+        var items = defs.stream().filter(definition -> "GET /pathWithItemsWithoutType".equals(definition.getIdentifier())).findAny();
         assertTrue(items.isPresent());
         assertFalse(ApiFunctions.hasCollectionResponse(items.get(), result));
     }
@@ -126,9 +127,9 @@ class ApiFunctionsTest {
         var file = new File(this.getClass().getResource("../rules/isCollection.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        Set<PathDefinition> defs = result.getPathDefinitions();
+        Set<OperationDefinition> defs = result.getOperations();
 
-        var items = defs.stream().filter(definition -> "/pathWithAndWithoutType".equals(definition.getIdentifier())).findAny();
+        var items = defs.stream().filter(definition -> "GET /pathWithAndWithoutType".equals(definition.getIdentifier())).findAny();
         assertTrue(items.isPresent());
         assertTrue(ApiFunctions.hasCollectionResponse(items.get(), result));
     }

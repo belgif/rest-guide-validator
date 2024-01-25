@@ -1,6 +1,7 @@
 package be.belgium.gcloud.rest.styleguide.validation.core;
 
 import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition;
+import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.PathDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
@@ -37,7 +38,7 @@ public class ApiFunctions {
         return false;
     }
 
-    public static boolean hasCollectionResponse(PathDefinition path, Parser.ParserResult result) {
+    public static boolean hasCollectionResponse(OperationDefinition operation, Parser.ParserResult result) {
         AtomicBoolean isCollection = new AtomicBoolean(false);
         Predicate<SchemaDefinition> condition = (schemaDefinition) -> schemaDefinition.getModel().getProperties() != null &&
                 schemaDefinition.getModel().getProperties().containsKey("items") &&
@@ -45,7 +46,7 @@ public class ApiFunctions {
                 schemaDefinition.getModel().getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY)
                 && isSchemaOfType(recursiveResolve(schemaDefinition.getModel().getProperties().get("items").getItems(), result).getModel(), Schema.SchemaType.OBJECT, result);
         try {
-            var responses = path.getModel().getGET().getResponses().getAPIResponses().values().stream().map(response -> result.resolve(response).getModel()).flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
+            var responses = operation.getModel().getResponses().getAPIResponses().values().stream().map(response -> result.resolve(response).getModel()).flatMap(apiResponse -> apiResponse.getContent().getMediaTypes().values().stream()).map(MediaType::getSchema);
             responses.forEach(inlineSchema -> {
                 SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(inlineSchema);
                 if (schemaMeetsCondition(schemaDefinition, result, condition)) {
