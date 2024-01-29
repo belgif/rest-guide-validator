@@ -42,7 +42,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final String identifier; // mandatory when definitionType is TOP_LEVEL, optional otherwise
 
     private final File openApiFile;
-    private final JsonPointer jsonPointer;
+    private final JsonPointer jsonPointer; //Due to parser used, jsonPointer always points to equivalent locations in OAS 3 spec for OAS 2.0 documents. Conversion to OAS2 locations is handled by getExpectedRefPath() and handleJsonPointer()
 
     /**
      * Key: Name of the ignored rule.
@@ -101,7 +101,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         if (model instanceof Parameter) {
             return this.result.oasVersion == 2 ? "/parameters" : "/components/parameters";
         } else if (model instanceof RequestBody) {
-            return this.result.oasVersion == 2 ? null : "/components/requestBodies";
+            return this.result.oasVersion == 2 ? "/parameters" : "/components/requestBodies";
         } else if (model instanceof APIResponse) {
             return this.result.oasVersion == 2 ? "/responses" : "/components/responses";
         } else if (model instanceof Schema) {
@@ -196,6 +196,12 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             pointers.remove(0);
             if ("schemas".equals(pointers.get(0))) {
                 pointers.set(0, "definitions");
+            }
+            if ("requestBodies".equals(pointers.get(0))) {
+                pointers.set(0, "parameters");
+            }
+            if ("securitySchemes".equals(pointers.get(0))) {
+                pointers.set(0, "securityDefinitions");
             }
         }
         if (result.getOasVersion() == 2 && "servers".equals(pointers.get(0))) {

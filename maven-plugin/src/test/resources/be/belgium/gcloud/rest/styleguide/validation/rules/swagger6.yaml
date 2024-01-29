@@ -720,7 +720,7 @@ components:
     EmployerClassLink:
       allOf:
         - $ref: '#/components/schemas/EmployerClass'
-        - $ref: '#/components/schemas/EmployerClassLink_allOf'
+        - $ref: '#/components/schemas/EmployerClassLinkAllOf'
     EmployerClass:
       required:
         - value
@@ -1284,7 +1284,7 @@ components:
       minimum: 100
       type: integer
       description: NIS code representing a country as defined by statbel.fgov.be
-    EmployerClassLink_allOf:
+    EmployerClassLinkAllOf:
       type: object
       properties:
         href:

@@ -1,0 +1,34 @@
+openapi: 3.0.0
+info:
+  title: Testcase for ComponentNamesShouldBeUpperCamelCase
+  version: v1
+servers:
+  - url: /demo/v1
+paths: {}
+components:
+  parameters:
+    My-Parameter:
+      name: enterpriseNumber
+      in: path
+      description: Enterprise Number
+      required: true
+      schema:
+        $ref: '#/components/schemas/Something_With_Enum'
+  responses:
+    My.Response:
+      description: "Nice"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Something_With_Enum'
+  schemas:
+    Something_With_Enum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard

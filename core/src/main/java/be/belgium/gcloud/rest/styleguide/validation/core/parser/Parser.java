@@ -17,13 +17,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.microprofile.openapi.models.*;
+import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.headers.Header;
+import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
 
@@ -52,6 +55,9 @@ public class Parser {
         private Set<ParameterDefinition> parameters = new HashSet<>();
         private Set<ResponseHeaderDefinition> headers = new HashSet<>();
         private Set<ServerDefinition> servers = new HashSet<>();
+        private Set<ExampleDefinition> examples = new HashSet<>();
+        private Set<SecuritySchemeDefinition> securitySchemes = new HashSet<>();
+        private Set<LinkDefinition> links = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
@@ -71,6 +77,9 @@ public class Parser {
             allDefinitions.addAll(parameters);
             allDefinitions.addAll(headers);
             allDefinitions.addAll(servers);
+            allDefinitions.addAll(examples);
+            allDefinitions.addAll(securitySchemes);
+            allDefinitions.addAll(links);
         }
 
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
@@ -261,6 +270,7 @@ public class Parser {
                     parseMediaType(mediaTypeDef, result);
                 });
             }
+            constructExamples(parameterDefinition, parameterDefinition.getModel().getExample(), parameterDefinition.getModel().getExamples(), result);
         }
     }
 
@@ -342,6 +352,21 @@ public class Parser {
                 parseParameter(parameterDef, result);
             });
         }
+        Map<String, Example> examples = components.getExamples();
+        if (examples != null) {
+            examples.forEach((name, example) -> {
+                var exampleDef = new ExampleDefinition(example, name, openApiFile, result);
+                result.examples.add(exampleDef);
+            });
+        }
+        Map<String, SecurityScheme> securitySchemes = components.getSecuritySchemes();
+        if (securitySchemes != null) {
+            securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApiFile, result)));
+        }
+        Map<String, Link> links = components.getLinks();
+        if (links != null) {
+            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApiFile, result)));
+        }
     }
 
     public void parseRequestBody(RequestBodyDefinition requestBodyDef, ParserResult result) {
@@ -374,6 +399,10 @@ public class Parser {
                 parseHeaders(headerDef, result);
             });
         }
+        var links = responseDef.getModel().getLinks();
+        if (links != null) {
+            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, responseDef, name)));
+        }
     }
 
     public void parseHeaders(ResponseHeaderDefinition responseHeaderDefinition, ParserResult result) {
@@ -392,6 +421,7 @@ public class Parser {
                 });
             }
         }
+        constructExamples(responseHeaderDefinition, responseHeaderDefinition.getModel().getExample(), responseHeaderDefinition.getModel().getExamples(), result);
     }
 
     public void parseMediaType(MediaTypeDefinition mediaTypeDefinition, ParserResult result) {
@@ -401,10 +431,12 @@ public class Parser {
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         }
+        constructExamples(mediaTypeDefinition, mediaTypeDefinition.getModel().getExample(), mediaTypeDefinition.getModel().getExamples(), result);
     }
 
     public void parseSchema(SchemaDefinition schemaDefinition, ParserResult result) {
         var parentSchema = schemaDefinition.getModel();
+        constructExamples(schemaDefinition, parentSchema.getExample(), null, result);
         constructNestedSchema(parentSchema.getAllOf(), JsonPointer.relative("allOf"), schemaDefinition, result);
         constructNestedSchema(parentSchema.getOneOf(), JsonPointer.relative("oneOf"), schemaDefinition, result);
         constructNestedSchema(parentSchema.getAnyOf(), JsonPointer.relative("anyOf"), schemaDefinition, result);
@@ -431,6 +463,15 @@ public class Parser {
             var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), relativePointer);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
+        }
+    }
+
+    private void constructExamples(OpenApiDefinition<?> parent, Object example, Map<String, Example> examples, ParserResult result) {
+        if (example != null) {
+            result.examples.add(new ExampleDefinition(example, parent));
+        }
+        if (examples != null) {
+            examples.forEach((name, value) -> result.examples.add(new ExampleDefinition(value, parent, name)));
         }
     }
 

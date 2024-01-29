@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: Testcase for ComponentNamesShouldBeUpperCamelCase
+  version: v1
+servers:
+  - url: /demo/v1
+paths: {}
+components:
+  schemas:
+    1SomethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard

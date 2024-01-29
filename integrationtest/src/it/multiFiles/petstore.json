@@ -105,7 +105,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -165,7 +165,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -230,7 +230,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -292,7 +292,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -348,10 +348,10 @@
         },
         "security": [
           {
-            "api_key": []
+            "ApiKey": []
           },
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -403,7 +403,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -448,7 +448,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -512,7 +512,7 @@
         },
         "security": [
           {
-            "petstore_auth": [
+            "PetstoreAuth": [
               "write:pets",
               "read:pets"
             ]
@@ -549,7 +549,7 @@
         },
         "security": [
           {
-            "api_key": []
+            "ApiKey": []
           }
         ]
       }
@@ -1284,7 +1284,7 @@
       }
     },
     "securitySchemes": {
-      "petstore_auth": {
+      "PetstoreAuth": {
         "type": "oauth2",
         "flows": {
           "implicit": {
@@ -1296,9 +1296,9 @@
           }
         }
       },
-      "api_key": {
+      "ApiKey": {
         "type": "apiKey",
-        "name": "api_key",
+        "name": "ApiKey",
         "in": "header"
       }
     }

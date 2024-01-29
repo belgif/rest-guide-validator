@@ -252,6 +252,10 @@ public class ApiFunctions {
         return string.matches(sb.toString());
     }
 
+    public static boolean isUpperCamelCase(String string) {
+        return string.matches("^(?!.*[-_.])([A-Z][a-z0-9]+)*$");
+    }
+
     public static boolean isUpperKebabCase(String string) {
         return string.matches("^[A-Z0-9]([a-zA-Z0-9](-[A-Z0-9])?)*$");
     }
