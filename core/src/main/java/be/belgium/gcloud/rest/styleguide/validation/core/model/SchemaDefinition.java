@@ -14,12 +14,12 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
      * @param openApiObject
      * @param parent
      */
-    public SchemaDefinition(Schema openApiObject, OpenApiDefinition<?> parent, String name, JsonPointer relativeJsonPath) {
-        super(openApiObject, parent, name, relativeJsonPath.add(name));
+    public SchemaDefinition(Schema openApiObject, OpenApiDefinition<?> parent, JsonPointer relativeJsonPath) {
+        super(openApiObject, parent, null, relativeJsonPath);
     }
 
-    public SchemaDefinition(Schema openApiObject, OpenApiDefinition<?> parent, String name) {
-        super(openApiObject, parent, name, JsonPointer.relative("schema").add(name));
+    public SchemaDefinition(Schema openApiObject, OpenApiDefinition<?> parent) {
+        super(openApiObject, parent, null, JsonPointer.relative("schema"));
     }
 
     /**

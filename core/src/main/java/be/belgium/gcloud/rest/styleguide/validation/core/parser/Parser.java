@@ -259,7 +259,7 @@ public class Parser {
         Parameter param = parameterDefinition.getModel();
         if (param != null) {
             if (param.getSchema() != null) {
-                var schemaDefinition = new SchemaDefinition(param.getSchema(), parameterDefinition, param.getSchema().getTitle());
+                var schemaDefinition = new SchemaDefinition(param.getSchema(), parameterDefinition);
                 result.schemas.add(schemaDefinition);
             }
             if (param.getContent() != null && param.getContent().getMediaTypes() != null) {
@@ -408,7 +408,7 @@ public class Parser {
     public void parseHeaders(ResponseHeaderDefinition responseHeaderDefinition, ParserResult result) {
         var schema = responseHeaderDefinition.getModel().getSchema();
         if (schema != null) {
-            var schemaDef = new SchemaDefinition(schema, responseHeaderDefinition, schema.getTitle());
+            var schemaDef = new SchemaDefinition(schema, responseHeaderDefinition);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         } else if (responseHeaderDefinition.getModel().getContent() != null) {
@@ -427,7 +427,7 @@ public class Parser {
     public void parseMediaType(MediaTypeDefinition mediaTypeDefinition, ParserResult result) {
         var schema = mediaTypeDefinition.getModel().getSchema();
         if (schema != null) {
-            var schemaDef = new SchemaDefinition(schema, mediaTypeDefinition, schema.getTitle());
+            var schemaDef = new SchemaDefinition(schema, mediaTypeDefinition);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         }
@@ -460,7 +460,7 @@ public class Parser {
 
     private void constructNestedSchema(Schema schema, JsonPointer relativePointer, SchemaDefinition parentSchema, ParserResult result) {
         if (schema != null) {
-            var schemaDef = new SchemaDefinition(schema, parentSchema, schema.getTitle(), relativePointer);
+            var schemaDef = new SchemaDefinition(schema, parentSchema, relativePointer);
             result.schemas.add(schemaDef);
             parseSchema(schemaDef, result);
         }
