@@ -86,8 +86,8 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 String expectedPath = getExpectedRefPath();
                 if (expectedPath == null || !ref.contains(expectedPath)) {
                     if (expectedPath != null) {
-                        log.error("$ref in this location <{}> should target a definition under \"#{}\" but  '{}' was found.\n" +
-                                "Either location of $ref or referenced definition should be changed.", this.getJsonPointer().toPrettyString(), expectedPath.equals("/components/schemas") && this.result.getOasVersion()==2 ? "/definitions" : expectedPath, ref);
+                        log.error("OpenApi parsing error: $ref in this location <{}> should target a definition under \"#{}\" but  '{}' was found.\n" +
+                                "Either location of $ref or referenced definition should be changed.", this.getJsonPointer().toPrettyString(), expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath, ref);
                         this.result.setParsingValid(false);
                     } else {
                         log.warn("[Internal error] Use of $ref is not supported by validator for type {} ({}).", this.getModel().getClass().getName(), ref);
@@ -136,7 +136,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public String getEffectiveIdentifier() {
-        if(this.getIdentifier() == null) {
+        if (this.getIdentifier() == null) {
             return parent.getEffectiveIdentifier();
         } else {
             return identifier;
@@ -385,32 +385,36 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private Map<String, String> parseIgnoredRules() {
+        if (!(model instanceof Extensible<?>)) {
+            return new HashMap<>();
+        }
         Map<String, Object> extensions;
         extensions = ((Extensible<?>) model).getExtensions();
-        if (extensions != null && extensions.containsKey("x-ignore-rules")) {
-            Object ignoreObj = extensions.get("x-ignore-rules");
-            if (ignoreObj instanceof Map) {
-                Map<String, String> resultMap = new HashMap<>();
-                Map<?, ?> ignored = (Map<?, ?>) ignoreObj;
-                for (Object key : ignored.keySet()) {
-                    if (key instanceof String) {
-                        String k = (String) key;
-                        if (ignored.get(key) instanceof String) {
-                            String v = (String) ignored.get(key);
-                            resultMap.put(k, v);
-                        } else {
-                            log.error("Value of {} in x-ignored-rules for {} not of type String", k, jsonPointer.toPrettyString());
-                        }
-                    } else {
-                        log.error("Property in x-ignored-rules for {} not of type String", jsonPointer.toPrettyString());
-                    }
-                }
-                return resultMap;
-            } else {
-                log.error("x-ignored-rules for {} not of type Object with rules/reasons as keys and values", jsonPointer.toPrettyString());
-            }
+        if (extensions == null || !extensions.containsKey("x-ignore-rules")) {
+            return new HashMap<>();
         }
-        return new HashMap<>();
+        Object ignoreObj = extensions.get("x-ignore-rules");
+        if (ignoreObj instanceof Map) {
+            Map<String, String> resultMap = new HashMap<>();
+            Map<?, ?> ignored = (Map<?, ?>) ignoreObj;
+            for (Object key : ignored.keySet()) {
+                if (key instanceof String) {
+                    String k = (String) key;
+                    if (ignored.get(key) instanceof String) {
+                        String v = (String) ignored.get(key);
+                        resultMap.put(k, v);
+                    } else {
+                        log.error("Value of {} in x-ignored-rules for {} not of type String", k, jsonPointer.toPrettyString());
+                    }
+                } else {
+                    log.error("Property in x-ignored-rules for {} not of type String", jsonPointer.toPrettyString());
+                }
+            }
+            return resultMap;
+        } else {
+            log.error("x-ignored-rules for {} not of type Object with rules/reasons as keys and values", jsonPointer.toPrettyString());
+            return new HashMap<>();
+        }
     }
 
 }

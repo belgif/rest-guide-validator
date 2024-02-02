@@ -16,6 +16,7 @@ import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.*;
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.headers.Header;
@@ -26,6 +27,7 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
@@ -37,6 +39,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Getter
 @AllArgsConstructor
 public class Parser {
@@ -58,6 +61,7 @@ public class Parser {
         private Set<ExampleDefinition> examples = new HashSet<>();
         private Set<SecuritySchemeDefinition> securitySchemes = new HashSet<>();
         private Set<LinkDefinition> links = new HashSet<>();
+        private Set<SecurityRequirementDefinition> securityRequirements = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
@@ -80,6 +84,7 @@ public class Parser {
             allDefinitions.addAll(examples);
             allDefinitions.addAll(securitySchemes);
             allDefinitions.addAll(links);
+            allDefinitions.addAll(securityRequirements);
         }
 
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
@@ -144,6 +149,7 @@ public class Parser {
             result.src = readOpenApiFiles(openApiFile);
             for (SourceDefinition sourceDefinition : result.src.values()) {
                 parseComponents(sourceDefinition, result);
+                parseGlobalSecurityRequirements(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
                     result.setOasVersion(getOasVersion(sourceDefinition));
@@ -151,6 +157,7 @@ public class Parser {
                     parsePaths(sourceDefinition, result);
                 }
             }
+            verifySecurityRequirements(result);
             result.assembleAllDefinitions();
             buildAllPathWithLineRange(result);
             if (result.isParsingValid()) {
@@ -161,6 +168,18 @@ public class Parser {
             openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0));
             return null;
         }
+    }
+
+    public void verifySecurityRequirements(ParserResult result) {
+        Set<String> allowedRequirements = result.getSecuritySchemes().stream().map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
+        result.securityRequirements.forEach(securityRequirement -> {
+            for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
+                if (!allowedRequirements.contains(securityScheme)) {
+                    log.error("OpenApi parsing error: SecurityScheme: <<{}>> is used in <<{}>>, but is not defined", securityScheme, securityRequirement.getJsonPointer().toPrettyString());
+                    result.setParsingValid(false);
+                }
+            }
+        });
     }
 
     /**
@@ -301,6 +320,11 @@ public class Parser {
                 parseResponse(responseDef, result);
             });
         }
+
+        List<SecurityRequirement> securityRequirements = operationDef.getModel().getSecurity();
+        if (securityRequirements != null) {
+            securityRequirements.forEach(securityRequirement -> result.securityRequirements.add(new SecurityRequirementDefinition(securityRequirement, operationDef, securityRequirements.indexOf(securityRequirement))));
+        }
     }
 
     public void parseComponents(SourceDefinition sourceDefinition, ParserResult result) {
@@ -366,6 +390,13 @@ public class Parser {
         Map<String, Link> links = components.getLinks();
         if (links != null) {
             links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApiFile, result)));
+        }
+    }
+
+    public void parseGlobalSecurityRequirements(SourceDefinition sourceDefinition, ParserResult result) {
+        List<SecurityRequirement> securityRequirements = sourceDefinition.getOpenApi().getSecurity();
+        if (securityRequirements != null) {
+            securityRequirements.forEach(securityRequirement -> result.securityRequirements.add(new SecurityRequirementDefinition(securityRequirement, securityRequirements.indexOf(securityRequirement), sourceDefinition.getFile(), result)));
         }
     }
 

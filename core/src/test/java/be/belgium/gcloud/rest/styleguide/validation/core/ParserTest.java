@@ -125,10 +125,8 @@ public class ParserTest {
         var errorMessage = "Parsing openapi definition failed. Please review logs.";
         assertEquals(errorMessage, ex.getMessage());
 
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/logos/get/responses/200> should target a definition under \"#/components/responses\" but  '#/components/schemas/MyResponse' was found.\n" +
-                "Either location of $ref or referenced definition should be changed.")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/logos/get/parameters/1> should target a definition under \"#/components/parameters\" but  '#/components/schemas/MyParam' was found.\n" +
-                "Either location of $ref or referenced definition should be changed.")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/logos/get/responses/200>")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/logos/get/parameters/1>")));
         assertEquals(3, listAppender.list.size());
     }
 
@@ -164,10 +162,8 @@ public class ParserTest {
         var errorMessage = "Parsing openapi definition failed. Please review logs.";
         assertEquals(errorMessage, ex.getMessage());
 
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/userInfo/get/responses/200> should target a definition under \"#/responses\" but  '#/definitions/EntityIdentifier' was found.\n" +
-                "Either location of $ref or referenced definition should be changed.")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("$ref in this location </paths/userInfo/get/responses/400/content/application/json/schema> should target a definition under \"#/definitions\" but  '#/responses/MyFirstResponse' was found.\n" +
-                "Either location of $ref or referenced definition should be changed.")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/userInfo/get/responses/200>")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/userInfo/get/responses/400/content/application/json/schema>")));
         assertEquals(3, listAppender.list.size());
     }
 
@@ -194,6 +190,46 @@ public class ParserTest {
         listAppender.start();
         var headerDef = new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("[Internal error] Use of $ref is not supported by validator for type org.openapitools.empoa.swagger.core.internal.models.headers.SwHeader (#/blabla).")));
+    }
+
+    @Test
+    void testNonExistingSecuritySchemes() {
+        Logger logger = (Logger) LoggerFactory.getLogger(Parser.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemes.yaml").getFile());
+
+        listAppender.start();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Parsing openapi definition failed. Please review logs.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</paths/myFirstPath/get/security/0>>")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</security/0>>")));
+        assertEquals(2, listAppender.list.size());
+    }
+
+    @Test
+    void testNonExistingSecuritySchemesSwagger() {
+        Logger logger = (Logger) LoggerFactory.getLogger(Parser.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemesSwagger.yaml").getFile());
+
+        listAppender.start();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Parsing openapi definition failed. Please review logs.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</paths/myFirstPath/get/security/0>>")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</security/0>>")));
+        assertEquals(2, listAppender.list.size());
     }
 
 
