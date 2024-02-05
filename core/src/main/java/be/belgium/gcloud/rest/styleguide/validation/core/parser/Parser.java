@@ -31,6 +31,7 @@ import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.openapitools.empoa.swagger.core.internal.SwAdapter;
+import org.openapitools.empoa.swagger.core.internal.models.examples.SwExample;
 
 import java.io.File;
 import java.io.IOException;
@@ -499,7 +500,9 @@ public class Parser {
 
     private void constructExamples(OpenApiDefinition<?> parent, Object example, Map<String, Example> examples, ParserResult result) {
         if (example != null) {
-            result.examples.add(new ExampleDefinition(example, parent));
+            Example exampleObject = new SwExample();
+            exampleObject.setValue(example);
+            result.examples.add(new ExampleDefinition(exampleObject, parent));
         }
         if (examples != null) {
             examples.forEach((name, value) -> result.examples.add(new ExampleDefinition(value, parent, name)));

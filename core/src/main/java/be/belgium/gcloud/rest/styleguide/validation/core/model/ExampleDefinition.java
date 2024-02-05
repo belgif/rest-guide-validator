@@ -14,10 +14,9 @@ public class ExampleDefinition extends OpenApiDefinition<Example> {
         super(model, parent, name, JsonPointer.relative("examples").add(name));
     }
 
-    // Constructor for inline ExampleDefinition with Object as modelinput, used when parent returns an Object with getExample.
-    public ExampleDefinition(Object model, OpenApiDefinition<?> parent) {
-        super(new SwExample(), parent, null, JsonPointer.relative("example"));
-        this.getModel().setValue(model);
+    // Constructor for inline ExampleDefinition, used when there is a single example in the parent object.
+    public ExampleDefinition(Example model, OpenApiDefinition<?> parent) {
+        super(model, parent, null, JsonPointer.relative("example"));
     }
 
     // Constructor for toplevel ExampleDefinition.

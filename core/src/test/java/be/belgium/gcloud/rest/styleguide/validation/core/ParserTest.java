@@ -193,6 +193,26 @@ public class ParserTest {
     }
 
     @Test
+    public void testRefsToExamples() {
+        Logger logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new OpenApiViolationAggregator();
+        var file = new File(getClass().getResource("../rules/examplesRefs.yaml").getFile());
+
+        listAppender.start();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Parsing openapi definition failed. Please review logs.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("#/components/schemas/MySchema")));
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/components/examples")));
+        assertEquals(1, listAppender.list.size());
+    }
+
+    @Test
     void testNonExistingSecuritySchemes() {
         Logger logger = (Logger) LoggerFactory.getLogger(Parser.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
