@@ -281,6 +281,7 @@ public class Parser {
             if (param.getSchema() != null) {
                 var schemaDefinition = new SchemaDefinition(param.getSchema(), parameterDefinition);
                 result.schemas.add(schemaDefinition);
+                parseSchema(schemaDefinition, result);
             }
             if (param.getContent() != null && param.getContent().getMediaTypes() != null) {
                 Map<String, MediaType> mediaTypes = param.getContent().getMediaTypes();
