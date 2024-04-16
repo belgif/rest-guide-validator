@@ -72,6 +72,8 @@ public class Parser {
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
 
+        private List<String> parsingViolation = new ArrayList<>();
+
         private void assembleAllDefinitions() {
             allDefinitions.addAll(pathDefinitions);
             allDefinitions.addAll(requestBodies);
@@ -161,6 +163,11 @@ public class Parser {
             verifySecurityRequirements(result);
             result.assembleAllDefinitions();
             buildAllPathWithLineRange(result);
+            if( ! result.getParsingViolation().isEmpty()) {
+                result.getParsingViolation().forEach(parsingViolation ->
+                        openApiViolationAggregator.addViolation("PARSING", parsingViolation, new Line(openApiFile.getName(), 0)));
+
+            }
             if (result.isParsingValid()) {
                 return result;
             }

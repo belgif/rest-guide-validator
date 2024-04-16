@@ -86,9 +86,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 String expectedPath = getExpectedRefPath();
                 if (expectedPath == null || !ref.contains(expectedPath)) {
                     if (expectedPath != null) {
-                        log.error("OpenApi parsing error: $ref in this location <{}> should target a definition under \"#{}\" but  '{}' was found.\n" +
-                                "Either location of $ref or referenced definition should be changed.", this.getJsonPointer().toPrettyString(), expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath, ref);
-                        this.result.setParsingValid(false);
+                        var violation = String.format("OpenApi parsing error: $ref in this location <%s> should target a definition under \"#%s\" but  '%s' was found." ,
+                                this.getJsonPointer().toPrettyString(),
+                                expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath,
+                                ref) ;
+
+                        log.error(violation + "\n" +"Either location of $ref or referenced definition should be changed.");
+                        this.result.getParsingViolation().add(violation);
                     } else {
                         log.warn("[Internal error] Use of $ref is not supported by validator for type {} ({}).", this.getModel().getClass().getName(), ref);
                     }

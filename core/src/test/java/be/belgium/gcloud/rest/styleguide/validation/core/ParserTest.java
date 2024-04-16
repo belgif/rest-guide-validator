@@ -120,14 +120,11 @@ public class ParserTest {
         var file = new File(getClass().getResource("../rules/invalidRefs.yaml").getFile());
 
         listAppender.start();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-
-        var errorMessage = "Parsing openapi definition failed. Please review logs.";
-        assertEquals(errorMessage, ex.getMessage());
-
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/logos/get/responses/200>")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/logos/get/parameters/1>")));
-        assertEquals(3, listAppender.list.size());
+        var parserResult = new Parser(file).parse(oas);
+        assertFalse(parserResult.getParsingViolation().isEmpty());
+        assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains("$ref in this location </paths/logos/get/parameters/1> should target a definition under \"#/components/parameters\"")));
+        assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains("$ref in this location </paths/logos/get/responses/200> should target a definition under \"#/components/responses\"")));
+        assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains("$ref in this location </paths/logos/put/requestBody> should target a definition under \"#/components/requestBodies\"")));
     }
 
     @Test
@@ -157,14 +154,11 @@ public class ParserTest {
         var oas = new OpenApiViolationAggregator();
         var file = new File(getClass().getResource("../rules/invalidRefSwagger.yaml").getFile());
 
-        listAppender.start();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Parsing openapi definition failed. Please review logs.";
-        assertEquals(errorMessage, ex.getMessage());
+        var parserResult = new Parser(file).parse(oas);
+        assertFalse(parserResult.getParsingViolation().isEmpty());
+        assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains("</paths/userInfo/get/responses/200>")));
+        assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains("</paths/userInfo/get/responses/400/content/application/json/schema>")));
 
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/userInfo/get/responses/200>")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("</paths/userInfo/get/responses/400/content/application/json/schema>")));
-        assertEquals(3, listAppender.list.size());
     }
 
     @Test
@@ -202,14 +196,12 @@ public class ParserTest {
         var oas = new OpenApiViolationAggregator();
         var file = new File(getClass().getResource("../rules/examplesRefs.yaml").getFile());
 
-        listAppender.start();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Parsing openapi definition failed. Please review logs.";
-        assertEquals(errorMessage, ex.getMessage());
+        var result = new Parser(file).parse(oas);
+        var expected = "OpenApi parsing error: $ref in this location </paths/logos/get/responses/default/content/application/json/examples/MySchema> should target a definition under \"#/components/examples\" but  '#/components/schemas/MySchema' was found.";
+        assertFalse(result.getParsingViolation().isEmpty());
+        assertTrue(result.getParsingViolation().stream().anyMatch(s-> s.contains(expected)));
 
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("#/components/schemas/MySchema")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/components/examples")));
-        assertEquals(1, listAppender.list.size());
+
     }
 
     @Test
@@ -250,6 +242,17 @@ public class ParserTest {
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</paths/myFirstPath/get/security/0>>")));
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</security/0>>")));
         assertEquals(2, listAppender.list.size());
+    }
+
+
+    @Test
+    public void testBadResponse() {
+       var oas = new OpenApiViolationAggregator();
+       var openApiFile = new File(getClass().getResource("../rules/failResponse.yaml").getFile());
+       var parserResult = new Parser(openApiFile).parse(oas);
+       var expected = "OpenApi parsing error: $ref in this location </paths/correctionFiles/post/responses/201> should target a definition under \"#/responses\"";
+       assertFalse(parserResult.getParsingViolation().isEmpty());
+       assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains(expected)));
     }
 
 
