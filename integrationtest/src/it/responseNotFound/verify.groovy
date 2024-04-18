@@ -1,0 +1,5 @@
+String log = new File(basedir, "build.log").text
+
+assert log.contains("[INFO] Start creation of KieBase: defaultKieBase")
+assert log.contains("[MANDATORY]")
+assert log.contains("[ERROR] [Internal error] Could not find match of #/definitions/Problem")

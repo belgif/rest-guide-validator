@@ -1,0 +1,2099 @@
+swagger: "2.0"
+info:
+  description: "This is the implementation of nssoservicerequest REST API"
+  version: "v2"
+  title: "nssoservicerequest API"
+  contact:
+    name: "NssoServiceRequest team"
+    url: "http://www.smals.be"
+    email: "overseas_dev@smals.be"
+basePath: "/nssoservicerequest/v2"
+tags:
+- name: "Companies registries"
+- name: "Documentation"
+- name: "Monitoring"
+- name: "Request"
+- name: "Template"
+schemes:
+- "http"
+securityDefinitions:
+  oauth-implicit:
+    type: oauth2
+    authorizationUrl: 'https://oauth-v5.socialsecurity.be/oauth2/authorize'
+    flow: implicit
+    scopes:
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise': "consultenterprise"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent': "consultagent"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall': "postall"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen': "postcitizen"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen': "consultcitizen"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall': "consultagentall"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative': "postrepresentative"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise': "postenterprise"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent': "postagent"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring': "monitoring"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative': "consultrepresentative"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall': "consultall"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult': "consult"
+      'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin': "configadmin"
+paths:
+  /doc/swagger.yaml:
+    get:
+      tags:
+      - "Documentation"
+      summary: "Returns the API documentation in YAML Swagger format"
+      description: ""
+      operationId: "getSwagger"
+      produces:
+      - "application/yaml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+        default:
+          $ref: "#/definitions/Problem"
+  /enterprises/{companyId}:
+    get:
+      tags:
+      - "Companies registries"
+      summary: "Return enterprise data corresponding to the company Id"
+      description: ""
+      operationId: "getEnterpriseDenominations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+      responses:
+        200:
+          description: "OK"
+        204:
+          description: "no content"
+        default:
+          $ref: "#/definitions/Problem"
+  /enterprises/info/{companyId}:
+    get:
+      tags:
+      - "Companies registries"
+      summary: "Return enterprise data corresponding to the company Id"
+      description: ""
+      operationId: "getEnterpriseInformations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name : "WithBU"
+        in: "query"
+        required: false
+        type: "boolean"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EnterpriseInformation"
+        default:
+          $ref: "#/definitions/Problem"
+  /healthCheck:
+    get:
+      tags:
+      - "Monitoring"
+      summary: "Check health of this REST API"
+      description: "This resource is only available to supervision users"
+      operationId: "healthCheck"
+      produces:
+      - "text/xml"
+      parameters:
+      - name: type
+        in: "query"
+        description: "Defines the which sanity checks must be ran"
+        required: false
+        type: "string"
+        default: "default"
+      responses:
+        200:
+          description: "successful operation"
+        default:
+          $ref: "#/definitions/Problem"
+  /requestTypes:
+    get:
+      tags:
+      - "RequestType"
+      summary: "Returns a list of  secured  info for requestTypes"
+      description: ""
+      operationId: "getRequestTypes"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ServiceRequestTypes"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+    post:
+      tags:
+      - "RequestType"
+      summary: "Create a new requestType, returns the id "
+      description: ""
+      operationId: "createRequestType"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceRequestType"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ServiceRequestType"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+
+  /requestTypes/{requestTypeId}:
+    get:
+      tags:
+      - "RequestType"
+      summary: "Return request Type  corresponding to the requestTypeId\
+        \ given"
+      description: ""
+      operationId: "getRequestType"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "requestTypeId"
+        in: "path"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ServiceRequestType"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+
+    put:
+      tags:
+      - "RequestType"
+      summary: "Update a requestType, returns the id "
+      description: ""
+      operationId: "updateRequestType"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "requestTypeId"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request Type"
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceRequestType"
+      responses:
+        201:
+          description: "Updated"
+          schema:
+            $ref: "#/definitions/ServiceRequestType"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+
+    delete:
+      tags:
+      - "RequestType"
+      summary: "delete a requestType "
+      description: ""
+      operationId: "deleteRequestType"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "requestTypeId"
+        in: "path"
+        required: true
+        type: string
+      responses:
+        201:
+          description: "deleted"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+
+
+
+  /requests:
+    get:
+      tags:
+      - "Request"
+      summary: "Returns the requests corresponding to the following parameters"
+      description: ""
+      operationId: "findRequests"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "ssin"
+        in: "query"
+        required: false
+        type: "string"
+        maxLength: 11
+        minLength: 11
+      - name: "enterpriseNumber"
+        in: "query"
+        required: false
+        type: "string"
+        maxLength: 2147483647
+        minLength: 9
+      - name: "lastName"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "firstName"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "formType"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "fromDate"
+        in: "query"
+        required: false
+        type: "string"
+        format: "date-time"
+      - name: "toDate"
+        in: "query"
+        type: "string"
+        format: "date-time"
+      - name: "status"
+        in: "query"
+        required: false
+        type: "string"
+        enum:
+        - "SUBMITTED"
+        - "NEW"
+        - "ERROR"
+        - "CLOSED_NOK"
+        - "CLOSED_OK"
+        - "CANCELLED"
+        - "IN_PROGRESS"
+        - "DRAFT"
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        default: 1
+        minimum: 1
+        format: "int32"
+      - name: "pageSize"
+        in: "query"
+        required: false
+        type: "integer"
+        default: 20
+        minimum: 1
+        format: "int32"
+      - name: "sort"
+        in: "query"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ServiceRequests"
+        default:
+          $ref: "#/definitions/Problem"
+      security :
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+      - "Request"
+      summary: "Create a new request, returns the id and schedules (async) it for\
+        \ process creation with uri to request"
+      description: ""
+      operationId: "createRequest"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "mtCaptcha"
+        in: "header"
+        description: "mtCaptchaa for validation"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceRequest"
+      responses:
+        201:
+          description: "Created"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+      - { }
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+      - "Request"
+      summary: "Update a new request, returns the id and schedules (async) it for\
+        \ process creation with uri to request"
+      description: ""
+      operationId: "updateRequest"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "mtCaptcha"
+        in: "header"
+        description: "mtCaptchaa for validation"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceRequest"
+      responses:
+        201:
+          description: "Updated"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+      - { }
+      x-oauth2-required-scopes: any
+  /cpf:
+    get:
+      tags:
+      - "listPeriods"
+      summary: "list periods with some criteria"
+      description: ""
+      operationId: "listPeriods"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyId"
+        in: "query"
+        required: false
+        type: "string"
+        maxLength: 2147483647
+        minLength: 9
+      - name: "activeFromDate"
+        in: "query"
+        required: false
+        type: "string"
+        format: "date"
+      - name: "isCancelled"
+        in: "query"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "isCancelledNSSO"
+        in: "query"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "workerName"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "workerInss"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "workerType"
+        in: "query"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "jointCommisionNumber"
+        in: "query"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "rejectedWorkerType"
+        in: "query"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "rejectedJointCommisionNumber"
+        in: "query"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "isPPL"
+        in: "query"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "activeToDate"
+        in: "query"
+        required: false
+        type: "string"
+        format: "date"
+      - name: "dimonaPeriodId"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "usingEmployerCompanyID"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "usingEmployerName"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "usingEmployerNOSSRegistrationNbr"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "subEntityNbr"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "temporaryWorkerSearchType"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "notExceedingQuota"
+        in: "query"
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "returnExceedingQuota"
+        in: "query"
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              type: "object"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      x-oauth2-required-scopes: any
+  /dac:
+    get:
+      tags:
+      - "listPeriods"
+      summary: "return dac status"
+      description: ""
+      operationId: "hasAccess"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyId"
+        in: "query"
+        required: false
+        type: "string"
+        maxLength: 2147483647
+        minLength: 9
+      - name: "applicationName"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/DacStatus"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      x-oauth2-required-scopes: any
+  /requests/attachment:
+    post:
+      tags:
+      - "Request"
+      summary: "submit files "
+      description: ""
+      operationId: "postAttachment"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "mtCaptcha"
+        in: "header"
+        description: "mtCaptchaa for validation"
+        required: false
+        type: "string"
+      - in: body
+        name: status
+        required: true
+        schema:
+          type: object
+          properties:
+            request:
+              type: string
+              format: binary
+      responses:
+        201:
+          description: "Created"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+  /requests/{requestId}:
+    get:
+      tags:
+      - "Request"
+      summary: "Returns the request corresponding to the id parameters"
+      description: ""
+      operationId: "getRequestFromId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "requestId"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "^[A-Z0-9]*$"
+      - name: "neededContent"
+        in: "query"
+        required: false
+        type: "boolean"
+        default: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ServiceRequest"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+    patch:
+      tags:
+      - "Request"
+      summary: "Update an existing request, "
+      description: ""
+      operationId: "updateFunctionalStatus"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "mtCaptcha"
+        in: "header"
+        description: "mtCaptchaa for validation"
+        required: false
+        type: "string"
+      - name: "requestId"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "^[A-Z0-9]*$"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceRequest"
+      responses:
+        201:
+          description: "Updated"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+      - { }
+      x-oauth2-required-scopes: any
+  /requests/{requestId}/attachments/{attachmentId}/download:
+    get:
+      tags:
+      - "Request"
+      summary: "Returns the attachment corresponding to the request id and attachment\
+        \ id"
+      description: ""
+      operationId: "getAttachmentFromId"
+      produces:
+      - "application/octet-stream"
+      parameters:
+      - name: "requestId"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "attachmentId"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+
+
+  /templates/{templateCode}/versions/{version}:
+    get:
+      tags:
+      - "TemplateVersion"
+      summary: "Return version of the template  corresponding to the template code and version\
+        \ given"
+      description: ""
+      operationId: "getTemplates"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "version"
+        description: "Put version of template you want to see or latest to get last version"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/TemplateVersion"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+      - "TemplateVersion"
+      summary: "create a new version of template "
+      description: ""
+      operationId: "postTemplate"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/TemplateVersion"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/TemplateVersion"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+      - "TemplateVersion"
+      summary: "Modify the version of the template "
+      description: ""
+      operationId: "putTemplate"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/TemplateVersion"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/TemplateVersion"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+      - "TemplateVersion"
+      summary:  "delete the template corresponding to the template code and version\
+        \ given"
+      description: "Delete a version of the template "
+      operationId: "deleteTemplate"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "ok deleted"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+
+  /templates/{templateCode}:
+    get:
+      tags:
+      - "Template"
+      summary: "Return the template information corresponding to the template code \
+          \ given"
+      description: ""
+      operationId: "getTemplateInfo"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Template"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+    post:
+      tags:
+      - "Template"
+      summary: "create a new  template "
+      description: ""
+      operationId: "postTemplateInfo"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/Template"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Template"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+      - "Template"
+      summary: "Modify template info"
+      description: ""
+      operationId: "putTemplateInfo"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "body of request"
+        required: false
+        schema:
+          $ref: "#/definitions/Template"
+      responses:
+        201:
+          description: "modified"
+          schema:
+            $ref: "#/definitions/Template"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+    delete:
+      tags:
+      - "Template"
+      summary:  "delete the template "
+      description: ""
+      operationId: "deleteTemplateInfo"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "templateCode"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "deleted"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:configadmin'
+      x-oauth2-required-scopes: any
+
+  /temp/eventSectorPrimeStatus:
+    get:
+      tags:
+      - "Temp"
+      summary: "Return the status of prime event for an employer"
+      description: ""
+      operationId: "getEventPrimeStatusForEmployer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "enterpriseNumber"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EventSectorStatus"
+        default:
+          $ref: "#/definitions/Problem"
+      security:
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      - { }
+      x-oauth2-required-scopes: any
+  /requests/language/{language}/formId/{formId}:
+    get:
+      tags:
+      - "Request"
+      summary: "Get the HTML of form as PDF"
+      description: ""
+      operationId: "getPdfFromFormId"
+      produces:
+      - "application/pdf"
+      parameters:
+      - name: "formId"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "language"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/FormReport"
+        default:
+          $ref: "#/definitions/Problem"
+      security :
+      - oauth-implicit:
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultcitizen'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultagentall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postenterprise'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:postagent'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:monitoring'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultrepresentative'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consultall'
+        - 'scope:socialsecurity:gestion:entreprise:nssoservicerequest-rest:consult'
+      x-oauth2-required-scopes: any
+
+
+
+definitions:
+  FormReport:
+    type: "string"
+    format: "binary"
+  EventSectorStatus:
+    type: "object"
+    required:
+    - "enterpriseNumber"
+    - "status"
+    properties:
+      enterpriseNumber:
+        type: "string"
+      status:
+        type: "string"
+
+  Labels:
+    type: "object"
+    properties:
+      fr:
+        type: "string"
+      nl:
+        type: "string"
+      de:
+        type: "string"
+      en:
+        type: "string"
+  LoginProfile:
+    type: "object"
+    properties:
+      enterprise:
+        type: "boolean"
+      citizen:
+        type: "boolean"
+      nssoAgent:
+        type: "boolean"
+  MTCaptchaResponse:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+      failCodes:
+        type: "array"
+        items:
+          type: "string"
+          enum:
+          - "ExpiredToken"
+          - "DuplicateToken"
+          - "BadRequest"
+          - "MissingPrivateKey"
+          - "InvalidPrivateKey"
+          - "MissingToken"
+          - "InvalidToken"
+          - "InvalidTokenFailedDecryption"
+          - "PrivateKeyMismatchToken"
+          - "ExpiredSiteKeyOrAccount"
+      tokenInfo:
+        $ref: "#/definitions/MTTokenInfo"
+  MTTokenInfo:
+    type: "object"
+    properties:
+      v:
+        type: "string"
+      code:
+        type: "integer"
+        format: "int32"
+      codeDesc:
+        type: "string"
+      tokId:
+        type: "string"
+      timestampSec:
+        type: "integer"
+        format: "int64"
+      timestampIso:
+        type: "string"
+      hostname:
+        type: "string"
+      isDevHost:
+        type: "boolean"
+      action:
+        type: "string"
+      ip:
+        type: "string"
+  ServiceRequest:
+    type: "object"
+    properties:
+      formId:
+        type: "string"
+      id:
+        type: "string"
+      requester:
+        $ref: "#/definitions/ServiceRequester"
+      type:
+        type: "string"
+        description: "REQUESTHARMATTESTPUBLICTENDER, REQUESTHARMATTESTPUBLICTENDERMULTIPLE,\
+          \ REQUESTHARMATTESTPUB, REQUESTHARMATTESTDEBT"
+      typeVersion:
+        type: "string"
+      createDate:
+        type: "string"
+        format: "date-time"
+      updateDate:
+        type: "string"
+        format: "date-time"
+      data:
+        type: "object"
+      metaData:
+        type: "object"
+        additionalProperties:
+          type: "object"
+      functionalStatus:
+        type: "string"
+        enum:
+        - "SUBMITTED"
+        - "NEW"
+        - "ERROR"
+        - "CLOSED_NOK"
+        - "CLOSED_OK"
+        - "CANCELLED"
+        - "IN_PROGRESS"
+        - "DRAFT"
+      isDraft:
+        type: boolean
+      isEdit:
+        type: boolean
+      concerned:
+        $ref: "#/definitions/ServiceRequester"
+      sendMail:
+        type: "string"
+      serviceRequestType:
+        $ref: "#/definitions/ServiceRequestType"
+
+  ServiceRequestTypes:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServiceRequestType"
+      page:
+        type: "integer"
+        format: "int32"
+      pageSize:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int32"
+
+  ServiceRequestType:
+    type: "object"
+    description: 'definition of a form type: name, css style, access type, mail response, utilisation mode (edit/draft), ...'
+    properties:
+      id:
+        type: "string"
+      secured:
+        type: "boolean"
+      scope:
+        type: "string"
+      scopeSubmit:
+        type: "array"
+        items:
+          type: "string"
+      scopeConsult:
+        type: "array"
+        items:
+          type: "string"
+      roleSubmit:
+        type: "array"
+        items:
+          type: "string"
+      roleConsult:
+        type: "array"
+        items:
+          type: "string"
+      style:
+        type: "string"
+      languages:
+        type: "array"
+        description: A language represented by an ISO-639-1 code
+        items:
+          type: "string"
+          pattern: "^[a-z]{2}$"
+          example: "en"
+      autoCleanup:
+        type: "boolean"
+      nbDaysRetention:
+        type: "integer"
+      label:
+        $ref: "#/definitions/Labels"
+      loginProfiles:
+        $ref: "#/definitions/LoginProfile"
+      confirmationMessages:
+        $ref: "#/definitions/Labels"
+      summaryMessages:
+        $ref: "#/definitions/Labels"
+      mailContent:
+        $ref: "#/definitions/Labels"
+      mailContentUnsecured:
+        $ref: "#/definitions/Labels"
+      mailSubject:
+        $ref: "#/definitions/Labels"
+      editableMode:
+        type: "boolean"
+      consultAccess:
+        type: "string"
+      postAcces:
+        type: "string"
+      mailFrom:
+        type: "string"
+      sendMail:
+        type: "boolean"
+      pdfDownload:
+        type: "boolean"
+      pdfMailSecured:
+        type: "boolean"
+      pdfMailUnsecured:
+        type: "boolean"
+      draftMode:
+        type: "boolean"
+      redirectionUrl:
+        type: "string"
+      consultAccessCreator:
+        type: "boolean"
+      consultView:
+        type: "boolean"
+
+
+  ServiceRequester:
+    type: "object"
+    properties:
+      ssin:
+        type: "string"
+      enterpriseNumber:
+        type: "string"
+      firstname:
+        type: "string"
+      lastname:
+        type: "string"
+      requesterType:
+        type: "string"
+  ServiceRequests:
+    type: "object"
+    properties:
+      requestList:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServiceRequest"
+      page:
+        type: "integer"
+        format: "int32"
+      pageSize:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int32"
+  UnauthorizedInfo:
+    type: "object"
+    properties:
+      reason:
+        type: "string"
+        enum:
+        - "FailedCaptcha"
+        - "MissingCaptcha"
+        - "NoAuthentificatedUserForSecuredForm"
+      mtCaptchaResponse:
+        $ref: "#/definitions/MTCaptchaResponse"
+  DacStatus:
+    type: "object"
+    properties:
+      enterpriseNumber:
+        type: "string"
+      hasAccess:
+        type: "boolean"
+  EnterpriseInformation:
+    type: "object"
+    properties:
+      CompanyID:
+        type: "string"
+        description: "The ID of the company"
+      EnterpriseStatus:
+        $ref: '#/definitions/EnterpriseStatus'
+      EnterpriseDuration:
+        type: "integer"
+        description: "Value '0'"
+      EnterpriseType:
+        type: "integer"
+        description: "The type of the enterprise: 1 = personne physique, 2 = personne morale"
+      LegalDenomination:
+        type: "array"
+        items:
+          $ref: '#/definitions/LegalDenomination'
+      CBEAddresses:
+        type : "array"
+        items:
+          $ref: '#/definitions/CBEAddress'
+      JuridicalSituation:
+        $ref: '#/definitions/JuridicalSituation'
+      JuridicalForm:
+        $ref: '#/definitions/JuridicalForm'
+      Activities:
+        type : "array"
+        items:
+          $ref: '#/definitions/Activity'
+      Permissions:
+        type : "array"
+        items:
+          $ref: '#/definitions/Permission'
+      Functions:
+        type : "array"
+        items:
+          $ref: '#/definitions/Function'
+      StartingDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+      CBECreationDate:
+        type: "string"
+      BusinessUnits:
+        type : "array"
+        items:
+          $ref: '#/definitions/BusinessUnit'
+  EnterpriseStatus:
+    type: "object"
+    properties:
+      StatusCode:
+        type: "string"
+        description: "The code of the enteprise status"
+      Status:
+        $ref: '#/definitions/TranslatedString'
+
+  LegalDenomination:
+    type: "object"
+    properties:
+      DenominationTypeCode:
+        $ref: '#/definitions/DenominationTypeCodeObject'
+      CBEDenomination:
+        $ref: '#/definitions/TranslatedString'
+      StartingDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+
+  DenominationTypeCodeObject:
+    type: "object"
+    properties:
+      DenominationTypeCode:
+        type: "string"
+      DenominationType:
+        $ref: '#/definitions/TranslatedString'
+      BeginDate:
+        type: "string"
+        format: "Date"
+      EndingDate:
+        type: "string"
+        format: "Date"
+
+  CBEAddress:
+    description: "CBEAddress"
+    type: "object"
+    properties:
+      StartingDate:
+        type: "string"
+        format: "date"
+        description: "Starting date of CBE address"
+      AddressType:
+        type: "string"
+        description: "001=siège sociale, 002=unité d'éblissement, 003=succursale belge"
+      EndingDate:
+        type: "string"
+        format: "date"
+        description: "Ending date of CBE address"
+      LinguisticRegimeCode:
+        type: "string"
+        description: "The linguistic regime code f.e. B1, D0, D2, F0, ..."
+      Street21:
+        $ref: '#/definitions/TranslatedString'
+      Street25:
+        $ref: '#/definitions/TranslatedString'
+      Address:
+        $ref: '#/definitions/Address'
+      Complement:
+        type: "string"
+
+
+  Addresses:
+    description: "Addresses"
+    type: "array"
+    items:
+      $ref: '#/definitions/Address'
+
+  Address:
+    description: "Address"
+    type: "object"
+    properties:
+      Country:
+        type: "object"
+        $ref: '#/definitions/Country'
+      City:
+        $ref: '#/definitions/TranslatedString'
+      ZipCode:
+        type: "string"
+      HouseNbr:
+        type: "string"
+      NISCodeData:
+        $ref: '#/definitions/NisCodeData'
+      BeginDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+      Street:
+        $ref: '#/definitions/TranslatedString'
+      StreetCodeData:
+        $ref: '#/definitions/StreetCodeData'
+      State:
+        type: "string"
+  Country:
+    type: "object"
+    properties:
+      CountryCode:
+        type: "integer"
+      Country:
+        $ref: '#/definitions/TranslatedString'
+  NisCodeData:
+    type: "object"
+    properties:
+      NISCode:
+        type: "string"
+      NIStype:
+        $ref: '#/definitions/TranslatedString'
+      BeginDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+  StreetCodeData:
+    type: "object"
+    properties:
+      StreetCode:
+        type: "integer"
+      Street:
+        $ref: '#/definitions/TranslatedString'
+  JuridicalSituation:
+    description: 'JuridicalSituation'
+    type: "object"
+    properties:
+      StartingDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+      JuridicalSituationData:
+        $ref: '#/definitions/JuridicalSituationData'
+
+  JuridicalSituationData:
+    description: 'JuridicalSituation'
+    type: "object"
+    properties:
+      JuridicalSituationCode:
+        type: "integer"
+      JuridicalSituation:
+        $ref: '#/definitions/TranslatedString'
+
+  JuridicalForm:
+    description: 'JuridicalForm'
+    type: "object"
+    properties:
+      StartingDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+      JuridicalFormData:
+        $ref: '#/definitions/JuridicalFormData'
+
+  JuridicalFormData:
+    type: "object"
+    properties:
+      JuridicalFormCode:
+        type: "integer"
+      JuridicalForm:
+        $ref: '#/definitions/TranslatedString'
+
+
+  Activity:
+    description: "Activity"
+    type: "object"
+    properties:
+      NACEVersion:
+        type: "integer"
+        description: "2003 or 2008"
+      ActivityType:
+        type: "integer"
+        description: "0: Activité secondaire, Nevenactiviteit Nebentätigkeit - 1: Activité principale, Hoofdactiviteit, Haupttätigkeit - 2: Activité auxiliaire, Hulpactiviteit, Hilfstätigkeit"
+      StartingDate:
+        type: "string"
+        format: "date"
+        description: "The starting date of the activity"
+      EndingDate:
+        type: "string"
+        format: "date"
+        description: "The ending date of the activity"
+      Administration:
+        type: "string"
+        description: "The administration of the activity"
+      NACECode:
+        $ref: '#/definitions/NACECode'
+
+  NACECode:
+    type: "object"
+    properties:
+      NACECodeInCBE:
+        type: "string"
+      NACE:
+        $ref: '#/definitions/TranslatedString'
+      StartingDate:
+        type: "string"
+        format: 'date'
+      EndingDate:
+        type: "string"
+        format: 'date'
+
+  Permission:
+    description: "Permission"
+    type: "object"
+    properties:
+      StartingDate:
+        type: "string"
+        format: "date"
+        description: "The starting date of the permission"
+      EndingDate:
+        type: "string"
+        format: "date"
+        description: "The ending date of the permission"
+      PermissionCodeData:
+        $ref: '#/definitions/PermissionCodeData'
+      CBEPhasePermissionCode:
+        $ref: '#/definitions/CBEPhasePermissionCode'
+
+  PermissionCodeData:
+    type: "object"
+    properties:
+      PermissionCode:
+        type: "string"
+      PermissionType:
+        $ref: '#/definitions/TranslatedString'
+
+  CBEPhasePermissionCode:
+    type: "object"
+    properties:
+      CBEPhasePermissionCode:
+        type: "integer"
+      CBEPhasePermission:
+        $ref: '#/definitions/TranslatedString'
+
+
+  Function:
+    description: "Function"
+    type: object
+    properties:
+      FunctionCodeData:
+        $ref: '#/definitions/FunctionCodeData'
+      ExecutorpersonalityCode:
+        type: "string"
+      FunctionExecutorEnterpriseNbr:
+        type: "string"
+      StartingDate:
+        type: "string"
+        format: "date"
+      EndingDate:
+        type: "string"
+        format: "date"
+
+  FunctionCodeData:
+    type: "object"
+    properties:
+      FunctionCode:
+        type: "integer"
+      Function:
+        $ref: '#/definitions/TranslatedString'
+
+  BusinessUnit:
+    description: "BusinessUnit"
+    type: "object"
+    properties:
+      CBEBusinessUnitNbr:
+        type: "string"
+      BusinessUnitStatus:
+        $ref: '#/definitions/BusinessUnitStatus'
+      BusinessUnitDuration:
+        type: "integer"
+      LegalDenomination:
+        type: "array"
+        items:
+          $ref: '#/definitions/LegalDenomination'
+      Activity:
+        type: "array"
+        items:
+          $ref: '#/definitions/Activity'
+      CBEAddress:
+        type: "array"
+        items:
+          $ref: '#/definitions/CBEAddress'
+      CompanyID:
+        type: "string"
+      StartingDate:
+        type: "string"
+        format: "date"
+      CBECreationDate:
+        type: "string"
+        format: "date"
+
+
+  BusinessUnitStatus:
+    description: "BusinessUnitStatus"
+    type: "object"
+    properties:
+      StatusCode:
+        type: "string"
+      Status:
+        $ref: '#/definitions/TranslatedString'
+
+  TranslatedString:
+    type: "object"
+    properties:
+      fr:
+        type: "string"
+        description: "The french translation of the element"
+      nl:
+        type: "string"
+        description: "The dutch translation of the element"
+      de:
+        type: "string"
+      en:
+        type: "string"
+    example:
+      fr: "fr"
+      nl: "nl"
+
+  TemplateVersion:
+    type: "object"
+    properties:
+      version:
+        type: "string"
+      templateCode:
+        type: "string"
+      elements:
+        type: "object"
+      translations:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/Translation"
+      extraData:
+        type: "object"
+        additionalProperties:
+          type: "object"
+
+  FormElement:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      dataType:
+        type: "object"
+      viewType:
+        type: "string"
+      viewMode:
+        type: "object"
+      labelTranslationId:
+        type: "string"
+      shortLabelTranslationId:
+        type: "string"
+      bodyTranslationId:
+        type: "string"
+      helpTranslationId:
+        type: "string"
+      placeholderTranslationId:
+        type: "string"
+      tooltipTranslationId:
+        type: "string"
+      validations:
+        type: "object"
+      responses:
+        type: "array"
+        items:
+          type: "object"
+      custom:
+        type: "object"
+        "additionalProperties":
+          type: "object"
+      fhir:
+        type: "object"
+      showIf:
+        type: "object"
+      skipIf:
+        type: "object"
+      showIfParentResponse:
+        type: "array"
+        items:
+          type: "object"
+      valueIfSkipped:
+        type: "object"
+      sideEffects:
+        type: "array"
+        items:
+          type: "object"
+      elements:
+        type: "array"
+        items:
+          $ref: "#/definitions/FormElement"
+      externalSource:
+        type: "object"
+      securityLog:
+        type: "string"
+      defaultValue:
+        type: "object"
+      tags:
+        type: "array"
+        items:
+          type: "string"
+      snippets:
+        type: "array"
+        items:
+          type: "object"
+
+
+
+  Template:
+    type: "object"
+    properties:
+      templateCode:
+        type: "string"
+      label:
+        type: "string"
+      shortLabel:
+        type: "string"
+      labelTranslations:
+        $ref: '#/definitions/Translation'
+      shortLabelTranslations:
+        $ref: '#/definitions/Translation'
+      metaData:
+        type: "object"
+
+  Translation:
+    type: "object"
+    properties:
+      en:
+        type: "string"
+      nl:
+        type: "string"
+      fr:
+        type: "string"
+      de:
+        type: "string"
+  ServiceRequestTypeBasic:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      secured:
+        type: "boolean"
+      editable:
+        type: "boolean"
+      scopesubmit:
+        type: "array"
+        items:
+          type: "string"
+      style:
+        type: "string"
+      languages:
+        type: "array"
+        items:
+          type: "string"
+      draftMode:
+        type: "boolean"
+      consultAcessCreator:
+        type: "boolean"
+      redirectionUrl:
+        type: "string"
+      label:
+        $ref: "#/definitions/Labels"
+      loginProfiles:
+        $ref: "#/definitions/LoginProfile"
+
+  Problem:
+    description: A Problem Details object (RFC 7807)
+    type: object
+    properties:
+      type:
+        type: string
+        format: uri
+        description: An absolute URI that identifies the problem type
+        default: about:blank  # kept for backwards-compatibility, type will be mandatory in problem-v2
+      href:
+        type: string
+        format: uri
+        description: An absolute URI that, when dereferenced, provides human-readable documentation for the problem type (e.g. using HTML).
+      title:
+        type: string
+        description: A short summary of the problem type. Written in English and readable for engineers (usually not suited for non technical stakeholders and not localized).
+        example: Service Unavailable
+      status:
+        type: integer
+        format: int32
+        description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        minimum: 400
+        maximum: 600
+        exclusiveMaximum: true
+        example: 503
+      detail:
+        type: string
+        description: A human-readable explanation specific to this occurrence of the problem
+      instance:
+        type: string
+        format: uri
+        description: An absolute URI that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+    example:
+      {
+        "type": "urn:problem-type:belgif:payloadTooLarge",
+        "href": "https://www.belgif.be/specification/rest/api-guide/problems/payloadTooLarge.html", # location of linked doc will change in the future to recommended URI structure
+        "title": "Payload Too Large",
+        "status": 413,
+        "detail": "Request message must not be larger than 10 MB",
+        "instance": "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
+        "limit": 10485760  # additional properties specific to the problem type are allowed
+      }
+  InvalidParamProblem:
+    description: Problem details for invalid input parameter(s)
+    type: object
+    allOf:
+    - $ref: "#/definitions/Problem"
+    properties:
+      invalidParams:
+        type: array
+        description: An array of parameter OpenAPI violations
+        items:
+          $ref: "#/definitions/InvalidParam"
+  InvalidParam:
+    type: object
+    properties:
+      in:
+        description: The location of the invalid parameter (cfr Swagger parameters)
+        type: string
+        enum:
+        - body
+        - path
+        - query
+        - header
+      name:
+        description: The name of the invalid parameter
+        type: string
+      value:
+        description: The value of the erroneous parameter
+        # no type specified, allowing any type. This is valid OpenAPI 3.0 even though some editors may indicate an error (issue #25)
+  InputValidationProblem:
+    type: object
+    allOf:
+    - $ref: "#/definitions/Problem"
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: "#/definitions/InputValidationIssue"
+    example:
+      type:  urn:problem-type:belgif:badRequest
+      href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+      title: Bad Request
+      status: 400
+      detail:  "The input message is incorrect"
+      instance: urn:uuid:123456-1234-1235-4567489798
+      issues:
+      - type: urn:problem-type:belgif:input-validation:schemaViolation #mandatory
+        # href: TODO: foresee dereferenceable link for belgif input validation problems
+        title: "Input isn't valid with respect to schema"
+        detail: enterpriseNumber abc should be numeric # recommended, if more detail can be provided
+        in: path
+        name: enterpriseNumber
+        value: abc
+      - type: urn:problem-type:cbss:input-validation:replacedSsin # example of custom input validation issue defined by organization "CBSS"
+        href: https://api.ksz-bcss.fgov.be/problems/replacedSsin
+        title: "SSIN has been replaced. Use new ssin."
+        detail: "SSIN 12345678901 has been replaced by 23456789012"
+        in: body
+        name: parent[0].ssin
+        value: "12345678901"
+        replacedBy: "23456789012"
+      - type: urn:problem-type:cbss:input-validation:invalidPeriod
+        title: period is invalid
+        detail: endDate should be after startDate
+        in: body
+        name: period
+        value:
+          startDate: "2020-12-31"
+          endDate: "2020-01-01"
+      - type: urn:problem-type:cbss:input-validation:invalidSsin
+        title: "There is no person with the given SSIN"
+        in: path
+        name: ssin
+        value: "12345678911"
+  InputValidationIssue:
+    type: object
+    allOf:
+    - $ref: "#/definitions/Problem"
+    # status property of Problem is usually not used for input validation issues
+    properties:
+      in:
+        type: string
+        enum:
+        - body
+        - header
+        - path
+        - query
+      name:
+        type: string
+      value: {} # any type allowed
