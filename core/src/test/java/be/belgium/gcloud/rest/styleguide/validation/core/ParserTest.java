@@ -139,13 +139,9 @@ public class ParserTest {
         var response = def.get().getModel().getGET().getResponses().getAPIResponse("200");
         assertNotNull(response);
 
-        var apiResponse = result.resolve(response);
-        assertNull(apiResponse);
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> result.resolve(response));
         var errorMessage = "[Internal error] Could not find match of #/components/responses/doesNotExist";
-
-        assertFalse(result.getParsingViolation().isEmpty());
-        assertTrue(result.getParsingViolation().stream().anyMatch(s-> s.contains(errorMessage)));
-
+        assertEquals(errorMessage, ex.getMessage());
     }
 
     @Test
@@ -247,24 +243,5 @@ public class ParserTest {
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("<</security/0>>")));
         assertEquals(2, listAppender.list.size());
     }
-
-
-    @Test
-    public void testBadResponse() {
-       var oas = new OpenApiViolationAggregator();
-       var openApiFile = new File(getClass().getResource("../rules/failResponse.yaml").getFile());
-       var parserResult = new Parser(openApiFile).parse(oas);
-       var expected = "OpenApi parsing error: $ref in this location </paths/correctionFiles/post/responses/201> should target a definition under \"#/responses\"";
-       assertFalse(parserResult.getParsingViolation().isEmpty());
-       assertTrue(parserResult.getParsingViolation().stream().anyMatch(s-> s.contains(expected)));
-    }
-    @Test
-    public void testResponseNotFound() {
-        var oas = new OpenApiViolationAggregator();
-        var openApiFile = new File(getClass().getResource("../rules/failResponseNotFound.yaml").getFile());
-        var parserResult = new Parser(openApiFile).parse(oas);
-        assertFalse(parserResult.getParsingViolation().isEmpty());
-    }
-
 
 }

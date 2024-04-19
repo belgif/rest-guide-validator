@@ -113,10 +113,7 @@ public class Parser {
                     if (defMatch.isPresent()) {
                         return (OpenApiDefinition<T>) defMatch.get();
                     } else {
-                        var violation = "[Internal error] Could not find match of " + ref;
-                        log.error(violation);
-                        parsingViolation.add(violation);
-                        return null;
+                        throw new RuntimeException("[Internal error] Could not find match of " + ref);
                     }
                 }
             }
@@ -126,10 +123,7 @@ public class Parser {
             if (defMatch.isPresent()) {
                 return (OpenApiDefinition<T>) defMatch.get();
             } else {
-                var violation = "[Internal error] Could not find match of " + model;
-                log.error(violation);
-                parsingViolation.add(violation);
-                return null;
+                throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
             }
         }
 
