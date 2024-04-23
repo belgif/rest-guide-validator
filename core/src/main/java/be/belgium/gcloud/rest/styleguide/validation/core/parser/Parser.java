@@ -72,8 +72,6 @@ public class Parser {
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
 
-        private List<String> parsingViolation = new ArrayList<>();
-
         private void assembleAllDefinitions() {
             allDefinitions.addAll(pathDefinitions);
             allDefinitions.addAll(requestBodies);
@@ -163,17 +161,14 @@ public class Parser {
             verifySecurityRequirements(result);
             result.assembleAllDefinitions();
             buildAllPathWithLineRange(result);
-            if( ! result.getParsingViolation().isEmpty()) {
-                result.getParsingViolation().forEach(parsingViolation ->
-                        openApiViolationAggregator.addViolation("PARSING", parsingViolation, new Line(openApiFile.getName(), 0)));
-
-            }
             if (result.isParsingValid()) {
                 return result;
             }
-            throw new RuntimeException("Parsing openapi definition failed. Please review logs.");
+            // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
+            log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+            throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
         } catch (IOException e) {
-            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0));
+            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
         }
     }
@@ -183,7 +178,7 @@ public class Parser {
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
                 if (!allowedRequirements.contains(securityScheme)) {
-                    log.error("OpenApi parsing error: SecurityScheme: <<{}>> is used in <<{}>>, but is not defined", securityScheme, securityRequirement.getJsonPointer().toPrettyString());
+                    log.error(securityRequirement.getFullyQualifiedPointer()+": Security Scheme <<{}>> is not defined", securityScheme);
                     result.setParsingValid(false);
                 }
             }

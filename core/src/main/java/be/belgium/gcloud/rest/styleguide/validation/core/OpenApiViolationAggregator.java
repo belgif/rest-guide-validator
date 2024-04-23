@@ -30,16 +30,17 @@ public class OpenApiViolationAggregator {
         this.violations.add(violation);
     }
 
-    public void addViolation(String ruleName, String message, Line lineNumber, ViolationType type) {
+    public void addViolation(String ruleName, String message, Line lineNumber, ViolationType type, String jsonPointer) {
         this.violations.add(Violation.builder()
                 .ruleName(ruleName)
                 .message(message)
                 .lineNumber(lineNumber)
-                .type(type).build());
+                .type(type)
+                .pointer(jsonPointer).build());
     }
 
-    public void addViolation(String ruleName, String message, Line lineNumber) {
-        this.addViolation(ruleName, message, lineNumber, ViolationType.MANDATORY);
+    public void addViolation(String ruleName, String message, Line lineNumber, String jsonPointer) {
+        this.addViolation(ruleName, message, lineNumber, ViolationType.MANDATORY, jsonPointer);
     }
 
     public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition, ViolationType violationType) {
@@ -50,7 +51,7 @@ public class OpenApiViolationAggregator {
             return;
         }
         Line lineNumber = openApiDefinition.getLineNumber();
-        this.addViolation(ruleName, message + "\t" + openApiDefinition.getJsonPointer().toPrettyString(), lineNumber, violationType);
+        this.addViolation(ruleName, message, lineNumber, violationType, openApiDefinition.getJsonPointer().toPrettyString());
     }
 
     public void addViolation(String ruleName, String message, OpenApiDefinition<?> openApiDefinition) {
@@ -58,7 +59,7 @@ public class OpenApiViolationAggregator {
     }
 
     public void addViolation(String ruleName, String message) {
-        this.addViolation(ruleName, message, new Line("", 0), ViolationType.MANDATORY);
+        this.addViolation(ruleName, message, new Line("", 0), ViolationType.MANDATORY, "");
     }
 
     private boolean addExcludedFileViolation(OpenApiDefinition<?> openApiDefinition) {
@@ -66,7 +67,7 @@ public class OpenApiViolationAggregator {
         if (fileShouldBeExcluded(relativePath)) {
             var fileName = openApiDefinition.getOpenApiFile().getName();
             if(!isExcludedFileInViolations(fileName)) {
-                this.addViolation("[ignored-file]", "File ignored: " + fileName, new Line(fileName, 0), ViolationType.IGNORED);
+                this.addViolation("[ignored-file]", "File ignored: " + fileName, new Line(fileName, 0), ViolationType.IGNORED, openApiDefinition.getJsonPointer().toPrettyString());
             }
             return true;
         }
@@ -80,7 +81,7 @@ public class OpenApiViolationAggregator {
                 Line lineNumber = openApiDefinition.getLineNumber();
                 var violationType = ViolationType.IGNORED;
                 var message = "Ignored: " + openApiDefinition.getIgnoredRules().get(lookupRuleName);
-                this.addViolation(ruleName, message + "\t" + openApiDefinition.getJsonPointer().toPrettyString(), lineNumber, violationType);
+                this.addViolation(ruleName, message, lineNumber, violationType, openApiDefinition.getJsonPointer().toPrettyString());
                 return true;
             }
         }

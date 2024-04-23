@@ -24,7 +24,7 @@ class Log4JOutputProcessorTest {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         openApiViolationAggregator.setTime(0.55f);
         openApiViolationAggregator.setRuleNumber(5);
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155));
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155), "/MyPointer");
 
         return openApiViolationAggregator;
     }

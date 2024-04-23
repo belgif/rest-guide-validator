@@ -14,13 +14,15 @@ public class Violation implements Comparable<Violation> {
     String message;
     public ViolationType type;
     Line lineNumber;
+    String pointer;
 
     @Override
     public String toString() {
-        return (lineNumber.getLineNumber() > 0 ? String.format("file: %15s: ln%4d:", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
-                (lineNumber.getLineNumber() == 0 && type.equals(ViolationType.IGNORED) ? String.format("file: %23s:", lineNumber.getFileName()) : "") +
-                String.format("  %-14S ", ("[" + type + "]")) +
-                String.format("%-17s ", ruleName) +
+        return (lineNumber.getLineNumber() > 0 ? String.format("%-15s ln%4d  ", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
+                (lineNumber.getLineNumber() == 0 && type.equals(ViolationType.IGNORED) ? String.format("%-15s ", lineNumber.getFileName()) : "") +
+                String.format("#%25s: \n", pointer) +
+                String.format("\t\t%-14S ", ("[" + type + "]")) +
+                String.format("%-14s ", ruleName) +
                 message;
     }
 

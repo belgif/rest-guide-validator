@@ -74,7 +74,7 @@ class JUnitOutputWriterTest {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         openApiViolationAggregator.setTime(0.55f);
         openApiViolationAggregator.setRuleNumber(5);
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155));
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155), "/myPointer");
 
         return openApiViolationAggregator;
     }

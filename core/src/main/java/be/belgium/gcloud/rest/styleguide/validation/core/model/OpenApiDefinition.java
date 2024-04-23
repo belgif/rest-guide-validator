@@ -11,18 +11,18 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Constructible;
-import org.eclipse.microprofile.openapi.models.examples.Example;
-import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.Extensible;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Reference;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
+import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.headers.Header;
+import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,13 +86,8 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 String expectedPath = getExpectedRefPath();
                 if (expectedPath == null || !ref.contains(expectedPath)) {
                     if (expectedPath != null) {
-                        var violation = String.format("OpenApi parsing error: $ref in this location <%s> should target a definition under \"#%s\" but  '%s' was found." ,
-                                this.getJsonPointer().toPrettyString(),
-                                expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath,
-                                ref) ;
-
-                        log.error(violation + "\n" +"Either location of $ref or referenced definition should be changed.");
-                        this.result.getParsingViolation().add(violation);
+                        log.error(getFullyQualifiedPointer() + "/$ref: '{}' is not of correct type (expected a component in \"{}\")",ref, expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath);
+                        this.result.setParsingValid(false);
                     } else {
                         log.warn("[Internal error] Use of $ref is not supported by validator for type {} ({}).", this.getModel().getClass().getName(), ref);
                     }
@@ -419,6 +414,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             log.error("x-ignored-rules for {} not of type Object with rules/reasons as keys and values", jsonPointer.toPrettyString());
             return new HashMap<>();
         }
+    }
+
+    public String getFullyQualifiedPointer() {
+        return this.getOpenApiFile().getName()+"#"+this.getJsonPointer().toPrettyString();
     }
 
 }
