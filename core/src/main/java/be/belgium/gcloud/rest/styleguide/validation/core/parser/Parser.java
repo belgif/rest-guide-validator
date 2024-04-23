@@ -214,7 +214,13 @@ public class Parser {
         // if spec is 3.1 we need the info to raise a rule violation
         if (openAPI == null) {
             openAPI = new io.swagger.v3.oas.models.OpenAPI();
-            var version = getLines(file).stream().filter(line -> line.trim().startsWith("openapi: ")).findFirst().orElseThrow().substring(9);
+            String version;
+            Optional<String> openApiLine = getLines(file).stream().filter(line -> line.trim().startsWith("openapi: ")).findFirst();
+            if (openApiLine.isPresent()) {
+                version = openApiLine.get().substring(9);
+            } else {
+                throw new RuntimeException("Input file is not an OpenApi or Swagger file, or version number could not be found. <<" + file.getAbsolutePath() + ">>");
+            }
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
