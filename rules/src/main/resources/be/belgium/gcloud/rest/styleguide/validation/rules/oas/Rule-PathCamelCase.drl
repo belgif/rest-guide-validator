@@ -13,14 +13,20 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 
 function void violationPath(OpenApiViolationAggregator oas, PathDefinition path){
     oas.addViolation("[uri-notat]",
-           		 "The URI notation MUST use lowerCamelCase to enhance readability and to separate compound names. ",
+           		 "Path segments SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
            		 path);
 }
 
 function void violationPathParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
-  oas.addViolation("[uri-notat]",
-    "The URI notation MUST use lowerCamelCase to enhance readability and to separate compound names. ",
+  oas.addViolation("[path-param]",
+    "Path parameters SHOULD use lowerCamelCase notation.",
     parameterDefinition);
+}
+
+function void violationQueryParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
+    oas.addViolation("[uri-notat]",
+           		 "Query parameters SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
+           		 parameterDefinition);
 }
 
 rule "Path CamelCase"
@@ -51,5 +57,5 @@ rule "Query Parameter lowerCamelCase with extra characters"
     ParameterDefinition($parameterName: /model/name) from $parameterDefinition
     eval( !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_")) )
   then
-    violationPathParam(oas, $parameterDefinition);
+    violationQueryParam(oas, $parameterDefinition);
 end
