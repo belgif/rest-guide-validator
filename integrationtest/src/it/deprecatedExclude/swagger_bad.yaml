@@ -7,7 +7,7 @@ info:
     email: contactDataTeam@smals.be
 basePath: /REST/contactData/v1
 tags:
-  - name: contacts
+  - name: Contacts
     description: A contact represents a contact point of a company. A contact may be a person, a department, a team of people
     externalDocs:
       description: More information
@@ -22,8 +22,6 @@ responses:
 paths:
   /userInfo:
     get:
-      tags:
-        - user
       summary: Get connected user's info
       description: Get the user's info of the connected user like the scopes
       operationId: getUserInfo
@@ -60,8 +58,6 @@ paths:
       x-oauth2-required-scopes: any
   /categories:
     get:
-      tags:
-        - categories
       summary: Get the list of available categories
       description: Get the list of available categories. The list is fixed.
       operationId: getAllCategories
@@ -95,7 +91,7 @@ paths:
   /entity/contacts/{contactId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Get a contact by ID
       description: Returns a single contact
       operationId: getEntityContactById
@@ -141,7 +137,7 @@ paths:
       x-oauth2-required-scopes: any
     put:
       tags:
-        - contacts
+        - Contacts
       summary: Replace an existing contact
       description: Replace an existing contact
       operationId: replaceEntityContact
@@ -199,7 +195,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete a contact and all its contact data
       operationId: deleteEntityContact
       produces:
@@ -243,7 +239,7 @@ paths:
   /entity/contacts/{contactId}/invalidData:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: find the invalidData for a specific contact
       description: Returns a single contact's invalidData
       operationId: findContactInvalidData
@@ -273,7 +269,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add a new contact invalidData
       operationId: addContactInvalidData
       parameters:
@@ -304,7 +300,7 @@ paths:
   /entity/contacts/{contactId}/invalidData/{invalidDataId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: get a specific contact invalidData
       description: Returns a single  invalidData
       operationId: getContactInvalidData
@@ -340,7 +336,7 @@ paths:
       x-oauth2-required-scopes: any
     put:
       tags:
-        - contacts
+        - Contacts
       summary: update an existing existing contact invalidData
       description: update an existing existing contact invalidData
       operationId: updateContactInvalidData
@@ -384,7 +380,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete a contact and all its contact data
       operationId: deleteContactInvalidData
       produces:
@@ -426,7 +422,7 @@ paths:
   /entity/contacts/{contactId}/emailAddresses:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Consult emails of a contact
       description: Consult emails of a contact
       operationId: findEntityContactEmails
@@ -474,7 +470,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add an email to the contact
       description: Add an email to the contact
       operationId: addEntityContactEmail
@@ -524,7 +520,7 @@ paths:
   /entity/contacts/{contactId}/emailAddresses/{email}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Get an email of the contact
       description: Get an email of the contact
       operationId: getEntityContactEmail
@@ -578,7 +574,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete an email of the contact
       description: Delete an email of the contact
       operationId: deleteEntityContactEmail
@@ -629,7 +625,7 @@ paths:
   /entity/contacts/{contactId}/emailAddresses/{email}/invalidData:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: find the invalidData for a specific email address
       description: Returns a single email address's invalidData
       operationId: findEmailInvalidData
@@ -665,7 +661,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add a new email invalidData
       operationId: addEmailInvalidData
       consumes:
@@ -706,7 +702,7 @@ paths:
   /entity/contacts/{contactId}/emailAddresses/{email}/invalidData/{invalidDataId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: get a specific email invalidData
       description: Returns a single  invalidData
       operationId: getEmailInvalidData
@@ -748,7 +744,7 @@ paths:
       x-oauth2-required-scopes: any
     put:
       tags:
-        - contacts
+        - Contacts
       summary: update an existing existing email invalidData
       description: update an existing  email invalidData
       operationId: updateEmailInvalidData
@@ -798,7 +794,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete a contact and all its contact data
       operationId: deleteEmailInvalidData
       produces:
@@ -846,7 +842,7 @@ paths:
   /entity/contacts/{contactId}/phoneNumbers:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Consult phone numbers of a contact
       description: Consult phone numbers of a contact
       operationId: getEntityContactPhoneNumbers
@@ -894,7 +890,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add a phone number to the contact
       description: Add a phone number to the contact
       operationId: addEntityContactPhoneNumber
@@ -945,7 +941,7 @@ paths:
   /entity/contacts/{contactId}/links:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Consult links of a contact
       description: Consult links of a contact
       operationId: getEntityContactLinks
@@ -993,7 +989,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add a link to the contact
       description: Add a link to the contact
       operationId: addEntityContactLink
@@ -1043,7 +1039,7 @@ paths:
   /entity/contacts/{contactId}/links/{linkId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Get a link of the contact
       description: Get a link of the contact
       operationId: getEntityContactLink
@@ -1097,7 +1093,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete a link of the contact
       description: Delete a link of the contact
       operationId: deleteEntityContactLink
@@ -1150,7 +1146,7 @@ paths:
   /entity/contacts/{contactId}/links/{linkId}/invalidData:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: find the invalidData for a specific link
       description: Returns a single link's invalidData
       operationId: findLinkInvalidData
@@ -1186,7 +1182,7 @@ paths:
       x-oauth2-required-scopes: any
     post:
       tags:
-        - contacts
+        - Contacts
       summary: Add a new link invalidData
       operationId: addLinkInvalidData
       consumes:
@@ -1227,7 +1223,7 @@ paths:
   /entity/contacts/{contactId}/links/{linkId}/invalidData/{invalidDataId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: get a specific link's invalidData
       description: Returns a single  invalidData
       operationId: getLinkInvalidData
@@ -1269,7 +1265,7 @@ paths:
       x-oauth2-required-scopes: any
     put:
       tags:
-        - contacts
+        - Contacts
       summary: update an existing link's invalidData
       description: update an existing  link invalidData
       operationId: updateLinkInvalidData
@@ -1319,7 +1315,7 @@ paths:
       x-oauth2-required-scopes: any
     delete:
       tags:
-        - contacts
+        - Contacts
       summary: Delete an invalidData
       operationId: deleteLinkInvalidData
       produces:
@@ -1367,7 +1363,7 @@ paths:
   /entity/revisions:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Find all the entities' contacts revisions matching all the given filters
       description: Find all the entities' contacts related to matching all the given filters
       operationId: findEntityRevisions
@@ -1464,7 +1460,7 @@ paths:
   /entity/contacts/{contactId}/revisions:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Find the revisions of a contact by ContactId
       description: Returns a single contact's revision history
       operationId: findEntityRevisionsByContactId
@@ -1529,7 +1525,7 @@ paths:
   /entity/contacts/{contactId}/revisions/{revisionId}:
     get:
       tags:
-        - contacts
+        - Contacts
       summary: Get a revision by its Id
       description: Returns a single revision
       operationId: getRevisionById
@@ -1625,8 +1621,6 @@ paths:
             $ref: '#/definitions/Problem'
   /doc:
     get:
-      tags:
-        - "Documentation"
       summary: "List links"
       description: ""
       operationId: "getDoc"

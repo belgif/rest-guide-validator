@@ -1,0 +1,54 @@
+openapi: 3.0.1
+info:
+  title: TagGuidelines
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+tags:
+  - name: My Tag
+    description: This is my description
+  - name: Another Tag
+    description: Nice description
+  - name: wrong Tag
+    description: This tag does not follow the naming guidelines
+paths:
+  /operationWithMultipleTags:
+    get:
+      description: Very wrong
+      operationId: multipleTags
+      tags:
+        - My Tag
+        - Another Tag
+      responses:
+        default:
+          description: This is a description
+          content:
+            application/json:
+              schema:
+                type: string
+  /operationWithNonDeclaredTag:
+    get:
+      description: Very wrong
+      operationId: tag
+      tags:
+        - Non Declared Tag
+      responses:
+        default:
+          description: This is a description
+          content:
+            application/json:
+              schema:
+                type: string
+  /operationWithNonConformingTag:
+    get:
+      description: Non conforming tag
+      operationId: wrongTag
+      tags:
+        - wrong Tag
+      responses:
+        default:
+          description: This is a description
+          content:
+            application/json:
+              schema:
+                type: string

@@ -4,9 +4,11 @@ import be.belgium.gcloud.rest.styleguide.validation.core.model.OpenApiDefinition
 import be.belgium.gcloud.rest.styleguide.validation.core.model.OperationDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.model.SchemaDefinition;
 import be.belgium.gcloud.rest.styleguide.validation.core.parser.Parser;
+import be.belgium.gcloud.rest.styleguide.validation.core.parser.SourceDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.tags.Tag;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,6 +22,14 @@ public class ApiFunctions {
      * avoid instance creation.
      */
     private ApiFunctions() {
+    }
+
+    public static boolean tagIsDeclaredInTopLevelTagsList(String tag, Parser.ParserResult result) {
+        return result.getSrc().values().stream()
+                .map(SourceDefinition::getOpenApi)
+                .filter(openAPI -> openAPI.getTags() != null)
+                .flatMap(openAPI -> openAPI.getTags().stream().map(Tag::getName))
+                .anyMatch(name -> name.equals(tag));
     }
 
     public static boolean existsPathWithPathParamAfter(String pathString, Parser.ParserResult result) {

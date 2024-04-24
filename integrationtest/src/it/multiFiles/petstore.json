@@ -458,9 +458,6 @@
     },
     "/pet/{petId}/uploadImage": {
       "post": {
-        "tags": [
-          "pet"
-        ],
         "summary": "uploads an image",
         "description": "",
         "operationId": "uploadFile",
@@ -522,9 +519,6 @@
     },
     "/store/inventory": {
       "get": {
-        "tags": [
-          "store"
-        ],
         "summary": "Returns pet inventories by status",
         "description": "Returns a map of status codes to quantities",
         "operationId": "getInventory",
@@ -828,9 +822,6 @@
     },
     "/user/logout": {
       "get": {
-        "tags": [
-          "user"
-        ],
         "summary": "Logs out current logged in user session",
         "description": "",
         "operationId": "logoutUser",

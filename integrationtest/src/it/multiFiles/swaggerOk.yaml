@@ -17,8 +17,6 @@ basePath: /REST/artist/v1
 paths:
   /performingArtists:
     get:
-      tags:
-        - "performingArtists"
       summary : "findArtistsDeclaredAtEmployer"
       description: "Get artists who declared a performance at a specific employer"
       operationId: "findArtistsDeclaredAtEmployer"
@@ -64,8 +62,6 @@ paths:
           $ref: '#/responses/ProblemResponse'
   /artists/{ssin}:
     get:
-      tags:
-        - "artistsSsin"
       summary: "findArtistWithRecognitions"
       description: "Get Artist's informations with its recognitions"
       operationId: "findArtistWithRecognitions"
@@ -108,8 +104,6 @@ paths:
           $ref: '#/responses/ProblemResponse'
   /artists/{ssin}/performances:
     get:
-      tags:
-        - "performance"
       summary: "findPerformancesForAnArtist"
       description: "Find performances declared by an artist employer"
       operationId: "findPerformancesForAnArtist"
@@ -160,8 +154,6 @@ paths:
           $ref: '#/responses/ProblemResponse'
   /refData/businessParameters:
     get:
-      tags:
-        - "parameters"
       summary : "findParameters"
       description: "Get business parameters value"
       operationId: "findParametersValue"
