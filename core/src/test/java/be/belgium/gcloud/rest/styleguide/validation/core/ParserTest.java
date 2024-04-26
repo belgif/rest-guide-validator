@@ -11,6 +11,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
@@ -250,5 +251,4 @@ public class ParserTest {
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/security/0")));
         assertEquals(3, listAppender.list.size());
     }
-
 }

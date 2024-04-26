@@ -1,6 +1,7 @@
 package be.belgium.gcloud.rest.styleguide.validation.core.parser;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@Slf4j
 public class JsonPointer {
     private final String jsonPointer;
 
@@ -56,6 +58,31 @@ public class JsonPointer {
 
     public List<String> splitSegments() {
         return Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(JsonPointer::unescape).collect(Collectors.toList());
+    }
+
+    public List<String> translate(int oasVersion) {
+        List<String> pointers = this.splitSegments();
+        if (pointers.isEmpty()) {
+            log.warn("Invalid location for definition: " + jsonPointer);
+            return null;
+        }
+        if (oasVersion == 2 && "components".equals(pointers.get(0))) {
+            pointers.remove(0);
+            if ("schemas".equals(pointers.get(0))) {
+                pointers.set(0, "definitions");
+            }
+            if ("requestBodies".equals(pointers.get(0))) {
+                pointers.set(0, "parameters");
+            }
+            if ("securitySchemes".equals(pointers.get(0))) {
+                pointers.set(0, "securityDefinitions");
+            }
+        }
+        if (oasVersion == 2 && "servers".equals(pointers.get(0))) {
+            pointers.set(0, "basePath");
+            pointers.remove(1);
+        }
+        return pointers;
     }
 
     @Override

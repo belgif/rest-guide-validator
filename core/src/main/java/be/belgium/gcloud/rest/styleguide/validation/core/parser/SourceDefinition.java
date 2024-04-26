@@ -27,5 +27,4 @@ public class SourceDefinition {
     public static boolean checkIsYaml(String fileName) {
         return fileName.endsWith("yaml") || fileName.endsWith("yml");
     }
-
 }

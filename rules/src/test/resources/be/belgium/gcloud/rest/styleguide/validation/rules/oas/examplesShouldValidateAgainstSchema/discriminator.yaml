@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Pet:
+      type: object
+      required:
+        - petType
+      properties:
+        petType:
+          type: string
+      discriminator:
+        propertyName: petType
+    Cat:
+      title: Cat
+      allOf:
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          properties:
+            name:
+              type: string
+    Dog:
+      title: Dog
+      allOf:
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          properties:
+            bark:
+              type: string
+  requestBodies:
+    myRequest:
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Cat'
+              - $ref: '#/components/schemas/Dog'
+            discriminator:
+              propertyName: petType
+          examples:
+            CatExample:
+              summary: This is an example of a cat
+              description: miauw
+              value:
+                petType: Cat
+                name: misty
+            DogExample:
+              summary: This is an example of a dog
+              description: Woof
+              value:
+                petType: Dog
+                bark: loud
+            AnotherWrongExample:
+              summary: This is an example
+              description: Nice
+              value:
+                dateTime: Ain't nobody
+                date: got time for that
+            NonExistingPet:
+              summary: This is an example of a non-existing pet
+              description: yes
+              value:
+                petType: Monkey
+                food: banana

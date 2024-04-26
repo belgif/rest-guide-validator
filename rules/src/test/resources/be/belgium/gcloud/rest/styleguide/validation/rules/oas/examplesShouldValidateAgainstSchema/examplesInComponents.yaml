@@ -1,0 +1,43 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Employer:
+      type: object
+      properties:
+        name:
+          type: string
+        employerId:
+          maximum: 5999999999
+          minimum: 197
+          type: integer
+          description: "Definitive or provisional NSSO number, assigned to each registered\
+            \ employer or local or provincial administration."
+          format: int32
+      additionalProperties: false
+  requestBodies:
+    myRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Employer'
+          examples:
+            myExample:
+              $ref: "#/components/examples/Employer"
+            mySecondExample:
+              $ref: "#/components/examples/SomethingCompletelyDifferent"
+  examples:
+    Employer:
+      summary: This is an example for an employer
+      description: This is an example for an employer
+      value:
+        employerId: "231784621789643817243"
+        name: Esprit
+    SomethingCompletelyDifferent:
+      summary: Completely different example
+      description: Completely different example
+      value:
+        title: Flying Circus
+        description: Good evening. Here is the news for Parrots.

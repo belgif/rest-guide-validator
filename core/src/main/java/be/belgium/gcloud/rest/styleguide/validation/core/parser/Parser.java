@@ -105,6 +105,8 @@ public class Parser {
                         defMatch = foundRefMatches.stream().filter(def -> def instanceof SchemaDefinition).findAny();
                     } else if (model instanceof MediaType) {
                         defMatch = foundRefMatches.stream().filter(def -> def instanceof MediaTypeDefinition).findAny();
+                    } else if (model instanceof Example) {
+                        defMatch = foundRefMatches.stream().filter(def -> def instanceof ExampleDefinition).findAny();
                     } else {
                         defMatch = foundRefMatches.stream().findAny();
                     }
@@ -606,14 +608,16 @@ public class Parser {
 
     private Map<String, SourceDefinition> readOpenApiFiles(File file) throws IOException {
         Map<String, SourceDefinition> openApiFiles = new HashMap<>();
-        SourceDefinition mainFile = new SourceDefinition(file, buildOpenApiSpecification(file));
-        openApiFiles.put(file.getAbsolutePath(), mainFile);
+        openApiFiles.put(file.getAbsolutePath(), readOpenApiFile(file));
         Set<File> refFiles = getReferencedFiles(file);
         for (File refFile : refFiles) {
-            SourceDefinition refFileDef = new SourceDefinition(refFile, buildOpenApiSpecification(refFile));
-            openApiFiles.put(refFile.getAbsolutePath(), refFileDef);
+            openApiFiles.put(refFile.getAbsolutePath(), readOpenApiFile(refFile));
         }
         return openApiFiles;
+    }
+
+    private SourceDefinition readOpenApiFile(File file) throws IOException {
+        return new SourceDefinition(file, buildOpenApiSpecification(file));
     }
 
 }

@@ -711,12 +711,6 @@ components:
           description: The URI of the current page
           format: uri
       description: A collection of employerClasses
-      example:
-        total: 0
-        self: https://openapi-generator.tech
-        items:
-          - null
-          - null
     EmployerClassLink:
       allOf:
         - $ref: '#/components/schemas/EmployerClass'
@@ -800,14 +794,6 @@ components:
           description: The URI of the current page
           format: uri
       description: A collection of Economical Activities
-      example:
-        total: 0
-        self: https://openapi-generator.tech
-        items:
-          - href: https://openapi-generator.tech
-            value: value
-          - href: https://openapi-generator.tech
-            value: value
     EconomicalActivityLink:
       type: object
       properties:
@@ -820,7 +806,7 @@ components:
           format: uri
       example:
         href: https://openapi-generator.tech
-        value: value
+        value: "B"
     EconomicalActivity:
       pattern: "^[A-Z]$"
       type: string
@@ -847,7 +833,7 @@ components:
           fr: fr
           nl: nl
         self: https://openapi-generator.tech
-        value: value
+        value: "A"
     Organizations:
       required:
         - items
@@ -892,22 +878,6 @@ components:
           description: The URI of the current page
           format: uri
       description: A paged collection of organization links
-      example:
-        next: https://openapi-generator.tech
-        total: 0
-        last: https://openapi-generator.tech
-        prev: https://openapi-generator.tech
-        pageSize: 1
-        self: https://openapi-generator.tech
-        page: 6
-        items:
-          - enterpriseNumber: enterpriseNumber
-            href: https://openapi-generator.tech
-            title: title
-          - enterpriseNumber: enterpriseNumber
-            href: https://openapi-generator.tech
-            title: title
-        first: https://openapi-generator.tech
     OrganizationLink:
       type: object
       properties:
@@ -920,10 +890,6 @@ components:
           pattern: "^[0|1]\\d{9}$"
           type: string
           description: Identifier issued by CBE for a registered organization
-      example:
-        enterpriseNumber: enterpriseNumber
-        href: https://openapi-generator.tech
-        title: title
     Organization:
       required:
         - name
@@ -950,26 +916,6 @@ components:
         \ purpose or reason for existence which goes beyond the set of people belonging\
         \ to it and can act as an Agent. Organizations are often decomposable into\
         \ hierarchical structures."
-      example:
-        lastModificationDate: 2000-01-23T04:56:07.000+00:00
-        address:
-          belgianRegionCode: null
-          country:
-            name: name
-            countryNisCode: 231
-          street:
-            rrnCode: 801
-            name: name
-          houseNumber: houseNumber
-          municipality:
-            code: 64246
-            name: name
-          boxNumber: boxNumber
-          postCode: postCode
-        enterpriseNumber: enterpriseNumber
-        name: name
-        state: null
-        startDate: 2000-01-23
     OrganizationState:
       type: string
       enum:
@@ -998,24 +944,6 @@ components:
           description: The URI of the current page
           format: uri
       description: A collection of logos
-      example:
-        total: 1
-        self: https://openapi-generator.tech
-        items:
-          - metaData:
-              fileName: fileName
-              width: 6
-              mediaType: image/png
-              id: id
-              height: 0
-            href: https://openapi-generator.tech
-          - metaData:
-              fileName: fileName
-              width: 6
-              mediaType: image/png
-              id: id
-              height: 0
-            href: https://openapi-generator.tech
     LogoLink:
       type: object
       properties:
@@ -1025,14 +953,6 @@ components:
           type: string
           description: Any absolute URI that is using http or https protocol
           format: uri
-      example:
-        metaData:
-          fileName: fileName
-          width: 6
-          mediaType: image/png
-          id: id
-          height: 0
-        href: https://openapi-generator.tech
     LogoMetaData:
       type: object
       properties:
@@ -1049,12 +969,6 @@ components:
           type: integer
         width:
           type: integer
-      example:
-        fileName: fileName
-        width: 6
-        mediaType: image/png
-        id: id
-        height: 0
     Logo:
       type: object
       properties:
@@ -1079,18 +993,6 @@ components:
           description: The URI of the current page
           format: uri
       description: A collection of employers
-      example:
-        total: 6
-        self: https://openapi-generator.tech
-        items:
-          - employerId: 480497095
-            enterpriseNumber: enterpriseNumber
-            href: https://openapi-generator.tech
-            title: title
-          - employerId: 480497095
-            enterpriseNumber: enterpriseNumber
-            href: https://openapi-generator.tech
-            title: title
     EmployerLink:
       type: object
       properties:
@@ -1113,11 +1015,6 @@ components:
           pattern: "^[0|1]\\d{9}$"
           type: string
           description: Identifier issued by CBE for a registered organization
-      example:
-        employerId: 480497095
-        enterpriseNumber: enterpriseNumber
-        href: https://openapi-generator.tech
-        title: title
     Employer:
       required:
         - name
@@ -1149,7 +1046,7 @@ components:
           type: string
           format: uri
       example:
-        employerId: "164893015"
+        employerId: 164893015
         name: Esprit
         organization:
           enterpriseNumber: "0433072831"
@@ -1203,20 +1100,6 @@ components:
         country:
           $ref: '#/components/schemas/Country'
       description: An address
-      example:
-        belgianRegionCode: null
-        country:
-          name: name
-          countryNisCode: 231
-        street:
-          rrnCode: 801
-          name: name
-        houseNumber: houseNumber
-        municipality:
-          code: 64246
-          name: name
-        boxNumber: boxNumber
-        postCode: postCode
     Street:
       required:
         - name

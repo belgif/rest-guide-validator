@@ -169,7 +169,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
     private Line getTopLevelLineNumber() {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            List<String> pointers = handleJsonPointer();
+            List<String> pointers = this.jsonPointer.translate(result.getOasVersion());
             Line line = searchObjectInFile(this.openApiFile, pointers, false);
             if (line != null) {
                 return line;
@@ -182,32 +182,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private Line getInlineLineNumber() {
-        return searchObjectInFile(getTopLevelParent().openApiFile, handleJsonPointer(), true);
-    }
-
-    private List<String> handleJsonPointer() {
-        List<String> pointers = jsonPointer.splitSegments();
-        if (pointers.isEmpty()) {
-            log.warn("Invalid location for definition: " + jsonPointer);
-            return null;
-        }
-        if (result.getOasVersion() == 2 && "components".equals(pointers.get(0))) {
-            pointers.remove(0);
-            if ("schemas".equals(pointers.get(0))) {
-                pointers.set(0, "definitions");
-            }
-            if ("requestBodies".equals(pointers.get(0))) {
-                pointers.set(0, "parameters");
-            }
-            if ("securitySchemes".equals(pointers.get(0))) {
-                pointers.set(0, "securityDefinitions");
-            }
-        }
-        if (result.getOasVersion() == 2 && "servers".equals(pointers.get(0))) {
-            pointers.set(0, "basePath");
-            pointers.remove(1);
-        }
-        return pointers;
+        return searchObjectInFile(getTopLevelParent().openApiFile, this.jsonPointer.translate(result.getOasVersion()), true);
     }
 
     private Line searchObjectInFile(File file, List<String> pointers, boolean approximate) {
@@ -307,7 +282,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             factory = new JsonFactory();
         }
 
-        List<String> pointers = handleJsonPointer();
+        List<String> pointers = this.jsonPointer.translate(result.getOasVersion());
         try {
             JsonParser jsonParser = factory.createParser(result.getSrc().get(file.getAbsolutePath()).getSrc());
             int ln = followPointersEndOfObject(pointers, jsonParser);

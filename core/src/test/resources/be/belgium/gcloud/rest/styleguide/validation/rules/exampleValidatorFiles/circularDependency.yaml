@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Logos:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogoLink'
+        total:
+          type: integer
+          description: the total number of items across all pages
+          format: int32
+        self:
+          type: string
+          description: The URI of the current page
+          format: uri
+      description: A collection of logos
+      example:
+        total: 1
+        self: https://openapi-generator.tech
+        items:
+          - metaData:
+              fileName: fileName
+              width: 6
+              mediaType: image/png
+              id: id
+              height: 0
+            href: https://openapi-generator.tech
+          - metaData:
+              fileName: fileName
+              width: 6
+              mediaType: jpeg
+              id: id
+              height: 0
+            href: https://openapi-generator.tech
+    LogoLink:
+      type: object
+      properties:
+        metaData:
+          $ref: 'LogoMetaData.yaml#/components/schemas/LogoMetaData'
+        href:
+          type: string
+          description: Any absolute URI that is using http or https protocol
+          format: uri
+    Logo:
+      type: object
+      properties:
+        meta:
+          $ref: 'LogoMetaData.yaml#/components/schemas/LogoMetaData'
+        image:
+          type: string
+          format: binary

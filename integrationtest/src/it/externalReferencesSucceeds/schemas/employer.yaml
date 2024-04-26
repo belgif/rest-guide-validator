@@ -38,10 +38,10 @@ components:
         - name
         - organization
       example:
-        employerId: '164893015'
+        employerId: 164893015
         name: Esprit
         organization:
-          enterpriseNumber: '0433072831'
+          enterpriseNumber: 0433072831
     Employers:
       description: A collection of employers
       type: object
