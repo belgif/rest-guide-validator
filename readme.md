@@ -1,6 +1,6 @@
-# Rest-styleguide-validation plugin
+# belgif-rest-guide-validator plugin
 
-The rest-styleguide-validation Plugin is used to validate a Swagger API to conforms the Belgif standards (https://www.belgif.be/specification/rest/api-guide/).
+The belgif-rest-guide-validator Plugin is used to validate a Swagger API to conforms the Belgif standards (https://www.belgif.be/specification/rest/api-guide/).
 
 *Note: the services-rest-parent use this plugin and the result is visible in Jenkins Test results*
 ## Goal Overview
@@ -16,8 +16,8 @@ The following example demonstrates a basic plugin configuration for validating o
 
 <plugins>
     <plugin>
-        <groupId>io.github.belgif.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+        <groupId>io.github.belgif.rest.guide.validator</groupId>
+        <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
             <execution>
@@ -77,8 +77,8 @@ Example:
 
 <plugins>
     <plugin>
-        <groupId>io.github.belgif.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+        <groupId>io.github.belgif.rest.guide.validator</groupId>
+        <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
             <execution>
@@ -111,8 +111,8 @@ The plugin can use the following options to write the validation error:
 
 <plugins>
     <plugin>
-        <groupId>io.github.belgif.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+        <groupId>io.github.belgif.rest.guide.validator</groupId>
+        <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
             <execution>
@@ -140,8 +140,8 @@ You can execute the plugin to validate the api files without breaking the build 
 
 <plugins>
     <plugin>
-        <groupId>io.github.belgif.rest</groupId>
-        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+        <groupId>io.github.belgif.rest.guide.validator</groupId>
+        <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
             <execution>

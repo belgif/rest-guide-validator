@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.belgif.rest</groupId>
-        <artifactId>rest-styleguide-validation-master</artifactId>
+        <groupId>io.github.belgif.rest.guide.validator</groupId>
+        <artifactId>belgif-rest-guide-validator-master</artifactId>
         <version>1.3.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>rest-styleguide-validation-rules</artifactId>
+    <artifactId>belgif-rest-guide-validator-rules</artifactId>
     <packaging>kjar</packaging>
 
     <properties>
@@ -32,8 +32,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>io.github.belgif.rest</groupId>
-            <artifactId>rest-styleguide-validation-core</artifactId>
+            <groupId>io.github.belgif.rest.guide.validator</groupId>
+            <artifactId>belgif-rest-guide-validator-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 

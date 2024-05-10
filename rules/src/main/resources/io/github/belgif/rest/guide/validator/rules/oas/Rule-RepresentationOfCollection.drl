@@ -1,0 +1,28 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Operation;
+
+function void representationOfCollectionViolation(OpenApiViolationAggregator oas, OperationDefinition operation){
+    oas.addViolation("[col-repres]",
+           		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection. \t",
+           		 operation);
+}
+
+rule "Rule-Representation Of Collection"
+    when
+       $path: PathDefinition($operation: /model/GET)
+       $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
+       eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
+       eval( !ApiFunctions.hasCollectionResponse($operationDefinition, parserResult))
+    then
+        representationOfCollectionViolation(oas, $operationDefinition);
+end

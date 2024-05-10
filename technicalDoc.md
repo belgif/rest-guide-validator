@@ -1,6 +1,6 @@
 # Introduction
 
-The rest-styleguide-validation plugin is used to validate a Swagger API to conforms the G-Cloud standards (https://www.gcloud.belgium.be/rest/).
+The belgif-rest-guide-validator plugin is used to validate a Swagger API to conforms the belgif standards.
 
 ## Overview
 
@@ -8,20 +8,20 @@ The project is based on the rules engine Drools.
 
 ## Maven Modules
 
-### rest-styleguide-validation-master
+### belgif-rest-guide-validator-master
 Common parent hold common dependencies version and common plugins.
 
-### rest-styleguide-validation-core
+### belgif-rest-guide-validator-core
 
 The core module provide the functions to manipulate the java representation of an open-api specification and the classes related to the violation.
 It provide also a output abstraction and his basic implementations.
 
-### rest-styleguide-validation-rules
+### belgif-rest-guide-validator-rules
 
 Contains all Drools rules and the related tests.
 Rules module depends on the core module .
 
-### rest-styleguide-validation-maven-plugin
+### belgif-rest-guide-validator-maven-plugin
 
 The maven-plugin build the plugin. It provides the functionalities to manage the parameters.
 It call the drools engine.
@@ -29,7 +29,7 @@ Maven-plugin module depends on the rules module.
 
 ### integrationtest
 
-Use invoker maven plugin to test the rest-styleguide-validation-maven-plugin with some maven projects.
+Use invoker maven plugin to test the belgif-rest-guide-validator-maven-plugin with some maven projects.
 
 ## Main Dependencies
 

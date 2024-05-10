@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
 
-    <groupId>io.github.belgif.rest</groupId>
-    <artifactId>rest-styleguide-validation-master</artifactId>
+    <groupId>io.github.belgif.rest.guide.validator</groupId>
+    <artifactId>belgif-rest-guide-validator-master</artifactId>
     <version>1.3.6-SNAPSHOT</version>
 
     <packaging>pom</packaging>

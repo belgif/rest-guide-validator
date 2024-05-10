@@ -1,0 +1,19 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+
+function void violationSlash(OpenApiViolationAggregator oas, PathDefinition path){
+    oas.addViolation("[uri-notat]", "Trailing slashes MUST NOT be used.", path);
+}
+
+rule "Path Trailing Slash V2"
+	when
+        $path: PathDefinition($pathString: getIdentifier())
+        String( this.endsWith("/") ) from $pathString
+    then
+        violationSlash(oas, $path);
+end
