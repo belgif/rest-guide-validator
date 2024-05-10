@@ -1,0 +1,26 @@
+package io.github.belgif.rest.styleguide.validation.rules.oas;
+
+import io.github.belgif.rest.styleguide.validation.rules.AbstractOasRuleTest;
+import org.junit.jupiter.api.Test;
+
+public class DefaultProblemResponseTest extends AbstractOasRuleTest {
+    @Test
+    public void testValid() {
+        assertNoViolations(callRules("openapi.yaml"));
+    }
+
+    @Test
+    public void testValidSwagger() {
+        assertNoViolations(callRules("swagger.yaml"));
+    }
+
+    @Test
+    public void testInvalidOpenApi() {
+        assertErrorCount(6, callRules("openapi_bad.yaml"));
+    }
+
+    @Test
+    public void testInvalidSwagger() {
+        assertErrorCount(2, callRules("swagger_bad.yaml"));
+    }
+}

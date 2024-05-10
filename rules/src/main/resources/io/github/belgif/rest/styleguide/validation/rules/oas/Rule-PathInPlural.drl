@@ -1,0 +1,28 @@
+package io.github.belgif.rest.styleguide.validation.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.styleguide.validation.core.ApiFunctions
+import io.github.belgif.rest.styleguide.validation.core.OpenApiViolationAggregator
+import io.github.belgif.rest.styleguide.validation.core.ViolationType;
+import io.github.belgif.rest.styleguide.validation.core.model.PathDefinition;
+import io.github.belgif.rest.styleguide.validation.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.PathItem;
+global io.github.belgif.rest.styleguide.validation.core.parser.Parser.ParserResult parserResult;
+global io.github.belgif.rest.styleguide.validation.core.OpenApiViolationAggregator oas;
+
+function void pluralViolation(OpenApiViolationAggregator oas, PathDefinition path){
+    oas.addViolation("[col-name]",
+           		 "A plural noun SHOULD be used for collection names. ",
+           		 path,
+           		 ViolationType.RECOMMENDED);
+}
+
+rule "Rule-PathInPlural without ID"
+    when
+        $path: PathDefinition($pathName: getIdentifier(), $operation: /model/GET)
+        $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
+        eval( ApiFunctions.hasCollectionResponse($operationDefinition, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
+        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName
+    then
+        pluralViolation(oas, $path);
+end

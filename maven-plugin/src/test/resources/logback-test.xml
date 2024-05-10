@@ -15,9 +15,9 @@
     <logger name="org.appformer.maven.integration.embedder.MavenProjectLoader" level="OFF" />
     <logger name="org.drools.compiler.kie.builder.impl.ClasspathKieProject" level="OFF" />
 
-    <logger name="be.belgium" level="debug" />
+    <logger name="io.github" level="debug" />
 
-    <logger name="be.belgium.gcloud.openapi.validator" level="debug" additivity="false">
+    <logger name="io.github.belgif.openapi.validator" level="debug" additivity="false">
         <appender-ref ref="STDOUT-SHORT" />
     </logger>
 

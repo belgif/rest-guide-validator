@@ -11,10 +11,12 @@ The plugin is commonly used to verify the openApi files for a project.
 
 ### Basic example
 The following example demonstrates a basic plugin configuration for validating one design first api file.
+
 ```xml
+
 <plugins>
     <plugin>
-        <groupId>be.belgium.gcloud.rest</groupId>
+        <groupId>io.github.belgif.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
@@ -38,7 +40,7 @@ mvn package
 ```
 ### Exclusions in OpenApi file
 
-The `x-ignore-rules` property can be added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
+The `x-ignore-rules` property can io added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
 
 
 _Example_
@@ -47,7 +49,7 @@ To ignore following `cod-design` validation error, add the `x-ignore-rules` prop
 
 Error message:
 ```
-file: location-v1.yaml: ln 23:  [MANDATORY]    [cod-design]      New code types SHOULD be represented as string values in lowerCamelCase.       /components/schemas/BelgianRegionCode
+file: location-v1.yaml: ln 23:  [MANDATORY]    [cod-design]      New code types SHOULD io represented as string values in lowerCamelCase.       /components/schemas/BelgianRegionCode
 ```
 
 OpenAPI document:
@@ -57,7 +59,7 @@ BelgianRegionCode:
   description: Belgian Region represented by an ISO 3166-2:BE code
   x-ignore-rules:
     "cod-design": Exempt existing (ISO) code from lowerCamelCase rule 
-    #"rule identifier": "motivation for ignoring the rule"  (rule identifier can be found in violiation error message)
+    #"rule identifier": "motivation for ignoring the rule"  (rule identifier can io found in violiation error message)
   type: string
   enum: 
     - BE-BRU
@@ -66,46 +68,16 @@ BelgianRegionCode:
 ```
 
 ### Exclude an external OpenApi file
-The excludedFiles maven parameter can be used to exclude certain imported openapi files.
+The excludedFiles maven parameter can io used to exclude certain imported openapi files.
 The intended use is to exclude validation of imported openapi files which are conform Belgif standards and are not under the developers influence to modify.
-Wildcards could be used.
+Wildcards could io used.
 Example:
-```xml
-<plugins>
-  <plugin>
-    <groupId>be.belgium.gcloud.rest</groupId>
-    <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
-    <version>1.3.2</version> <!-- update this to the latest version -->
-    <executions>
-      <execution>
-        <goals>
-          <goal>api-validator</goal>
-        </goals>
-      </execution>
-    </executions>
-    <configuration>
-      <files>
-        <file>openapi.yaml</file>
-      </files>
-      <excludedFiles>
-        <excludedFile>schemas/belgif/**</excludedFile>
-        <excludedFile>**/logo.yaml</excludedFile>
-      </excludedFiles>
-    </configuration>
-  </plugin>
-</plugins>
-```
 
-### Output
-The plugin can use the following options to write the validation error:
-* CONSOLE: default option. Write to the console.
-* JUNIT: generate a junit xml file.
-* LOG4J: use log4j.
-* NONE: no output.
 ```xml
+
 <plugins>
     <plugin>
-        <groupId>be.belgium.gcloud.rest</groupId>
+        <groupId>io.github.belgif.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
@@ -115,7 +87,41 @@ The plugin can use the following options to write the validation error:
                 </goals>
             </execution>
         </executions>
-        <configuration>            
+        <configuration>
+            <files>
+                <file>openapi.yaml</file>
+            </files>
+            <excludedFiles>
+                <excludedFile>schemas/belgif/**</excludedFile>
+                <excludedFile>**/logo.yaml</excludedFile>
+            </excludedFiles>
+        </configuration>
+    </plugin>
+</plugins>
+```
+
+### Output
+The plugin can use the following options to write the validation error:
+* CONSOLE: default option. Write to the console.
+* JUNIT: generate a junit xml file.
+* LOG4J: use log4j.
+* NONE: no output.
+
+```xml
+
+<plugins>
+    <plugin>
+        <groupId>io.github.belgif.rest</groupId>
+        <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
+        <version>1.3.2</version> <!-- update this to the latest version -->
+        <executions>
+            <execution>
+                <goals>
+                    <goal>api-validator</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
             <files>
                 <file>target/classes/</file> <!-- all yaml and json files in this folder-->
             </files>
@@ -131,9 +137,10 @@ The plugin can use the following options to write the validation error:
 You can execute the plugin to validate the api files without breaking the build in case of validation errors with the 'skipOnErrors' parameter.
 
 ```xml
+
 <plugins>
     <plugin>
-        <groupId>be.belgium.gcloud.rest</groupId>
+        <groupId>io.github.belgif.rest</groupId>
         <artifactId>rest-styleguide-validation-maven-plugin</artifactId>
         <version>1.3.2</version> <!-- update this to the latest version -->
         <executions>
@@ -146,7 +153,7 @@ You can execute the plugin to validate the api files without breaking the build 
         <configuration>
             <skipOnErrors>true</skipOnErrors>
             <files>
-                <file>target/classes/</file> 
+                <file>target/classes/</file>
             </files>
         </configuration>
     </plugin>
@@ -156,10 +163,10 @@ You can execute the plugin to validate the api files without breaking the build 
 
 | Parameter | Type | Default | Description                                                                                                          |
 | --------- | ---- | ------- |----------------------------------------------------------------------------------------------------------------------|
-| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.                                                   |
+| files | Collection of File |  | file or folder. For a folder all json and yaml files will io used.                                                   |
 | excludedFiles | Collection of File | | File(s) or folder(s) to exclude from validation. Use of wildcards is possible. | 
-| fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       |
-| excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
+| fileWithExclusions | Collection of FileWithExclusion |  | _deprecated_ a file and a collection of excludesPath. `x-ignore-rules` should io used instead.                       |
+| excludeResources | Collection of String | | _deprecated_ paths in the API to exclude from the validation for all files. `x-ignore-rules` should io used instead. |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                           |
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE                                     |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can io: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE                                     |
 | outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                                                        |
