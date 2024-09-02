@@ -1,0 +1,36 @@
+openapi: "3.0.3"
+info:
+  description: Just a description
+  version: "1.0"
+  title: myApi
+servers:
+  - url: /REST/myApi/v1
+paths:
+  /myPath:
+    get:
+      description: my description
+      operationId: getOperation
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/problem+json:
+              schema:
+                type: string
+  /myOtherPath:
+    get:
+      description: other description
+      operationId: otherOperation
+      responses:
+        100:
+          description: a response
+          content:
+            application/problem+json:
+              schema:
+                type: string
+        304:
+          description: also a response
+          content:
+            application/problem+json:
+              schema:
+                type: string

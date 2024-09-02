@@ -1,0 +1,33 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+
+function void violationPut(OpenApiViolationAggregator oas, OperationDefinition operation, String code){
+    oas.addViolation("[stat-codes]", "PUT operation should not have this status code", "[statuscode: " + code + "]",
+                     operation);
+}
+
+rule "Put Status Code 202"
+	when
+		$operation: OperationDefinition( method == HttpMethod.PUT)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "202"]) from $operation
+	then
+        violationPut(oas, $operation, "202");
+end
+rule "Put Status Code 304"
+	when
+		$operation: OperationDefinition( method == HttpMethod.PUT)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "304"]) from $operation
+	then
+        violationPut(oas, $operation, "304");
+end

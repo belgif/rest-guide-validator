@@ -1,0 +1,27 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-20(%d{HH:mm:ss.SSS} %-5level) %logger{5} %ex{2} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="STDOUT-SHORT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.appformer.maven" level="error" />
+    <logger name="org.appformer.maven.integration.embedder.MavenProjectLoader" level="OFF" />
+    <logger name="org.drools.compiler.kie.builder.impl.ClasspathKieProject" level="OFF" />
+
+    <logger name="io.github" level="debug" />
+
+    <logger name="io.github.belgif.openapi.validator" level="debug" additivity="false">
+        <appender-ref ref="STDOUT-SHORT" />
+    </logger>
+
+    <root level="error">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

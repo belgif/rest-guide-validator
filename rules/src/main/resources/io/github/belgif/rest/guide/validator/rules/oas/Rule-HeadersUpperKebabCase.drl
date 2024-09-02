@@ -1,0 +1,41 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import java.util.Set;
+import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In
+import io.github.belgif.rest.guide.validator.core.parser.Parser;
+
+function void violationRequestHeaderParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
+  oas.addViolation("[hdr-case]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ",
+    parameterDefinition);
+}
+
+function void violationResponseHeaderParam(OpenApiViolationAggregator oas, ResponseDefinition headerDefinition, String headerName){
+  oas.addViolation("[hdr-case]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.", "["+headerName+"]",
+    headerDefinition);
+}
+
+rule "RequestHeader parameter should io Upper-Kebab-Case"
+  when
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.HEADER)) from $in
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
+    eval( !ApiFunctions.isUpperKebabCase($parameterName) )
+  then
+    violationRequestHeaderParam(oas, $parameterDefinition);
+end
+
+rule "ResponseHeader should io Upper-Kebab-Case"
+  when
+    $response: ResponseDefinition($headerName: /model/headers/keySet#String)
+    eval( !ApiFunctions.isUpperKebabCase($headerName) )
+  then
+    violationResponseHeaderParam(oas, $response, $headerName);
+end

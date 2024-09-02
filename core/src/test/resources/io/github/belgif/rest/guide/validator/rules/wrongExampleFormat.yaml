@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeParsed
+  version: 1
+paths:
+  /myFirstPath:
+    get:
+      parameters:
+        - in: header
+          name: myParam
+          schema:
+            type: string
+            format: 'date-time'
+          examples:
+            myFirstExample:
+              summary: example number one
+              description: example number one
+              value: "2001-01-01 00:01:23"
+      responses:
+        default:
+          description: response
+          content:
+            application/json:
+              schema:
+                type: string
+
+components:
+  schemas:
+    expirationDateTime:
+      type: string
+      format: date-time
+      description: Date-time (yyyy-MM-dd'T'HH:mm:ssXXX) when the message will expire in the ebox.
+      example: "2025-01-01 00:00:00"

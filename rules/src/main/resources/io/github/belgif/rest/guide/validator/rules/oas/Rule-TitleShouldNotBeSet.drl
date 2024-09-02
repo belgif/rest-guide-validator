@@ -1,0 +1,19 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+
+
+function void violationTitleShouldNotBeSet(OpenApiViolationAggregator oas, SchemaDefinition schema){
+    oas.addViolation("[oas-descr]",
+    "The title property of a Schema MUST NOT be used.", schema);
+}
+
+rule "Title property of a schema must not io set"
+    when
+        $schema: SchemaDefinition(/model[title != null])
+    then
+        violationTitleShouldNotBeSet(oas, $schema);
+end

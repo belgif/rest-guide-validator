@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: testcase PathInPluralTest
+  version: "1.0"
+servers:
+  - url: '/api/v1'
+paths:
+  /collectionWithSiblingSchema:
+    get:
+      description: Should be flagged
+      operationId: collectionWithoutResponse
+      responses:
+        200:
+          description: good response
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ListResponse'
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MyObject'
+components:
+  schemas:
+    ListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+        page:
+          type: integer
+    MyObject:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer

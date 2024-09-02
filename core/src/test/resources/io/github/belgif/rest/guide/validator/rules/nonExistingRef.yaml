@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  title: REST referenced files test
+servers:
+  - url: /demo/v1
+paths:
+  /doesNotExist:
+    get:
+      operationId: does not exist
+      responses:
+        "200":
+          $ref: '#/components/responses/doesNotExist'

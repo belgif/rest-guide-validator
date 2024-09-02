@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: Employer schemas
+  version: "1.0"
+paths: { }
+components:
+  schemas:
+#    EmployerId:
+#      # Use this until belgif schemas get updated to int64 https://github.com/belgif/openapi-employment-identifier/blob/master/src/main/openapi/employment/identifier/v1/employment-identifier-v1.yaml
+#      description: Definitive or provisional NSSO number, assigned to each registered employer or local or provincial administration.
+#      type: integer
+#      format: int64
+#      minimum: 197
+#      maximum: 5999999999
+    Employer:
+      type: object
+      properties:
+        name:
+          type: string
+        employerId:
+          $ref: 'belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId'
+        organization:
+          $ref: 'organization.yaml#/components/schemas/OrganizationLink'
+        economicalActivities:
+          type: array
+          items:
+            $ref: 'organization.yaml#/components/schemas/EconomicalActivityLink'
+        employerClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployerClassLink'
+        size:
+          $ref: '#/components/schemas/EmployerSize'
+        self:
+          type: string
+          format: uri
+      required:
+        - name
+        - organization
+      example:
+        employerId: 164893015
+        name: Esprit
+        organization:
+          enterpriseNumber: 0433072831
+    Employers:
+      description: A collection of employers
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployerLink"
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+    EmployerLink:
+      type: object
+      properties:
+        href:
+          description: Any absolute URI that is using http or https protocol
+          type: string
+          format: uri
+        title:
+          description: Its value is a string and is intended for labelling the link with a
+            human-readable identifier (as defined by [RFC5988]).
+          type: string
+        employerId:
+          $ref: 'belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId'
+        enterpriseNumber:
+          $ref: 'belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+    EmployerClasses:
+      description: A collection of employerClasses
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployerClassLink"
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+    EmployerClassLink:
+      allOf:
+        - $ref: "#/components/schemas/EmployerClass"
+        - type: object
+          properties:
+            href:
+              type: string
+              format: uri
+    EmployerClass:
+      description: The employer class as defined here
+      type: object
+      properties:
+        value:
+          type: string
+        description:
+          type: string
+        self:
+          type: string
+          format: uri
+      required:
+        - value
+    EmployerSize:
+      type: string
+      enum:
+        - small
+        - medium
+        - large

@@ -1,0 +1,46 @@
+openapi: 3.0.1
+info:
+  title: HeadersKebabCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /everythingIsWrongHere:
+    get:
+      summary: This path is not completely compliant with the guidelines
+      description: Nice path
+      operationId: getEverything
+      parameters:
+        - $ref: '#/components/parameters/My-First-Request-Header'
+        - name: my-iNline-Header
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Very good 200
+          headers:
+            My-First-inLine-Response-Header:
+              schema:
+                type: string
+              required: true
+            My-First-rEsponse-Header:
+              $ref: '#/components/headers/My-First-Response-Header'
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  headers:
+    My-First-Response-Header:
+      schema:
+        type: string
+      required: true
+  parameters:
+    My-First-Request-Header:
+      name: my-fIrst-HeaDer
+      in: header
+      schema:
+        type: string
+      required: true

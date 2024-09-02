@@ -1,0 +1,49 @@
+openapi: 3.0.0
+info:
+  title: RequestBodyRequired
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    post:
+      operationId: postPath1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first:
+                  type: string
+      responses:
+        default:
+          $ref: '#/components/responses/defaultResponse'
+
+    put:
+      operationId: putPath1
+      requestBody:
+        $ref: '#/components/requestBodies/myFirstRequestBody'
+      responses:
+        default:
+          $ref: '#/components/responses/defaultResponse'
+
+components:
+  requestBodies:
+    myFirstRequestBody:
+      description: very descriptive sentence
+      content:
+        application/json:
+          schema:
+            type: object
+  responses:
+    defaultResponse:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  type: string

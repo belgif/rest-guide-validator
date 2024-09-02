@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: references are followed
+  version: 1.0.0
+servers:
+  - url: /demo/v1
+paths:
+  /myPath:
+    get:
+      summary: Get the latest release and snapshot version of a specific maven artifact
+      operationId: getLatestVersion
+      responses:
+        200:
+          $ref: '#/components/responses/LatestVersions'
+        default:
+          description: yes
+          content:
+            application/problem+json:
+              schema:
+                type: object
+components:
+  responses:
+    LatestVersions:
+      description: Latest artifacts
+      content:
+        application/json:
+          schema:
+            type: object

@@ -1,0 +1,39 @@
+openapi: 3.0.1
+info:
+  title: RepresentationOfCollection
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /collectionWithoutResponse:
+    get:
+      description: Should be flagged
+      operationId: collectionWithoutResponse
+      responses:
+        default:
+          description: default response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+  /collectionWithoutResponse/{id}:
+    get:
+      description: doesn't matter
+      operationId: id
+      parameters:
+        - name: id
+          required: true
+          in: path
+      responses:
+        default:
+          description: default response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string

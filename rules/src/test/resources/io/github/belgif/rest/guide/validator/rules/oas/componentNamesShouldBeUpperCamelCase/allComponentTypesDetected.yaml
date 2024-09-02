@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: Testcase for ComponentNamesShouldBeUpperCamelCase
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myCallbackPath:
+    get:
+      responses:
+        default:
+          $ref: '#/components/responses/myResponse'
+components:
+  parameters:
+    myParameter:
+      name: enterpriseNumber
+      in: path
+      description: Enterprise Number
+      required: true
+      schema:
+        $ref: '#/components/schemas/somethingWithEnum'
+  responses:
+    myResponse:
+      description: Nice
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/somethingWithEnum'
+  schemas:
+    somethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard
+  examples:
+    myExample:
+      description: yes
+  requestBodies:
+    myRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/somethingWithEnum'
+  headers:
+    myHeader:
+      description: yes
+      schema:
+        type: integer
+  securitySchemes:
+    mySecurityScheme:
+      type: oauth2
+      description: yes
+      flows:
+        implicit:
+          authorizationUrl: "http://yes.com"
+          scopes:
+            MyFirstScope: test:test:test
+            MySecondScope: test:test:test:test
+  links:
+    myLink:
+      description: yes

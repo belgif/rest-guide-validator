@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    MyMoment:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        dateTime:
+          type: string
+          format: date-time
+    expirationDateTime:
+      type: string
+      format: date-time
+      description: Date-time (yyyy-MM-dd'T'HH:mm:ssXXX) when the message will expire in the ebox.
+      example: "2025-01-01 00:00:00"
+    expirationDate:
+      type: string
+      format: date
+      description: blabla
+      example: "2025-07-12"
+  requestBodies:
+    myRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MyMoment'
+          examples:
+            ProperExample:
+              summary: This is an example
+              description: Nice
+              value:
+                date: 2024-04-22
+                dateTime: 2024-04-22T17:02:30.123Z
+            WrongExample:
+              summary: This is an example
+              description: Nice
+              value:
+                dateTime: 2024-04-22
+                date: 2024-04-22T17:02:30
+            AnotherWrongExample:
+              summary: This is an example
+              description: Nice
+              value:
+                dateTime: Ain't nobody
+                date: got time for that

@@ -1,0 +1,63 @@
+openapi: 3.0.0
+info:
+  title: Testcase for ComponentNamesShouldBeUpperCamelCase
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  "/organizations/{enterpriseNumber}":
+    get:
+      tags:
+        - Organization
+      summary: Get an organization by its enterprise number
+      operationId: getOrganization
+      parameters:
+        - $ref: '#/components/parameters/MyParameter'
+      responses:
+        default:
+          $ref: '#/components/responses/MyResponse'
+components:
+  parameters:
+    MyParameter:
+      name: enterpriseNumber
+      in: path
+      description: Enterprise Number
+      required: true
+      schema:
+        $ref: '#/components/schemas/SortingEnum'
+  responses:
+    MyResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SomethingWithEnum'
+  schemas:
+    ObjectWithA1Digit:
+      type: object
+
+    SomethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard
+    BelgianRegionCode:
+      type: string
+      description: Belgian Region represented by an ISO 3166-2:BE code
+      enum:
+        - BE-BRU
+        - BE-WAL
+        - BE-VLG
+    SortingEnum:
+      type: string
+      enum:
+        - "email"
+        - "date"
+        - "modificationDate"
+        - "-email"
+        - "-date"
+        - "-modificationDate"

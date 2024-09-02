@@ -1,0 +1,20 @@
+openapi: 3.0.1
+info:
+  title: testcase PathInPluralTest
+  version: "1.0"
+servers:
+  - url: '/api/v1'
+paths:
+  /history:
+    get:
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  items:
+                    type: array

@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Employer:
+      type: object
+      properties:
+        name:
+          type: string
+        employerId:
+          maximum: 5999999999
+          minimum: 197
+          type: integer
+          exclusiveMaximum: true
+          exclusiveMinimum: false
+          description: "Definitive or provisional NSSO number, assigned to each registered\
+            \ employer or local or provincial administration."
+          format: int64
+      additionalProperties: false
+  requestBodies:
+    myRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Employer'
+          examples:
+            myExample:
+              $ref: "#/components/examples/Employer"
+            mySecondExample:
+              $ref: "#/components/examples/AnotherEmployer"
+            myThirdExample:
+              $ref: '#/components/examples/ThirdEmployer'
+            myFourthExample:
+              $ref: '#/components/examples/FourthEmployer'
+  examples:
+    Employer:
+      summary: This is an example for an employer
+      description: This is an example for an employer
+      value:
+        employerId: 196
+        name: Esprit
+    AnotherEmployer:
+      summary: This is an example for an employer
+      description: This is an example for an employer
+      value:
+        employerId: 6000000000000000
+        name: AnotherEsprit
+    ThirdEmployer:
+      summary: This is an example for an employer
+      description: This is an example for an employer
+      value:
+        employerId: 5999999999
+        name: AnotherEsprit2
+    FourthEmployer:
+      summary: This is an example for an employer
+      description: This is an example for an employer
+      value:
+        employerId: 197
+        name: AnotherEsprit2

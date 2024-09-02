@@ -1,0 +1,68 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+
+function void violationOptions(OpenApiViolationAggregator oas, OperationDefinition operation, String code){
+    oas.addViolation("[stat-codes]", "OPTIONS operation should not have this status code", "[statuscode: " + code + "]",
+                     operation);
+}
+
+rule "Options Status Code 201 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "201"]) from $operation
+	then
+        violationOptions(oas, $operation, "201");
+end
+rule "Options Status Code 204 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "204"]) from $operation
+	then
+        violationOptions(oas, $operation, "204");
+end
+rule "Options Status Code 304 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "304"]) from $operation
+	then
+        violationOptions(oas, $operation, "304");
+end
+rule "Options Status Code 405 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "405"]) from $operation
+	then
+        violationOptions(oas, $operation, "405");
+end
+rule "Options Status Code 409 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "409"]) from $operation
+	then
+        violationOptions(oas, $operation, "409");
+end
+rule "Options Status Code 412 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "412"]) from $operation
+	then
+        violationOptions(oas, $operation, "412");
+end
+rule "Options Status Code 413 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.OPTIONS)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "413"]) from $operation
+	then
+        violationOptions(oas, $operation, "413");
+end

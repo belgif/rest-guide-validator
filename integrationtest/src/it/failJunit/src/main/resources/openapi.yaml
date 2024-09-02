@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  title: My First Api
+  description: all very fancy
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath/:
+    get:
+      responses:
+        default:
+          description: my response
+          content:
+            application/problem+json:
+              schema:
+                type: object

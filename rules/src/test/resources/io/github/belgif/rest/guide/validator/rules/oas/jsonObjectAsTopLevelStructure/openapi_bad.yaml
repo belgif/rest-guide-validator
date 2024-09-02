@@ -1,0 +1,100 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Here all the request and responsebodies are not of type object
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /faultyInlineResponse:
+    get:
+      operationId: getFaultyInlineResponse
+      responses:
+        '200':
+          description: Very bad
+          content:
+            application/json:
+              schema:
+                type: array
+  /faultyRequestBody:
+    post:
+      operationId: faultyRequestBody
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+        required: true
+      responses:
+        "201":
+          description: Created
+  /faultyProblemResponse:
+      get:
+        operationId: getProblemResponse
+        responses:
+          default:
+            description: a problem
+            content:
+              application/problem+json:
+                schema:
+                  $ref: '#/components/schemas/Problem'
+            x-content-type: application/json
+  /faultyProblemResponseResponse:
+    get:
+      operationId: getProblemResponse
+      responses:
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+  /faultyNestedRequestBody:
+    post:
+      operationId: faultyNestedRequestBody
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NestedResponseOne'
+  /faultyNestedResponseSchema:
+    get:
+      operationId: nestedResponseSchema
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestedResponseOne'
+components:
+  schemas:
+    NestedResponseOne:
+      description: first layer of nesting
+      $ref: '#/components/schemas/NestedResponseTwo'
+    NestedResponseTwo:
+      oneOf:
+        - $ref: '#/components/schemas/OneOfResponseOne'
+        - $ref: '#/components/schemas/OneOfResponseTwo'
+        - $ref: '#/components/schemas/AnyOfResponse'
+    AnyOfResponse:
+      anyOf:
+        - $ref: '#/components/schemas/OneOfResponseOne'
+        - $ref: '#/components/schemas/AllOfResponse'
+    OneOfResponseOne:
+      type: object
+    OneOfResponseTwo:
+      type: object
+    AllOfResponse:
+      allOf:
+        - $ref: '#/components/schemas/AllOfResponseOne'
+        - $ref: '#/components/schemas/AllOfResponseTwo'
+    AllOfResponseOne:
+      type: string
+    AllOfResponseTwo:
+      type: array
+    Problem:
+      description: A Problem Details object (RFC 7807)
+      type: string
+  responses:
+    ProblemResponse:
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+      description: a problem

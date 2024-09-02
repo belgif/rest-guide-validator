@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: Organization Schema
+  version: "1.0"
+servers: []
+paths: {}
+components:
+  schemas:
+    OrganizationState:
+      type: string
+      enum:
+        - active
+        - inactive
+    Organization:
+      type: object
+      description: Represents a collection of people organized together into a community or other social, commercial or political structure. The group has some common purpose or reason for existence which goes beyond the set of people belonging to it and can act as an Agent. Organizations are often decomposable into hierarchical structures.
+      properties:
+        name:
+          type: string
+        state:
+          $ref: '#/components/schemas/OrganizationState'
+        enterpriseNumber:
+          $ref: './belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+        startDate:
+          type: string
+          format: date
+        address:
+          $ref: 'address.yaml#/components/schemas/Address'
+        lastModificationDate:
+          type: string
+          format: date-time
+      required:
+        - name
+    Organizations:
+      description: A paged collection of organization links
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationLink'
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        page:
+          description: Index of the current page, default 1
+          type: integer
+          default: 1
+          format: int32
+        pageSize:
+          description: Maximum number of items per page, default 5
+          type: integer
+          default: 5
+          format: int32
+        first:
+          type: string
+          format: uri
+          description: The URI of the first page
+        last:
+          type: string
+          format: uri
+          description: The URI of the last page
+        next:
+          type: string
+          format: uri
+          description: The URI of the next page
+        prev:
+          type: string
+          format: uri
+          description: The URI of the previous page
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+    OrganizationLink:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        enterpriseNumber:
+          $ref: 'belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+    EconomicalActivities:
+      description: A collection of Economical Activities
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EconomicalActivityLink"
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+    EconomicalActivity:
+      description: The identifier/value of the economical activity is set here
+      type: string
+      pattern: ^[A-Z]$
+    EconomicalActivityLink:
+      type: object
+      properties:
+        value:
+          $ref: "#/components/schemas/EconomicalActivity"
+        href:
+          type: string
+          format: uri
+    EconomicalActivityDescription:
+      description: The economical activity of the organization is defined here with full details
+      type: object
+      properties:
+        value:
+          $ref: "#/components/schemas/EconomicalActivity"
+        description:
+          $ref: 'belgif/common/v1/common-v1.yaml#/components/schemas/LocalizedString'
+        self:
+          type: string
+          format: uri
+      required:
+        - value

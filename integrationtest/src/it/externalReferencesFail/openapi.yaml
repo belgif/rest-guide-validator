@@ -1,0 +1,553 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+tags:
+  - name: ReferenceData
+  - name: Organization
+  - name: Employer
+  - name: Logos
+  - name: Documentation
+  - name: Monitoring
+servers:
+  - url: /demo/v1
+paths:
+  /refData/employerClasses:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          schema:
+            type: string
+            enum:
+              - nl
+              - fr
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: 'schemas/employer.yaml#/components/schemas/EmployerClasses'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  "/refData/employerClasses/{employerClass}":
+    get:
+      tags:
+        - ReferenceData
+      summary: "Get the details of a specific employer class"
+      operationId: getEmployerClass
+      parameters:
+        - name: employerClass
+          in: path
+          description: the value of the employer class
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: 'schemas/employer.yaml#/components/schemas/EmployerClass'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /refData/economicalActivities:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of economical activities
+      operationId: getEconomicalActivities
+      parameters:
+        - $ref: 'schemas/belgif/common/v1/common-v1.yaml#/components/parameters/LangQueryParameter'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/EconomicalActivities'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  "/refData/economicalActivities/{economicalActivity}":
+    get:
+      tags:
+        - ReferenceData
+      summary: "Get the details of a specific economical activity"
+      operationId: getEconomicalActivity
+      parameters:
+        - name: economicalActivity
+          in: path
+          description: the value of the economical activity
+          required: true
+          schema:
+            type: string
+        - $ref: 'schemas/belgif/common/v1/common-v1.yaml#/components/parameters/LangQueryParameter'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/EconomicalActivityDescription'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /organizations:
+    get:
+      tags:
+        - Organization
+      summary: List all organizations
+      operationId: findOrganizations
+      parameters:
+        - name: page
+          in: query
+          description: Index of the current page, default 1
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          description: Maximum number of items per page, default 5
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 5
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: startDate_gt
+          in: query
+          description: Greater than date filter
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/Organizations'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    post:
+      tags:
+        - Organization
+      summary: Create a new organization
+      operationId: createOrganization
+      requestBody:
+        description: Organization data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas/organization.yaml#/components/schemas/Organization'
+      responses:
+        "201":
+          description: Created
+          headers:
+            Location:
+              description: location of the created organization
+              schema:
+                type: string
+                format: uri
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  "/organizations/{enterpriseNumber}":
+    get:
+      tags:
+        - Organization
+      summary: Get an organization by its enterprise number
+      operationId: getOrganization
+      parameters:
+        - name: enterpriseNumber
+          in: path
+          description: Enterprise Number
+          required: true
+          schema:
+            $ref: 'schemas/belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+      responses:
+        "200":
+          description: Details of an organization
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/Organization'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    delete:
+      tags:
+        - Organization
+      summary: Delete an organization by its enterprisenumber
+      operationId: deleteOrganization
+      parameters:
+        - name: enterpriseNumber
+          in: path
+          description: Enterprise Number
+          required: true
+          schema:
+            $ref: 'schemas/belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+      responses:
+        "204":
+          description: OK
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    put:
+      tags:
+        - Organization
+      summary: Update an organization
+      operationId: updateOrganization
+      parameters:
+        - name: enterpriseNumber
+          in: path
+          description: enterprise number of the organization
+          required: true
+          schema:
+            $ref: 'schemas/belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas/organization.yaml#/components/schemas/Organization'
+        description: Data of organization
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/Organization'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    patch:
+      tags:
+        - Organization
+      summary: Partially update a organization using JSON Merge Patch. See
+        https://tools.ietf.org/html/rfc7396.
+      operationId: patchOrganization
+      parameters:
+        - name: enterpriseNumber
+          in: path
+          description: enterprise number of the organization
+          required: true
+          
+          schema:
+            $ref: 'schemas/belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber'
+      requestBody:
+        description: MergePatch of 'schemas/organization.yaml#/components/schemas/Organization'
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: 'schemas/belgif/common/v1/common-v1.yaml#/components/schemas/MergePatch'
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/organization.yaml#/components/schemas/Organization'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos:
+    post:
+#      Note! This method is not implemented and will always return status 201!
+      description: Upload a new logo
+      operationId: uploadLogo
+      tags:
+        - Logos
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: 'schemas/logo.yaml#/components/schemas/Logo'
+            encoding:
+              image:
+                contentType: image/png, image/jpeg
+      responses:
+        "201":
+          description: Logo uploaded
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      tags:
+        - Logos
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/Logos'
+        default:
+          $ref: 'schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse'
+
+  /logos/{id}/image:
+    get:
+      description: Dowload Logo Image
+      operationId: downloadLogoImage
+      tags: [Logos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+      responses:
+        "200":
+          description: image data
+          content:
+          # media type image/* isn't supported by openapi generator
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos/{id}/meta:
+    get:
+      description: get logo metadata
+      operationId: getLogoMetaData
+      tags:
+        - Logos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+      responses:
+        "200":
+          description: the logo metadata
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/LogoMetaData'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos/{id}:
+    get:
+      description: Download logo
+      operationId: downloadLogo
+      tags:
+        - Logos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+        - name: accept
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: the logo with metadata
+          content:
+            multipart/form-data:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/Logo'
+              encoding:
+                image:
+                  contentType: image/png, image/jpeg
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /doc/openapi.yaml:
+    get:
+      tags:
+        - Documentation
+      summary: Returns the API documentation in OpenAPI 3 YAML format
+      operationId: getOpenApi
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/yaml:
+              schema:
+                type: string
+                format: binary
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /employers:
+    get:
+      tags:
+        - Employer
+      summary: List all employers
+      operationId: findEmployers
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/employer.yaml#/components/schemas/Employers'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    post:
+      tags:
+        - Employer
+      summary: Create a new employer
+      operationId: createEmployer
+      requestBody:
+        description: Employer data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas/employer.yaml#/components/schemas/Employer'
+      responses:
+        "201":
+          description: Created
+          headers:
+            Location:
+              description: location of the created employer
+              schema:
+                type: string
+                format: uri
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    delete:
+      tags:
+        - Employer
+      summary: Delete the employers with a certain status
+      description: Delete the employers with a certain status. /!\ If for an employer
+        status = provisional, it does not always mean that they have a
+        provisionalNssoNumber
+      operationId: removeEmployers
+      parameters:
+        - name: status
+          in: query
+          description: employer status
+          required: true
+          schema:
+            type: string
+            enum:
+              - definitive
+              - provisional
+              - unknown
+      responses:
+        "204":
+          description: OK
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  "/employers/{employerId}":
+    get:
+      tags:
+        - Employer
+      summary: Get an employer by an NSSO number, either definitive, provisional or
+        number of provisional or local administration
+      operationId: getEmployer
+      parameters:
+        - name: employerId
+          in: path
+          description: any type of NSSO Registration number
+          required: true
+          schema:
+            $ref: 'schemas/belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/employer.yaml#/components/schemas/Employer'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    delete:
+      tags:
+        - Employer
+      summary: Delete an employer by any type of NSSO registration number
+      operationId: deleteEmployer
+      parameters:
+        - name: employerId
+          in: path
+          description: any type of NSSO Registration Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: OK
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Check health of this REST API
+      description: This resource is only available to supervision users
+      operationId: healthCheck
+      responses:
+        "200":
+          description: The service is UP or DEGRADED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                response:
+                  value:
+                    status: UP
+        "500":
+          description: The service cannot generate a health response.
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem'
+        "503":
+          description: The service is DOWN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                response:
+                  value:
+                    status: DOWN
+        default:
+          $ref: "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+      externalDocs:
+        url: https://www.gcloud.belgium.be/rest/#health
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: "Level indicating the health status of the service: UP (functioning
+            as expected), DOWN (suffering unexpected failures), DEGRADED (partly
+            unavailable but service can be continued with reduced
+            functionality), or a custom status value"
+        details:
+          type: string
+      description: Response message for the API health

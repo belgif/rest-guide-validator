@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: data types for NSSO employer identifiers
+  version: 1.0.2
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers: []
+paths: {}
+components:
+  schemas:
+    EmployerId:
+      description: Definitive or provisional NSSO number, assigned to each registered employer or local or provincial administration.
+      type: integer
+      format: int64
+      minimum: 197
+      maximum: 5999999999
+      # Provisional NSSO numbers start with 5, definitive numbers are maximum 9 digits long
+      # also see entries nssoNumber, pplNumber and provisionalNssoNumber in https://github.com/belgif/fedvoc/blob/master/FederalServicePlatform-Vocabularies.xlsx for the definitions and formats of the subtypes of employer identifiers

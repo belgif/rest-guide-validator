@@ -1,0 +1,206 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+tags:
+  - name: ReferenceData
+  - name: Organization
+  - name: Employer
+  - name: Logos
+  - name: Documentation
+  - name: Monitoring
+servers:
+  - url: /demo/v1
+paths:
+  /refData/employerClasses:
+    get:
+      x-ignore-rules:
+        "col-repres": This proves that it is now possible to ignore col-repres from the operation
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          schema:
+            x-ignore-rules:
+              "cod-design": This is a test if it is possible to exclude this error
+            type: string
+            enum:
+              - NL
+              - FR
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  type: object
+                  properties:
+                    getOffMyProperty:
+                      type: string
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  "/refData/employerClasses/{employerClass}":
+    get:
+      tags:
+        - ReferenceData
+      summary: "Get the details of a specific employer class"
+      operationId: getEmployerClass
+      parameters:
+        - name: employerClass
+          in: path
+          description: the value of the employer class
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: 'schemas/employer.yaml#/components/schemas/EmployerClass'
+        "404":
+          x-ignore-rules:
+            "err-problem": This is a test if it is possible to exclude this error
+          description: special case
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos:
+    post:
+#      Note! This method is not implemented and will always return status 201!
+      description: Upload a new logo
+      operationId: uploadLogo
+      tags:
+        - Logos
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: 'schemas/logo.yaml#/components/schemas/Logo'
+            encoding:
+              image:
+                contentType: image/png, image/jpeg
+      responses:
+        "201":
+          description: Logo uploaded
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      tags:
+        - Logos
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/Logos'
+        default:
+          $ref: 'schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse'
+
+  /logos/{id}/image:
+    get:
+      description: Dowload Logo Image
+      operationId: downloadLogoImage
+      tags: [Logos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+      responses:
+        "200":
+          description: image data
+          content:
+          # media type image/* isn't supported by openapi generator
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos/{id}/meta:
+    get:
+      description: get logo metadata
+      operationId: getLogoMetaData
+      tags:
+        - Logos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+      responses:
+        "200":
+          description: the logo metadata
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/LogoMetaData'
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /logos/{id}:
+    get:
+      description: Download logo
+      operationId: downloadLogo
+      tags:
+        - Logos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          x-ignore-rules:
+            1: ["yes", "no"]
+          description: the logo with metadata
+          content:
+            multipart/form-data:
+              schema:
+                $ref: 'schemas/logo.yaml#/components/schemas/Logo'
+              encoding:
+                image:
+                  contentType: image/png, image/jpeg
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
+  /MyCollection:
+    get:
+      description: Nothing
+      x-ignore-rules: ["rules"]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+        default:
+          "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"

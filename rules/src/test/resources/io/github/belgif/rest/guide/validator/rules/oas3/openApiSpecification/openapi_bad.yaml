@@ -1,0 +1,17 @@
+openapi: 3.1.0
+info:
+  title: TestCase
+  version: '1.7'
+servers:
+  - url: 'http://localhost:8080'
+    description: Generated server url
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        default:
+          description: Nice response
+          content:
+            application/json:
+              schema:
+                type: string

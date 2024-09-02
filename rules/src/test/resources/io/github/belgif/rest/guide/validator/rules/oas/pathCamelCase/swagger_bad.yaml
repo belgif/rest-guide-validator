@@ -1,0 +1,38 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: testcase PathCamelCaseTest
+host: petstore.swagger.io
+basePath: /v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /pathPARAMs/{firstParam}:{SECONDPARAM}:
+    get:
+      operationId: params
+      produces:
+        application/json
+      parameters:
+        - name: firstParam
+          in: path
+          description: ID of contact to return
+          required: true
+          type: integer
+          format: int64
+        - name: SECONDPARAM
+          in: path
+          description: name of contact
+          required: true
+          type: string
+        - name: VeryBADQueryParam
+          in: query
+          required: false
+          type: string
+      responses:
+        "200":
+          description: Expected response to a valid request
+          type: string

@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: parametersShouldBeCheckedInOperations
+  version: 1
+paths:
+  /encryptionKeys/{id}:
+    parameters:
+      - name: id
+        description: a uuid
+        in: path
+        required: true
+        example: 91504de4-7f27-491e-96dc-5c8fefc4814fab
+        schema:
+          $ref: '#/components/schemas/Identifier'
+    get:
+      operationId: getKey
+      responses:
+        default:
+          description: yes
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    Identifier:
+      type: string
+      pattern: ^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$

@@ -1,0 +1,34 @@
+openapi: 3.0.1
+info:
+  title: Test to external schemaWithSameName
+  version: v1.0
+paths:
+  /things/{thingsId}/other/{otherId}:
+    parameters:
+      - description: myDescription
+        in: path
+        name: thingsId
+        required: true
+        schema:
+          type: string
+      - description: another description
+        in: path
+        name: otherId
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getThings
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+              examples:
+                ExampleOne:
+                  $ref: './myRefs/examples.yaml#/components/examples/ExampleOne'
+          description: OK

@@ -1,0 +1,28 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import java.util.Map
+import io.github.belgif.rest.guide.validator.core.parser.Parser;
+
+function void violationReadOnlyProperties(OpenApiViolationAggregator oas, SchemaDefinition schema, String propertyName){
+    oas.addViolation("[oas-rdonly]",
+        "Properties marked as readOnly being true SHOULD NOT be in the required list of the defined schema.", "[readOnly property: " + propertyName + "] \t",
+        schema);
+}
+
+rule "ReadOnly Properties"
+    when
+        $schema: SchemaDefinition(model.getRef() == null)
+        Map($property: /entrySet) from ApiFunctions.getRecursiveProperties($schema.getModel(), parserResult)
+        $propertyKey: String() from $property.getKey()
+        eval ( ApiFunctions.isPropertyRequiredAndReadOnly($schema, $propertyKey, parserResult) )
+    then
+        violationReadOnlyProperties(oas, $schema, $propertyKey);
+end

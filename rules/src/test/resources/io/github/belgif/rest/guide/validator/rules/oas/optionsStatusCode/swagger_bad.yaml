@@ -1,0 +1,51 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: testcase OptionsStatusCodeTest
+host: petstore.swagger.io
+basePath: /v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /pets/{petId}:
+    options:
+      operationId: showPetById
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          type: string
+      responses:
+        "201":
+          description: response code violation
+          schema:
+            type: string
+        "204":
+          description: response code violation
+          schema:
+            type: string
+        "304":
+          description: response code violation
+          schema:
+            type: string
+        "405":
+          description: response code violation
+          schema:
+            type: string
+        "409":
+          description: response code violation
+          schema:
+            type: string
+        "412":
+          description: response code violation
+          schema:
+            type: string
+        "413":
+          description: response code violation
+          schema:
+            type: string

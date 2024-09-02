@@ -1,0 +1,47 @@
+openapi: '3.0.3'
+info:
+  title: "Testcase EnumValuesShouldValidateAgainstSchemaTest"
+  version: '1.0'
+components:
+  schemas:
+    Buble:
+      type: object
+      description: Demo object with the wished enum
+      properties:
+        color:
+          $ref: '#/components/schemas/Colors'
+
+    Colors:
+      description: colors
+      allOf:
+        - $ref: '#/components/schemas/Color'
+        - type: object
+          enum:
+            - red: 255    # Red
+              green: 0
+              blue: 0
+            - red: 0      # Green
+              green: 255
+              blue: 0
+            - red: 0      # Blue
+              green: 0
+              blue: 255
+            - red: 0      # Yellow
+              blue: 0
+              yellow: 255
+
+    Color:
+      type: object
+      description: General color object
+      required:
+        - red
+        - green
+        - blue
+      additionalProperties: false
+      properties:
+        red:
+          type: integer
+        green:
+          type: integer
+        blue:
+          type: integer

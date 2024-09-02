@@ -1,0 +1,10 @@
+openapi: 3.0.1
+info:
+  title: examples
+  version: 1.0.0
+components:
+  examples:
+    ExampleOne:
+      summary: basic example
+      value:
+        name: My Name

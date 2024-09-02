@@ -1,0 +1,65 @@
+openapi: "3.0.3"
+info:
+  description: Just a description
+  version: "1.0"
+  title: myApi
+servers:
+  - url: /REST/myApi/v1
+paths:
+  /myPath/{number}/collection:
+    get:
+      description: my description
+      operationId: getCollection
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/CollectionList"
+
+  /myPath/{number}/collection/{id}:
+    get:
+      description: my description
+      operationId: getSpecificId
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/myComponent"
+components:
+  schemas:
+    CollectionList:
+      type: object
+      required:
+        - myList
+      properties:
+        myList:
+          type: array
+          items:
+            $ref: "#/components/schemas/myComponent"
+    myComponent:
+      description: Component in collection
+      type: object
+      properties:
+        id:
+          type: string

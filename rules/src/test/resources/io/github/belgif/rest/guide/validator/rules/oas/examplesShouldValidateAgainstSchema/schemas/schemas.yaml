@@ -1,0 +1,26 @@
+openapi: 3.0.1
+info:
+  title: example and schema in external file
+  version: v1.0
+components:
+  schemas:
+    MyMainSchema:
+      allOf:
+        - $ref: '#/components/schemas/SubSchemaOne'
+        - $ref: '#/components/schemas/SubSchemaTwo'
+    SubSchemaOne:
+      type: object
+      properties:
+        id:
+          type: string
+    SubSchemaTwo:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+  examples:
+    MyFirstExample:
+      value:
+        id: hello

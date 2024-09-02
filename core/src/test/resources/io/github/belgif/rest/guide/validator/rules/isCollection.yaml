@@ -1,0 +1,75 @@
+openapi: 3.0.0
+info:
+  title: REST referenced files test
+servers:
+  - url: /demo/v1
+paths:
+  /logos:
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      parameters:
+        - name: test
+          in: query
+      tags:
+        - Logos
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+  /logos/{logoId}:
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      parameters:
+        - name: test
+          in: query
+        - name: id
+          in: path
+      tags:
+        - Logos
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+  /pathWithItemsWithoutType:
+    get:
+      description: gets items without type
+      operationId: itemsWithoutType
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    description: description
+  /pathWithAndWithoutType:
+    get:
+      description: gets items without type
+      operationId: itemsWithoutType
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    description: description
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    description: description
+                    items:
+                      type: object

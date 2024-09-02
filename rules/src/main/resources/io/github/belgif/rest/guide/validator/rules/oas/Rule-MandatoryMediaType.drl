@@ -1,0 +1,33 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import java.util.Set;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
+import io.github.belgif.rest.guide.validator.core.model.MediaTypeDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+
+function Set includedMediaTypes() {
+  return Set.of("application/json", "multipart/*", "text/xml", "application/xml");
+}
+
+function void violationMandatoryMediaType(OpenApiViolationAggregator oas, MediaTypeDefinition mediaTypeDefinition){
+  oas.addViolation("[rep-struct]",
+    "Payload has a schema of non-binary type, but doesn't specify a structured media type (one compatible with application/json, application/xml, multipart/*, text/xml)",
+    mediaTypeDefinition);
+}
+
+rule "Mandatory Mediatype"
+  when
+    $mediaTypeDefinition: MediaTypeDefinition($schema: /model/schema)
+    eval( $schema != null )
+    eval( parserResult.oasVersion != 2 || $mediaTypeDefinition.getParent().getDefinitionType() == DefinitionType.INLINE )
+    $schemaDefinition: SchemaDefinition(model.getType() != SchemaType.STRING || (model.getFormat() != "binary" && model.getFormat != "byte" && model.getFormat != "base64")) from parserResult.resolve($schema)
+    eval( !ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includedMediaTypes()) )
+  then
+    violationMandatoryMediaType(oas, $mediaTypeDefinition);
+end

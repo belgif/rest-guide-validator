@@ -1,0 +1,48 @@
+---
+swagger: "2.0"
+info:
+  title: test
+  version: "1.0"
+basePath: /REST/test
+paths:
+  /userInfo:
+    get:
+      summary: summary
+      description: myDescription
+      operationId: getUserInfo
+      produces:
+        - application/json
+        - application/problem+json
+      responses:
+        200:
+          $ref: '#/definitions/EntityIdentifier'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/responses/MyFirstResponse'
+        500:
+          description: bad
+          schema:
+            $ref: '#/definitions/EntityIdentifier'
+responses:
+  MyFirstResponse:
+    description: succesfull
+    schema:
+      $ref: '#/definitions/EntityIdentifier'
+definitions:
+  EntityIdentifier:
+    type: object
+    properties:
+      justANbr:
+        type: string
+        example: "163190083"
+        description: justASimpleDescription
+      anotherNbr:
+        type: string
+        description: justASimpleDescription
+      justAnId:
+        type: string
+        description: justASimpleDescription
+      anotherId:
+        type: string
+        description: justASimpleDescription

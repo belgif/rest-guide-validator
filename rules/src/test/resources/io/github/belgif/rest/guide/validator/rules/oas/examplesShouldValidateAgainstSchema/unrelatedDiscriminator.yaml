@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: an api
+  description: TODO
+  version: 1.0.0
+servers:
+  - url: /myApi/v1
+components:
+  schemas:
+    NotificationsCollection:
+      type: object
+      allOf:
+        - type: object
+          properties:
+            href:
+              description: my description
+              type: string
+              format: uri
+            embedded:
+              $ref: '#/components/schemas/AnyNotification'
+      example:
+        href: /invalidUrl
+    AnyNotification:
+      type: object
+      properties:
+        objectType:
+          type: string
+      discriminator:
+        propertyName: objectType

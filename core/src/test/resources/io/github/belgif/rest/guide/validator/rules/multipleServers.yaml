@@ -1,0 +1,190 @@
+openapi: 3.0.1
+servers:
+  - url: https://services-test.be/{basePath}
+    description: API server in test environment
+    variables:
+      basePath:
+        default: v1
+  - url: https://services-acpt.be/{basePath}
+    description: API server in acceptation environment
+    variables:
+      basePath:
+        default: v1
+  - url: https://services-prod.be/{basePath}
+    description: API server in production environment
+    variables:
+      basePath:
+        default: v1
+  - url: https://services-test.be/v1
+  - url: '/api/v1'
+paths:
+  /everythingIsGoodHere:
+    get:
+      summary: This path is completely compliant with the guidelines
+      description: Nice path
+      operationId: getEverythingIsGoodHere
+      responses:
+        '200':
+          headers:
+            MyThirdHeader:
+              schema:
+                type: string
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                type: object
+                description: this also should be in the list
+                properties:
+                  things:
+                    type: string
+        204:
+          description: A 204 response
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+    head:
+      summary: head summary
+      operationId: headOperation
+      parameters:
+        - name: group
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: n2
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: Default response description without payload.
+    delete:
+      summary: delete summary
+      operationId: deleteOperation
+      responses:
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+    options:
+      summary: options summary
+      operationId: optionsOperation
+      responses:
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+    post:
+      summary: post summary
+      operationId: postOperation
+      requestBody:
+        description: my other request body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+components:
+  schemas:
+    Problem:
+      description: A Problem Details object (RFC 7807)
+      type: object
+      properties:
+        problemThing:
+          type: string
+  requestBodies:
+    myComponentRequestBody:
+      description: Should definetely be taken into account
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              my-list:
+                type: array
+                description: should also be counted
+                items:
+                  type: object
+                  name: listObjectName
+                  properties:
+                    name:
+                      type: string
+                    age:
+                      type: integer
+    myOneOfRequestBody:
+      description: Should have one of the following requestbodies
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                description: first possibility
+              - type: array
+    myAnyOfRequestBody:
+      description: Validate against any of the comming requestbodies
+      content:
+        application/json:
+          schema:
+            anyOf:
+              - type: object
+                description: this might be valid
+              - type: string
+                description: also might be valid
+              - type: array
+                description: awesome
+  responses:
+    ProblemResponse:
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+      description: Should not be added to the schemas list (since reference)
+    SchemaResponse:
+      headers:
+        MyInlineHeader:
+          description: this is also a header
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Should be added to schemas list
+            properties:
+              items:
+                type: array
+                description: this should also be added to the schemas list
+            additionalProperties:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: name an additional property
+  headers:
+    MyFirstHeader:
+      description: This is a header
+      schema:
+        type: integer
+  callbacks:
+    myFirstCallback:
+      '{$request.body#/callbackUrl}':
+        post:
+          summary: postCallback
+          operationId: callBackPost
+          requestBody:
+            description: callbackRequestBody
+            content:
+              application/json:
+                schema:
+                  properties:
+                    callbackItems:
+                      type: array
+          responses:
+            $ref: "#/components/responses/ProblemResponse"
+  parameters:
+    myFirstParameter:
+      name: myFirstParameter
+      in: path
+      allowEmptyValue: false
+      required: true
+      schema:
+        description: This should also be counted
+        type: string

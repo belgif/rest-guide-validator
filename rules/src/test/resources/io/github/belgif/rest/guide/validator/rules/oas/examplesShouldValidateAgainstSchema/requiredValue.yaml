@@ -1,0 +1,55 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    EmployerClasses:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployerClassLink'
+        total:
+          type: integer
+          description: the total number of items across all pages
+          format: int32
+        self:
+          type: string
+          description: The URI of the current page
+          format: uri
+      description: A collection of employerClasses
+      example:
+        total: 0
+        self: https://openapi-generator.tech
+        items:
+          - null
+          - null
+    EmployerClassLink:
+      allOf:
+        - $ref: '#/components/schemas/EmployerClass'
+        - $ref: '#/components/schemas/EmployerClassLinkAllOf'
+    EmployerClass:
+      required:
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+        description:
+          type: string
+        self:
+          type: string
+          format: uri
+      description: The employer class as defined here
+      example:
+        description: description
+        self: https://openapi-generator.tech
+        value: value
+    EmployerClassLinkAllOf:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri

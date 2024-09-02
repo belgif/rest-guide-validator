@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Employer:
+      type: object
+      properties:
+        name:
+          type: string
+        employerId:
+          maximum: 5999999999
+          minimum: 197
+          type: integer
+          exclusiveMaximum: true
+          exclusiveMinimum: false
+          description: Just a description
+          format: int64
+        employer:
+          $ref: 'referencedFile.yaml#/components/schemas/Employer'
+      additionalProperties: false
+      example:
+        employerId: "6000000000000000"
+        name: EmployerName

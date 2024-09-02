@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: PresenceOfPayloadFailingOpenApi
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /responseWithoutSchema:
+    get:
+      operationId: responseWithoutSchema
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    status: UP
+    post:
+      operationId: requestWithoutSchema
+      requestBody:
+        content:
+          application/json:
+            examples:
+              response:
+                value:
+                  status: UP
+      responses:
+        200:
+          description: OK
+components:
+  requestBodies:
+    RequestBodyWithoutSchema:
+      content:
+        application/json:
+          example: Nothing to see here
+  responses:
+    ProblemResponseWithoutSchema:
+      content:
+        application/problem+json:
+          example: Please move along

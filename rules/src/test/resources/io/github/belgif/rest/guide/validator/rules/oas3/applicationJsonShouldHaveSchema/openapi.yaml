@@ -1,0 +1,45 @@
+openapi: 3.0.1
+info:
+  title: PresenceOfPayloadFailingOpenApi
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /everythingIsGoodHere:
+    get:
+      summary: This path is completely compliant with the guidelines
+      description: Nice path
+      operationId: getEverythingIsGoodHere
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      summary: post where everything is good
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  requestBodies:
+    RequestBodyWithSchema:
+      content:
+        application/json:
+          schema:
+            type: object
+  responses:
+    ProblemResponseWithSchema:
+      content:
+        application/problem+json:
+          schema:
+            type: object

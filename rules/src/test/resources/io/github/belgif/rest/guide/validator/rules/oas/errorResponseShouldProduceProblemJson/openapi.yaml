@@ -1,0 +1,50 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Test
+  version: '1.0'
+servers:
+  - url: '/api/v3'
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        200:
+          description: good response
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          description: response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+        500:
+          description: response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+        404:
+          $ref: '#/components/responses/myFirstResponse'
+        403:
+          description: response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+        default:
+          description: response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+components:
+  responses:
+    myFirstResponse:
+      content:
+        application/problem+json:
+          schema:
+            type: object

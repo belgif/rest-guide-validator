@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  title: Logo schemas
+  version: "1.0"
+paths: { }
+components:
+  schemas:
+    Test:
+      type: object
+      oneOf:
+        - $ref: 'array.yaml#/components/schemas/arrayItemOne'
+        - $ref: 'array.yaml#/components/schemas/arrayItemTwo'

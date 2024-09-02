@@ -1,0 +1,113 @@
+openapi: 3.0.1
+info:
+  title: RepresentationOfCollection
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /collectionWithoutObjectItemsInArray:
+    get:
+      description: Should be flagged
+      operationId: getCollectionWithoutObjectInArray
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/objectWithSomeStringProperties'
+                  - $ref: '#/components/schemas/objectWithArrayOfString'
+
+  /collectionWithoutObjectItemsInArray/{id}:
+    get:
+      operationId: arrayId
+      parameters:
+        - name: id
+          in: path
+
+  /collectionWithoutAnyCollection:
+    get:
+      description: should be flagged
+      operationId: getCollectionWithoutAnyCollection
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/objectWithSomeStringProperties'
+                  - type: object
+                    properties:
+                      number:
+                        type: int
+
+  /collectionWithoutAnyCollection/{id}:
+    get:
+      operationId: arrayId
+      parameters:
+        - name: id
+          in: path
+
+  /collectionWithProperCollection:
+    get:
+      description: valid
+      operationId: getCollectionWithProperCollection
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/objectWithSomeStringProperties'
+                  - $ref: '#/components/schemas/objectWithCollection'
+
+  /collectionWithProperCollection/{id}:
+    get:
+      operationId: arrayId
+      parameters:
+        - name: id
+          in: path
+
+  /collectionWithProperCollectionInOneOf:
+    get:
+      description: should be flagged
+      operationId: getCollectionWithProperCollectionInOneOf
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/objectWithSomeStringProperties'
+                  - $ref: '#/components/schemas/objectWithCollection'
+
+  /collectionWithProperCollectionInOneOf/{id}:
+    get:
+      operationId: arrayId
+      parameters:
+        - name: id
+          in: path
+
+components:
+  schemas:
+    objectWithSomeStringProperties:
+      type: object
+      properties:
+        name:
+          type: string
+        street:
+          type: string
+    objectWithArrayOfString:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+    objectWithCollection:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/objectWithSomeStringProperties'

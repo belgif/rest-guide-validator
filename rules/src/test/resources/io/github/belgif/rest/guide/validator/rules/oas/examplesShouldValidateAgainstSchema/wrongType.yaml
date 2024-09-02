@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    Employer:
+      type: object
+      properties:
+        name:
+          type: string
+        employerId:
+          maximum: 5999999999
+          minimum: 197
+          type: integer
+          description: "Definitive or provisional NSSO number, assigned to each registered\
+            \ employer or local or provincial administration."
+          format: int64
+      example:
+        employerId: "164893015"
+        name: Esprit

@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    EconomicalActivities:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EconomicalActivityLink'
+        total:
+          type: integer
+          description: the total number of items across all pages
+          format: int32
+        self:
+          type: string
+          description: The URI of the current page
+          format: uri
+      description: A collection of Economical Activities
+      example:
+        total: 0
+        self: https://openapi-generator.tech
+        items:
+          - href: https://openapi-generator.tech
+            value: "123"
+          - href: https://openapi-generator.tech
+            value: "a"
+          - href: https://openapi-generator.tech
+            value: "A"
+    EconomicalActivityLink:
+      type: object
+      properties:
+        value:
+          pattern: "^[A-Z]$"
+          type: string
+          description: The identifier/value of the economical activity is set here
+        href:
+          type: string
+          format: uri

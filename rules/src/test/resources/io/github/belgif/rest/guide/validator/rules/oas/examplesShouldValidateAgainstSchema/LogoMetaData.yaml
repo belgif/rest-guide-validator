@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    LogoMetaData:
+      type: object
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        mediaType:
+          type: string
+          enum:
+            - png
+            - jpeg
+        height:
+          type: integer
+        width:
+          type: integer

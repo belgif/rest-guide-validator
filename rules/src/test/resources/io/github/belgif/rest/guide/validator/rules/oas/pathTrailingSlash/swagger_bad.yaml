@@ -1,0 +1,19 @@
+---
+swagger: "2.0"
+info:
+  title: testcase PathTrailingSlashTest
+  version: "1.0"
+basePath: /REST/v1
+
+schemes:
+  - https
+paths:
+
+  /health/:
+    get:
+      operationId: "healthCheck"
+      produces:
+        - "text/xml"
+      responses:
+        default:
+          description: "successful operation"

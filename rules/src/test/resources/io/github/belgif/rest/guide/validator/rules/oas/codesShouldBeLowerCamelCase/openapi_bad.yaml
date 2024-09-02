@@ -1,0 +1,43 @@
+openapi: 3.0.0
+
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum:
+              - NL
+              - FR
+              - CreditCard
+      responses:
+        default:
+          description: a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/SomethingWithEnum'
+components:
+  schemas:
+    SomethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - CASH
+            - WIRETRANSFER
+            - CREDITCARD
+            - DEBITCARD

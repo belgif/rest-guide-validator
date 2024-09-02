@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: REST referenced files test
+  version: '1.0.0'
+servers:
+  - url: /demo/v1
+paths:
+  /logos:
+    get:
+      description: See list of image metadata
+      operationId: getLogos
+      responses:
+        "200":
+          description: Good description
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                MyExample:
+                  $ref: '#/components/examples/MyExample'
+        default:
+          description: Also a good description
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                MySchema:
+                  $ref: '#/components/schemas/MySchema'
+components:
+  schemas:
+    MySchema:
+      type: object
+#      This wrong ref will not be detected because a single Example, is considered an Object according to the sepcification
+      example:
+        $ref: '#/components/schemas/JustSomethingElse'
+  examples:
+    MyExample:
+      summary: One of the best examples there is.
+      value:
+        {
+          "myValue": 1,
+          "myOtherValue": "string value"
+        }

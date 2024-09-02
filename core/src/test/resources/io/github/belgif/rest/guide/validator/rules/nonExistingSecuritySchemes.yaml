@@ -1,0 +1,23 @@
+openapi: 3.0.1
+info:
+  title: Pointing to non-existent securitySchemes
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+    description: Generated server url
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        default:
+          description: Nice response
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+        - MySecurityScheme:
+            - 'scope:does:not:matter'
+security:
+  - MyOtherSecurityScheme:
+      - 'scope:does:not:matter'

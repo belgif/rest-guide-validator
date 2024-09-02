@@ -1,0 +1,45 @@
+openapi: 3.0.0
+
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: sort
+          in: query
+          schema:
+            $ref: '#/components/schemas/SortingEnum'
+        - name: BadSJORT
+          in: query
+          schema:
+            type: string
+            enum:
+              - "email"
+              - "date"
+              - "modificationDate"
+              - "-email"
+              - "-date"
+              - "-modificationDate"
+      responses:
+        default:
+          description: a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/SomethingWithEnum'
+components:
+  schemas:
+    SortingEnum:
+      type: string
+      enum:
+        - "email"
+        - "date"
+        - "modificationDate"
+        - "-Email"
+        - "-Date"
+        - "-ModificationDate"

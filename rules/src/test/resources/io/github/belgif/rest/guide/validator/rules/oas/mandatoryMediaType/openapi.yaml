@@ -1,0 +1,142 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Here all the request and response bodies are of type object
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /properInlineResponse:
+    get:
+      operationId: getProperInlineResponse
+      responses:
+        '200':
+          description: Very good response
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      operationId: post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /properRef:
+    get:
+      operationId: getRef
+      responses:
+        '200':
+          description: Nice response
+          $ref: '#/components/responses/myXmlTextResponse'
+        default:
+          description: default
+          $ref: '#/components/responses/myXmlAppResponse'
+    post:
+      operationId: postRef
+      requestBody:
+        $ref: '#/components/requestBodies/xmlRequestBody'
+    put:
+      operationId: putRef
+      requestBody:
+        $ref: '#/components/requestBodies/jsonRequestBody'
+  /properMultipart:
+    get:
+      operationId: getMultipart
+      responses:
+        200:
+          content:
+            multipart/*:
+              schema:
+                $ref: '#/components/schemas/myMultipartObjectSchema'
+  /responsesWithoutMediaType:
+    get:
+      operationId: responsesWithoutMediatype
+      responses:
+        200:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MyBinarySchema'
+        201:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MySecondBinarySchema'
+        400:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MyThirdBinarySchema'
+    post:
+      operationId: postWithoutMediaType
+      requestBody:
+        content:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MyBinarySchema'
+    put:
+      operationId: putWithoutMediaType
+      requestBody:
+        content:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MySecondBinarySchema'
+    patch:
+      operationId: patchWithoutMediaType
+      requestBody:
+        content:
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MyThirdBinarySchema'
+
+  /mediaTypesWithoutSchema:
+    get:
+      operationId: mediaTypesWithoutSchema
+      responses:
+        200:
+          content:
+            application/pdf: {}
+components:
+  requestBodies:
+    jsonRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+    xmlRequestBody:
+      content:
+        text/xml:
+          schema:
+            type: object
+        application/xml:
+          schema:
+            type: object
+  responses:
+    myXmlTextResponse:
+      content:
+        text/xml:
+         schema:
+           type: object
+    myXmlAppResponse:
+      content:
+        application/xml:
+          schema:
+            type: object
+  schemas:
+    myMultipartObjectSchema:
+      type: object
+    MyBinarySchema:
+      type: string
+      format: binary
+    MySecondBinarySchema:
+      type: string
+      format: byte
+    MyThirdBinarySchema:
+      type: string
+      format: base64
+

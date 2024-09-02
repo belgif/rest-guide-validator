@@ -1,0 +1,69 @@
+openapi: 3.0.1
+info:
+  title: ReadOnlyProperties
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myPath:
+    get:
+      summary: This path is completely compliant with the guidelines
+      description: Nice path
+      operationId: getPath
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    MySchema:
+      type: object
+      oneOf:
+        - firstSchema:
+            type: object
+            properties:
+            prop1:
+              type: string
+              readOnly: true
+            prop2:
+              type: string
+            required: [ prop2 ]
+        - secondSchema:
+            type: object
+            properties:
+            prop1:
+              type: string
+            prop2:
+              type: string
+              readOnly: true
+            required: [ prop1 ]
+
+    MyComposedSchema:
+      oneOf:
+        - $ref: '#/components/schemas/MyFirstSchema'
+        - $ref: '#/components/schemas/MySecondSchema'
+
+    MyFirstSchema:
+      type: object
+      required:
+        - secondProperty
+      properties:
+        firstProperty:
+          type: string
+          readOnly: true
+        secondProperty:
+          type: string
+    MySecondSchema:
+      type: object
+      required:
+        - firstProperty
+      properties:
+        firstProperty:
+          type: string
+        secondProperty:
+          type: string
+          readOnly: true

@@ -1,0 +1,49 @@
+openapi: 3.0.0
+info:
+  title: REST referenced files test
+  version: '1.0.0'
+servers:
+  - url: /demo/v1
+components:
+  schemas:
+    MySchema:
+      type: object
+      properties:
+        hello:
+          type: string
+          enum:
+            - a
+            - b
+    Colors:
+      description: colors
+      allOf:
+        - $ref: '#/components/schemas/Color'
+        - type: object
+          enum:
+            - red: 255    # Red
+              green: 0
+              blue: 0
+            - red: 0      # Green
+              green: 255
+              blue: 0
+            - red: 0      # Blue
+              green: 0
+              blue: 255
+            - red: 0      # Yellow
+              blue: 0
+              yellow: 255
+    Color:
+      type: object
+      description: General color object
+      required:
+        - red
+        - green
+        - blue
+      additionalProperties: false
+      properties:
+        red:
+          type: integer
+        green:
+          type: integer
+        blue:
+          type: integer

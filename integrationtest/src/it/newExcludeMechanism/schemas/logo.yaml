@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: Logo schemas
+  version: "1.0"
+paths: { }
+components:
+  schemas:
+    LogoMetaData:
+      type: object
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        mediaType:
+          x-ignore-rules:
+            "cod-design": It does not make sense to write a mediaType as lowerCamelCase
+          type: string
+          enum:
+            - image/png
+            - image/jpeg
+        height:
+          type: integer
+        width:
+          type: integer
+    Logo:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/LogoMetaData'
+        image:
+          type: string
+          format: binary
+    Logos:
+      description: A collection of logos
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogoLink"
+        total:
+          description: the total number of items across all pages
+          type: integer
+          format: int32
+        self:
+          type: string
+          format: uri
+          description: The URI of the current page
+    LogoLink:
+      type: object
+      properties:
+        metaData:
+          $ref: '#/components/schemas/LogoMetaData'
+        href:
+          description: Any absolute URI that is using http or https protocol
+          type: string
+          format: uri

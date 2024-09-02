@@ -1,0 +1,17 @@
+openapi: 3.0.1
+info:
+  title: example and schema in external file
+  version: v1.0
+paths:
+  /path:
+    post:
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas/schemas.yaml#/components/schemas/MyMainSchema'
+              examples:
+                CertificationWithId1:
+                  $ref: 'schemas/schemas.yaml#/components/examples/MyFirstExample'
+          description: description

@@ -1,0 +1,79 @@
+openapi: 3.0.0
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            description: description
+            enum:
+              - nl
+              - fr
+              - creditCard
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - "email"
+              - "date"
+              - "modificationDate"
+              - "-email"
+              - "-date"
+              - "-modificationDate"
+        - name: anotherSort
+          in: query
+          schema:
+            $ref: '#/components/schemas/SortingEnum'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BelgianRegionCode'
+        default:
+          description: a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/SomethingWithEnum'
+components:
+  schemas:
+    SomethingWithEnum:
+      type: object
+      properties:
+        myfirstenum:
+          type: string
+          enum:
+            - cash
+            - wireTransfer
+            - creditCard
+            - debitCard
+    BelgianRegionCode:
+      type: string
+      description: Belgian Region represented by an ISO 3166-2:BE code
+      enum:
+        - BE-BRU
+        - BE-WAL
+        - BE-VLG
+    SortingEnum:
+      type: string
+      enum:
+        - "email"
+        - "date"
+        - "modificationDate"
+        - "-email"
+        - "-date"
+        - "-modificationDate"
