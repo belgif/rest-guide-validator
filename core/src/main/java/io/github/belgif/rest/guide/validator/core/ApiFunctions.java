@@ -2,6 +2,7 @@ package io.github.belgif.rest.guide.validator.core;
 
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -186,17 +187,17 @@ public class ApiFunctions {
     }
 
     public static boolean isMediaTypeIncluded(String mediaTypeStr, Set<String> contentTypes) {
-        List<org.springframework.http.MediaType> mediaTypeList = new ArrayList<>();
+        List<MediaType> mediaTypeList = new ArrayList<>();
         for (String contentType : contentTypes) {
-            mediaTypeList.add(org.springframework.http.MediaType.parseMediaType(contentType));
+            mediaTypeList.add(new MediaType(contentType));
         }
         return isMediaTypeIncluded(mediaTypeStr, mediaTypeList);
     }
 
-    public static boolean isMediaTypeIncluded(String mediaTypeStr, List<org.springframework.http.MediaType> allowedMediaTypes) {
-        org.springframework.http.MediaType mediaType = org.springframework.http.MediaType.parseMediaType(mediaTypeStr);
-        for (org.springframework.http.MediaType allowedMediaType : allowedMediaTypes) {
-            if (allowedMediaType.includes(mediaType) || (mediaType.getSubtypeSuffix() != null && allowedMediaType.includes(org.springframework.http.MediaType.parseMediaType(mediaType.getType() + "/" + mediaType.getSubtypeSuffix())))) {
+    public static boolean isMediaTypeIncluded(String mediaTypeStr, List<MediaType> allowedMediaTypes) {
+        MediaType mediaType = new MediaType(mediaTypeStr);
+        for (MediaType allowedMediaType : allowedMediaTypes) {
+            if (allowedMediaType.includes(mediaType)) {
                 return true;
             }
         }
