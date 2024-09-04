@@ -1,16 +1,34 @@
 # belgif-rest-guide-validator plugin
 
-The belgif-rest-guide-validator Plugin is used to validate a Swagger API to conforms the Belgif standards (https://www.belgif.be/specification/rest/api-guide/).
+The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document to conforms to the guidelines in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/).
 
-*Note: the services-rest-parent use this plugin and the result is visible in Jenkins Test results*
 ## Goal Overview
-The goal api-validator has as default phase the LifecyclePhase.PREPARE_PACKAGE.
+The goal `api-validator` binds by default to the lifecycle phase `prepare-package`.
+The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
 
 ## Usage
-The plugin is commonly used to verify the openApi files for a project.
+
+The plugin will output violations against rules. You can look up the rule identifiers (e.g. [uri-notat]) in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
+Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded in the plugin's configuration.
+Only OpenAPI documents on the local file system are currently supported.
+
+There are two ways to run the validator:
+
+a) Run the validation during each Maven build, by adding the plugin in your project's pom.xml file (see example below).
+The validation report will be in the console in the maven build output.
+
+b) Run the validation once
+
+Navigate to the directory containing the OpenAPI file, and launch from command line:  
+```
+   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Dapi-validator.files=openapi.yaml"
+```
+(change openapi.yaml to the name of your OpenAPI file)
+Check the result in the console output of the maven execution.
+
 
 ### Basic example
-The following example demonstrates a basic plugin configuration for validating one design first api file.
+The following example demonstrates a basic plugin configuration for validating an OpenAPI document.
 ```xml
 <plugins>
     <plugin>
@@ -39,7 +57,6 @@ mvn package
 ### Exclusions in OpenApi file
 
 The `x-ignore-rules` property can be added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
-
 
 _Example_
 
