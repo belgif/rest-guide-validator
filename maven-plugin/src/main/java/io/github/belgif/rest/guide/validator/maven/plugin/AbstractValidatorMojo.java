@@ -13,27 +13,27 @@ import java.util.stream.Collectors;
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
 
-    @Parameter(property = "api-validator.files")
+    @Parameter(property = "validate.files")
     protected List<File> files = new ArrayList<>();
 
-    @Parameter(property = "api-validator.excludedFiles")
+    @Parameter(property = "validate.excludedFiles")
     protected List<String> excludedFiles = new ArrayList<>();
 
-    @Parameter(property = "api-validator.groupBy", defaultValue = "rule")
+    @Parameter(property = "validate.groupBy", defaultValue = "rule")
     protected String groupBy = "rule";
 
     /**
      * @deprecated fileWithExclusions parameter is ignored, please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
      */
     @Deprecated(since = "1.2.2", forRemoval = true)
-    @Parameter(property = "api-validator.fileWithExclusions")
+    @Parameter(property = "validate.fileWithExclusions")
     List<String> fileWithExclusions = new ArrayList<>();
 
     /**
      * @deprecated excludeResources parameter is ignored, please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
      */
     @Deprecated(since = "1.2.2", forRemoval = true)
-    @Parameter(property = "api-validator.excludeResources")
+    @Parameter(property = "validate.excludeResources")
     List<String> excludeResources = new ArrayList<>();
 
 
@@ -63,7 +63,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
      */
     private void initFiles() throws FileNotFoundException {
         if (files.isEmpty())
-            throw new IllegalArgumentException("api-validator need at least one file ! Set the 'api-validator.files' parameter.");
+            throw new IllegalArgumentException("rest-guide-validator need at least one file ! Set the 'validate.files' parameter.");
         Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();
         if (fileNotFound.isPresent()) {
             throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());

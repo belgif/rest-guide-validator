@@ -25,7 +25,7 @@ The following example demonstrates a basic plugin configuration for validating o
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>
@@ -84,7 +84,7 @@ Example:
     <executions>
       <execution>
         <goals>
-          <goal>api-validator</goal>
+          <goal>validate</goal>
         </goals>
       </execution>
     </executions>
@@ -116,7 +116,7 @@ The plugin can use the following options to write the validation error:
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>
@@ -144,7 +144,7 @@ You can execute the plugin to validate the api files without breaking the build 
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>

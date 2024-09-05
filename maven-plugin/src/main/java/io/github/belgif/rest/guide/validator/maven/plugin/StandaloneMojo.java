@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * The plugin use the following parameter:
  * - api-validator.files: files to validate
  * Example:
- * mvn io.github.belgif.rest:rest-styleguide-validation-maven-plugin:<VERSION>:validate-openapi -Dapi-validator.files=C:/tmp/swagger.yaml -Dapi-validator.excludeResources=/persons/{socialSecurityNumber},/persons/createWithForm
+ * mvn io.github.belgif.rest:rest-styleguide-validation-maven-plugin:<VERSION>:validate-openapi -Dvalidate.files=C:/tmp/swagger.yaml
  */
 @Mojo(name = "validate-openapi", requiresProject = false)
 public class StandaloneMojo extends AbstractValidatorMojo {
