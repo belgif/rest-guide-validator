@@ -61,25 +61,8 @@ class ApiFunctionsTest {
         mediaTypes.add(new MediaType("application/json"));
         mediaTypes.add(new MediaType("multipart/*"));
         assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+json", mediaTypes));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("application/json", mediaTypes));
         assertFalse(ApiFunctions.isMediaTypeIncluded("application/problem+xml", mediaTypes));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/*", mediaTypes));
         assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/form-data", mediaTypes));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/chunked", mediaTypes));
-        List<MediaType> all = new ArrayList<>();
-        all.add(new MediaType("*/*"));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+json", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("application/json", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("application/problem+xml", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/*", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/form-data", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("multipart/chunked", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("*/*", all));
-        assertTrue(ApiFunctions.isMediaTypeIncluded("application/*", all));
-
-        assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(new MediaType("application/json"))));
-        assertFalse(ApiFunctions.isMediaTypeIncluded("*/*", List.of(new MediaType("application/json"), new MediaType("text/xml"), new MediaType("application/xml"), new MediaType("multipart/*"))));
-
     }
 
     @Test

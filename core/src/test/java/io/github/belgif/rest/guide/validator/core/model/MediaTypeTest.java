@@ -9,27 +9,37 @@ import static org.junit.jupiter.api.Assertions.*;
 class MediaTypeTest {
 
     @Test
-    void testIncludes() {
+    void testIncludesApplicationJson() {
         var mediaType = new MediaType("application/json");
         assertTrue(mediaType.includes(new MediaType("application/problem+json")));
         assertTrue(mediaType.includes(new MediaType("application/json")));
         assertFalse(mediaType.includes(new MediaType("application/problem+xml")));
         assertFalse(mediaType.includes(new MediaType("*/*")));
+        assertFalse(mediaType.includes(new MediaType("multipart/json")));
+    }
 
-        mediaType = new MediaType("multipart/*");
+    @Test
+    void testIncludesMultipartStar() {
+        var mediaType = new MediaType("multipart/*");
         assertTrue(mediaType.includes(new MediaType("multipart/*")));
         assertTrue(mediaType.includes(new MediaType("multipart/form-data")));
-        assertTrue(mediaType.includes(new MediaType("multipart/chunked")));
+        assertFalse(mediaType.includes(new MediaType("application/*")));
+    }
 
-        mediaType = new MediaType("*/*");
+    @Test
+    void testIncludesAllMediaTypes() {
+        var mediaType = new MediaType("*/*");
         assertTrue(mediaType.includes(new MediaType("*/*")));
         assertTrue(mediaType.includes(new MediaType("application/problem+json")));
-        assertTrue(mediaType.includes(new MediaType("application/json")));
-        assertTrue(mediaType.includes(new MediaType("application/problem+xml")));
-        assertTrue(mediaType.includes(new MediaType("multipart/*")));
         assertTrue(mediaType.includes(new MediaType("multipart/form-data")));
-        assertTrue(mediaType.includes(new MediaType("multipart/chunked")));
         assertTrue(mediaType.includes(new MediaType("application/*")));
+        assertTrue(mediaType.includes(new MediaType("*/form-data")));
+    }
+
+    @Test
+    void testApplicationProblemJsonDoesNotIncludeApplicationJson() {
+        var mediaType = new MediaType("application/problem+json");
+        assertFalse(mediaType.includes(new MediaType("application/json")));
     }
 
     @Test
