@@ -2,6 +2,12 @@
 
 The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document conforms to the guidelines in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/).
 
+# Prerequisites
+This Maven plugin requires JDK 17 or higher to be used in the Maven runtime. 
+Note that the JDK version used to compile the source code of the project can differ. 
+IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
+The minimum maven version is 3.8.5
+
 ## Goal Overview
 The goal `api-validator` binds by default to the lifecycle phase `prepare-package`.
 The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
