@@ -27,7 +27,7 @@ b) Run the validation once
 
 Navigate to the directory containing the OpenAPI file, and launch from command line:  
 ```
-   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Dapi-validator.files=openapi.yaml"
+   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
 ```
 (change openapi.yaml to the name of your OpenAPI file)
 Check the result in the console output of the maven execution.
@@ -78,7 +78,7 @@ The following example demonstrates a basic plugin configuration for validating a
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>
@@ -136,7 +136,7 @@ Example:
     <executions>
       <execution>
         <goals>
-          <goal>api-validator</goal>
+          <goal>validate</goal>
         </goals>
       </execution>
     </executions>
@@ -168,7 +168,7 @@ The plugin can use the following options to write the validation error:
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>
@@ -196,7 +196,7 @@ You can execute the plugin to validate the api files without breaking the build 
         <executions>
             <execution>
                 <goals>
-                    <goal>api-validator</goal>
+                    <goal>validate</goal>
                 </goals>
             </execution>
         </executions>

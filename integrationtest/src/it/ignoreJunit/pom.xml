@@ -17,7 +17,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>api-validator</goal>
+                            <goal>validate</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -20,22 +20,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  * The plugin use the following parameters:
- * - api-validator.files: a list of files to validate
- * - api-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
- * - api-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
- * - api-validator.excludedFiles: Files that should not be validated.
- * - ${project} root directory for api-validator.files
+ * - rest-guide-validator.files: a list of files to validate
+ * - rest-guide-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
+ * - rest-guide-validator.outputDir: the directory to write the XML Junit files. Only relevant for the OutputType.JUNIT
+ * - rest-guide-validator.excludedFiles: Files that should not be validated.
+ * - ${project} root directory for rest-guide-validator.files
  */
-@Mojo(name = "api-validator", defaultPhase = LifecyclePhase.TEST_COMPILE)
+@Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class MavenProjectMojo extends AbstractValidatorMojo {
 
-    @Parameter(property = "api-validator.skipOnErrors")
+    @Parameter(property = "rest-guide-validator.skipOnErrors")
     boolean skipOnErrors = false;
 
-    @Parameter(property = "api-validator.outputTypes")
+    @Parameter(property = "rest-guide-validator.outputTypes")
     List<OutputType> outputTypes;
 
-    @Parameter(property = "api-validator.outputDir", defaultValue = "target")
+    @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "target")
     File outputDir;
 
     @Parameter(readonly = true, defaultValue = "${project}")
