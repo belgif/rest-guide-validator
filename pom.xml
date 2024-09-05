@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <javaVersion>11</javaVersion>
+        <javaVersion>17</javaVersion>
         <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to io set using property for kie-maven-plugin -->
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
