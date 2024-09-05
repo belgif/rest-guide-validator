@@ -29,13 +29,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class MavenProjectMojo extends AbstractValidatorMojo {
 
-    @Parameter(property = "validate.skipOnErrors")
+    @Parameter(property = "rest-guide-validator.skipOnErrors")
     boolean skipOnErrors = false;
 
-    @Parameter(property = "validate.outputTypes")
+    @Parameter(property = "rest-guide-validator.outputTypes")
     List<OutputType> outputTypes;
 
-    @Parameter(property = "validate.outputDir", defaultValue = "target")
+    @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "target")
     File outputDir;
 
     @Parameter(readonly = true, defaultValue = "${project}")

@@ -27,7 +27,7 @@ b) Run the validation once
 
 Navigate to the directory containing the OpenAPI file, and launch from command line:  
 ```
-   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Dvalidate.files=openapi.yaml"
+   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
 ```
 (change openapi.yaml to the name of your OpenAPI file)
 Check the result in the console output of the maven execution.
