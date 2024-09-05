@@ -63,7 +63,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
      */
     private void initFiles() throws FileNotFoundException {
         if (files.isEmpty())
-            throw new IllegalArgumentException("rest-guide-validator need at least one file ! Set the 'validate.files' parameter.");
+            throw new IllegalArgumentException("rest-guide-validator need at least one file ! Set the 'rest-guide-validator.files' parameter.");
         Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();
         if (fileNotFound.isPresent()) {
             throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());

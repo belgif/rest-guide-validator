@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  * The plugin use the following parameter:
- * - api-validator.files: files to validate
+ * - rest-guide-validator.files: files to validate
  * Example:
  * mvn io.github.belgif.rest:rest-styleguide-validation-maven-plugin:<VERSION>:validate-openapi -Drest-guide-validator.files=C:/tmp/swagger.yaml
  */
