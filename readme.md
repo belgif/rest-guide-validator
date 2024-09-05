@@ -32,12 +32,12 @@ Each rule shows:
 * Violation level (MANDATORY / RECOMMENDED / STYLE / IGNORED)
 * Rule name ([rule-name])
 * A message that describes the general issue of the rule
-* The amount of occurences
+* The number of occurences
 
 Then for each violation of that rule the console output contains:
 * filename + line number
 * A JsonPointer to the exact location of the violation
-* In some cases some extra information about this specific violation.
+* In some cases, additional information about this specific violation.
 
 ```
  OpenApi validation summary: 10 violations and 0 ignored violations.
