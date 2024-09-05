@@ -86,8 +86,8 @@ public class JsonPointer {
             pointers.set(0, "basePath");
             pointers.remove(1);
         }
-        if (oasVersion == 2 && "schema".equals(pointers.get(pointers.size() - 1))) {
-            pointers.remove(pointers.size() - 1);
+        if (oasVersion == 2 && (pointers.indexOf("parameters") == pointers.indexOf("schema")-2)) {
+            throw new JsonPointerOas2Exception(toPrettyString());
         }
         if (oasVersion == 2 && "paths".equals(pointers.get(0)) && pointers.contains("requestBody")) {
             throw new JsonPointerOas2Exception(toPrettyString());

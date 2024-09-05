@@ -523,6 +523,16 @@ public class Parser {
             }
         } catch (JsonPointerOas2Exception e) {
             log.debug("Example validation in this location isn't supported for OAS2: {}", e.getMessage());
+        } catch (Exception e) {
+            if (result.getOasVersion() == 2) {
+                /*
+                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
+                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
+                 */
+                log.warn("Unable to parse example due to OAS2 incompatibility: {}", definition.getJsonPointer().toPrettyString());
+            } else {
+                throw e;
+            }
         }
     }
 

@@ -53,6 +53,17 @@ public class SchemaValidator {
         }  catch (JsonPointerOas2Exception e) {
             log.debug("Unable to validate example: {}", exampleDefinition.getJsonPointer().toPrettyString());
             return null;
+        } catch (Exception e) {
+            if (exampleDefinition.getResult().getOasVersion() == 2) {
+                /*
+                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
+                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
+                 */
+                log.warn("Unable to validate example due to OAS2 incompatibility: {}", exampleDefinition.getJsonPointer().toPrettyString());
+                return null;
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -76,6 +87,16 @@ public class SchemaValidator {
             }
         } catch (JsonPointerOas2Exception e) {
             log.debug("Unable to validate enums in schema definition: {}", schemaDefinition.getHighLevelSchema().getJsonPointer().toPrettyString());
+        } catch (Exception e) {
+            if (schemaDefinition.getResult().getOasVersion() == 2) {
+                /*
+                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
+                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
+                 */
+                log.warn("Unable to validate enum due to OAS2 incompatibility: {}", schemaDefinition.getJsonPointer().toPrettyString());
+            } else {
+                throw e;
+            }
         }
 
         return violations;

@@ -60,4 +60,10 @@ class JsonPointerTest {
         assertThrows(JsonPointerOas2Exception.class, () -> pointer.translateToJsonPointer(2));
     }
 
+    @Test
+    void parameterSchemaThrowsExceptionForOas2Test() {
+        var pointer = new JsonPointer("/paths/~1myPath~1myOtherPath/get/parameters/2/schema/items");
+        assertThrows(JsonPointerOas2Exception.class, () -> pointer.translateToJsonPointer(2));
+    }
+
 }
