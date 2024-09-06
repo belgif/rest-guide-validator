@@ -226,3 +226,7 @@ You can execute the plugin to validate the api files without breaking the build 
 | outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                     |
 | outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                                                        |
 | groupBy   | rule / file | rule | Specify how you want to group the violation output |
+
+## Building
+
+The build process of this project is documented [here](https://github.com/belgif/openapi-common/blob/master/BUILDING.md).
