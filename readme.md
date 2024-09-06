@@ -10,6 +10,7 @@ The minimum maven version is 3.8.5.
 
 ## Goal Overview
 The goal `api-validator` binds by default to the lifecycle phase `prepare-package`.
+
 The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
 
 ## Usage
@@ -17,7 +18,6 @@ The goal `validate-openapi` can be used to validate an OpenAPI document outside 
 There are two ways to run the validator:
 
 a) Run the validation during each Maven build, by adding the plugin in your project's pom.xml file (see example below).
-The validation report will be in the console in the maven build output.
 
 b) Run the validation once
 
@@ -25,25 +25,27 @@ Navigate to the directory containing the OpenAPI file, and launch from command l
 ```
    mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
 ```
-(change openapi.yaml to the name of your OpenAPI file)
-Check the result in the console output of the maven execution.
+_Change 'openapi.yaml' to the name of your OpenAPI file and update '2.0.0' to the latest available version of the plugin_
 
-The plugin will output violations against rules. You can look up the rule identifiers (e.g. [uri-notat]) in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
 Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded in the plugin's configuration.
 Only OpenAPI documents on the local file system are currently supported.
 
 The validator supports OpenAPI 2.0 and 3.0, but some rules aren't checked for OpenAPI 2.0 documents. OpenAPI 3.1 isn't supported yet.
 
 ### Example output
-The console output is grouped by rule (default) or grouped by file.
+
+The validation report will be in the console output of the maven execution.
+Any rule violations in the report are linked to a rule identifier (e.g. [uri-notat]) that can be looked up in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
+
+The violations are grouped by rule (default) or grouped by file.
 Each rule shows:
 * Violation level (MANDATORY / RECOMMENDED / STYLE / IGNORED)
 * Rule name ([rule-name])
 * A message that describes the general issue of the rule
 * The number of occurences
 
-Then for each violation of that rule the console output contains:
-* filename + line number
+Then for each violation of that rule, the console output contains:
+* filename and line number
 * A JsonPointer to the exact location of the violation
 * In some cases, additional information about this specific violation.
 
@@ -96,7 +98,7 @@ You can now build you package as usual with:
 ```bash
 mvn package  
 ```
-### Exclusions in OpenApi file
+### Exclusions in an OpenAPI file
 
 The `x-ignore-rules` property can be added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
 
@@ -155,8 +157,8 @@ Example:
 </plugins>
 ```
 
-### Output
-The plugin can use the following options to write the validation error:
+### Output options
+The plugin provides the following options to write the validation report:
 * CONSOLE: default option. Write to the console.
 * JUNIT: generate a junit xml file.
 * LOG4J: use log4j.
@@ -211,7 +213,8 @@ You can execute the plugin to validate the api files without breaking the build 
     </plugin>
 </plugins>
 ```
-## References
+
+## Configuration reference
 
 | Parameter | Type | Default | Description                                                                                                          |
 | --------- | ---- | ------- |----------------------------------------------------------------------------------------------------------------------|
