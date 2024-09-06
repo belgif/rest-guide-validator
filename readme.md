@@ -223,6 +223,6 @@ You can execute the plugin to validate the api files without breaking the build 
 | fileWithExclusions | Collection of FileWithExclusion |  | _obsoleted_ IGNORED a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                |
 | excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                           |
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JUNIT2, JUNIT3, LOG4J, NONE                                     |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                     |
 | outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                                                        |
 | groupBy   | rule / file | rule | Specify how you want to group the violation output |
