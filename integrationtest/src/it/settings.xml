@@ -22,7 +22,7 @@
             <pluginRepositories>
                 <pluginRepository>
                     <id>local.central</id>
-                    <url>@localRepositoryUrl@</url>
+                    <url>${project.build.directory}${file.separator}local-repo</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>
@@ -31,6 +31,9 @@
                     </snapshots>
                 </pluginRepository>
             </pluginRepositories>
+            <properties>
+                <revision>2.0.0-SNAPSHOT</revision>
+            </properties>
         </profile>
     </profiles>
 </settings>

@@ -5,19 +5,19 @@
     <parent>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-master</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>belgif-rest-guide-validator-integrationtest</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.github.belgif.rest.guide.validator</groupId>
-            <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+<!--    <dependencies>-->
+<!--        <dependency>-->
+<!--            <groupId>io.github.belgif.rest.guide.validator</groupId>-->
+<!--            <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--        </dependency>-->
+<!--    </dependencies>-->
     <build>
 
         <plugins>
@@ -37,7 +37,7 @@
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <settingsFile>../integrationtest/src/it/settings.xml</settingsFile>
-                    <mergeUserSettings>true</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
+                    <mergeUserSettings>false</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript> <!-- no extension required -->
                 </configuration>
