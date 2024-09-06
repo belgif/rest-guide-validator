@@ -17,7 +17,7 @@ The goal `validate-openapi` can be used to validate an OpenAPI document outside 
 
 There are two ways to run the validator:
 
-a) Run the validation during each Maven build, by adding the plugin in your project's pom.xml file (see example below).
+a) Run the validation during each Maven build, by adding the plugin in your project's pom.xml file (see [Basic Example](#basic-example)).
 
 b) Run the validation once
 
