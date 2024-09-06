@@ -6,17 +6,13 @@ The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI d
 This Maven plugin requires JDK 17 or higher to be used in the Maven runtime. 
 Note that the JDK version used to compile the source code of the project can differ. 
 IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
-The minimum maven version is 3.8.5
+The minimum maven version is 3.8.5.
 
 ## Goal Overview
 The goal `api-validator` binds by default to the lifecycle phase `prepare-package`.
 The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
 
 ## Usage
-
-The plugin will output violations against rules. You can look up the rule identifiers (e.g. [uri-notat]) in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
-Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded in the plugin's configuration.
-Only OpenAPI documents on the local file system are currently supported.
 
 There are two ways to run the validator:
 
@@ -31,6 +27,12 @@ Navigate to the directory containing the OpenAPI file, and launch from command l
 ```
 (change openapi.yaml to the name of your OpenAPI file)
 Check the result in the console output of the maven execution.
+
+The plugin will output violations against rules. You can look up the rule identifiers (e.g. [uri-notat]) in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
+Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded in the plugin's configuration.
+Only OpenAPI documents on the local file system are currently supported.
+
+The validator supports OpenAPI 2.0 and 3.0, but some rules aren't checked for OpenAPI 2.0 documents. OpenAPI 3.1 isn't supported yet.
 
 ### Example output
 The console output is grouped by rule (default) or grouped by file.
