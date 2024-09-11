@@ -14,8 +14,7 @@
     <properties>
         <revision>latest</revision>
         <javaVersion>17</javaVersion>
-        <maven.compiler.release>${javaVersion}
-        </maven.compiler.release> <!-- has to io set using property for kie-maven-plugin -->
+        <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to be set using property for kie-maven-plugin -->
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
