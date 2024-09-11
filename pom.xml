@@ -230,4 +230,22 @@
             </build>
         </profile>
     </profiles>
+
+    <scm>
+        <connection>scm:git:git://github.com/belgif/rest-guide-validator.git</connection>
+        <developerConnection>scm:git:ssh://github.com/belgif/rest-guide-validator.git</developerConnection>
+        <url>https://github.com/belgif/rest-guide-validator</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
+
 </project>
