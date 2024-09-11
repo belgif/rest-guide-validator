@@ -14,7 +14,8 @@
     <properties>
         <revision>latest</revision>
         <javaVersion>17</javaVersion>
-        <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to io set using property for kie-maven-plugin -->
+        <maven.compiler.release>${javaVersion}
+        </maven.compiler.release> <!-- has to io set using property for kie-maven-plugin -->
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -176,6 +177,58 @@
     </build>
 
     <profiles>
-
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <signer>bc</signer>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.10.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <doclint>all,-missing</doclint>
+                                    <excludePackageNames>*.internal</excludePackageNames>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
