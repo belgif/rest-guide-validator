@@ -8,15 +8,14 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Adopt OpenJDK 17
-      uses: actions/setup-java@v4
+#    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
+    - name: Setup Maven Action
+      uses: s4u/setup-maven-action@v1.14.0
       with:
-        distribution: adopt
         java-version: '17'
-        server-id: ossrh
-        server-username: MAVEN_CENTRAL_USER
-        server-password: MAVEN_CENTRAL_TOKEN
+        java-distribution: 'adopt'
+        maven-version: '3.9.9'
+        settings-servers: [{"id": "ossrh", "username": MAVEN_CENTRAL_USER, "password": MAVEN_CENTRAL_TOKEN}]
     - name: Build with Maven
       run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
       env:
@@ -25,6 +24,8 @@ jobs:
         MAVEN_CENTRAL_USER: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
         MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
     - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
         - [placeholder]"
