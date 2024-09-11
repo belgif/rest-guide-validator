@@ -25,6 +25,8 @@ jobs:
         MAVEN_CENTRAL_USER: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
         MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
     - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
         - [placeholder]"
