@@ -41,7 +41,6 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
      * <li>It has a parent which is not of type schema (e.g. Request, Response)</li>
      * <li>It is NOT part of any/one/all Of</li>
      * </ol>
-     * </p>
      */
     public boolean isHighLevelSchema() {
         return this.definitionType.equals(DefinitionType.TOP_LEVEL) ||
