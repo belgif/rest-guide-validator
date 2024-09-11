@@ -41,6 +41,10 @@
                     <mergeUserSettings>true</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript> <!-- no extension required -->
+<!--                    <mavenOpts>-DpluginVersion=${project.version}</mavenOpts>-->
+                    <properties>
+                        <pluginVersion>${project.version}</pluginVersion>
+                    </properties>
                 </configuration>
                 <executions>
                     <execution>

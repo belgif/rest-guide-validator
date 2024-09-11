@@ -7,13 +7,16 @@
     <artifactId>plugin-test</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <build>
+    <properties>
+        <pluginVersion>latest</pluginVersion>
+    </properties>
 
+    <build>
         <plugins>
             <plugin>
                 <groupId>io.github.belgif.rest.guide.validator</groupId>
                 <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-                <version>latest</version>
+                <version>${pluginVersion}</version>
                 <executions>
                     <execution>
                         <goals>
