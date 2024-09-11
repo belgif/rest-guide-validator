@@ -19,53 +19,14 @@ jobs:
         server-password: OPENAPI_OSSRH_TOKEN
         gpg-private-key: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
         gpg-passphrase: OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD
-    - name: Set release version in pom.xml
-      run: |
-         VERSION=`cut -d/ -f3 <<< $GITHUB_REF`
-         VERSION=${VERSION:1}
-         mvn -B versions:set -DnewVersion=$VERSION
     - name: Build with Maven
-      run: |
-        mvn -B package
-        SWAGGER_ARTIFACT_FILE=`ls ./target/*-swagger.zip`
-        echo "SWAGGER_ARTIFACT_FILE=$SWAGGER_ARTIFACT_FILE" >> $GITHUB_ENV
-        echo "SWAGGER_ARTIFACT_NAME=`basename $SWAGGER_ARTIFACT_FILE`" >> $GITHUB_ENV
-        OPENAPI_ARTIFACT_FILE=`ls ./target/*-openapi.zip`
-        echo "OPENAPI_ARTIFACT_FILE=$OPENAPI_ARTIFACT_FILE" >> $GITHUB_ENV
-        echo "OPENAPI_ARTIFACT_NAME=`basename $OPENAPI_ARTIFACT_FILE`" >> $GITHUB_ENV
+      run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
+      env:
+        MAVEN_GPG_KEY: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        MAVEN_CENTRAL_USER: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
     - name: Create GitHub release
-      id: create-release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-            Changes:
-            - [placeholder]
-        draft: true
-    - name: Upload swagger.zip release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: ${{ env.SWAGGER_ARTIFACT_FILE }}
-        asset_name: ${{ env.SWAGGER_ARTIFACT_NAME }}
-        asset_content_type: application/zip
-    - name: Upload openapi.zip release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: ${{ env.OPENAPI_ARTIFACT_FILE }}
-        asset_name: ${{ env.OPENAPI_ARTIFACT_NAME }}
-        asset_content_type: application/zip
-    - name: Publish to Maven Central
-      env:
-        OPENAPI_OSSRH_USERNAME: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
-        OPENAPI_OSSRH_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
-        OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
-      run: mvn -B deploy
+      run: |
+        gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
+        - [placeholder]"
