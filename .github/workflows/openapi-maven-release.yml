@@ -15,10 +15,8 @@ jobs:
         distribution: adopt
         java-version: '17'
         server-id: ossrh
-        server-username: OPENAPI_OSSRH_USERNAME
-        server-password: OPENAPI_OSSRH_TOKEN
-        gpg-private-key: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
-        gpg-passphrase: OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD
+        server-username: MAVEN_CENTRAL_USER
+        server-password: MAVEN_CENTRAL_TOKEN
     - name: Build with Maven
       run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
       env:
