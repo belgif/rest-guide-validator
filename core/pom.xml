@@ -33,7 +33,7 @@
             <artifactId>json-path</artifactId>
             <version>2.9.0</version>
             <exclusions>
-<!--                SLF4J excluded because it took precedence over the intended logback configuration.-->
+                <!--                SLF4J excluded because it took precedence over the intended logback configuration.-->
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>

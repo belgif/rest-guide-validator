@@ -21,7 +21,7 @@
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>
             <artifactId>belgif-rest-guide-validator-rules</artifactId>
-            <version> ${project.version}</version>
+            <version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.maven</groupId>

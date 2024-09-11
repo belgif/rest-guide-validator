@@ -13,7 +13,7 @@
             <plugin>
                 <groupId>io.github.belgif.rest.guide.validator</groupId>
                 <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-                <version>${revision}</version>
+                <version>latest</version>
                 <executions>
                     <execution>
                         <goals>

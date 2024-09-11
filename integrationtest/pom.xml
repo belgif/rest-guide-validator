@@ -2,22 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-master</artifactId>
         <version>${revision}</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>belgif-rest-guide-validator-integrationtest</artifactId>
 
-<!--    <dependencies>-->
-<!--        <dependency>-->
-<!--            <groupId>io.github.belgif.rest.guide.validator</groupId>-->
-<!--            <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>-->
-<!--            <version>${project.version}</version>-->
-<!--        </dependency>-->
-<!--    </dependencies>-->
+    <dependencies>
+        <dependency>
+            <groupId>io.github.belgif.rest.guide.validator</groupId>
+            <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
     <build>
 
         <plugins>
@@ -37,7 +38,7 @@
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <settingsFile>../integrationtest/src/it/settings.xml</settingsFile>
-                    <mergeUserSettings>false</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
+                    <mergeUserSettings>true</mergeUserSettings> <!-- allow integrationtest poms to have dependency versions that are not in local repo -->
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript> <!-- no extension required -->
                 </configuration>
