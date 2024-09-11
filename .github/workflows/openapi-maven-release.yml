@@ -8,7 +8,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+#    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
     - name: Setup Maven Action
       uses: s4u/setup-maven-action@v1.14.0
       with:
