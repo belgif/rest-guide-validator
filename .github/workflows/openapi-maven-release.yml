@@ -15,7 +15,12 @@ jobs:
         java-version: '17'
         java-distribution: 'adopt'
         maven-version: '3.9.9'
-        settings-servers: [{"id": "ossrh", "username": MAVEN_CENTRAL_USER, "password": MAVEN_CENTRAL_TOKEN}]
+        settings-servers: | 
+          [{
+          "id": "ossrh", 
+          "username": ${{ secrets.OPENAPI_OSSRH_USERNAME }} 
+          "password": ${{ secrets.OPENAPI_OSSRH_TOKEN }}
+          }]
     - name: Build with Maven
       run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
       env:
