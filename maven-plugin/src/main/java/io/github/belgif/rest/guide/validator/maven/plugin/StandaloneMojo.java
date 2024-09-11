@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * The plugin use the following parameter:
  * - rest-guide-validator.files: files to validate
  * Example:
- * mvn io.github.belgif.rest:rest-styleguide-validation-maven-plugin:<VERSION>:validate-openapi -Drest-guide-validator.files=C:/tmp/swagger.yaml
+ * mvn io.github.belgif.rest:rest-styleguide-validation-maven-plugin:[VERSION]:validate-openapi -Drest-guide-validator.files=C:/tmp/swagger.yaml
  */
 @Mojo(name = "validate-openapi", requiresProject = false)
 public class StandaloneMojo extends AbstractValidatorMojo {

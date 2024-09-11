@@ -122,11 +122,9 @@ public class Parser {
         }
 
         /**
-         * Return true if at least one element that {LineRangePath.path IN paths and LineRangePath.start >= lineNumber < LineRangePath.end}
-         *
          * @param paths
          * @param lineNumber
-         * @return
+         * @return true if at least one element that {LineRangePath.path IN paths and LineRangePath.start >= lineNumber &lt; LineRangePath.end}
          */
         public boolean isInPathList(List<String> paths, int lineNumber) {
             return this.getPaths().stream().anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));

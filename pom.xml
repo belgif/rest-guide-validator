@@ -150,6 +150,24 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <doclint>all,-missing</doclint>
+                            <excludePackageNames>*.internal</excludePackageNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
         <pluginManagement>
             <plugins>
@@ -169,6 +187,12 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
                     <version>1.6.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.10.0</version>
                 </plugin>
 
             </plugins>
@@ -212,7 +236,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.10.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadoc</id>
