@@ -18,8 +18,8 @@ jobs:
         settings-servers: | 
           [{
           "id": "ossrh", 
-          "username": ${{ secrets.OPENAPI_OSSRH_USERNAME }},
-          "password": ${{ secrets.OPENAPI_OSSRH_TOKEN }}
+          "username": "${{ secrets.OPENAPI_OSSRH_USERNAME }}",
+          "password": "${{ secrets.OPENAPI_OSSRH_TOKEN }}"
           }]
     - name: Build with Maven
       run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
