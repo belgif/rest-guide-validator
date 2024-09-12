@@ -9,7 +9,7 @@ IDEs may need manual configuration to set the appropriate Maven runtime JDK vers
 The minimum maven version is 3.8.5.
 
 ## Goal Overview
-The goal `api-validator` binds by default to the lifecycle phase `prepare-package`.
+The goal `validate` binds by default to the lifecycle phase `prepare-package`.
 
 The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
 
