@@ -10,6 +10,25 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
+    <description>
+        The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide
+        (https://www.belgif.be/specification/rest/api-guide/).
+    </description>
+    <url>https://github.com/belgif/rest-guide-validator</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Smals - ICC team</name>
+            <organizationUrl>https://www.smals.be</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <revision>latest</revision>
