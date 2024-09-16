@@ -19,7 +19,7 @@ There are two ways to run the validator:
 
 a) Run the validation during each Maven build, by adding the plugin in your project's pom.xml file (see [Basic Example](#basic-example)).
 
-b) Run the validation once
+b) Execute a validation run from command-line. This doesn't require the project to be built with maven (no pom.xml file), but does require Maven to be installed.
 
 Navigate to the directory containing the OpenAPI file, and launch from command line:  
 ```
