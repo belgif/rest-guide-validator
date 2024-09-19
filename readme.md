@@ -8,6 +8,8 @@ Note that the JDK version used to compile the source code of the project can dif
 IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
 The minimum maven version is 3.8.5.
 
+A standalone distribution that doesn't require Maven is [under development](https://github.com/belgif/rest-guide-validator/issues/13).
+
 ## Goal Overview
 The goal `validate` binds by default to the lifecycle phase `prepare-package`.
 
