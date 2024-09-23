@@ -11,7 +11,7 @@ import io.github.belgif.rest.guide.validator.output.model.ViolationReport;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,12 +38,12 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
 
     private ViolationReport mapToViolationReport(OpenApiViolationAggregator violationAggregator) {
         var violations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
-        List<ViolationGroup> groups = new ArrayList<>();
+        LinkedHashMap<String, ViolationGroup> groups = new LinkedHashMap<>();
         for (Map.Entry<String, List<Violation>> entry : violations.entrySet()) {
-            groups.add(new ViolationGroup(
-                    getOutputGroupBy().getIdentifier(entry.getValue().get(0)),
-                    entry.getValue().size(),
-                    entry.getValue().stream().map(this::mapToViolationFileObject).toList()));
+            groups.put(getOutputGroupBy().getIdentifier(entry.getValue().get(0)),
+                    new ViolationGroup(
+                            entry.getValue().size(),
+                            entry.getValue().stream().map(this::mapToViolationFileObject).toList()));
         }
         return new ViolationReport(
                 violationAggregator.getAmountOfActionableViolations(),
