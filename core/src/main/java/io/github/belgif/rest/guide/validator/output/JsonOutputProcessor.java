@@ -1,5 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
@@ -65,6 +66,7 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
 
     private void writeToFile(ViolationReport violationReport) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
             mapper.writeValue(new File(output, FILE_NAME), violationReport);
