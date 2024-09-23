@@ -4,6 +4,6 @@ import java.util.List;
 
 public record ViolationGroup(
         String group,
-        int occurrences,
-        List<ViolationFileObject> violations) {
+        int total,
+        List<ViolationFileObject> occurrences) {
 }
