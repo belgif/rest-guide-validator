@@ -9,7 +9,7 @@ import java.util.Objects;
 @Getter
 @EqualsAndHashCode
 public class Violation implements Comparable<Violation> {
-    private final String ruleName;
+    private final String ruleId;
     // general description of the rule
     private final String description;
     // specific message for this violation
@@ -20,11 +20,11 @@ public class Violation implements Comparable<Violation> {
     @Setter
     private String reportMessage = null;
 
-    public Violation(String ruleName, String description, String message, ViolationType type, Line lineNumber, String pointer) {
+    public Violation(String ruleId, String description, String message, ViolationType type, Line lineNumber, String pointer) {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("description cannot be null");
         }
-        this.ruleName = ruleName;
+        this.ruleId = ruleId;
         this.description = description;
         this.message = message;
         this.type = type;
@@ -32,11 +32,11 @@ public class Violation implements Comparable<Violation> {
         this.pointer = pointer;
     }
 
-    public Violation(String ruleName, String description, ViolationType type, Line lineNumber, String pointer) {
+    public Violation(String ruleId, String description, ViolationType type, Line lineNumber, String pointer) {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("description cannot be null");
         }
-        this.ruleName = ruleName;
+        this.ruleId = ruleId;
         this.description = description;
         this.type = type;
         this.lineNumber = lineNumber;
@@ -46,7 +46,7 @@ public class Violation implements Comparable<Violation> {
     @Override
     public String toString() {
         return String.format("%-14S ", ("[" + type + "]")) +
-                String.format("%-14s ", ruleName) +
+                String.format("%-14s ", ruleId) +
                 (lineNumber.getLineNumber() > 0 ? String.format("%-15s ln%4d  ", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
                 (lineNumber.getLineNumber() == 0 && type.equals(ViolationType.IGNORED) ? String.format("%-15s ", lineNumber.getFileName()) : "") +
                 String.format("%s: %n", "#" + pointer) +

@@ -55,7 +55,7 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
 
     private ViolationFileObject mapToViolationFileObject(Violation violation) {
         return new ViolationFileObject(
-                violation.getRuleName(),
+                violation.getRuleId(),
                 violation.getDescription(),
                 violation.getMessage(),
                 violation.getType().toString(),

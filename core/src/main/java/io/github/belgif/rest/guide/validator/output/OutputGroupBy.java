@@ -15,11 +15,11 @@ public enum OutputGroupBy {
         public Map<String, List<Violation>> groupViolations(List<Violation> violations) {
             return collectToGroupedViolations(violations.stream().sorted(
                             Comparator.comparing(Violation::getType)
-                                    .thenComparing(Violation::getRuleName)
+                                    .thenComparing(Violation::getRuleId)
                                     .thenComparing(Comparator.naturalOrder())
                     )
                     .collect(Collectors.groupingBy(
-                            violation -> (violation.getRuleName() + violation.getType().toString() + violation.getDescription()),
+                            violation -> (violation.getRuleId() + violation.getType().toString() + violation.getDescription()),
                             LinkedHashMap::new,
                             Collectors.toList()
                     )));
@@ -27,7 +27,7 @@ public enum OutputGroupBy {
 
         @Override
         public String getIdentifier(Violation violation) {
-            return violation.getRuleName();
+            return violation.getRuleId();
         }
 
 
@@ -35,7 +35,7 @@ public enum OutputGroupBy {
         protected String getGroupLine(List<Violation> violations) {
             var violation = violations.get(0);
             return String.format("%-14S ", ("[" + violation.getType() + "]")) +
-                    String.format("%-12s ", violation.getRuleName()) + violation.getDescription();
+                    String.format("%-12s ", violation.getRuleId()) + violation.getDescription();
         }
 
         @Override
@@ -73,7 +73,7 @@ public enum OutputGroupBy {
         protected void addReportMessages(List<Violation> violations) {
             for (Violation violation : violations) {
                 var reportMessage = String.format("%-14S ", ("[" + violation.getType() + "]")) +
-                        String.format("%-14s ", violation.getRuleName()) +
+                        String.format("%-14s ", violation.getRuleId()) +
                         (violation.getLineNumber().getLineNumber() > 0 ? String.format(" ln%4d  ", violation.getLineNumber().getLineNumber()) : "") +
                         String.format("%s%n", "#" + violation.getPointer()) +
                         violation.getDescription() +
