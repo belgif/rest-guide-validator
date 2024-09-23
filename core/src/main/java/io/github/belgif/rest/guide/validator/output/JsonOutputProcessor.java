@@ -58,7 +58,7 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
                 violation.getRuleId(),
                 violation.getDescription(),
                 violation.getMessage(),
-                violation.getType().toString(),
+                violation.getType().value,
                 violation.getLineNumber().getFileName(),
                 violation.getLineNumber().getLineNumber(),
                 violation.getPointer());
