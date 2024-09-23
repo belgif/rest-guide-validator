@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum OutputGroupBy {
-    RULE {
+    RULE("rule") {
         @Override
         public Map<String, List<Violation>> groupViolations(List<Violation> violations) {
             return collectToGroupedViolations(violations.stream().sorted(
@@ -49,7 +49,7 @@ public enum OutputGroupBy {
             }
         }
     },
-    FILE {
+    FILE("file") {
         @Override
         public Map<String, List<Violation>> groupViolations(List<Violation> violations) {
             return collectToGroupedViolations(violations.stream().sorted()
@@ -82,6 +82,12 @@ public enum OutputGroupBy {
             }
         }
     };
+
+    public final String value;
+
+    OutputGroupBy(String value) {
+        this.value = value;
+    }
 
     // Should return a map with key: Description of group, and value a list of Violations with their reportMessage set.
     public abstract Map<String, List<Violation>> groupViolations(List<Violation> violations);

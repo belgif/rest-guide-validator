@@ -47,7 +47,7 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         return new ViolationReport(
                 violationAggregator.getAmountOfActionableViolations(),
                 violationAggregator.getAmountOfIgnoredViolations(),
-                this.getOutputGroupBy().name(),
+                this.getOutputGroupBy().value,
                 groups
         );
     }
