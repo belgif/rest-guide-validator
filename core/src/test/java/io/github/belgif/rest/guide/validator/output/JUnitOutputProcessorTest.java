@@ -1,8 +1,7 @@
-package io.github.belgif.rest.guide.validator;
+package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

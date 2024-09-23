@@ -1,13 +1,11 @@
-package io.github.belgif.rest.guide.validator;
+package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import io.github.belgif.rest.guide.validator.core.ViolationType;
-import io.github.belgif.rest.guide.validator.maven.junit.Failure;
-import io.github.belgif.rest.guide.validator.maven.junit.Testcase;
-import io.github.belgif.rest.guide.validator.maven.junit.Testsuite;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
-import io.github.belgif.rest.guide.validator.output.OutputProcessor;
+import io.github.belgif.rest.guide.validator.output.junit.Failure;
+import io.github.belgif.rest.guide.validator.output.junit.Testcase;
+import io.github.belgif.rest.guide.validator.output.junit.Testsuite;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -18,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Output processor to write a junit xml test result.
@@ -58,7 +55,7 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
         Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
         var testSuites = findTestSuites(groupedViolations);
         testSuites.forEach((identifier, violationsKeys) -> {
-            var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).collect(Collectors.toList());
+            var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).toList();
             var amountOfTests = allViolations.size();
             var failures = (int) allViolations.stream().filter(v -> !v.getType().equals(ViolationType.IGNORED)).count();
             var skipped = amountOfTests - failures;

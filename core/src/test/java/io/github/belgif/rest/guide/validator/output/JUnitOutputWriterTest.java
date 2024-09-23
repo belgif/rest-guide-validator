@@ -1,16 +1,13 @@
-package io.github.belgif.rest.guide.validator.maven.plugin;
+package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.JUnitOutputProcessor;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.maven.junit.Error;
-import io.github.belgif.rest.guide.validator.maven.junit.Failure;
-import io.github.belgif.rest.guide.validator.maven.junit.Testcase;
-import io.github.belgif.rest.guide.validator.maven.junit.Testsuite;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
+import io.github.belgif.rest.guide.validator.output.junit.Error;
+import io.github.belgif.rest.guide.validator.output.junit.Failure;
+import io.github.belgif.rest.guide.validator.output.junit.Testcase;
+import io.github.belgif.rest.guide.validator.output.junit.Testsuite;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
