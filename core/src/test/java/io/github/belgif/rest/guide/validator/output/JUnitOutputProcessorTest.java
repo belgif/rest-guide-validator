@@ -1,8 +1,7 @@
-package io.github.belgif.rest.guide.validator;
+package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,8 +14,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByRule() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-        processor.setOutput(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {
@@ -26,8 +24,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByFile() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE);
-        processor.setOutput(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {

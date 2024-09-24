@@ -218,16 +218,17 @@ You can execute the plugin to validate the api files without breaking the build 
 
 ## Configuration reference
 
-| Parameter | Type | Default | Description                                                                                                          |
-| --------- | ---- | ------- |----------------------------------------------------------------------------------------------------------------------|
-| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.                                                   |
-| excludedFiles | Collection of File | | File(s) or folder(s) to exclude from validation. Use of wildcards is possible.                                       | 
-| fileWithExclusions | Collection of FileWithExclusion |  | _obsoleted_ IGNORED a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                |
-| excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
-| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                           |
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                     |
-| outputDir | File | target/ | Output directory for the junit report file (JUNIT outputType)                                                        |
-| groupBy   | rule / file | rule | Specify how you want to group the violation output |
+| Parameter | Type | Default | Description                                                                                                                 | User property name                 |
+| --------- | ---- | ------- |-----------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| files | Collection of File |  | file or folder. For a folder all json and yaml files will be used.                                                          | rest-guide-validator.files         |
+| excludedFiles | Collection of File | | File(s) or folder(s) to exclude from validation. Use of wildcards is possible.                                              | rest-guide-validator.excludedFiles | 
+| fileWithExclusions | Collection of FileWithExclusion |  | _obsoleted_ IGNORED a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       | DEPRECATED                         |
+| excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. | DEPRECATED                         |
+| skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                                  | rest-guide-validator.skipOnErrors  | 
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                                            | rest-guide-validator.outputTypes |
+| outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
+| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
+| groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
 
 ## Building
 

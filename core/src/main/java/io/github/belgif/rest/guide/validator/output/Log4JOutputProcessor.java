@@ -25,7 +25,7 @@ public class Log4JOutputProcessor extends OutputProcessor {
         groupedViolations.forEach((group, violationList) -> {
             var groupViolation = violationList.get(0);
             var groupLine = group + " " + getOccurrences(violationList);
-            switch (groupViolation.getType()) {
+            switch (groupViolation.getLevel()) {
                 case MANDATORY:
                     log.error(groupLine);
                     break;
@@ -39,7 +39,7 @@ public class Log4JOutputProcessor extends OutputProcessor {
                     log.info(groupLine);
             }
             violationList.forEach(v -> {
-                switch (v.getType()) {
+                switch (v.getLevel()) {
                     case MANDATORY:
                         log.error(v.getReportMessage());
                         break;

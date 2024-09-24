@@ -3,13 +3,13 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;

@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator;
 
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.output.OutputProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.kie.api.KieServices;
@@ -36,7 +36,7 @@ public class OpenApiValidator {
         if (outputProcessors != null) for (OutputProcessor outputProcessor : outputProcessors) {
             outputProcessor.process(oas);
         }
-        return oas.getActionableViolations().stream().noneMatch(violation -> violation.getType() == ViolationType.MANDATORY);
+        return oas.getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
     }
 
     public static OpenApiViolationAggregator callRuleOAS(File openApiFile, List<String> excludedFiles) {
