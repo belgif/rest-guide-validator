@@ -44,8 +44,14 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     /**
      * Output directory for the validation report file
      */
-    @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "target")
+    @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "${project.build.directory}")
     File outputDir;
+
+    /**
+     * Output file for JSON validation report. OutputDir and a default filename will be used when absent.
+     */
+    @Parameter(property = "rest-guide-validator.outputFile")
+    File outputFile;
 
     /**
      * @deprecated fileWithExclusions parameter is ignored, please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
@@ -121,7 +127,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                         outputProcessors.add(new Log4JOutputProcessor(outputGroupBy));
                         break;
                     case JSON:
-                        outputProcessors.add(new JsonOutputProcessor(outputGroupBy));
+                        outputProcessors.add(new JsonOutputProcessor(outputGroupBy, outputFile));
                         break;
                     default:
                         outputProcessors.add(new ConsoleOutputProcessor(outputGroupBy));
@@ -130,7 +136,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
             outputProcessors.stream().filter(DirectoryOutputProcessor.class::isInstance)
                     .map(o -> (DirectoryOutputProcessor) o)
                     .forEach(processor -> {
-                        processor.setOutput(outputDir);
+                        processor.setOutputDirectory(outputDir);
                         ((OutputProcessor) processor).setOutputGroupBy(outputGroupBy);
                     });
         }

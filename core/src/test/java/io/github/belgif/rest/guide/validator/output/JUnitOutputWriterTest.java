@@ -18,7 +18,7 @@ class JUnitOutputWriterTest {
     void writeEmpty() {
         try {
             var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            outputProcessor.setOutputDirectory(Files.createTempDirectory("tmp").toFile());
             outputProcessor.write(new Testsuite());
         } catch (IOException e) {
             fail(e);
@@ -56,7 +56,7 @@ class JUnitOutputWriterTest {
 
         try {
             var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            outputProcessor.setOutputDirectory(Files.createTempDirectory("tmp").toFile());
             outputProcessor.write(testsuite);
         } catch (IOException e) {
             fail(e);
@@ -67,7 +67,7 @@ class JUnitOutputWriterTest {
     void process() {
         try {
             var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            outputProcessor.setOutputDirectory(Files.createTempDirectory("tmp").toFile());
             outputProcessor.process(getViolationAggregator());
         } catch (IOException e) {
             fail(e);

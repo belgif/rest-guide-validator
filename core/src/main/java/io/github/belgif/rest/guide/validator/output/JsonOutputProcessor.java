@@ -16,19 +16,22 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonOutputProcessor extends OutputProcessor implements DirectoryOutputProcessor {
-    private static final String FILE_NAME = "validationReport.json";
+    private static final String DEFAULT_FILE_NAME = "validationReport.json";
     /**
      * Output directory
      */
-    private File output;
+    private File outputDirectory;
 
-    public JsonOutputProcessor(OutputGroupBy outputGroupBy) {
+    private File outputFile;
+
+    public JsonOutputProcessor(OutputGroupBy outputGroupBy, File outputFile) {
         super(outputGroupBy);
+        this.outputFile = outputFile;
     }
 
     @Override
-    public void setOutput(File outputFile) {
-        this.output = outputFile;
+    public void setOutputDirectory(File outputFile) {
+        this.outputDirectory = outputFile;
     }
 
     @Override
@@ -69,9 +72,20 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            mapper.writeValue(new File(output, FILE_NAME), violationReport);
+            mapper.writeValue(resolveOutputFile(), violationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public File resolveOutputFile() {
+        if (outputFile == null) {
+            return new File(outputDirectory, DEFAULT_FILE_NAME).getAbsoluteFile();
+        }
+        if (!outputFile.getName().endsWith(".json")) {
+            outputFile = new File(outputFile.getPath() + ".json");
+        }
+        return outputFile.getAbsoluteFile();
+    }
+
 }

@@ -226,7 +226,8 @@ You can execute the plugin to validate the api files without breaking the build 
 | excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                                  |
 | outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                                            |
-| outputDir | File | target/ | Output directory for the validation report file (when outputType writes to a file)                                          |
+| outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          |
+| outputFile | File | outputDir/validationReport.json | Output file for JSON validation report. OutputDir and a default filename will be used when absent. |
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          |
 
 ## Building

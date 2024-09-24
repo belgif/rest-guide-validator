@@ -29,7 +29,7 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
     /**
      * Output directory.
      */
-    private File output;
+    private File outputDirectory;
 
     public JUnitOutputProcessor(OutputGroupBy outputGroupBy) {
         super(outputGroupBy);
@@ -39,12 +39,12 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
     public void write(Testsuite testsuite) {
         if (testsuite == null)
             throw new IllegalArgumentException("testsuite cannot be null");
-        if (output == null || !output.isDirectory() || !output.canWrite())
-            throw new IllegalArgumentException(output + " must be a writable directory");
+        if (outputDirectory == null || !outputDirectory.isDirectory() || !outputDirectory.canWrite())
+            throw new IllegalArgumentException(outputDirectory + " must be a writable directory");
         try {
             var mar = JAXBContext.newInstance(Testsuite.class).createMarshaller();
             mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            mar.marshal(testsuite, new File(output, "TEST-" + testsuite.getName() + ".xml"));
+            mar.marshal(testsuite, new File(outputDirectory, "TEST-" + testsuite.getName() + ".xml"));
         } catch (JAXBException e) {
             log.error(e.getMessage(), e);
         }

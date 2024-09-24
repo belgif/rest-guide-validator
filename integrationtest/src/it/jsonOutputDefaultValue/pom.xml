@@ -33,7 +33,6 @@
                     <outputTypes>
                         <outputType>JSON</outputType>
                     </outputTypes>
-                    <outputDir>target</outputDir>
                 </configuration>
             </plugin>
         </plugins>
