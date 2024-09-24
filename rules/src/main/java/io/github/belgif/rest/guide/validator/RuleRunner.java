@@ -18,7 +18,6 @@ public class RuleRunner {
 
     public static OpenApiViolationAggregator execute(@NotNull File openApiFile, List<String> excludedFiles, StatelessKieSession kSession) {
         var oas = new OpenApiViolationAggregator();
-        oas.setRuleNumber(kSession.getKieBase().getKiePackages().stream().mapToInt(pack -> pack.getRules().size()).sum());
         oas.setExcludedFiles(excludedFiles);
 
         var parserResult = new Parser(openApiFile).parse(oas);
@@ -28,12 +27,10 @@ public class RuleRunner {
 
         kSession.setGlobal("oas", oas);
         kSession.setGlobal("parserResult", parserResult);
-        var start = System.currentTimeMillis();
         List<Command> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsertElements(parserResult.getAllDefinitions()));
         commands.add(CommandFactory.newInsert(parserResult.getOpenAPI()));
         kSession.execute(CommandFactory.newBatchExecution(commands));
-        oas.setTime((System.currentTimeMillis() - start) / 1000f);
 
         return oas;
     }

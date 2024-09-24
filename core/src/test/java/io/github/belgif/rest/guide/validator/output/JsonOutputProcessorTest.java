@@ -28,8 +28,6 @@ class JsonOutputProcessorTest {
 
     private OpenApiViolationAggregator getViolationAggregator() {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setTime(0.55f);
-        openApiViolationAggregator.setRuleNumber(3);
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 170), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 180), "/MyPointer");

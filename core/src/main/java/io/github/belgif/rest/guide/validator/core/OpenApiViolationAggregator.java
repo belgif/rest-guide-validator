@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -23,9 +22,6 @@ public class OpenApiViolationAggregator {
      */
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
-
-    private int ruleNumber;
-    private float time;
 
     public void addViolation(Violation violation) {
         this.violations.add(violation);
@@ -68,11 +64,11 @@ public class OpenApiViolationAggregator {
     }
 
     public List<Violation> getActionableViolations() {
-        return this.violations.stream().filter(v -> v.getLevel() != ViolationLevel.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() != ViolationLevel.IGNORED).sorted().toList();
     }
 
     public List<Violation> getIgnoredViolations() {
-        return this.violations.stream().filter(v -> v.getLevel() == ViolationLevel.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() == ViolationLevel.IGNORED).sorted().toList();
     }
 
     public int getAmountOfActionableViolations() {

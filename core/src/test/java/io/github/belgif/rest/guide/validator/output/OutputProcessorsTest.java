@@ -52,8 +52,6 @@ class OutputProcessorsTest {
 
     private OpenApiViolationAggregator getViolationAggregator() {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setTime(0.55f);
-        openApiViolationAggregator.setRuleNumber(5);
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file1", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file2", 150), "/MyPointer2");
         openApiViolationAggregator.addViolation("Second-Rule", "My message", new Line("file1", 155), "/MyPointer");
