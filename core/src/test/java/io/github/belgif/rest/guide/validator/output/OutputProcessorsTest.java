@@ -3,7 +3,7 @@ package io.github.belgif.rest.guide.validator.output;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ class OutputProcessorsTest {
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file1", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file2", 150), "/MyPointer2");
         openApiViolationAggregator.addViolation("Second-Rule", "My message", new Line("file1", 155), "/MyPointer");
-        var ignoredViolation = new Violation("Rule-test", "This message is IGNORED", ViolationType.IGNORED, new Line("file1", 120), "myOtherPointer");
+        var ignoredViolation = new Violation("Rule-test", "This message is IGNORED", ViolationLevel.IGNORED, new Line("file1", 120), "myOtherPointer");
         openApiViolationAggregator.addViolation(ignoredViolation);
 
         return openApiViolationAggregator;

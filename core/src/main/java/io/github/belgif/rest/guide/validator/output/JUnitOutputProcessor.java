@@ -2,7 +2,7 @@ package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.output.junit.Failure;
 import io.github.belgif.rest.guide.validator.output.junit.Testcase;
 import io.github.belgif.rest.guide.validator.output.junit.Testsuite;
@@ -57,7 +57,7 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
         testSuites.forEach((identifier, violationsKeys) -> {
             var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).toList();
             var amountOfTests = allViolations.size();
-            var failures = (int) allViolations.stream().filter(v -> !v.getType().equals(ViolationType.IGNORED)).count();
+            var failures = (int) allViolations.stream().filter(v -> !v.getLevel().equals(ViolationLevel.IGNORED)).count();
             var skipped = amountOfTests - failures;
 
             var testsuite = Testsuite.builder()
@@ -73,9 +73,9 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
                 var sample = violationsForGroup.get(0);
                 var testcaseBuilder = Testcase.builder()
                         .classname(key)
-                        .name(sample.getType().name());
-                if (sample.getType() != ViolationType.IGNORED) {
-                    testcaseBuilder.failure(new Failure(sample.getType().name(), key, ""));
+                        .name(sample.getLevel().name());
+                if (sample.getLevel() != ViolationLevel.IGNORED) {
+                    testcaseBuilder.failure(new Failure(sample.getLevel().name(), key, ""));
                 } else {
                     testcaseBuilder.skipped(key);
                 }

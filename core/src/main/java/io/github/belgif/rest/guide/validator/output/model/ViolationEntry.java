@@ -1,10 +1,10 @@
 package io.github.belgif.rest.guide.validator.output.model;
 
-public record ViolationFileObject(
+public record ViolationEntry(
         String ruleId,
         String description,
         String message,
-        String type,
+        String level,
         String fileName,
         int lineNumber,
         String pointer) {

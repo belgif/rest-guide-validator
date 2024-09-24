@@ -2,7 +2,7 @@ package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -93,22 +93,22 @@ class OutputGroupByTest {
         List<Violation> file1 = groupedViolations.get(keyList.get(0));
         List<Violation> file2 = groupedViolations.get(keyList.get(1));
 
-        assertEquals(ViolationType.MANDATORY, file1.get(0).getType());
-        assertEquals(ViolationType.IGNORED, file1.get(file1.size()-1).getType());
-        assertEquals(ViolationType.MANDATORY, file2.get(0).getType());
-        assertEquals(ViolationType.RECOMMENDED, file2.get(file2.size()-1).getType());
+        assertEquals(ViolationLevel.MANDATORY, file1.get(0).getLevel());
+        assertEquals(ViolationLevel.IGNORED, file1.get(file1.size()-1).getLevel());
+        assertEquals(ViolationLevel.MANDATORY, file2.get(0).getLevel());
+        assertEquals(ViolationLevel.RECOMMENDED, file2.get(file2.size()-1).getLevel());
     }
 
     private List<Violation> getViolationCollection() {
         List<Violation> violations = new ArrayList<>();
-        Violation fileOneMandatoryOne = new Violation("rule1", "description", "first message", ViolationType.MANDATORY, new Line("file1", 1), "pointer/to");
-        Violation fileOneMandatoryTwo = new Violation("rule2", "description", ViolationType.MANDATORY, new Line("file1", 100), "pointer/to");
-        Violation fileTwoMandatoryTwo = new Violation("rule2", "description", ViolationType.MANDATORY, new Line("file2", 1), "pointer/to");
-        Violation fileOneMandatoryThree = new Violation("rule3", "description", ViolationType.MANDATORY, new Line("file1", 101), "pointer/to");
-        Violation fileOneIgnoredOne = new Violation("rule1", "ignored: this is ignored", ViolationType.IGNORED, new Line("file1", 50), "pointer/to");
-        Violation fileTwoMandatoryOne = new Violation("rule1", "description", ViolationType.MANDATORY, new Line("file2", 20), "pointer/to");
-        Violation fileTwoMandatoryOneDifferentMessage = new Violation("rule1", "nope", ViolationType.MANDATORY, new Line("file2", 12), "pointer/to");
-        Violation fileTwoRecommended = new Violation("rule4", "recommended description", ViolationType.RECOMMENDED, new Line("file2", 19), "pointer/to");
+        Violation fileOneMandatoryOne = new Violation("rule1", "description", "first message", ViolationLevel.MANDATORY, new Line("file1", 1), "pointer/to");
+        Violation fileOneMandatoryTwo = new Violation("rule2", "description", ViolationLevel.MANDATORY, new Line("file1", 100), "pointer/to");
+        Violation fileTwoMandatoryTwo = new Violation("rule2", "description", ViolationLevel.MANDATORY, new Line("file2", 1), "pointer/to");
+        Violation fileOneMandatoryThree = new Violation("rule3", "description", ViolationLevel.MANDATORY, new Line("file1", 101), "pointer/to");
+        Violation fileOneIgnoredOne = new Violation("rule1", "ignored: this is ignored", ViolationLevel.IGNORED, new Line("file1", 50), "pointer/to");
+        Violation fileTwoMandatoryOne = new Violation("rule1", "description", ViolationLevel.MANDATORY, new Line("file2", 20), "pointer/to");
+        Violation fileTwoMandatoryOneDifferentMessage = new Violation("rule1", "nope", ViolationLevel.MANDATORY, new Line("file2", 12), "pointer/to");
+        Violation fileTwoRecommended = new Violation("rule4", "recommended description", ViolationLevel.RECOMMENDED, new Line("file2", 19), "pointer/to");
 
         violations.add(fileTwoRecommended);
         violations.add(fileTwoMandatoryOne);

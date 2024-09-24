@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.output.model.ViolationFileObject;
+import io.github.belgif.rest.guide.validator.output.model.ViolationEntry;
 import io.github.belgif.rest.guide.validator.output.model.ViolationGroup;
 import io.github.belgif.rest.guide.validator.output.model.ViolationReport;
 
@@ -53,12 +53,12 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         );
     }
 
-    private ViolationFileObject mapToViolationFileObject(Violation violation) {
-        return new ViolationFileObject(
+    private ViolationEntry mapToViolationFileObject(Violation violation) {
+        return new ViolationEntry(
                 violation.getRuleId(),
                 violation.getDescription(),
                 violation.getMessage(),
-                violation.getType().value,
+                violation.getLevel().value,
                 violation.getLineNumber().getFileName(),
                 violation.getLineNumber().getLineNumber(),
                 "#" + violation.getPointer());

@@ -1,11 +1,11 @@
 package io.github.belgif.rest.guide.validator.output.model;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 public record ViolationReport(
         int totalViolations,
         int totalIgnoredViolations,
         String groupedBy,
-        LinkedHashMap<String, ViolationGroup> violations
+        Map<String, ViolationGroup> violations
 ) {
 }

@@ -1,10 +1,10 @@
 package io.github.belgif.rest.guide.validator.core;
 
-public enum ViolationType {
+public enum ViolationLevel {
     MANDATORY("mandatory"), RECOMMENDED("recommended"), STYLE("style"), IGNORED("ignored");
     public final String value;
 
-    ViolationType(String value) {
+    ViolationLevel(String value) {
         this.value = value;
     }
 }

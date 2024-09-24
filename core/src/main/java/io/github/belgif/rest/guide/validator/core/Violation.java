@@ -14,41 +14,41 @@ public class Violation implements Comparable<Violation> {
     private final String description;
     // specific message for this violation
     private String message;
-    private final ViolationType type;
+    private final ViolationLevel level;
     private final Line lineNumber;
     private final String pointer;
     @Setter
     private String reportMessage = null;
 
-    public Violation(String ruleId, String description, String message, ViolationType type, Line lineNumber, String pointer) {
+    public Violation(String ruleId, String description, String message, ViolationLevel level, Line lineNumber, String pointer) {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("description cannot be null");
         }
         this.ruleId = ruleId;
         this.description = description;
         this.message = message;
-        this.type = type;
+        this.level = level;
         this.lineNumber = lineNumber;
         this.pointer = pointer;
     }
 
-    public Violation(String ruleId, String description, ViolationType type, Line lineNumber, String pointer) {
+    public Violation(String ruleId, String description, ViolationLevel level, Line lineNumber, String pointer) {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("description cannot be null");
         }
         this.ruleId = ruleId;
         this.description = description;
-        this.type = type;
+        this.level = level;
         this.lineNumber = lineNumber;
         this.pointer = pointer;
     }
 
     @Override
     public String toString() {
-        return String.format("%-14S ", ("[" + type + "]")) +
+        return String.format("%-14S ", ("[" + level + "]")) +
                 String.format("%-14s ", ruleId) +
                 (lineNumber.getLineNumber() > 0 ? String.format("%-15s ln%4d  ", lineNumber.getFileName(), lineNumber.getLineNumber()) : "") +
-                (lineNumber.getLineNumber() == 0 && type.equals(ViolationType.IGNORED) ? String.format("%-15s ", lineNumber.getFileName()) : "") +
+                (lineNumber.getLineNumber() == 0 && level.equals(ViolationLevel.IGNORED) ? String.format("%-15s ", lineNumber.getFileName()) : "") +
                 String.format("%s: %n", "#" + pointer) +
                 description + getFormattedMessage();
     }
@@ -61,14 +61,14 @@ public class Violation implements Comparable<Violation> {
      * Line number
      */
     public int compareTo(Violation o) {
-        if (type.equals(o.getType())) {
+        if (level.equals(o.getLevel())) {
             if (lineNumber.getFileName().equals(o.lineNumber.getFileName())) {
                 return Integer.compare(lineNumber.getLineNumber(), o.lineNumber.getLineNumber());
             } else {
                 return lineNumber.getFileName().compareTo(o.lineNumber.getFileName());
             }
         } else {
-            return type.compareTo(o.getType());
+            return level.compareTo(o.getLevel());
         }
     }
 

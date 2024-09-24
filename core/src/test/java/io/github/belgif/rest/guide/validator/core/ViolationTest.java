@@ -14,10 +14,10 @@ class ViolationTest {
     @Test
     void compareViolationsTest() {
         List<Violation> violations = new ArrayList<>();
-        Violation fileOneMandatoryOne = new Violation(null, "my description", ViolationType.MANDATORY, new Line("file1", 1), null);
-        Violation fileOneMandatoryTwo = new Violation(null, "my description", ViolationType.MANDATORY, new Line("file1", 100), null);
-        Violation fileOneIgnoredOne = new Violation(null, "my description", ViolationType.IGNORED, new Line("file1", 50), null);
-        Violation fileTwoMandatoryOne = new Violation(null, "my description", ViolationType.MANDATORY, new Line("file2", 20), null);
+        Violation fileOneMandatoryOne = new Violation(null, "my description", ViolationLevel.MANDATORY, new Line("file1", 1), null);
+        Violation fileOneMandatoryTwo = new Violation(null, "my description", ViolationLevel.MANDATORY, new Line("file1", 100), null);
+        Violation fileOneIgnoredOne = new Violation(null, "my description", ViolationLevel.IGNORED, new Line("file1", 50), null);
+        Violation fileTwoMandatoryOne = new Violation(null, "my description", ViolationLevel.MANDATORY, new Line("file2", 20), null);
 
         violations.add(fileTwoMandatoryOne);
         violations.add(fileOneMandatoryOne);
@@ -35,7 +35,7 @@ class ViolationTest {
     @Test
     void descriptionCannotBeNullOrEmptyTest() {
         var line = new Line("file1", 1);
-        assertThrows(IllegalArgumentException.class, () -> new Violation(null, null, ViolationType.MANDATORY, line, null));
-        assertThrows(IllegalArgumentException.class, () -> new Violation(null, " ", ViolationType.MANDATORY, line, null));
+        assertThrows(IllegalArgumentException.class, () -> new Violation(null, null, ViolationLevel.MANDATORY, line, null));
+        assertThrows(IllegalArgumentException.class, () -> new Violation(null, " ", ViolationLevel.MANDATORY, line, null));
     }
 }

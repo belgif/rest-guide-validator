@@ -3,7 +3,7 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
