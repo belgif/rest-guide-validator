@@ -10,6 +10,7 @@
     <properties>
         <!--        Overwritten in maven-invoker-plugin -->
         <pluginVersion>latest</pluginVersion>
+        <testOutputDir>somethingFunkyThatShouldBeIgnored</testOutputDir>
     </properties>
 
     <build>
@@ -33,10 +34,27 @@
                     <outputTypes>
                         <outputType>JSON</outputType>
                     </outputTypes>
-                    <outputDir>somethingFunkyThatShouldBeIgnored</outputDir>
+                    <outputDir>${testOutputDir}</outputDir>
                     <outputFile>${project.build.directory}${file.separator}myCustomName</outputFile>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${basedir}</directory>
+                            <includes>
+                                <include>${testOutputDir}</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

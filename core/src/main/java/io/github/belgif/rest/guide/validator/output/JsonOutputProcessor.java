@@ -72,7 +72,9 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            mapper.writeValue(resolveOutputFile(), violationReport);
+            var file = resolveOutputFile();
+            file.getParentFile().mkdirs();
+            mapper.writeValue(file, violationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
