@@ -15,23 +15,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JsonOutputProcessor extends OutputProcessor implements DirectoryOutputProcessor {
-    private static final String DEFAULT_FILE_NAME = "validationReport.json";
-    /**
-     * Output directory
-     */
-    private File outputDirectory;
-
-    private File outputFile;
+public class JsonOutputProcessor extends OutputProcessor {
+    private final File outputFile;
 
     public JsonOutputProcessor(OutputGroupBy outputGroupBy, File outputFile) {
         super(outputGroupBy);
         this.outputFile = outputFile;
-    }
-
-    @Override
-    public void setOutputDirectory(File outputFile) {
-        this.outputDirectory = outputFile;
     }
 
     @Override
@@ -72,19 +61,11 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            var file = resolveOutputFile();
-            file.getParentFile().mkdirs();
-            mapper.writeValue(file, violationReport);
+            outputFile.getParentFile().mkdirs();
+            mapper.writeValue(outputFile, violationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public File resolveOutputFile() {
-        if (outputFile == null) {
-            return new File(outputDirectory, DEFAULT_FILE_NAME).getAbsoluteFile();
-        }
-        return outputFile.getAbsoluteFile();
     }
 
 }

@@ -26,28 +26,6 @@ class JsonOutputProcessorTest {
         }
     }
 
-
-    @Test
-    void resolveFileWithDefaultValuesTest() {
-        var outputProcessor = new JsonOutputProcessor(OutputGroupBy.RULE, null);
-        outputProcessor.setOutputDirectory(new File("target")); // Default value
-        assertEquals(new File("target/validationReport.json").getAbsoluteFile(), outputProcessor.resolveOutputFile());
-    }
-
-    @Test
-    void resolveFileWithAbsoluteFileNameTest() {
-        var outputProcessor = new JsonOutputProcessor(OutputGroupBy.RULE, new File("/myFolder/myCustomName.json"));
-        assertEquals(new File("/myFolder/myCustomName.json").getAbsoluteFile(), outputProcessor.resolveOutputFile());
-    }
-
-    @Test
-    void resolveFileWithRelativeFileNameTest() {
-        var outputProcessor = new JsonOutputProcessor(OutputGroupBy.RULE, new File("myFolder/myCustomName.json"));
-        var file = new File("myFolder/myCustomName.json").getAbsoluteFile();
-        assertTrue(file.getPath().contains("rest-guide-validator" + File.separator + "core"));
-        assertEquals(file, outputProcessor.resolveOutputFile());
-    }
-
     private OpenApiViolationAggregator getViolationAggregator() {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         openApiViolationAggregator.setTime(0.55f);

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
+    private static final String DEFAULT_FILE_NAME = "validationReport.json";
 
     /**
      * A list of files to validate
@@ -48,9 +49,9 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     File outputDir;
 
     /**
-     * Output file for JSON validation report. OutputDir and a default filename will be used when absent.
+     * Output file for JSON validation report. If absent, default filename will be placed in rest-guide-validator.outputDir
      */
-    @Parameter(property = "rest-guide-validator.outputFile")
+    @Parameter(property = "rest-guide-validator.outputFile", defaultValue = DEFAULT_FILE_NAME)
     File outputFile;
 
     /**
@@ -82,6 +83,9 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
 
     protected void init() throws FileNotFoundException {
         outputGroupBy = OutputGroupBy.fromString(groupBy);
+        if (Objects.equals(outputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
+            outputFile = new File(outputDir, DEFAULT_FILE_NAME);
+        }
         initOutputProcessor();
         initFiles();
     }
@@ -121,7 +125,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                     case NONE:
                         break;
                     case JUNIT:
-                        outputProcessors.add(new JUnitOutputProcessor(outputGroupBy));
+                        outputProcessors.add(new JUnitOutputProcessor(outputGroupBy, outputDir));
                         break;
                     case LOG4J:
                         outputProcessors.add(new Log4JOutputProcessor(outputGroupBy));
@@ -133,12 +137,6 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                         outputProcessors.add(new ConsoleOutputProcessor(outputGroupBy));
                 }
             });
-            outputProcessors.stream().filter(DirectoryOutputProcessor.class::isInstance)
-                    .map(o -> (DirectoryOutputProcessor) o)
-                    .forEach(processor -> {
-                        processor.setOutputDirectory(outputDir);
-                        ((OutputProcessor) processor).setOutputGroupBy(outputGroupBy);
-                    });
         }
     }
 

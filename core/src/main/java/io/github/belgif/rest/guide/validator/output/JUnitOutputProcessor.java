@@ -25,14 +25,15 @@ import java.util.*;
 @Getter
 @Setter
 @Slf4j
-public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOutputProcessor {
+public class JUnitOutputProcessor extends OutputProcessor {
     /**
      * Output directory.
      */
-    private File outputDirectory;
+    private final File outputDirectory;
 
-    public JUnitOutputProcessor(OutputGroupBy outputGroupBy) {
+    public JUnitOutputProcessor(OutputGroupBy outputGroupBy, File outputDirectory) {
         super(outputGroupBy);
+        this.outputDirectory = outputDirectory;
     }
 
 

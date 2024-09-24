@@ -14,8 +14,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByRule() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-        processor.setOutputDirectory(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {
@@ -25,8 +24,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByFile() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE);
-        processor.setOutputDirectory(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {
