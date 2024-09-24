@@ -227,7 +227,7 @@ You can execute the plugin to validate the api files without breaking the build 
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                                  | rest-guide-validator.skipOnErrors  | 
 | outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, LOG4J, NONE                                                            | rest-guide-validator.outputTypes |
 | outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
-| jsonOutputFile | File | validationReport.json | Output file for JSON validation report. Default will be placed in rest-guide-validator.outputDir                   | rest-guide-validator.jsonOutputFile | 
+| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
 
 ## Building
