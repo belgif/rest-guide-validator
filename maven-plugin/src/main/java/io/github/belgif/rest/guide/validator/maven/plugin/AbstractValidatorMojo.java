@@ -115,6 +115,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         else {
             try {
                 Files.createDirectories(outputDir.toPath());
+                Files.createDirectories(jsonOutputFile.getParentFile().toPath());
             } catch (IOException e) {
                 getLog().error(outputDir + " directory doesn't exist and cannot be created!", e);
             }

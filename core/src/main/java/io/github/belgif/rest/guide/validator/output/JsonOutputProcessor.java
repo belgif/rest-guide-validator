@@ -61,7 +61,6 @@ public class JsonOutputProcessor extends OutputProcessor {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            jsonOutputFile.getParentFile().mkdirs();
             mapper.writeValue(jsonOutputFile, violationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
