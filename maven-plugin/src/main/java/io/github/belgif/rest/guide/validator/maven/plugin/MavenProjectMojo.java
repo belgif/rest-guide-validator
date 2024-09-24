@@ -10,19 +10,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
- * The plugin use the following parameters:
- * - rest-guide-validator.files: a list of files to validate
- * - rest-guide-validator.outputType: the output processor to process the violation. @see OutputType. Default is Console.
- * - rest-guide-validator.outputDir: the directory to write the report files. Only relevant for OutputType.JUNIT and OutputType.JSON
- * - rest-guide-validator.excludedFiles: Files that should not be validated.
- * - ${project} root directory for rest-guide-validator.files
  */
+
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class MavenProjectMojo extends AbstractValidatorMojo {
 
+    /**
+     * Parameter to avoid maven fail in case of validation error.
+     */
     @Parameter(property = "rest-guide-validator.skipOnErrors")
     boolean skipOnErrors = false;
 
+    /**
+     * root directory for rest-guide-validator.files
+     */
     @Parameter(readonly = true, defaultValue = "${project}")
     MavenProject mavenProject;
 

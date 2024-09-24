@@ -17,18 +17,33 @@ import java.util.stream.Collectors;
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
 
+    /**
+     * A list of files to validate
+     */
     @Parameter(property = "rest-guide-validator.files")
     protected List<File> files = new ArrayList<>();
 
+    /**
+     * Files that should not be validated.
+     */
     @Parameter(property = "rest-guide-validator.excludedFiles")
     protected List<String> excludedFiles = new ArrayList<>();
 
+    /**
+     * Specify how you want to group the violation output
+     */
     @Parameter(property = "rest-guide-validator.groupBy", defaultValue = "rule")
     protected String groupBy = "rule";
 
+    /**
+     * the output processor to process the violation. @see OutputType. Default is Console.
+     */
     @Parameter(property = "rest-guide-validator.outputTypes")
     List<OutputType> outputTypes;
 
+    /**
+     * Output directory for the validation report file
+     */
     @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "target")
     File outputDir;
 
