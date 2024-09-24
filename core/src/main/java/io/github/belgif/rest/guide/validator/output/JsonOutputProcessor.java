@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonOutputProcessor extends OutputProcessor {
-    private final File outputFile;
+    private final File jsonOutputFile;
 
-    public JsonOutputProcessor(OutputGroupBy outputGroupBy, File outputFile) {
+    public JsonOutputProcessor(OutputGroupBy outputGroupBy, File jsonOutputFile) {
         super(outputGroupBy);
-        this.outputFile = outputFile;
+        this.jsonOutputFile = jsonOutputFile;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class JsonOutputProcessor extends OutputProcessor {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            outputFile.getParentFile().mkdirs();
-            mapper.writeValue(outputFile, violationReport);
+            jsonOutputFile.getParentFile().mkdirs();
+            mapper.writeValue(jsonOutputFile, violationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

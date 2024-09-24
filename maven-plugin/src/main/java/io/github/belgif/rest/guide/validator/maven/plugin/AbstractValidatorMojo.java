@@ -51,8 +51,8 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     /**
      * Output file for JSON validation report. If absent, default filename will be placed in rest-guide-validator.outputDir
      */
-    @Parameter(property = "rest-guide-validator.outputFile", defaultValue = DEFAULT_FILE_NAME)
-    File outputFile;
+    @Parameter(property = "rest-guide-validator.jsonOutputFile", defaultValue = DEFAULT_FILE_NAME)
+    File jsonOutputFile;
 
     /**
      * @deprecated fileWithExclusions parameter is ignored, please use x-ignore-rules in the OpenApi file or excludedFiles in the POM to exclude complete files.
@@ -83,8 +83,8 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
 
     protected void init() throws FileNotFoundException {
         outputGroupBy = OutputGroupBy.fromString(groupBy);
-        if (Objects.equals(outputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
-            outputFile = new File(outputDir, DEFAULT_FILE_NAME);
+        if (Objects.equals(jsonOutputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
+            jsonOutputFile = new File(outputDir, DEFAULT_FILE_NAME);
         }
         initOutputProcessor();
         initFiles();
@@ -131,7 +131,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                         outputProcessors.add(new Log4JOutputProcessor(outputGroupBy));
                         break;
                     case JSON:
-                        outputProcessors.add(new JsonOutputProcessor(outputGroupBy, outputFile));
+                        outputProcessors.add(new JsonOutputProcessor(outputGroupBy, jsonOutputFile));
                         break;
                     default:
                         outputProcessors.add(new ConsoleOutputProcessor(outputGroupBy));

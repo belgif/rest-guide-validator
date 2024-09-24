@@ -35,7 +35,7 @@
                         <outputType>JSON</outputType>
                     </outputTypes>
                     <outputDir>${testOutputDir}</outputDir>
-                    <outputFile>${project.build.directory}${file.separator}myCustomName</outputFile>
+                    <jsonOutputFile>${project.build.directory}${file.separator}myCustomName</jsonOutputFile>
                 </configuration>
             </plugin>
 
