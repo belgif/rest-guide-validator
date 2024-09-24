@@ -84,9 +84,6 @@ public class JsonOutputProcessor extends OutputProcessor implements DirectoryOut
         if (outputFile == null) {
             return new File(outputDirectory, DEFAULT_FILE_NAME).getAbsoluteFile();
         }
-        if (!outputFile.getName().endsWith(".json")) {
-            outputFile = new File(outputFile.getPath() + ".json");
-        }
         return outputFile.getAbsoluteFile();
     }
 

@@ -48,13 +48,6 @@ class JsonOutputProcessorTest {
         assertEquals(file, outputProcessor.resolveOutputFile());
     }
 
-    @Test
-    void resolveFileWithoutExtensionTest() {
-        var outputProcessor = new JsonOutputProcessor(OutputGroupBy.RULE, new File("myFolder/myCustomName"));
-        var file = new File("myFolder/myCustomName.json").getAbsoluteFile();
-        assertEquals(file, outputProcessor.resolveOutputFile());
-    }
-
     private OpenApiViolationAggregator getViolationAggregator() {
         var openApiViolationAggregator = new OpenApiViolationAggregator();
         openApiViolationAggregator.setTime(0.55f);

@@ -1,6 +1,6 @@
 import groovy.json.JsonSlurper
 
-def jsonFile = new File(basedir, "target/myCustomName.json")
+def jsonFile = new File(basedir, "target/myCustomName")
 def jsonReport = new JsonSlurper().parseText(jsonFile.text)
 
 assert jsonReport.totalViolations == 5
