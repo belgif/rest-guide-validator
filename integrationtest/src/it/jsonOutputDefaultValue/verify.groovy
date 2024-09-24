@@ -1,5 +1,8 @@
-String jsonReport = new File(basedir, "target/validationReport.json").text
+import groovy.json.JsonSlurper
 
-assert jsonReport.contains("\"totalViolations\" : 5")
-assert jsonReport.contains("\"totalIgnoredViolations\" : 0")
-assert jsonReport.contains("\"groupedBy\" : \"rule\"")
+def jsonFile = new File(basedir, "target/myCustomName.json")
+def jsonReport = new JsonSlurper().parseText(jsonFile.text)
+
+assert jsonReport.totalViolations == 5
+assert jsonReport.totalIgnoredViolations == 0
+assert jsonReport.groupedBy.equals("rule")
