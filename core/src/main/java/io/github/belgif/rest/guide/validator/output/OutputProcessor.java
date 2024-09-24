@@ -10,12 +10,20 @@ import java.util.*;
 public abstract class OutputProcessor {
 
     private OutputGroupBy outputGroupBy;
+    private final List<OpenApiViolationAggregator> aggregators = new ArrayList<>();
 
     protected OutputProcessor(OutputGroupBy outputGroupBy) {
         this.setOutputGroupBy(outputGroupBy);
     }
 
-    public abstract void process(OpenApiViolationAggregator violationAggregator);
+    public void addAggregator(OpenApiViolationAggregator aggregator) {
+        aggregators.add(aggregator);
+    }
+
+    public void process() {
+        process(OpenApiViolationAggregator.aggregate(aggregators));
+    }
+    protected abstract void process(OpenApiViolationAggregator violationAggregator);
 
     public void setOutputGroupBy(OutputGroupBy outputGroupBy) {
         this.outputGroupBy = Objects.requireNonNullElse(outputGroupBy, OutputGroupBy.RULE);

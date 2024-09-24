@@ -34,7 +34,7 @@ public class OpenApiValidator {
         var oas = callRuleOAS(file, excludedFiles);
 
         if (outputProcessors != null) for (OutputProcessor outputProcessor : outputProcessors) {
-            outputProcessor.process(oas);
+            outputProcessor.addAggregator(oas);
         }
         return oas.getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
     }

@@ -99,6 +99,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         }
 
         filesToProcess.forEach(file -> isValid.set(OpenApiValidator.isOasValid(file, excludedFiles, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get()));
+        outputProcessors.forEach(OutputProcessor::process);
         if (filesToProcess.isEmpty()) {
             isValid.set(false);
         }

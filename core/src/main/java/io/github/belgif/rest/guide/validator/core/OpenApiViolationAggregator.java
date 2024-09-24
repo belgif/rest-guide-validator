@@ -10,7 +10,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,6 +24,11 @@ public class OpenApiViolationAggregator {
      */
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
+
+    private OpenApiViolationAggregator(Set<Violation> violations, List<String> excludedFiles) {
+        this.violations.addAll(violations);
+        this.excludedFiles = excludedFiles;
+    }
 
     public void addViolation(Violation violation) {
         this.violations.add(violation);
@@ -119,6 +126,22 @@ public class OpenApiViolationAggregator {
             }
         }
         return false;
+    }
+
+    public static OpenApiViolationAggregator aggregate(List<OpenApiViolationAggregator> aggregators) {
+        Set<Violation> aggregatedViolations = new HashSet<>();
+        List<String> aggregatedExcludedFiles = new ArrayList<>();
+        for (OpenApiViolationAggregator aggregator : aggregators) {
+            aggregatedViolations.addAll(aggregator.getViolations());
+            if(aggregatedExcludedFiles.isEmpty()) {
+                aggregatedExcludedFiles.addAll(aggregator.getExcludedFiles());
+            } else {
+                if (!aggregatedExcludedFiles.equals(aggregator.getExcludedFiles())) {
+                    throw new IllegalArgumentException("Aggregated violations must have the same exclusion files");
+                }
+            }
+        }
+        return new OpenApiViolationAggregator(aggregatedViolations, aggregatedExcludedFiles);
     }
 
 }
