@@ -6,8 +6,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  */
@@ -34,10 +32,9 @@ public class MavenProjectMojo extends AbstractValidatorMojo {
      */
     @Override
     public void execute() throws MojoFailureException {
-        var isValid = new AtomicBoolean(true);
-        executeRules(isValid);
+        var isValid = executeRules();
 
-        if (!skipOnErrors && !isValid.get())
+        if (!skipOnErrors && !isValid)
             throw new MojoFailureException(FAILURE_MESSAGE);
     }
 }

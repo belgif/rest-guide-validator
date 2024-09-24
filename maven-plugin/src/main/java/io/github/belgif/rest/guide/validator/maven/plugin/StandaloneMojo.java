@@ -3,8 +3,6 @@ package io.github.belgif.rest.guide.validator.maven.plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
  * Example:
@@ -15,10 +13,9 @@ public class StandaloneMojo extends AbstractValidatorMojo {
     @Override
     public void execute() throws MojoFailureException {
         getLog().info("Validating following files:" + files);
-        var isValid = new AtomicBoolean(true);
-        executeRules(isValid);
+        var isValid = executeRules();
 
-        if (!isValid.get())
+        if (!isValid)
             throw new MojoFailureException(FAILURE_MESSAGE);
     }
 }

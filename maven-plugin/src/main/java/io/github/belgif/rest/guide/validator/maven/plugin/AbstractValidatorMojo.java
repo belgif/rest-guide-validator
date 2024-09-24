@@ -80,7 +80,8 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         initFiles();
     }
 
-    protected void executeRules(AtomicBoolean isValid) throws MojoFailureException {
+    protected boolean executeRules() throws MojoFailureException {
+        var isValid = new AtomicBoolean(true);
         try {
             init();
         } catch (FileNotFoundException e) {
@@ -91,6 +92,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         if (filesToProcess.isEmpty()) {
             isValid.set(false);
         }
+        return isValid.get();
     }
 
     /**
