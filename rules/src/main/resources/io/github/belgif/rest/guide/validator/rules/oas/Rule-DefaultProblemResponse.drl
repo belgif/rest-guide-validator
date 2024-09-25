@@ -1,14 +1,14 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationReport
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
-function void violationNoDefaultResponse(OpenApiViolationAggregator oas, OperationDefinition operation){
+function void violationNoDefaultResponse(ViolationReport oas, OperationDefinition operation){
   oas.addViolation("[prb-defaul]",
     "A default Problem response SHOULD be added to each operation with media type \"application/problem+json\"",
     "[Operation: " + operation.getIdentifier() + "]",

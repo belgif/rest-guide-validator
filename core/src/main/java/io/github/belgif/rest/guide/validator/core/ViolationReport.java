@@ -18,14 +18,14 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class OpenApiViolationAggregator {
+public class ViolationReport {
     /**
      * Structure that hold the violations.
      */
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
 
-    private OpenApiViolationAggregator(Set<Violation> violations, List<String> excludedFiles) {
+    private ViolationReport(Set<Violation> violations, List<String> excludedFiles) {
         this.violations.addAll(violations);
         this.excludedFiles = excludedFiles;
     }
@@ -128,10 +128,10 @@ public class OpenApiViolationAggregator {
         return false;
     }
 
-    public static OpenApiViolationAggregator aggregate(List<OpenApiViolationAggregator> aggregators) {
+    public static ViolationReport aggregate(List<ViolationReport> aggregators) {
         Set<Violation> aggregatedViolations = new HashSet<>();
         List<String> aggregatedExcludedFiles = new ArrayList<>();
-        for (OpenApiViolationAggregator aggregator : aggregators) {
+        for (ViolationReport aggregator : aggregators) {
             aggregatedViolations.addAll(aggregator.getViolations());
             if(aggregatedExcludedFiles.isEmpty()) {
                 aggregatedExcludedFiles.addAll(aggregator.getExcludedFiles());
@@ -141,7 +141,7 @@ public class OpenApiViolationAggregator {
                 }
             }
         }
-        return new OpenApiViolationAggregator(aggregatedViolations, aggregatedExcludedFiles);
+        return new ViolationReport(aggregatedViolations, aggregatedExcludedFiles);
     }
 
 }

@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
@@ -14,7 +14,7 @@ public class ConsoleOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
+    public void process(ViolationReport violationAggregator) {
         List<Violation> violations = violationAggregator.getViolations();
 
         System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationAggregator.getAmountOfActionableViolations(), violationAggregator.getAmountOfIgnoredViolations());

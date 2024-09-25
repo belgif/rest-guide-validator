@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import lombok.Getter;
 
@@ -10,20 +10,20 @@ import java.util.*;
 public abstract class OutputProcessor {
 
     private OutputGroupBy outputGroupBy;
-    private final List<OpenApiViolationAggregator> aggregators = new ArrayList<>();
+    private final List<ViolationReport> aggregators = new ArrayList<>();
 
     protected OutputProcessor(OutputGroupBy outputGroupBy) {
         this.setOutputGroupBy(outputGroupBy);
     }
 
-    public void addAggregator(OpenApiViolationAggregator aggregator) {
+    public void addAggregator(ViolationReport aggregator) {
         aggregators.add(aggregator);
     }
 
     public void process() {
-        process(OpenApiViolationAggregator.aggregate(aggregators));
+        process(ViolationReport.aggregate(aggregators));
     }
-    protected abstract void process(OpenApiViolationAggregator violationAggregator);
+    protected abstract void process(ViolationReport violationAggregator);
 
     public void setOutputGroupBy(OutputGroupBy outputGroupBy) {
         this.outputGroupBy = Objects.requireNonNullElse(outputGroupBy, OutputGroupBy.RULE);

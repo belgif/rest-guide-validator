@@ -2,8 +2,8 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import java.util.Set;
 import java.util.List;
 import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
@@ -11,19 +11,19 @@ import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 
-function void violationPath(OpenApiViolationAggregator oas, PathDefinition path){
+function void violationPath(ViolationReport oas, PathDefinition path){
     oas.addViolation("[uri-notat]",
            		 "Path segments SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
            		 path);
 }
 
-function void violationPathParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
+function void violationPathParam(ViolationReport oas, ParameterDefinition parameterDefinition){
   oas.addViolation("[path-param]",
     "Path parameters SHOULD use lowerCamelCase notation.",
     parameterDefinition);
 }
 
-function void violationQueryParam(OpenApiViolationAggregator oas, ParameterDefinition parameterDefinition){
+function void violationQueryParam(ViolationReport oas, ParameterDefinition parameterDefinition){
     oas.addViolation("[uri-notat]",
            		 "Query parameters SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
            		 parameterDefinition);

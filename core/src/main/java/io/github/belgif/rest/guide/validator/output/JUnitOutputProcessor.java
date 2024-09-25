@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.output.junit.Failure;
@@ -52,7 +52,7 @@ public class JUnitOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
+    public void process(ViolationReport violationAggregator) {
         Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
         var testSuites = findTestSuites(groupedViolations);
         testSuites.forEach((identifier, violationsKeys) -> {

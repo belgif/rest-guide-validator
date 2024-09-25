@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ class TagGuidelinesTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidOpenApi() {
-        OpenApiViolationAggregator aggregator = callRules("openapi_bad.yaml");
+        ViolationReport aggregator = callRules("openapi_bad.yaml");
         int capitalLetterViolations = (int) aggregator.getActionableViolations().stream().filter(violation -> violation.getDescription().contains("capital letter")).count();
         int multipleTagsViolations = (int) aggregator.getActionableViolations().stream().filter(violation -> violation.getDescription().contains("more than one tag")).count();
         int nonDeclaredViolations = (int) aggregator.getActionableViolations().stream().filter(violation -> violation.getMessage() != null && violation.getMessage().contains("used but not declared")).count();

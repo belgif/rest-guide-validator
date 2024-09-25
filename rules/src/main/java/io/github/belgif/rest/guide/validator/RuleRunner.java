@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import org.kie.api.command.Command;
 import org.kie.api.runtime.StatelessKieSession;
@@ -16,8 +16,8 @@ public class RuleRunner {
     private RuleRunner() {
     }
 
-    public static OpenApiViolationAggregator execute(@NotNull File openApiFile, List<String> excludedFiles, StatelessKieSession kSession) {
-        var oas = new OpenApiViolationAggregator();
+    public static ViolationReport execute(@NotNull File openApiFile, List<String> excludedFiles, StatelessKieSession kSession) {
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
 
         var parserResult = new Parser(openApiFile).parse(oas);

@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.core.model;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ class SchemaDefinitionTest {
 
     @Test
     void testHighLevelSchema() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../../rules/openapiDefinitionTestFiles/highLevelSchemaTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -26,7 +26,7 @@ class SchemaDefinitionTest {
 
     @Test
     void testComplexHighLevelSchema() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../../rules/openapiDefinitionTestFiles/highLevelSchemaTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 

@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,14 +10,14 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testRequiredValue() {
-        OpenApiViolationAggregator aggregator = callRules("requiredValue.yaml");
+        ViolationReport aggregator = callRules("requiredValue.yaml");
         assertErrorCount(1, aggregator);
         assertEquals(6, aggregator.getActionableViolations().get(0).getMessage().lines().count());
     }
 
     @Test
     void testPatterns() {
-        OpenApiViolationAggregator aggregator = callRules("doesNotRespectPatterns.yaml");
+        ViolationReport aggregator = callRules("doesNotRespectPatterns.yaml");
         assertErrorCount(1, aggregator);
         assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
     }
@@ -29,7 +29,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testWrongTypes() {
-        OpenApiViolationAggregator aggregator = callRules("wrongType.yaml");
+        ViolationReport aggregator = callRules("wrongType.yaml");
         assertErrorCount(1, aggregator);
         assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
     }
@@ -41,7 +41,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testMultipleExamplesInComponents() {
-        OpenApiViolationAggregator aggregator = callRules("examplesInComponents.yaml");
+        ViolationReport aggregator = callRules("examplesInComponents.yaml");
         assertErrorCount(2, aggregator);
         assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
         assertEquals(2, aggregator.getActionableViolations().get(1).getMessage().lines().count());
@@ -54,7 +54,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testDateFormat() {
-        OpenApiViolationAggregator aggregator = callRules("dateFormat.yaml");
+        ViolationReport aggregator = callRules("dateFormat.yaml");
         assertErrorCount(3, aggregator);
         assertEquals(2, aggregator.getActionableViolations().get(1).getMessage().lines().count());
         assertEquals(2, aggregator.getActionableViolations().get(2).getMessage().lines().count());
@@ -67,7 +67,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testUnrelatedDiscriminator() {
-        OpenApiViolationAggregator aggregator = callRules("unrelatedDiscriminator.yaml");
+        ViolationReport aggregator = callRules("unrelatedDiscriminator.yaml");
         assertErrorCount(1, aggregator);
         assertEquals("href: Value '/invalidUrl' does not match format 'uri'. In Schema: unrelatedDiscriminator.yaml#/components/schemas/NotificationsCollection : <allOf>.<format>", aggregator.getActionableViolations().get(0).getMessage());
     }

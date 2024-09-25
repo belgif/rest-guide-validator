@@ -3,7 +3,7 @@ package io.github.belgif.rest.guide.validator.rules.oas3;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import static io.github.belgif.rest.guide.validator.core.ApiFunctions.isMediaTypeIncluded;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.Paths;
@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 import io.github.belgif.rest.guide.validator.core.model.MediaTypeDefinition;
 
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 
-function void violationJsonRequestOrResponseHasNoSchema(OpenApiViolationAggregator oas, MediaTypeDefinition mediaTypeDefinition){
+function void violationJsonRequestOrResponseHasNoSchema(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
   oas.addViolation("[evo-object]",
     "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility.",
     mediaTypeDefinition);

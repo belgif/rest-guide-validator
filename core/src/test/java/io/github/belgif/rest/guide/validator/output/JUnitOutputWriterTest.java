@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.output.junit.Error;
 import io.github.belgif.rest.guide.validator.output.junit.Failure;
 import io.github.belgif.rest.guide.validator.output.junit.Testcase;
@@ -71,8 +71,8 @@ class JUnitOutputWriterTest {
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() throws IOException {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
+    private ViolationReport getViolationAggregator() throws IOException {
+        var openApiViolationAggregator = new ViolationReport();
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155), "/myPointer");
 
         return openApiViolationAggregator;

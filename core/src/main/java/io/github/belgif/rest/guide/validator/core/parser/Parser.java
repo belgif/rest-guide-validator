@@ -9,7 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
@@ -132,7 +132,7 @@ public class Parser {
 
     }
 
-    public ParserResult parse(OpenApiViolationAggregator openApiViolationAggregator) {
+    public ParserResult parse(ViolationReport violationReport) {
         try {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
@@ -157,7 +157,7 @@ public class Parser {
             log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
         } catch (IOException e) {
-            openApiViolationAggregator.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
+            violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
         }
     }

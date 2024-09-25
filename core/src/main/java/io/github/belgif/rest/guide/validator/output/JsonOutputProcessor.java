@@ -3,11 +3,11 @@ package io.github.belgif.rest.guide.validator.output;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import io.github.belgif.rest.guide.validator.output.model.ViolationEntry;
 import io.github.belgif.rest.guide.validator.output.model.ViolationGroup;
-import io.github.belgif.rest.guide.validator.output.model.ViolationReport;
+import io.github.belgif.rest.guide.validator.output.model.OutputViolationReport;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,11 +24,11 @@ public class JsonOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
+    public void process(ViolationReport violationAggregator) {
         writeToFile(mapToViolationReport(violationAggregator));
     }
 
-    private ViolationReport mapToViolationReport(OpenApiViolationAggregator violationAggregator) {
+    private OutputViolationReport mapToViolationReport(ViolationReport violationAggregator) {
         var violations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
         LinkedHashMap<String, ViolationGroup> groups = new LinkedHashMap<>();
         for (Map.Entry<String, List<Violation>> entry : violations.entrySet()) {
@@ -37,7 +37,7 @@ public class JsonOutputProcessor extends OutputProcessor {
                             entry.getValue().size(),
                             entry.getValue().stream().map(this::mapToViolationFileObject).toList()));
         }
-        return new ViolationReport(
+        return new OutputViolationReport(
                 violationAggregator.getAmountOfActionableViolations(),
                 violationAggregator.getAmountOfIgnoredViolations(),
                 this.getOutputGroupBy().value,
@@ -56,12 +56,12 @@ public class JsonOutputProcessor extends OutputProcessor {
                 "#" + violation.getPointer());
     }
 
-    private void writeToFile(ViolationReport violationReport) {
+    private void writeToFile(OutputViolationReport outputViolationReport) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            mapper.writeValue(jsonOutputFile, violationReport);
+            mapper.writeValue(jsonOutputFile, outputViolationReport);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -32,8 +32,8 @@ class JUnitOutputProcessorTest {
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
+    private ViolationReport getViolationAggregator() {
+        var openApiViolationAggregator = new ViolationReport();
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 170), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 180), "/MyPointer");

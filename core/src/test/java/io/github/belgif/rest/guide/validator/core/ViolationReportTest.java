@@ -10,14 +10,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OpenApiViolationAggregatorTest {
+class ViolationReportTest {
 
     @Test
     void violationsWithNonRecursiveIgnoredFilesTest() {
         List<String> excludedFiles = new ArrayList<>();
         excludedFiles.add("schemas/*");
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
@@ -45,7 +45,7 @@ class OpenApiViolationAggregatorTest {
         List<String> excludedFiles = new ArrayList<>();
         excludedFiles.add("schemas/**");
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
@@ -73,7 +73,7 @@ class OpenApiViolationAggregatorTest {
         List<String> excludedFiles = new ArrayList<>();
         excludedFiles.add("**.yaml");
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
@@ -107,7 +107,7 @@ class OpenApiViolationAggregatorTest {
         excludedFiles.add("../logo.yaml");
         excludedFiles.add("schemas/belgif/**");
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
@@ -135,7 +135,7 @@ class OpenApiViolationAggregatorTest {
         List<String> excludedFiles = new ArrayList<>();
         excludedFiles.add("../logo.yaml");
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         oas.setExcludedFiles(excludedFiles);
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
