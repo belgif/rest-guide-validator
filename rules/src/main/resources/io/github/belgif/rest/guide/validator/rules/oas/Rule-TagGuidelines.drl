@@ -2,13 +2,13 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationReport
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationReport
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
@@ -17,19 +17,19 @@ import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.eclipse.microprofile.openapi.models.Operation;
 import java.util.List;
 
-function void operationShouldNotHaveMoreThanOneTagViolation(OpenApiViolationAggregator oas, OperationDefinition operation) {
+function void operationShouldNotHaveMoreThanOneTagViolation(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[oas-tags]",
            		 "An operation SHOULD NOT have more than one tag.",
            		 operation);
 }
 
-function void eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(OpenApiViolationAggregator oas, OperationDefinition operation, String tag) {
+function void eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(ViolationReport oas, OperationDefinition operation, String tag) {
     oas.addViolation("[oas-tags]",
            		 "Each tag used on an operation SHOULD also be declared in the top level tags list of the OpenAPI document, with an optional description.", "Tag: <<" + tag + ">> used but not declared.",
            		 operation);
 }
 
-function void nameOfTagShouldStartWithCapitalLetterViolation(OpenApiViolationAggregator oas, OperationDefinition operation, String tag) {
+function void nameOfTagShouldStartWithCapitalLetterViolation(ViolationReport oas, OperationDefinition operation, String tag) {
     oas.addViolation("[oas-tags]",
            		 "The name of a tag SHOULD start with a capital letter.", "Tag: <<" + tag + ">>",
            		 operation);

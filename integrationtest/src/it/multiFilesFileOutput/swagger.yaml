@@ -1,0 +1,22 @@
+swagger: "2.0"
+info:
+  description: "Test API swagger definition"
+  version: "${artifact.version}"
+  title: "Test API"
+basePath: /TEST/api
+paths:
+  /myOnlyPath:
+    get:
+      summary : "pathWithoutProperResponse"
+      operationId: "myPath"
+      produces:
+        - "application/json"
+        - "application/problem+json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: object
+            properties:
+              name:
+                type: string

@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.output.*;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -98,7 +99,9 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
             throw new MojoFailureException(e.getMessage());
         }
 
-        filesToProcess.forEach(file -> isValid.set(OpenApiValidator.isOasValid(file, excludedFiles, outputProcessors.toArray(new OutputProcessor[0])) && isValid.get()));
+        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, excludedFiles)).toList();
+        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
+        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
         if (filesToProcess.isEmpty()) {
             isValid.set(false);
         }

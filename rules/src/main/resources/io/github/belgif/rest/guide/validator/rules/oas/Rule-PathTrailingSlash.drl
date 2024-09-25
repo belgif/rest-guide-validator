@@ -2,11 +2,11 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
-function void violationSlash(OpenApiViolationAggregator oas, PathDefinition path){
+function void violationSlash(ViolationReport oas, PathDefinition path){
     oas.addViolation("[uri-notat]", "Trailing slashes MUST NOT be used.", path);
 }
 

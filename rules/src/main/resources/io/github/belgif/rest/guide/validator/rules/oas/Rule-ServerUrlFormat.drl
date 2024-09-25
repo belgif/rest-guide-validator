@@ -2,8 +2,8 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.model.ServerDefinition;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 
@@ -11,7 +11,7 @@ function String urlPattern(){
     return "^((http://localhost)[:0-9]{0,7}/?|(https://[-a-zA-Z0-9@:%._\\+~#=]{1,256})|/?)(/[A-Za-z0-9]*)*(/[a-z0-9]+([A-Z]?[a-z0-9]+)*)+/v[0-9]+$";
 }
 
-function void violationServerUrlFormat(OpenApiViolationAggregator oas, ServerDefinition server){
+function void violationServerUrlFormat(ViolationReport oas, ServerDefinition server){
     oas.addViolation("[uri-format]",
                      "The server url should follow the format [/pathPrefix]/apiName/vMajorVersion optionally prefixed by https://hostname[:port] or http://localhost[:port]. The apiName must consist of one or more path segments in lowerCamelCase.",
                      server);

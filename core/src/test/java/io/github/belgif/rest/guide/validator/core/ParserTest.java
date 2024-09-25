@@ -7,7 +7,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
@@ -15,8 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +38,7 @@ class ParserTest {
     @Test
     void getAllPathWithLineRange() {
         var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var result = new Parser(file).parse(oas);
         var paths = result.getPaths();
 
@@ -52,7 +49,7 @@ class ParserTest {
 
     @Test
     void isInPathList() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -61,7 +58,7 @@ class ParserTest {
 
     @Test
     void testConstructNestedSchema() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var openApiFile = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
         var parserResult = new Parser(openApiFile).parse(oas);
         var jsonPointer = parserResult.getSchemas().stream().filter(def -> def.getJsonPointer().toString().endsWith("anyOf/1")).findAny();
@@ -70,7 +67,7 @@ class ParserTest {
 
     @Test
     void getReferencedFilesTest() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/referencedFiles/openapi.yaml").getFile());
         var parserResult = new Parser(file).parse(oas);
         var files = parserResult.getSrc().keySet();
@@ -80,7 +77,7 @@ class ParserTest {
 
     @Test
     void getReferencedFilesTestJson() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/ugly.json").getFile());
         var parserResult = new Parser(file).parse(oas);
         var files = parserResult.getSrc().keySet();
@@ -90,7 +87,7 @@ class ParserTest {
 
     @Test
     void testIgnoreExtensionIsParsed() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/ignoreTests/ignoreTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -111,7 +108,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/invalidRefs.yaml").getFile());
 
         listAppender.start();
@@ -126,7 +123,7 @@ class ParserTest {
 
     @Test
     void testValidButNonExistingRefResolve() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingRef.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -148,7 +145,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/invalidRefSwagger.yaml").getFile());
 
         listAppender.start();
@@ -168,7 +165,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/headersTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -193,7 +190,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/examplesRefs.yaml").getFile());
 
         listAppender.start();
@@ -208,7 +205,7 @@ class ParserTest {
 
     @Test
     void testRefsToExternalSchemasWithSameName() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/referencedFiles/exampleRef.yaml").getFile());
 
         Parser.ParserResult result = new Parser(file).parse(oas);
@@ -231,7 +228,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemes.yaml").getFile());
 
         listAppender.start();
@@ -251,7 +248,7 @@ class ParserTest {
         listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logger.addAppender(listAppender);
 
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemesSwagger.yaml").getFile());
 
         listAppender.start();
@@ -266,7 +263,7 @@ class ParserTest {
 
     @Test
     void testNonValidExampleIsParsed() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(Objects.requireNonNull(getClass().getResource("../rules/wrongExampleFormat.yaml")).getFile());
 
         Parser.ParserResult result = new Parser(file).parse(oas);

@@ -11,21 +11,32 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class OpenApiViolationAggregator {
+public class ViolationReport {
     /**
      * Structure that hold the violations.
      */
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
 
-    private int ruleNumber;
-    private float time;
+    public ViolationReport(List<ViolationReport> violationReports) {
+        Set<Violation> aggregatedViolations = violationReports.stream()
+                .flatMap(report -> report.getViolations().stream()).collect(Collectors.toSet());
+        Set<String> aggregatedExcludedFiles = violationReports.stream()
+                        .flatMap(report -> report.getExcludedFiles().stream()).collect(Collectors.toSet());
+        violations.addAll(aggregatedViolations);
+        excludedFiles.addAll(aggregatedExcludedFiles);
+    }
+
+    public boolean isOasValid() {
+        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
+    }
 
     public void addViolation(Violation violation) {
         this.violations.add(violation);
@@ -68,11 +79,11 @@ public class OpenApiViolationAggregator {
     }
 
     public List<Violation> getActionableViolations() {
-        return this.violations.stream().filter(v -> v.getLevel() != ViolationLevel.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() != ViolationLevel.IGNORED).sorted().toList();
     }
 
     public List<Violation> getIgnoredViolations() {
-        return this.violations.stream().filter(v -> v.getLevel() == ViolationLevel.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() == ViolationLevel.IGNORED).sorted().toList();
     }
 
     public int getAmountOfActionableViolations() {

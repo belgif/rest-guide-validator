@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
@@ -9,7 +9,6 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,7 +18,7 @@ public class LineNumberTest {
 
     @Test
     public void testGetOperationId() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -33,7 +32,7 @@ public class LineNumberTest {
 
     @Test
     public void testProblemSchema() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -47,7 +46,7 @@ public class LineNumberTest {
 
     @Test
     public void testNestedSchema() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -61,7 +60,7 @@ public class LineNumberTest {
 
     @Test
     public void testMediaType() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -75,7 +74,7 @@ public class LineNumberTest {
 
     @Test
     public void testRequestBody() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -89,7 +88,7 @@ public class LineNumberTest {
 
     @Test
     public void testParameters() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -103,7 +102,7 @@ public class LineNumberTest {
 
     @Test
     public void testServers() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/referencedFiles/openapi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -117,7 +116,7 @@ public class LineNumberTest {
 
     @Test
     public void testMultipleServers() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/multipleServers.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -156,7 +155,7 @@ public class LineNumberTest {
 
     @Test
     public void testNestedArrays() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/lineNumberTests/nestedArrays.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -170,7 +169,7 @@ public class LineNumberTest {
 
     @Test
     public void testEnums() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/lineNumberTests/enumCounter.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -184,7 +183,7 @@ public class LineNumberTest {
 
     @Test
     public void testResponse() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/lineNumberTests/responseHeader.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -198,7 +197,7 @@ public class LineNumberTest {
 
     @Test
     public void testMediaTypes() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/lineNumberTests/mediaTypeDefinitions.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -225,7 +224,7 @@ public class LineNumberTest {
 
     @Test
     public void testJsonPointerOnStringValue() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/lineNumberTests/nestedArrays.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -241,7 +240,7 @@ public class LineNumberTest {
 
     @Test
     public void testBasePathLineNumberOas2() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("rules/schemasOpenApi.yaml").getFile());
         var result = new Parser(file).parse(oas);
 

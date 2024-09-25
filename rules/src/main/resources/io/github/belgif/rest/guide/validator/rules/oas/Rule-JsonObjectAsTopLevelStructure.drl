@@ -1,8 +1,8 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import java.util.Set;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
@@ -14,7 +14,7 @@ function Set includeContentTypes() {
   return Set.of("application/json", "multipart/*");
 }
 
-function void violationJsonObjectAsTopLevelStructure(OpenApiViolationAggregator oas, MediaTypeDefinition mediaTypeDefinition){
+function void violationJsonObjectAsTopLevelStructure(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
   oas.addViolation("[evo-object]",
     "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility. ",
     mediaTypeDefinition);

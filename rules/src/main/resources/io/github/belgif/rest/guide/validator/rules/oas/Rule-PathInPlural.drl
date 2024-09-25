@@ -2,20 +2,20 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationReport
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import java.util.function.Predicate
 import org.eclipse.microprofile.openapi.models.media.Schema
 import io.swagger.annotations.ApiResponse
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 
-function void pluralViolation(OpenApiViolationAggregator oas, PathDefinition path){
+function void pluralViolation(ViolationReport oas, PathDefinition path){
     oas.addViolation("[col-name]",
            		 "A plural noun SHOULD be used for collection names. ",
            		 null,

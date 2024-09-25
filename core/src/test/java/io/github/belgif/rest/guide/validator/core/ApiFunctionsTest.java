@@ -67,7 +67,7 @@ class ApiFunctionsTest {
 
     @Test
     void existsPathWithPathParamAfterTest() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(Objects.requireNonNull(this.getClass().getResource("../rules/isCollection.yaml")).getFile());
         var result = new Parser(file).parse(oas);
 

@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import org.junit.jupiter.api.Test;
@@ -50,10 +50,8 @@ class OutputProcessorsTest {
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setTime(0.55f);
-        openApiViolationAggregator.setRuleNumber(5);
+    private ViolationReport getViolationAggregator() {
+        var openApiViolationAggregator = new ViolationReport();
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file1", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file2", 150), "/MyPointer2");
         openApiViolationAggregator.addViolation("Second-Rule", "My message", new Line("file1", 155), "/MyPointer");
