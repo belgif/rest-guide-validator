@@ -18,7 +18,7 @@ public class OpenApiSingleRuleValidator {
 
     private final StatelessKieSession kieSession;
 
-    public ViolationReport isOasValid(@NotNull File file, List<String> excludedFiles) {
+    public ViolationReport callRule(@NotNull File file, List<String> excludedFiles) {
         return RuleRunner.execute(file, excludedFiles, kieSession);
     }
 

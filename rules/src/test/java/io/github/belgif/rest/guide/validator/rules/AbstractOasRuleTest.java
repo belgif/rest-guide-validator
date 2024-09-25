@@ -24,7 +24,7 @@ public abstract class AbstractOasRuleTest {
         }
         var openApiFile = new File(getClass().getResource(lowerCaseFirstStripTestSuffix(getClass().getSimpleName()) + "/" + fileName).getFile());
         var validator = new OpenApiSingleRuleValidator(ruleUrl.getFile());
-        return validator.isOasValid(openApiFile, null);
+        return validator.callRule(openApiFile, null);
     }
 
     public static void assertNoViolations(ViolationReport validationResult) {

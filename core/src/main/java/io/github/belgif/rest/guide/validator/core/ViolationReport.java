@@ -10,9 +10,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -25,9 +25,17 @@ public class ViolationReport {
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
 
-    private ViolationReport(Set<Violation> violations, List<String> excludedFiles) {
-        this.violations.addAll(violations);
-        this.excludedFiles = excludedFiles;
+    public ViolationReport(List<ViolationReport> violationReports) {
+        Set<Violation> aggregatedViolations = violationReports.stream()
+                .flatMap(report -> report.getViolations().stream()).collect(Collectors.toSet());
+        Set<String> aggregatedExcludedFiles = violationReports.stream()
+                        .flatMap(report -> report.getExcludedFiles().stream()).collect(Collectors.toSet());
+        violations.addAll(aggregatedViolations);
+        excludedFiles.addAll(aggregatedExcludedFiles);
+    }
+
+    public boolean isOasValid() {
+        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
     }
 
     public void addViolation(Violation violation) {
@@ -126,22 +134,6 @@ public class ViolationReport {
             }
         }
         return false;
-    }
-
-    public static ViolationReport aggregate(List<ViolationReport> aggregators) {
-        Set<Violation> aggregatedViolations = new HashSet<>();
-        List<String> aggregatedExcludedFiles = new ArrayList<>();
-        for (ViolationReport aggregator : aggregators) {
-            aggregatedViolations.addAll(aggregator.getViolations());
-            if(aggregatedExcludedFiles.isEmpty()) {
-                aggregatedExcludedFiles.addAll(aggregator.getExcludedFiles());
-            } else {
-                if (!aggregatedExcludedFiles.equals(aggregator.getExcludedFiles())) {
-                    throw new IllegalArgumentException("Aggregated violations must have the same exclusion files");
-                }
-            }
-        }
-        return new ViolationReport(aggregatedViolations, aggregatedExcludedFiles);
     }
 
 }

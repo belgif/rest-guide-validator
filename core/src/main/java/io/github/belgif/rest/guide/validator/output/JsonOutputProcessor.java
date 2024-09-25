@@ -24,8 +24,8 @@ public class JsonOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(ViolationReport violationAggregator) {
-        writeToFile(mapToViolationReport(violationAggregator));
+    public void process(ViolationReport violationReport) {
+        writeToFile(mapToViolationReport(violationReport));
     }
 
     private OutputViolationReport mapToViolationReport(ViolationReport violationAggregator) {

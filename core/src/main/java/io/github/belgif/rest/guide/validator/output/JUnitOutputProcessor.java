@@ -52,8 +52,8 @@ public class JUnitOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(ViolationReport violationAggregator) {
-        Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
+    public void process(ViolationReport violationReport) {
+        Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationReport.getViolations());
         var testSuites = findTestSuites(groupedViolations);
         testSuites.forEach((identifier, violationsKeys) -> {
             var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).toList();

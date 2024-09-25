@@ -15,10 +15,10 @@ public class Log4JOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(ViolationReport violationAggregator) {
-        List<Violation> violations = violationAggregator.getViolations();
+    public void process(ViolationReport violationReport) {
+        List<Violation> violations = violationReport.getViolations();
 
-        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationAggregator.getAmountOfActionableViolations(), violationAggregator.getAmountOfIgnoredViolations());
+        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationReport.getAmountOfActionableViolations(), violationReport.getAmountOfIgnoredViolations());
 
         Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violations);
 
