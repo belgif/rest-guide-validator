@@ -25,9 +25,9 @@ b) Execute a validation run from command-line. This doesn't require the project 
 
 Navigate to the directory containing the OpenAPI file, and launch from command line:  
 ```
-   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.0.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
+   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.1.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
 ```
-_Change 'openapi.yaml' to the name of your OpenAPI file and update '2.0.0' to the latest available version of the plugin_
+_Change 'openapi.yaml' to the name of your OpenAPI file and update '2.1.0' to the latest available version of the plugin_
 
 Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded in the plugin's configuration.
 Only OpenAPI documents on the local file system are currently supported.
@@ -80,7 +80,7 @@ The following example demonstrates a basic plugin configuration for validating a
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.0.0</version> <!-- update this to the latest version -->
+        <version>2.1.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -138,7 +138,7 @@ Example:
   <plugin>
     <groupId>io.github.belgif.rest.guide.validator</groupId>
     <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-    <version>2.0.0</version> <!-- update this to the latest version -->
+    <version>2.1.0</version> <!-- update this to the latest version -->
     <executions>
       <execution>
         <goals>
@@ -170,7 +170,7 @@ The plugin provides the following options to write the validation report:
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.0.0</version> <!-- update this to the latest version -->
+        <version>2.1.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -198,7 +198,7 @@ You can execute the plugin to validate the api files without breaking the build 
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.0.0</version> <!-- update this to the latest version -->
+        <version>2.1.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
