@@ -1,0 +1,50 @@
+{
+  "totalViolations" : 4,
+  "totalIgnoredViolations" : 0,
+  "groupedBy" : "rule",
+  "violations" : {
+    "[err-problem]" : {
+      "total" : 2,
+      "occurrences" : [ {
+        "ruleId" : "[err-problem]",
+        "description" : "Each error response of each operation SHOULD have a media type \"application/problem+json\"",
+        "message" : "[Operation: GET /pets/{petId}]",
+        "level" : "mandatory",
+        "fileName" : "swagger_bad.yaml",
+        "lineNumber" : 27,
+        "pointer" : "#/paths/pets/{petId}/get/responses/409"
+      }, {
+        "ruleId" : "[err-problem]",
+        "description" : "Each error response of each operation SHOULD have a media type \"application/problem+json\"",
+        "message" : "[Operation: GET /pets/{petId}]",
+        "level" : "mandatory",
+        "fileName" : "swagger_bad.yaml",
+        "lineNumber" : 31,
+        "pointer" : "#/paths/pets/{petId}/get/responses/default"
+      } ]
+    },
+    "[stat-codes]" : {
+      "total" : 1,
+      "occurrences" : [ {
+        "ruleId" : "[stat-codes]",
+        "description" : "GET operation should not have this status code",
+        "message" : "[statuscode: 409]",
+        "level" : "mandatory",
+        "fileName" : "swagger_bad.yaml",
+        "lineNumber" : 17,
+        "pointer" : "#/paths/pets/{petId}/get"
+      } ]
+    },
+    "[uri-format]" : {
+      "total" : 1,
+      "occurrences" : [ {
+        "ruleId" : "[uri-format]",
+        "description" : "The server url should follow the format [/pathPrefix]/apiName/vMajorVersion optionally prefixed by https://hostname[:port] or http://localhost[:port]. The apiName must consist of one or more path segments in lowerCamelCase.",
+        "level" : "mandatory",
+        "fileName" : "swagger_bad.yaml",
+        "lineNumber" : 8,
+        "pointer" : "#/basePath"
+      } ]
+    }
+  }
+}
