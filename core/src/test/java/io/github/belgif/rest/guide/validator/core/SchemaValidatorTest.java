@@ -1,16 +1,11 @@
 package io.github.belgif.rest.guide.validator.core;
 
-import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.File;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SchemaValidatorTest {
     @Test
     void testCircularDependency() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/circularDependency.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -30,7 +25,7 @@ class SchemaValidatorTest {
 
     @Test
     void testSameComponentNameInRef() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/sameName.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
@@ -41,7 +36,7 @@ class SchemaValidatorTest {
 
     @Test
     void testValidationOnDeeperSchemas() {
-        var oas = new OpenApiViolationAggregator();
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/parameter.yaml").getFile());
         var result = new Parser(file).parse(oas);
 

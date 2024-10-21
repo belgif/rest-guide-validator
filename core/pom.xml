@@ -12,6 +12,10 @@
 
     <artifactId>belgif-rest-guide-validator-core</artifactId>
 
+    <properties>
+        <jaxb.api.version>3.0.0</jaxb.api.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
@@ -50,6 +54,25 @@
             <artifactId>openapi-schema-validator</artifactId>
             <version>1.0.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <!-- jaxb -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.api.version}</version>
+        </dependency>
+        <!-- JAXB API only -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jaxb.api.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>

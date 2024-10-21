@@ -1,4 +1,4 @@
-package io.github.belgif.rest.guide.validator.maven.junit;
+package io.github.belgif.rest.guide.validator.output.junit;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;

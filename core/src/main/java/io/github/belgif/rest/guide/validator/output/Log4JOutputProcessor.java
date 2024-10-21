@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,17 +15,17 @@ public class Log4JOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
-        List<Violation> violations = violationAggregator.getViolations();
+    public void process(ViolationReport violationReport) {
+        List<Violation> violations = violationReport.getViolations();
 
-        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationAggregator.getAmountOfActionableViolations(), violationAggregator.getAmountOfIgnoredViolations());
+        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationReport.getAmountOfActionableViolations(), violationReport.getAmountOfIgnoredViolations());
 
         Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violations);
 
         groupedViolations.forEach((group, violationList) -> {
             var groupViolation = violationList.get(0);
             var groupLine = group + " " + getOccurrences(violationList);
-            switch (groupViolation.getType()) {
+            switch (groupViolation.getLevel()) {
                 case MANDATORY:
                     log.error(groupLine);
                     break;
@@ -39,7 +39,7 @@ public class Log4JOutputProcessor extends OutputProcessor {
                     log.info(groupLine);
             }
             violationList.forEach(v -> {
-                switch (v.getType()) {
+                switch (v.getLevel()) {
                     case MANDATORY:
                         log.error(v.getReportMessage());
                         break;

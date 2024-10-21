@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /refData/employerClasses:
+    get:
+      tags:
+        - ReferenceData
+      summary: Get the complete reference data list of employer classes
+      operationId: getEmployerClasses
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: User language
+          required: false
+          schema:
+            type: string
+            enum:
+              - NL
+              - FR
+        - name: Other wrong header
+          in: header
+          description: User language
+          required: false
+          schema:
+            type: string
+            enum:
+              - FIRST
+              - SECOND
+      responses:
+        default:
+          description: problem response
+          content:
+            application/problem+json:
+              schema:
+                type: object

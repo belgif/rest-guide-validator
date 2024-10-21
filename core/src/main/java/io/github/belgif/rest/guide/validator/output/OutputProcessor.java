@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import lombok.Getter;
 
@@ -15,7 +15,7 @@ public abstract class OutputProcessor {
         this.setOutputGroupBy(outputGroupBy);
     }
 
-    public abstract void process(OpenApiViolationAggregator violationAggregator);
+    public abstract void process(ViolationReport violationReport);
 
     public void setOutputGroupBy(OutputGroupBy outputGroupBy) {
         this.outputGroupBy = Objects.requireNonNullElse(outputGroupBy, OutputGroupBy.RULE);

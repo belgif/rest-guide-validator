@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules;
 
 import io.github.belgif.rest.guide.validator.OpenApiSingleRuleValidator;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @Slf4j
 public abstract class AbstractOasRuleTest {
 
-    protected OpenApiViolationAggregator callRules(String fileName)  {
+    protected ViolationReport callRules(String fileName)  {
         String ruleFileName = getRulesFile(getClass().getSimpleName());
         var ruleUrl = getClass().getResource(ruleFileName);
         if (ruleUrl == null) {
@@ -24,24 +24,24 @@ public abstract class AbstractOasRuleTest {
         }
         var openApiFile = new File(getClass().getResource(lowerCaseFirstStripTestSuffix(getClass().getSimpleName()) + "/" + fileName).getFile());
         var validator = new OpenApiSingleRuleValidator(ruleUrl.getFile());
-        return validator.isOasValid(openApiFile, null);
+        return validator.callRule(openApiFile, null);
     }
 
-    public static void assertNoViolations(OpenApiViolationAggregator validationResult) {
+    public static void assertNoViolations(ViolationReport validationResult) {
         assertEquals(0, validationResult.getActionableViolations().size(), getMessage(validationResult));
     }
 
-    public static void assertViolations(OpenApiViolationAggregator validationResult) {
+    public static void assertViolations(ViolationReport validationResult) {
         assertNotEquals(0, validationResult.getActionableViolations().size(), getMessage(validationResult));
     }
 
-    public static String getMessage(OpenApiViolationAggregator validationResult){
+    public static String getMessage(ViolationReport validationResult){
         var violations = validationResult.getActionableViolations();
         return "Number of errors : "+ violations.size() +"\n"
                 + violations.stream().map(Violation::toString).collect(Collectors.joining("\n")) ;
     }
 
-    public static void assertErrorCount(int expectedErrors, OpenApiViolationAggregator validationResult) {
+    public static void assertErrorCount(int expectedErrors, ViolationReport validationResult) {
         assertEquals(expectedErrors,validationResult.getActionableViolations().size(), getMessage(validationResult));
     }
 

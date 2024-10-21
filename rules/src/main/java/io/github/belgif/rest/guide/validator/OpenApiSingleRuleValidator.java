@@ -1,6 +1,6 @@
 package io.github.belgif.rest.guide.validator;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieRepository;
@@ -18,7 +18,7 @@ public class OpenApiSingleRuleValidator {
 
     private final StatelessKieSession kieSession;
 
-    public OpenApiViolationAggregator isOasValid(@NotNull File file, List<String> excludedFiles) {
+    public ViolationReport callRule(@NotNull File file, List<String> excludedFiles) {
         return RuleRunner.execute(file, excludedFiles, kieSession);
     }
 

@@ -1,13 +1,11 @@
-package io.github.belgif.rest.guide.validator;
+package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
-import io.github.belgif.rest.guide.validator.maven.junit.Failure;
-import io.github.belgif.rest.guide.validator.maven.junit.Testcase;
-import io.github.belgif.rest.guide.validator.maven.junit.Testsuite;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
-import io.github.belgif.rest.guide.validator.output.OutputProcessor;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.output.junit.Failure;
+import io.github.belgif.rest.guide.validator.output.junit.Testcase;
+import io.github.belgif.rest.guide.validator.output.junit.Testsuite;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -18,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Output processor to write a junit xml test result.
@@ -28,39 +25,40 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Slf4j
-public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOutputProcessor {
+public class JUnitOutputProcessor extends OutputProcessor {
     /**
      * Output directory.
      */
-    private File output;
+    private final File outputDirectory;
 
-    public JUnitOutputProcessor(OutputGroupBy outputGroupBy) {
+    public JUnitOutputProcessor(OutputGroupBy outputGroupBy, File outputDirectory) {
         super(outputGroupBy);
+        this.outputDirectory = outputDirectory;
     }
 
 
     public void write(Testsuite testsuite) {
         if (testsuite == null)
             throw new IllegalArgumentException("testsuite cannot be null");
-        if (output == null || !output.isDirectory() || !output.canWrite())
-            throw new IllegalArgumentException(output + " must be a writable directory");
+        if (outputDirectory == null || !outputDirectory.isDirectory() || !outputDirectory.canWrite())
+            throw new IllegalArgumentException(outputDirectory + " must be a writable directory");
         try {
             var mar = JAXBContext.newInstance(Testsuite.class).createMarshaller();
             mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            mar.marshal(testsuite, new File(output, "TEST-" + testsuite.getName() + ".xml"));
+            mar.marshal(testsuite, new File(outputDirectory, "TEST-" + testsuite.getName() + ".xml"));
         } catch (JAXBException e) {
             log.error(e.getMessage(), e);
         }
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
-        Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationAggregator.getViolations());
+    public void process(ViolationReport violationReport) {
+        Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violationReport.getViolations());
         var testSuites = findTestSuites(groupedViolations);
         testSuites.forEach((identifier, violationsKeys) -> {
-            var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).collect(Collectors.toList());
+            var allViolations = violationsKeys.stream().map(groupedViolations::get).flatMap(Collection::stream).toList();
             var amountOfTests = allViolations.size();
-            var failures = (int) allViolations.stream().filter(v -> !v.getType().equals(ViolationType.IGNORED)).count();
+            var failures = (int) allViolations.stream().filter(v -> !v.getLevel().equals(ViolationLevel.IGNORED)).count();
             var skipped = amountOfTests - failures;
 
             var testsuite = Testsuite.builder()
@@ -76,9 +74,9 @@ public class JUnitOutputProcessor extends OutputProcessor implements DirectoryOu
                 var sample = violationsForGroup.get(0);
                 var testcaseBuilder = Testcase.builder()
                         .classname(key)
-                        .name(sample.getType().name());
-                if (sample.getType() != ViolationType.IGNORED) {
-                    testcaseBuilder.failure(new Failure(sample.getType().name(), key, ""));
+                        .name(sample.getLevel().name());
+                if (sample.getLevel() != ViolationLevel.IGNORED) {
+                    testcaseBuilder.failure(new Failure(sample.getLevel().name(), key, ""));
                 } else {
                     testcaseBuilder.skipped(key);
                 }

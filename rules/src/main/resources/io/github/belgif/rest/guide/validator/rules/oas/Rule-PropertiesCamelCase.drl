@@ -2,11 +2,11 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
-function void violationPropertiesCamelCase(OpenApiViolationAggregator oas, String propertyName, SchemaDefinition schema){
+function void violationPropertiesCamelCase(ViolationReport oas, String propertyName, SchemaDefinition schema){
     oas.addViolation("[jsn-naming]",
            		 "All JSON property names SHOULD be written in lowerCamelCase notation.",
            		    "[propertyName: " + propertyName + "]",

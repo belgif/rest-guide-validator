@@ -3,15 +3,15 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import java.util.Map
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 
-function void violationRequiredProperties(OpenApiViolationAggregator oas, SchemaDefinition schema, String requiredValue){
+function void violationRequiredProperties(ViolationReport oas, SchemaDefinition schema, String requiredValue){
     oas.addViolation("[propertyReq]",
         "Value is in the required list of a schema but is not defined as a property", "[Value: " + requiredValue +"]",
         schema);

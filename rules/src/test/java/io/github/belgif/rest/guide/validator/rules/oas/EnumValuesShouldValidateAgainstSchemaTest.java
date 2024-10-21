@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +25,7 @@ class EnumValuesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void complexEnum() {
-        OpenApiViolationAggregator aggregator = callRules("complexEnum.yaml");
+        ViolationReport aggregator = callRules("complexEnum.yaml");
         assertErrorCount(1, aggregator);
         assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
     }

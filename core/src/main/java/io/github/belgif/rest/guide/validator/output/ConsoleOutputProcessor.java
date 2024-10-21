@@ -1,8 +1,8 @@
 package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 import java.util.List;
 import java.util.Map;
@@ -14,16 +14,16 @@ public class ConsoleOutputProcessor extends OutputProcessor {
     }
 
     @Override
-    public void process(OpenApiViolationAggregator violationAggregator) {
-        List<Violation> violations = violationAggregator.getViolations();
+    public void process(ViolationReport violationReport) {
+        List<Violation> violations = violationReport.getViolations();
 
-        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationAggregator.getAmountOfActionableViolations(), violationAggregator.getAmountOfIgnoredViolations());
+        System.out.printf("%n OpenApi validation summary: %d violations and %d ignored violations.%n", violationReport.getAmountOfActionableViolations(), violationReport.getAmountOfIgnoredViolations());
 
         Map<String, List<Violation>> groupedViolations = this.getOutputGroupBy().groupViolations(violations);
 
         groupedViolations.forEach((group, violationList) -> {
             var groupLine = group + " " + getOccurrences(violationList);
-            if (violationList.get(0).getType() == ViolationType.MANDATORY) {
+            if (violationList.get(0).getLevel() == ViolationLevel.MANDATORY) {
                 System.err.println(groupLine);
                 System.err.flush();
             } else {
@@ -31,7 +31,7 @@ public class ConsoleOutputProcessor extends OutputProcessor {
                 System.out.flush();
             }
             violationList.forEach(v -> {
-                if (v.getType() == ViolationType.MANDATORY) {
+                if (v.getLevel() == ViolationLevel.MANDATORY) {
                     System.err.println(v.getReportMessage());
                     System.err.flush();
                 } else {

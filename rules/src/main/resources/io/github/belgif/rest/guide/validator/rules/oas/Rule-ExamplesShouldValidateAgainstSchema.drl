@@ -2,8 +2,8 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
@@ -11,7 +11,7 @@ import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.Defini
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
-function void violationExamplesShouldValidateAgainstSchema(OpenApiViolationAggregator oas, ExampleDefinition example, String violation){
+function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, ExampleDefinition example, String violation){
     oas.addViolation("[oas-exampl]",
     "Example does not validate against schema", violation, example);
 }

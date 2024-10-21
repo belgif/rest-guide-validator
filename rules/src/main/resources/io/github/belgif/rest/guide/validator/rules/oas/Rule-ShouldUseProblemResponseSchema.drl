@@ -1,26 +1,26 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator
+import io.github.belgif.rest.guide.validator.core.ViolationReport
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 function String referenceName() {
   return "/Problem";
 }
 
-function void violationDefaultProblemResponseSchema(OpenApiViolationAggregator oas, ResponseDefinition response){
+function void violationDefaultProblemResponseSchema(ViolationReport oas, ResponseDefinition response){
   oas.addViolation("[prb-defaul]",
     "Default problem response SHOULD use the Problem schema of belgif-openapi-problem ($ref to a schema type named Problem)", null,
-    response, ViolationType.RECOMMENDED);
+    response, ViolationLevel.RECOMMENDED);
 }
 
 rule "Should use ProblemResponse schema for default responses oas3 or inline responseDefinition"

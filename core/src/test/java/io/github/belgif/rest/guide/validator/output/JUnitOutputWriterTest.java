@@ -1,16 +1,13 @@
-package io.github.belgif.rest.guide.validator.maven.plugin;
+package io.github.belgif.rest.guide.validator.output;
 
-import io.github.belgif.rest.guide.validator.JUnitOutputProcessor;
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.maven.junit.Error;
-import io.github.belgif.rest.guide.validator.maven.junit.Failure;
-import io.github.belgif.rest.guide.validator.maven.junit.Testcase;
-import io.github.belgif.rest.guide.validator.maven.junit.Testsuite;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.output.junit.Error;
+import io.github.belgif.rest.guide.validator.output.junit.Failure;
+import io.github.belgif.rest.guide.validator.output.junit.Testcase;
+import io.github.belgif.rest.guide.validator.output.junit.Testsuite;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -20,8 +17,7 @@ class JUnitOutputWriterTest {
     @Test
     void writeEmpty() {
         try {
-            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory("tmp").toFile());
             outputProcessor.write(new Testsuite());
         } catch (IOException e) {
             fail(e);
@@ -58,8 +54,7 @@ class JUnitOutputWriterTest {
         testsuite.addTestcase(testcase);
 
         try {
-            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory("tmp").toFile());
             outputProcessor.write(testsuite);
         } catch (IOException e) {
             fail(e);
@@ -69,18 +64,15 @@ class JUnitOutputWriterTest {
     @Test
     void process() {
         try {
-            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-            outputProcessor.setOutput(Files.createTempDirectory("tmp").toFile());
+            var outputProcessor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory("tmp").toFile());
             outputProcessor.process(getViolationAggregator());
         } catch (IOException e) {
             fail(e);
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() throws IOException {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setTime(0.55f);
-        openApiViolationAggregator.setRuleNumber(5);
+    private ViolationReport getViolationAggregator() throws IOException {
+        var openApiViolationAggregator = new ViolationReport();
         openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("", 155), "/myPointer");
 
         return openApiViolationAggregator;

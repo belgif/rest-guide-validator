@@ -11,68 +11,79 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class OpenApiViolationAggregator {
+public class ViolationReport {
     /**
      * Structure that hold the violations.
      */
     private final List<Violation> violations = new ArrayList<>();
     private List<String> excludedFiles = new ArrayList<>();
 
-    private int ruleNumber;
-    private float time;
+    public ViolationReport(List<ViolationReport> violationReports) {
+        Set<Violation> aggregatedViolations = violationReports.stream()
+                .flatMap(report -> report.getViolations().stream()).collect(Collectors.toSet());
+        Set<String> aggregatedExcludedFiles = violationReports.stream()
+                        .flatMap(report -> report.getExcludedFiles().stream()).collect(Collectors.toSet());
+        violations.addAll(aggregatedViolations);
+        excludedFiles.addAll(aggregatedExcludedFiles);
+    }
+
+    public boolean isOasValid() {
+        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
+    }
 
     public void addViolation(Violation violation) {
         this.violations.add(violation);
     }
 
-    public void addViolation(String ruleName, String description, String message, Line lineNumber, ViolationType type, String jsonPointer) {
+    public void addViolation(String ruleName, String description, String message, Line lineNumber, ViolationLevel type, String jsonPointer) {
         this.addViolation(new Violation(ruleName, description, message, type, lineNumber, jsonPointer));
     }
 
     public void addViolation(String ruleName, String description, String message, Line lineNumber, String jsonPointer) {
-        this.addViolation(ruleName, description, message, lineNumber, ViolationType.MANDATORY, jsonPointer);
+        this.addViolation(ruleName, description, message, lineNumber, ViolationLevel.MANDATORY, jsonPointer);
     }
 
     public void addViolation(String ruleName, String description, Line lineNumber, String jsonPointer) {
-        this.addViolation(ruleName, description, null, lineNumber, ViolationType.MANDATORY, jsonPointer);
+        this.addViolation(ruleName, description, null, lineNumber, ViolationLevel.MANDATORY, jsonPointer);
     }
 
-    public void addViolation(String ruleName, String description, String message, OpenApiDefinition<?> openApiDefinition, ViolationType violationType) {
+    public void addViolation(String ruleName, String description, String message, OpenApiDefinition<?> openApiDefinition, ViolationLevel violationLevel) {
         if (addExcludedFileViolation(openApiDefinition) || addIgnoredViolation(ruleName, description, openApiDefinition)) {
             return;
         }
         Line lineNumber = openApiDefinition.getLineNumber();
-        this.addViolation(ruleName, description, message, lineNumber, violationType, openApiDefinition.getPrintableJsonPointer());
+        this.addViolation(ruleName, description, message, lineNumber, violationLevel, openApiDefinition.getPrintableJsonPointer());
     }
 
     public void addViolation(String ruleName, String description, String message, OpenApiDefinition<?> openApiDefinition) {
-        this.addViolation(ruleName, description, message, openApiDefinition, ViolationType.MANDATORY);
+        this.addViolation(ruleName, description, message, openApiDefinition, ViolationLevel.MANDATORY);
     }
 
     public void addViolation(String ruleName, String description, OpenApiDefinition<?> openApiDefinition) {
-        this.addViolation(ruleName, description, null, openApiDefinition, ViolationType.MANDATORY);
+        this.addViolation(ruleName, description, null, openApiDefinition, ViolationLevel.MANDATORY);
     }
 
     public void addViolation(String ruleName, String description, String message) {
-        this.addViolation(ruleName, description, message, new Line("", 0), ViolationType.MANDATORY, "");
+        this.addViolation(ruleName, description, message, new Line("", 0), ViolationLevel.MANDATORY, "");
     }
 
     public void addViolation(String ruleName, String description) {
-        this.addViolation(ruleName, description, null, new Line("", 0), ViolationType.MANDATORY, "");
+        this.addViolation(ruleName, description, null, new Line("", 0), ViolationLevel.MANDATORY, "");
     }
 
     public List<Violation> getActionableViolations() {
-        return this.violations.stream().filter(v -> v.getType() != ViolationType.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() != ViolationLevel.IGNORED).sorted().toList();
     }
 
     public List<Violation> getIgnoredViolations() {
-        return this.violations.stream().filter(v -> v.getType() == ViolationType.IGNORED).sorted().collect(Collectors.toList());
+        return this.violations.stream().filter(v -> v.getLevel() == ViolationLevel.IGNORED).sorted().toList();
     }
 
     public int getAmountOfActionableViolations() {
@@ -88,7 +99,7 @@ public class OpenApiViolationAggregator {
         if (fileShouldBeExcluded(relativePath)) {
             var fileName = openApiDefinition.getOpenApiFile().getName();
             if (!isExcludedFileInViolations(fileName)) {
-                this.addViolation("[ignored-file]", "File ignored: " + fileName, null, new Line(fileName, 0), ViolationType.IGNORED, "");
+                this.addViolation("[ignored-file]", "File ignored: " + fileName, null, new Line(fileName, 0), ViolationLevel.IGNORED, "");
             }
             return true;
         }
@@ -100,7 +111,7 @@ public class OpenApiViolationAggregator {
             String lookupRuleName = ruleName.replace("[", "").replace("]", "");
             if (openApiDefinition.getIgnoredRules().containsKey(lookupRuleName)) {
                 Line lineNumber = openApiDefinition.getLineNumber();
-                var violationType = ViolationType.IGNORED;
+                var violationType = ViolationLevel.IGNORED;
                 var message = openApiDefinition.getIgnoredRules().get(lookupRuleName);
                 this.addViolation(ruleName, description, message, lineNumber, violationType, openApiDefinition.getPrintableJsonPointer());
                 return true;

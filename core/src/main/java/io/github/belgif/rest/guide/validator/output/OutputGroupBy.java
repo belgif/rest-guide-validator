@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationType;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum OutputGroupBy {
-    RULE {
+    RULE("rule") {
         @Override
         public Map<String, List<Violation>> groupViolations(List<Violation> violations) {
             return collectToGroupedViolations(violations.stream().sorted(
-                            Comparator.comparing(Violation::getType)
-                                    .thenComparing(Violation::getRuleName)
+                            Comparator.comparing(Violation::getLevel)
+                                    .thenComparing(Violation::getRuleId)
                                     .thenComparing(Comparator.naturalOrder())
                     )
                     .collect(Collectors.groupingBy(
-                            violation -> (violation.getRuleName() + violation.getType().toString() + violation.getDescription()),
+                            violation -> (violation.getRuleId() + violation.getLevel().toString() + violation.getDescription()),
                             LinkedHashMap::new,
                             Collectors.toList()
                     )));
@@ -27,29 +27,29 @@ public enum OutputGroupBy {
 
         @Override
         public String getIdentifier(Violation violation) {
-            return violation.getRuleName();
+            return violation.getRuleId();
         }
 
 
         @Override
         protected String getGroupLine(List<Violation> violations) {
             var violation = violations.get(0);
-            return String.format("%-14S ", ("[" + violation.getType() + "]")) +
-                    String.format("%-12s ", violation.getRuleName()) + violation.getDescription();
+            return String.format("%-14S ", ("[" + violation.getLevel() + "]")) +
+                    String.format("%-12s ", violation.getRuleId()) + violation.getDescription();
         }
 
         @Override
         protected void addReportMessages(List<Violation> violations) {
             for (Violation violation : violations) {
                 var reportMessage = (violation.getLineNumber().getLineNumber() > 0 ? String.format("%-15s ln%4d  ", violation.getLineNumber().getFileName(), violation.getLineNumber().getLineNumber()) : "") +
-                        (violation.getLineNumber().getLineNumber() == 0 && violation.getType().equals(ViolationType.IGNORED) ? String.format("%-15s ", violation.getLineNumber().getFileName()) : "") +
+                        (violation.getLineNumber().getLineNumber() == 0 && violation.getLevel().equals(ViolationLevel.IGNORED) ? String.format("%-15s ", violation.getLineNumber().getFileName()) : "") +
                         String.format("%s", "#" + violation.getPointer()) +
                         violation.getFormattedMessage();
                 violation.setReportMessage(reportMessage);
             }
         }
     },
-    FILE {
+    FILE("file") {
         @Override
         public Map<String, List<Violation>> groupViolations(List<Violation> violations) {
             return collectToGroupedViolations(violations.stream().sorted()
@@ -72,8 +72,8 @@ public enum OutputGroupBy {
         @Override
         protected void addReportMessages(List<Violation> violations) {
             for (Violation violation : violations) {
-                var reportMessage = String.format("%-14S ", ("[" + violation.getType() + "]")) +
-                        String.format("%-14s ", violation.getRuleName()) +
+                var reportMessage = String.format("%-14S ", ("[" + violation.getLevel() + "]")) +
+                        String.format("%-14s ", violation.getRuleId()) +
                         (violation.getLineNumber().getLineNumber() > 0 ? String.format(" ln%4d  ", violation.getLineNumber().getLineNumber()) : "") +
                         String.format("%s%n", "#" + violation.getPointer()) +
                         violation.getDescription() +
@@ -82,6 +82,12 @@ public enum OutputGroupBy {
             }
         }
     };
+
+    public final String value;
+
+    OutputGroupBy(String value) {
+        this.value = value;
+    }
 
     // Should return a map with key: Description of group, and value a list of Violations with their reportMessage set.
     public abstract Map<String, List<Violation>> groupViolations(List<Violation> violations);

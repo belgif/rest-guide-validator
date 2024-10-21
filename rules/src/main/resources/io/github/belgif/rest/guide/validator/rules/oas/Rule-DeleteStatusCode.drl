@@ -3,16 +3,16 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import java.util.Set;
 
-global io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator oas;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
-function void violationDelete(OpenApiViolationAggregator oas, OperationDefinition operation, String code){
+function void violationDelete(ViolationReport oas, OperationDefinition operation, String code){
     oas.addViolation("[stat-codes]", "DELETE operation should not have this status code " , "[statuscode: " + code + "]",
                      operation);
 }

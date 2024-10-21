@@ -1,8 +1,7 @@
-package io.github.belgif.rest.guide.validator;
+package io.github.belgif.rest.guide.validator.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
-import io.github.belgif.rest.guide.validator.output.OutputGroupBy;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,8 +14,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByRule() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE);
-        processor.setOutput(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.RULE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {
@@ -26,8 +24,7 @@ class JUnitOutputProcessorTest {
 
     @Test
     void processByFile() throws IOException {
-        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE);
-        processor.setOutput(Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
+        var processor = new JUnitOutputProcessor(OutputGroupBy.FILE, Files.createTempDirectory(Paths.get("target"), "tmpDirPrefix").toFile());
         try {
             processor.process(getViolationAggregator());
         } catch (Exception e) {
@@ -35,10 +32,8 @@ class JUnitOutputProcessorTest {
         }
     }
 
-    private OpenApiViolationAggregator getViolationAggregator() {
-        var openApiViolationAggregator = new OpenApiViolationAggregator();
-        openApiViolationAggregator.setTime(0.55f);
-        openApiViolationAggregator.setRuleNumber(3);
+    private ViolationReport getViolationAggregator() {
+        var openApiViolationAggregator = new ViolationReport();
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 155), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 170), "/MyPointer");
         openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 180), "/MyPointer");

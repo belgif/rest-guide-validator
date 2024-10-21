@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import io.github.belgif.rest.guide.validator.core.OpenApiViolationAggregator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ class RepresentationOfCollectionTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidOpenApi() {
-        OpenApiViolationAggregator aggregator = callRules("openapi_bad.yaml");
+        ViolationReport aggregator = callRules("openapi_bad.yaml");
         int violationsDoesNotContainItems = (int) aggregator.getActionableViolations().stream().filter(violation -> violation.getMessage().contains("Response does not contain a property 'items' of type array")).count();
         int violationsItemsNotOfTypeObject = (int) aggregator.getActionableViolations().stream().filter(violation -> violation.getMessage().contains("Schema (or subschema for allOf/oneOf/anyOf) of the values in the items array should be of type object")).count();
         assertErrorCount(3, aggregator);
