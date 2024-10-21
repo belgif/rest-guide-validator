@@ -85,6 +85,7 @@
         <module>rules</module>
         <module>maven-plugin</module>
         <module>integrationtest</module>
+        <module>cli</module>
     </modules>
 
     <!-- Build -->
