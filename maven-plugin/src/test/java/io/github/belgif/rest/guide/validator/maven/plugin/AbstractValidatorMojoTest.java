@@ -1,5 +1,7 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.belgif.rest.guide.validator.output.OutputType;
 import org.apache.maven.plugin.MojoFailureException;
 import org.junit.jupiter.api.Test;
@@ -50,13 +52,18 @@ public abstract class AbstractValidatorMojoTest {
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
 
-        byte[] referenceBytes = this.getClass().getResource("report.json").openStream().readAllBytes();
+        byte[] referenceBytes = Files.readAllBytes(outputFiles.get(0).getAbsoluteFile().toPath());
         // Assert results
         for (File outputFile : outputFiles) {
             assertTrue(outputFile.exists());
             byte[] bytes = Files.readAllBytes(outputFile.toPath());
             assertArrayEquals(referenceBytes, bytes);
         }
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(referenceBytes);
+        assertTrue(node.has("violations"));
+        assertEquals(4, node.get("totalViolations").asInt());
     }
 
     private List<Callable<Void>> getCallables(List<File> outputFiles) {
