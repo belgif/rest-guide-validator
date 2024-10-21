@@ -1,11 +1,15 @@
 package io.github.belgif.rest.guide.validator.cli;
 
+import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import picocli.CommandLine;
 
 import java.util.List;
 
-@CommandLine.Command(name = "belgif-validate-openapi", version = "2.2.0", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "belgif-validate-openapi", mixinStandardHelpOptions = true)
 public class BelgifRestGuideCli implements Runnable {
+
+    @CommandLine.Mixin
+    private ValidatorOptions options;
 
     @CommandLine.Option(names = {"-f", "--files"}, description = "Files", defaultValue = "default")
     public List<String> files;
