@@ -14,7 +14,7 @@ public class VersionProvider implements CommandLine.IVersionProvider {
     }
 
     private String getMavenVersion() {
-        try(InputStream input = VersionProvider.class.getClassLoader().getResourceAsStream("io/github/belgif/rest/guide/validator/util/version.properties")) {
+        try (InputStream input = VersionProvider.class.getClassLoader().getResourceAsStream("io/github/belgif/rest/guide/validator/util/version.properties")) {
             Properties prop = new Properties();
             if (input != null) {
                 prop.load(input);
