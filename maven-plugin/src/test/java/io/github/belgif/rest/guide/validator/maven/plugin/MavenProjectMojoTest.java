@@ -1,6 +1,5 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
-import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -12,10 +11,7 @@ class MavenProjectMojoTest extends AbstractValidatorMojoTest {
 
     @Override
     protected MavenProjectMojo getMojo() {
-        var openApiMojo = new MavenProjectMojo();
-        openApiMojo.mavenProject = new MavenProject();
-        openApiMojo.mavenProject.setFile(new File(this.getClass().getResource(".").getFile()));
-        return openApiMojo;
+        return new MavenProjectMojo();
     }
 
     @Test
