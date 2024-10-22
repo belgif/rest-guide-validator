@@ -23,6 +23,11 @@
             <artifactId>picocli</artifactId>
             <version>4.7.6</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.belgif.rest.guide.validator</groupId>
+            <artifactId>belgif-rest-guide-validator-rules</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
