@@ -7,6 +7,7 @@ import picocli.CommandLine;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 @CommandLine.Command(synopsisHeading = "%nUsage:%n%n",
@@ -47,4 +48,7 @@ public class ValidatorOptions {
     @CommandLine.Option(names = {"-g", "--groupBy"}, defaultValue = "rule", description = "Specify how you want to group the violation output")
     private String groupBy;
 
+    public List<String> getExcludedFiles() {
+        return excludedFiles != null ? excludedFiles : new ArrayList<>();
+    }
 }

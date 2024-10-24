@@ -2,6 +2,7 @@ package io.github.belgif.rest.guide.validator.cli;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.output.*;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -11,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 
@@ -43,7 +45,11 @@ public class BelgifRestGuideCli implements Runnable {
         System.out.println(options.getGroupBy());
         try {
             init();
-            myTempMethod();
+            if (myTempMethod()) {
+                System.exit(0);
+            } else {
+                System.exit(11);
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
             System.exit(1);
@@ -55,10 +61,13 @@ public class BelgifRestGuideCli implements Runnable {
         System.exit(exitCode);
     }
 
-    private void myTempMethod() {
+    private boolean myTempMethod() {
         System.out.println("Starting validation");
+        var isValid = new AtomicBoolean(true);
         var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
-        System.out.println(violationReports.size() + " violationReports");
+        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
+        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
+        return isValid.get();
     }
 
     private void init() throws FileNotFoundException {
@@ -91,7 +100,7 @@ public class BelgifRestGuideCli implements Runnable {
     }
 
     private List<File> getJsonAndYamlFiles(List<File> fileList) {
-        return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).toList();
+        return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).map(File::getAbsoluteFile).toList();
     }
 
     private void initOutputTypes() {
