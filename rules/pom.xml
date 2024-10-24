@@ -52,20 +52,10 @@
             <artifactId>drools-commands</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.drools</groupId>-->
-<!--            <artifactId>drools-engine</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-xml-support</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.kie</groupId>-->
-<!--            <artifactId>kie-ci</artifactId>-->
-<!--        </dependency>-->
 
         <!-- test dependencies-->
         <dependency>
