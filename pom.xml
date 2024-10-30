@@ -83,6 +83,7 @@
     <modules>
         <module>core</module>
         <module>rules</module>
+        <module>runner</module>
         <module>maven-plugin</module>
         <module>integrationtest</module>
         <module>cli</module>

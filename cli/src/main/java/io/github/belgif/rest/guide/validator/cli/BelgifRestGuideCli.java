@@ -4,8 +4,8 @@ import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import io.github.belgif.rest.guide.validator.input.InputFileUtil;
-import io.github.belgif.rest.guide.validator.output.*;
+import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
+import io.github.belgif.rest.guide.validator.runner.output.*;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 

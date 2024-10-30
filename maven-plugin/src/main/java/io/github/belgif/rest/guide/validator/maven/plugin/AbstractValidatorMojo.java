@@ -2,8 +2,8 @@ package io.github.belgif.rest.guide.validator.maven.plugin;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import io.github.belgif.rest.guide.validator.input.InputFileUtil;
-import io.github.belgif.rest.guide.validator.output.*;
+import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
+import io.github.belgif.rest.guide.validator.runner.output.*;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;

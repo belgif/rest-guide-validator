@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>
-            <artifactId>belgif-rest-guide-validator-rules</artifactId>
+            <artifactId>belgif-rest-guide-validator-runner</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
