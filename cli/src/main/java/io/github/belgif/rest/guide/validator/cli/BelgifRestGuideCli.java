@@ -44,7 +44,7 @@ public class BelgifRestGuideCli implements Runnable {
     public void run() {
         try {
             init();
-            if (isOpenApiValid()) {
+            if (executeRules()) {
                 System.exit(0);
             } else {
                 System.exit(11);
@@ -61,7 +61,7 @@ public class BelgifRestGuideCli implements Runnable {
         System.exit(exitCode);
     }
 
-    private boolean isOpenApiValid() {
+    private boolean executeRules() {
         log.info("Starting OpenApi validation");
         var isValid = new AtomicBoolean(true);
         var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
@@ -95,7 +95,7 @@ public class BelgifRestGuideCli implements Runnable {
     }
 
     private static void printCommandLineArguments(String[] args) {
-        log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getMavenVersion());
+        log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
             sb.append(args[i]).append("\t");

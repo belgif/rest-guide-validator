@@ -10,10 +10,10 @@ import java.util.Properties;
 public class VersionProvider implements CommandLine.IVersionProvider {
     @Override
     public String[] getVersion() {
-        return new String[]{getMavenVersion()};
+        return new String[]{getValidatorVersion()};
     }
 
-    public static String getMavenVersion() {
+    public static String getValidatorVersion() {
         try (InputStream input = VersionProvider.class.getClassLoader().getResourceAsStream("io/github/belgif/rest/guide/validator/util/version.properties")) {
             Properties prop = new Properties();
             if (input != null) {
