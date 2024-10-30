@@ -4,6 +4,9 @@ import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.runner.output.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -16,18 +19,37 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Getter
+@Builder
 public class ValidationRunner {
 
-    private ValidationRunner() {
+    /**
+     * A list of files to validate
+     */
+    @NonNull
+    private final List<File> files;
+
+    /**
+     * Files that should not be validated.
+     */
+    private final List<String> excludedFiles;
+
+    private final List<OutputType> outputTypes;
+    private final String groupBy;
+    private final Path outputDir;
+    private final File jsonOutputFile;
+
+    public OutputGroupBy getOutputGroupBy() {
+        return OutputGroupBy.fromString(groupBy);
     }
 
-    public static boolean executeRules(RunnerOptions options) throws FileNotFoundException {
-        Set<OutputProcessor> outputProcessors = buildOutputProcessors(options.getOutputTypes(), options.getOutputGroupBy(), options.getOutputDir(), options.getJsonOutputFile());
-        List<File> filesToProcess = buildFilesToProcess(options.getFiles());
-        return executeRules(filesToProcess, options.getExcludedFiles(), outputProcessors);
+    public boolean executeRules() throws FileNotFoundException {
+        Set<OutputProcessor> outputProcessors = buildOutputProcessors(this.outputTypes, this.getOutputGroupBy(), this.outputDir, this.jsonOutputFile);
+        List<File> filesToProcess = buildFilesToProcess(this.files);
+        return executeRules(filesToProcess, this.excludedFiles, outputProcessors);
     }
 
-    public static boolean executeRules(List<File> filesToProcess, List<String> excludedFiles, Set<OutputProcessor> outputProcessors) {
+    private static boolean executeRules(List<File> filesToProcess, List<String> excludedFiles, Set<OutputProcessor> outputProcessors) {
         var isValid = new AtomicBoolean(true);
         var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, excludedFiles)).toList();
         isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));

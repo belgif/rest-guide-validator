@@ -1,6 +1,5 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
-import io.github.belgif.rest.guide.validator.runner.RunnerOptions;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import org.apache.maven.plugin.AbstractMojo;
@@ -68,7 +67,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     List<String> excludeResources = new ArrayList<>();
 
     protected boolean executeRules() throws MojoFailureException {
-        RunnerOptions options = RunnerOptions.builder()
+        ValidationRunner runner = ValidationRunner.builder()
                 .files(files)
                 .excludedFiles(excludedFiles)
                 .jsonOutputFile(jsonOutputFile)
@@ -77,7 +76,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                 .groupBy(groupBy)
                 .build();
         try {
-            return ValidationRunner.executeRules(options);
+            return runner.executeRules();
         } catch (FileNotFoundException e) {
             throw new MojoFailureException(e.getMessage());
         }

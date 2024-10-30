@@ -2,7 +2,6 @@ package io.github.belgif.rest.guide.validator.cli;
 
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
-import io.github.belgif.rest.guide.validator.runner.RunnerOptions;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import lombok.extern.slf4j.Slf4j;
@@ -25,19 +24,9 @@ public class BelgifRestGuideCli implements Runnable {
     @CommandLine.Mixin
     private ValidatorOptions options;
 
-    private RunnerOptions runnerOptions;
-
     @Override
     public void run() {
         try {
-            runnerOptions = RunnerOptions.builder()
-                    .files(options.getFiles())
-                    .excludedFiles(options.getExcludedFiles())
-                    .jsonOutputFile(options.getJsonOutputFile())
-                    .outputDir(options.getOutputDir())
-                    .outputTypes(initOutputTypes())
-                    .groupBy(options.getGroupBy())
-                    .build();
             if (executeRules()) {
                 System.exit(0);
             } else {
@@ -57,7 +46,15 @@ public class BelgifRestGuideCli implements Runnable {
 
     private boolean executeRules() throws FileNotFoundException {
         log.info("Starting OpenApi validation");
-        return ValidationRunner.executeRules(runnerOptions);
+        ValidationRunner runner = ValidationRunner.builder()
+                .files(options.getFiles())
+                .excludedFiles(options.getExcludedFiles())
+                .jsonOutputFile(options.getJsonOutputFile())
+                .outputDir(options.getOutputDir())
+                .outputTypes(initOutputTypes())
+                .groupBy(options.getGroupBy())
+                .build();
+        return runner.executeRules();
     }
 
     private static void printCommandLineArguments(String[] args) {
