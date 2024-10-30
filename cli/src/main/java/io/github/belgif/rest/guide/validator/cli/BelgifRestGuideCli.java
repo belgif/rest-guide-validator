@@ -61,18 +61,14 @@ public class BelgifRestGuideCli implements Runnable {
 
     private boolean executeRules() {
         log.info("Starting OpenApi validation");
-//        var isValid = new AtomicBoolean(true);
-//        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
-//        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
-//        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
-//        return isValid.get();
         return ValidationRunner.executeRules(filesToProcess, options.getExcludedFiles(), outputProcessors);
     }
 
     private void init() throws FileNotFoundException {
         this.groupBy = OutputGroupBy.fromString(options.getGroupBy());
         this.jsonOutputFile = options.getJsonOutputFile();
-        initOutputProcessor();
+        initOutputTypes();
+        outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, this.groupBy, options.getOutputDir(), jsonOutputFile);
         initFiles();
     }
 
@@ -110,36 +106,4 @@ public class BelgifRestGuideCli implements Runnable {
         this.outputTypes = types;
     }
 
-    private void initOutputProcessor() {
-        initOutputTypes();
-        if (options.getOutputTypes() == null || options.getOutputTypes().isEmpty())
-            outputProcessors = Set.of(new ConsoleOutputProcessor(this.groupBy));
-        else {
-            try {
-                Files.createDirectories(options.getOutputDir());
-                Files.createDirectories(jsonOutputFile.getParentFile().toPath());
-            } catch (IOException e) {
-                log.error(options.getOutputDir() + " directory doesn't exist and cannot be created!", e);
-            }
-
-            outputProcessors = new HashSet<>();
-            this.outputTypes.forEach(outputType -> {
-                switch (outputType) {
-                    case NONE:
-                        break;
-                    case JUNIT:
-                        outputProcessors.add(new JUnitOutputProcessor(this.groupBy, options.getOutputDir().toFile()));
-                        break;
-                    case LOG4J:
-                        outputProcessors.add(new Log4JOutputProcessor(this.groupBy));
-                        break;
-                    case JSON:
-                        outputProcessors.add(new JsonOutputProcessor(this.groupBy, this.jsonOutputFile));
-                        break;
-                    default:
-                        outputProcessors.add(new ConsoleOutputProcessor(this.groupBy));
-                }
-            });
-        }
-    }
 }

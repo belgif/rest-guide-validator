@@ -78,7 +78,10 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         if (Objects.equals(jsonOutputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
             jsonOutputFile = new File(outputDir, DEFAULT_FILE_NAME);
         }
-        initOutputProcessor();
+
+        var outputPath = outputDir == null ? null : outputDir.toPath();
+        this.outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, outputGroupBy, outputPath, jsonOutputFile);
+
         initFiles();
     }
 
@@ -89,42 +92,6 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
             throw new MojoFailureException(e.getMessage());
         }
         return !filesToProcess.isEmpty() && ValidationRunner.executeRules(filesToProcess, excludedFiles, outputProcessors);
-    }
-
-    /**
-     * Add a Console ConsoleOutputProcessor if outputTypes is empty.
-     * Instances Processors regarding the outputTypes.
-     */
-    protected void initOutputProcessor() {
-        if (outputTypes == null || outputTypes.isEmpty())
-            outputProcessors = Set.of(new ConsoleOutputProcessor(outputGroupBy));
-        else {
-            try {
-                Files.createDirectories(outputDir.toPath());
-                Files.createDirectories(jsonOutputFile.getParentFile().toPath());
-            } catch (IOException e) {
-                getLog().error(outputDir + " directory doesn't exist and cannot be created!", e);
-            }
-
-            outputProcessors = new HashSet<>();
-            outputTypes.forEach(outputType -> {
-                switch (outputType) {
-                    case NONE:
-                        break;
-                    case JUNIT:
-                        outputProcessors.add(new JUnitOutputProcessor(outputGroupBy, outputDir));
-                        break;
-                    case LOG4J:
-                        outputProcessors.add(new Log4JOutputProcessor(outputGroupBy));
-                        break;
-                    case JSON:
-                        outputProcessors.add(new JsonOutputProcessor(outputGroupBy, jsonOutputFile));
-                        break;
-                    default:
-                        outputProcessors.add(new ConsoleOutputProcessor(outputGroupBy));
-                }
-            });
-        }
     }
 
     /**
