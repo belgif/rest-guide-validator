@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
-import io.github.belgif.rest.guide.validator.OpenApiValidator;
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.runner.output.*;
 import org.apache.maven.plugin.AbstractMojo;
@@ -13,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
@@ -85,20 +83,12 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     }
 
     protected boolean executeRules() throws MojoFailureException {
-        var isValid = new AtomicBoolean(true);
         try {
             init();
         } catch (FileNotFoundException e) {
             throw new MojoFailureException(e.getMessage());
         }
-
-        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, excludedFiles)).toList();
-        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
-        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
-        if (filesToProcess.isEmpty()) {
-            isValid.set(false);
-        }
-        return isValid.get();
+        return !filesToProcess.isEmpty() && ValidationRunner.executeRules(filesToProcess, excludedFiles, outputProcessors);
     }
 
     /**

@@ -1,9 +1,8 @@
 package io.github.belgif.rest.guide.validator.cli;
 
-import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.runner.output.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 
@@ -63,11 +61,12 @@ public class BelgifRestGuideCli implements Runnable {
 
     private boolean executeRules() {
         log.info("Starting OpenApi validation");
-        var isValid = new AtomicBoolean(true);
-        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
-        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
-        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
-        return isValid.get();
+//        var isValid = new AtomicBoolean(true);
+//        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
+//        isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
+//        outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
+//        return isValid.get();
+        return ValidationRunner.executeRules(filesToProcess, options.getExcludedFiles(), outputProcessors);
     }
 
     private void init() throws FileNotFoundException {
