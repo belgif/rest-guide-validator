@@ -39,7 +39,7 @@ public class ValidationRunner {
      * Add a Console ConsoleOutputProcessor if outputTypes is empty.
      * Instances Processors regarding the outputTypes.
      */
-    public static Set<OutputProcessor> buildOutputProcessors(List<OutputType> outputTypes, OutputGroupBy groupBy, Path outputPath, File jsonOutputFile) {
+    private static Set<OutputProcessor> buildOutputProcessors(List<OutputType> outputTypes, OutputGroupBy groupBy, Path outputPath, File jsonOutputFile) {
         Set<OutputProcessor> outputProcessors;
         if (outputTypes == null || outputTypes.isEmpty())
             outputProcessors = Set.of(new ConsoleOutputProcessor(groupBy));
@@ -76,7 +76,7 @@ public class ValidationRunner {
         return outputProcessors;
     }
 
-    public static List<File> buildFilesToProcess(List<File> files) throws FileNotFoundException {
+    private static List<File> buildFilesToProcess(List<File> files) throws FileNotFoundException {
         if (files == null || files.isEmpty())
             throw new IllegalArgumentException("rest-guide-validator needs at least one file ! Set the '-f' or '--files' parameter.");
         Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();

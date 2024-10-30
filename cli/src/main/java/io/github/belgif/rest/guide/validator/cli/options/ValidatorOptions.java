@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator.cli.options;
 
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
+import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import lombok.Getter;
 import picocli.CommandLine;
 

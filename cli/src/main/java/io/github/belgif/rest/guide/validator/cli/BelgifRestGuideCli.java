@@ -30,7 +30,14 @@ public class BelgifRestGuideCli implements Runnable {
     @Override
     public void run() {
         try {
-            init();
+            runnerOptions = RunnerOptions.builder()
+                    .files(options.getFiles())
+                    .excludedFiles(options.getExcludedFiles())
+                    .jsonOutputFile(options.getJsonOutputFile())
+                    .outputDir(options.getOutputDir())
+                    .outputTypes(initOutputTypes())
+                    .groupBy(options.getGroupBy())
+                    .build();
             if (executeRules()) {
                 System.exit(0);
             } else {
@@ -53,17 +60,6 @@ public class BelgifRestGuideCli implements Runnable {
         return ValidationRunner.executeRules(runnerOptions);
     }
 
-    private void init() {
-        runnerOptions = RunnerOptions.builder()
-                .files(options.getFiles())
-                .excludedFiles(options.getExcludedFiles())
-                .jsonOutputFile(options.getJsonOutputFile())
-                .outputDir(options.getOutputDir())
-                .outputTypes(initOutputTypes())
-                .groupBy(options.getGroupBy())
-                .build();
-    }
-
     private static void printCommandLineArguments(String[] args) {
         log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
         StringBuilder sb = new StringBuilder();
@@ -73,6 +69,9 @@ public class BelgifRestGuideCli implements Runnable {
         log.info("Options: {}", sb);
     }
 
+    /**
+     * Makes sure that the enum can be selected case-insensitive in the CLI.
+     */
     private List<OutputType> initOutputTypes() {
         List<OutputType> types = new ArrayList<>();
         for (String type : options.getOutputTypes()) {
