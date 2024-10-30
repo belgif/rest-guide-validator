@@ -2,6 +2,7 @@ package io.github.belgif.rest.guide.validator.maven.plugin;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.output.*;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -73,14 +74,6 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected Set<OutputProcessor> outputProcessors;
     protected final List<File> filesToProcess = new ArrayList<>();
     protected OutputGroupBy outputGroupBy;
-
-    private List<File> getJsonAndYamlFiles(File directory) {
-        return getJsonAndYamlFiles(List.of(Objects.requireNonNull(directory.listFiles())));
-    }
-
-    private List<File> getJsonAndYamlFiles(List<File> fileList) {
-        return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).toList();
-    }
 
     protected void init() throws FileNotFoundException {
         outputGroupBy = OutputGroupBy.fromString(groupBy);
@@ -158,7 +151,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
 
         // replace directories in list by the json and yaml files in them
         var dirs = files.stream().filter(File::isDirectory).collect(Collectors.toSet());
-        var filesFromDirs = dirs.stream().flatMap(dir -> getJsonAndYamlFiles(dir).stream()).toList();
+        var filesFromDirs = dirs.stream().flatMap(dir -> InputFileUtil.getJsonAndYamlFiles(dir).stream()).toList();
         var filesInRootFolder = files.stream().filter(File::isFile).filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).toList();
 
         filesToProcess.addAll(filesInRootFolder);

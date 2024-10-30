@@ -2,7 +2,9 @@ package io.github.belgif.rest.guide.validator.cli;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
+import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.output.*;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -17,7 +19,12 @@ import java.util.stream.Collectors;
 
 
 @Slf4j
-@CommandLine.Command(name = "belgif-validate-openapi", mixinStandardHelpOptions = true, showDefaultValues = true)
+@CommandLine.Command(name = "belgif-validate-openapi",
+        description = "The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide.",
+        footerHeading = "For additional information: ",
+        footer = "https://github.com/belgif/rest-guide-validator/blob/main/readme.md",
+        mixinStandardHelpOptions = true,
+        showDefaultValues = true)
 public class BelgifRestGuideCli implements Runnable {
 
     @CommandLine.Mixin
@@ -35,17 +42,9 @@ public class BelgifRestGuideCli implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Belgif Rest Guide Cli started");
-
-        System.out.println(options.getFiles());
-        System.out.println(options.getExcludedFiles());
-        System.out.println(options.getOutputTypes());
-        System.out.println(options.getOutputDir());
-        System.out.println(options.getJsonOutputFile());
-        System.out.println(options.getGroupBy());
         try {
             init();
-            if (myTempMethod()) {
+            if (isOpenApiValid()) {
                 System.exit(0);
             } else {
                 System.exit(11);
@@ -57,12 +56,13 @@ public class BelgifRestGuideCli implements Runnable {
     }
 
     public static void main(String[] args) {
+        printCommandLineArguments(args);
         int exitCode = new CommandLine(new BelgifRestGuideCli()).execute(args);
         System.exit(exitCode);
     }
 
-    private boolean myTempMethod() {
-        System.out.println("Starting validation");
+    private boolean isOpenApiValid() {
+        log.info("Starting OpenApi validation");
         var isValid = new AtomicBoolean(true);
         var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, options.getExcludedFiles())).toList();
         isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
@@ -87,20 +87,20 @@ public class BelgifRestGuideCli implements Runnable {
 
         // replace directories in list by the json and yaml files in them
         var dirs = options.getFiles().stream().filter(File::isDirectory).collect(Collectors.toSet());
-        var filesFromDirs = dirs.stream().flatMap(dir -> getJsonAndYamlFiles(dir).stream()).toList();
-        var filesInRootFolder = getJsonAndYamlFiles(options.getFiles().stream().filter(File::isFile).toList());
+        var filesFromDirs = dirs.stream().flatMap(dir -> InputFileUtil.getJsonAndYamlFiles(dir).stream()).toList();
+        var filesInRootFolder = InputFileUtil.getJsonAndYamlFiles(options.getFiles().stream().filter(File::isFile).toList());
 
         filesToProcess.addAll(filesInRootFolder);
         filesToProcess.addAll(filesFromDirs);
     }
 
-    //TODO can be reused from the maven project.
-    private List<File> getJsonAndYamlFiles(File directory) {
-        return getJsonAndYamlFiles(List.of(Objects.requireNonNull(directory.listFiles())));
-    }
-
-    private List<File> getJsonAndYamlFiles(List<File> fileList) {
-        return fileList.stream().filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).map(File::getAbsoluteFile).toList();
+    private static void printCommandLineArguments(String[] args) {
+        log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getMavenVersion());
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            sb.append(args[i]).append("\t");
+        }
+        log.info("Options: {}", sb.toString());
     }
 
     private void initOutputTypes() {

@@ -13,7 +13,7 @@ public class VersionProvider implements CommandLine.IVersionProvider {
         return new String[]{getMavenVersion()};
     }
 
-    private String getMavenVersion() {
+    public static String getMavenVersion() {
         try (InputStream input = VersionProvider.class.getClassLoader().getResourceAsStream("io/github/belgif/rest/guide/validator/util/version.properties")) {
             Properties prop = new Properties();
             if (input != null) {
