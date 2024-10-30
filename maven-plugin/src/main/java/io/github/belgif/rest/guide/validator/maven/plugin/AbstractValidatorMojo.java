@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
-import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.runner.output.*;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -9,10 +8,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
@@ -70,7 +66,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
 
 
     protected Set<OutputProcessor> outputProcessors;
-    protected final List<File> filesToProcess = new ArrayList<>();
+    protected List<File> filesToProcess = new ArrayList<>();
     protected OutputGroupBy outputGroupBy;
 
     protected void init() throws FileNotFoundException {
@@ -81,8 +77,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
 
         var outputPath = outputDir == null ? null : outputDir.toPath();
         this.outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, outputGroupBy, outputPath, jsonOutputFile);
-
-        initFiles();
+        this.filesToProcess = ValidationRunner.buildFilesToProcess(files);
     }
 
     protected boolean executeRules() throws MojoFailureException {
@@ -92,27 +87,6 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
             throw new MojoFailureException(e.getMessage());
         }
         return !filesToProcess.isEmpty() && ValidationRunner.executeRules(filesToProcess, excludedFiles, outputProcessors);
-    }
-
-    /**
-     * Throw an IllegalArgumentException if no file is provided or if a file is not in the maven project.
-     * Add all yaml or gson file from provided directories.
-     */
-    private void initFiles() throws FileNotFoundException {
-        if (files.isEmpty())
-            throw new IllegalArgumentException("rest-guide-validator needs at least one file ! Set the 'rest-guide-validator.files' parameter.");
-        Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();
-        if (fileNotFound.isPresent()) {
-            throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());
-        }
-
-        // replace directories in list by the json and yaml files in them
-        var dirs = files.stream().filter(File::isDirectory).collect(Collectors.toSet());
-        var filesFromDirs = dirs.stream().flatMap(dir -> InputFileUtil.getJsonAndYamlFiles(dir).stream()).toList();
-        var filesInRootFolder = files.stream().filter(File::isFile).filter(file -> file.getName().endsWith(".yml") || file.getName().endsWith(".yaml") || file.getName().endsWith(".json")).toList();
-
-        filesToProcess.addAll(filesInRootFolder);
-        filesToProcess.addAll(filesFromDirs);
     }
 
 }

@@ -2,17 +2,18 @@ package io.github.belgif.rest.guide.validator.runner;
 
 import io.github.belgif.rest.guide.validator.OpenApiValidator;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
 import io.github.belgif.rest.guide.validator.runner.output.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ValidationRunner {
@@ -68,4 +69,25 @@ public class ValidationRunner {
         }
         return outputProcessors;
     }
+
+    public static List<File> buildFilesToProcess(List<File> files) throws FileNotFoundException {
+        if (files == null || files.isEmpty())
+            throw new IllegalArgumentException("rest-guide-validator needs at least one file ! Set the '-f' or '--files' parameter.");
+        Optional<File> fileNotFound = files.stream().filter(file -> !file.exists()).findAny();
+        if (fileNotFound.isPresent()) {
+            throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());
+        }
+
+        // replace directories in list by the json and yaml files in them
+        var dirs = files.stream().filter(File::isDirectory).collect(Collectors.toSet());
+        var filesFromDirs = dirs.stream().flatMap(dir -> InputFileUtil.getJsonAndYamlFiles(dir).stream()).toList();
+        var filesInRootFolder = InputFileUtil.getJsonAndYamlFiles(files.stream().filter(File::isFile).toList());
+
+        List<File> filesToProcess = new ArrayList<>();
+        filesToProcess.addAll(filesInRootFolder);
+        filesToProcess.addAll(filesFromDirs);
+
+        return filesToProcess;
+    }
+
 }

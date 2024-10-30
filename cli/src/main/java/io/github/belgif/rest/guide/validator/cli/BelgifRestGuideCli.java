@@ -3,17 +3,17 @@ package io.github.belgif.rest.guide.validator.cli;
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
-import io.github.belgif.rest.guide.validator.runner.input.InputFileUtil;
-import io.github.belgif.rest.guide.validator.runner.output.*;
+import io.github.belgif.rest.guide.validator.runner.output.OutputGroupBy;
+import io.github.belgif.rest.guide.validator.runner.output.OutputProcessor;
+import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 @Slf4j
@@ -28,7 +28,7 @@ public class BelgifRestGuideCli implements Runnable {
     @CommandLine.Mixin
     private ValidatorOptions options;
 
-    private final List<File> filesToProcess = new ArrayList<>();
+    private List<File> filesToProcess = new ArrayList<>();
 
     private OutputGroupBy groupBy;
 
@@ -69,24 +69,7 @@ public class BelgifRestGuideCli implements Runnable {
         this.jsonOutputFile = options.getJsonOutputFile();
         initOutputTypes();
         outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, this.groupBy, options.getOutputDir(), jsonOutputFile);
-        initFiles();
-    }
-
-    private void initFiles() throws FileNotFoundException {
-        if (options.getFiles().isEmpty())
-            throw new IllegalArgumentException("rest-guide-validator needs at least one file ! Set the '-f' or '--files' parameter.");
-        Optional<File> fileNotFound = options.getFiles().stream().filter(file -> !file.exists()).findAny();
-        if (fileNotFound.isPresent()) {
-            throw new FileNotFoundException("File not found: " + fileNotFound.get().getAbsolutePath());
-        }
-
-        // replace directories in list by the json and yaml files in them
-        var dirs = options.getFiles().stream().filter(File::isDirectory).collect(Collectors.toSet());
-        var filesFromDirs = dirs.stream().flatMap(dir -> InputFileUtil.getJsonAndYamlFiles(dir).stream()).toList();
-        var filesInRootFolder = InputFileUtil.getJsonAndYamlFiles(options.getFiles().stream().filter(File::isFile).toList());
-
-        filesToProcess.addAll(filesInRootFolder);
-        filesToProcess.addAll(filesFromDirs);
+        filesToProcess = ValidationRunner.buildFilesToProcess(options.getFiles());
     }
 
     private static void printCommandLineArguments(String[] args) {
