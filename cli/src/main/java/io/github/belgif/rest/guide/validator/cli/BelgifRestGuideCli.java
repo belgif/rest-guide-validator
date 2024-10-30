@@ -2,18 +2,15 @@ package io.github.belgif.rest.guide.validator.cli;
 
 import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
+import io.github.belgif.rest.guide.validator.runner.RunnerOptions;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
-import io.github.belgif.rest.guide.validator.runner.output.OutputGroupBy;
-import io.github.belgif.rest.guide.validator.runner.output.OutputProcessor;
 import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 @Slf4j
@@ -28,15 +25,7 @@ public class BelgifRestGuideCli implements Runnable {
     @CommandLine.Mixin
     private ValidatorOptions options;
 
-    private List<File> filesToProcess = new ArrayList<>();
-
-    private OutputGroupBy groupBy;
-
-    private File jsonOutputFile;
-
-    private List<OutputType> outputTypes;
-
-    private Set<OutputProcessor> outputProcessors;
+    private RunnerOptions runnerOptions;
 
     @Override
     public void run() {
@@ -59,34 +48,37 @@ public class BelgifRestGuideCli implements Runnable {
         System.exit(exitCode);
     }
 
-    private boolean executeRules() {
+    private boolean executeRules() throws FileNotFoundException {
         log.info("Starting OpenApi validation");
-        return ValidationRunner.executeRules(filesToProcess, options.getExcludedFiles(), outputProcessors);
+        return ValidationRunner.executeRules(runnerOptions);
     }
 
-    private void init() throws FileNotFoundException {
-        this.groupBy = OutputGroupBy.fromString(options.getGroupBy());
-        this.jsonOutputFile = options.getJsonOutputFile();
-        initOutputTypes();
-        outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, this.groupBy, options.getOutputDir(), jsonOutputFile);
-        filesToProcess = ValidationRunner.buildFilesToProcess(options.getFiles());
+    private void init() {
+        runnerOptions = RunnerOptions.builder()
+                .files(options.getFiles())
+                .excludedFiles(options.getExcludedFiles())
+                .jsonOutputFile(options.getJsonOutputFile())
+                .outputDir(options.getOutputDir())
+                .outputTypes(initOutputTypes())
+                .groupBy(options.getGroupBy())
+                .build();
     }
 
     private static void printCommandLineArguments(String[] args) {
         log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
-            sb.append(args[i]).append("\t");
+        for (String arg : args) {
+            sb.append(arg).append("\t");
         }
-        log.info("Options: {}", sb.toString());
+        log.info("Options: {}", sb);
     }
 
-    private void initOutputTypes() {
+    private List<OutputType> initOutputTypes() {
         List<OutputType> types = new ArrayList<>();
         for (String type : options.getOutputTypes()) {
             types.add(OutputType.valueOf(type.toUpperCase()));
         }
-        this.outputTypes = types;
+        return types;
     }
 
 }

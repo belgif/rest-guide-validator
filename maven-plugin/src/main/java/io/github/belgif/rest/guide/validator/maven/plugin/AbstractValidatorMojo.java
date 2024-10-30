@@ -1,14 +1,17 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
+import io.github.belgif.rest.guide.validator.runner.RunnerOptions;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
-import io.github.belgif.rest.guide.validator.runner.output.*;
+import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
@@ -42,7 +45,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
      * Output directory for the validation report file
      */
     @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "${project.build.directory}")
-    File outputDir;
+    Path outputDir;
 
     /**
      * Output file for JSON validation report. If absent, default filename will be placed in rest-guide-validator.outputDir
@@ -64,29 +67,20 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     @Parameter(property = "rest-guide-validator.excludeResources")
     List<String> excludeResources = new ArrayList<>();
 
-
-    protected Set<OutputProcessor> outputProcessors;
-    protected List<File> filesToProcess = new ArrayList<>();
-    protected OutputGroupBy outputGroupBy;
-
-    protected void init() throws FileNotFoundException {
-        outputGroupBy = OutputGroupBy.fromString(groupBy);
-        if (Objects.equals(jsonOutputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
-            jsonOutputFile = new File(outputDir, DEFAULT_FILE_NAME);
-        }
-
-        var outputPath = outputDir == null ? null : outputDir.toPath();
-        this.outputProcessors = ValidationRunner.buildOutputProcessors(outputTypes, outputGroupBy, outputPath, jsonOutputFile);
-        this.filesToProcess = ValidationRunner.buildFilesToProcess(files);
-    }
-
     protected boolean executeRules() throws MojoFailureException {
+        RunnerOptions options = RunnerOptions.builder()
+                .files(files)
+                .excludedFiles(excludedFiles)
+                .jsonOutputFile(jsonOutputFile)
+                .outputDir(outputDir)
+                .outputTypes(outputTypes)
+                .groupBy(groupBy)
+                .build();
         try {
-            init();
+            return ValidationRunner.executeRules(options);
         } catch (FileNotFoundException e) {
             throw new MojoFailureException(e.getMessage());
         }
-        return !filesToProcess.isEmpty() && ValidationRunner.executeRules(filesToProcess, excludedFiles, outputProcessors);
     }
 
 }

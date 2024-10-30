@@ -21,6 +21,12 @@ public class ValidationRunner {
     private ValidationRunner() {
     }
 
+    public static boolean executeRules(RunnerOptions options) throws FileNotFoundException {
+        Set<OutputProcessor> outputProcessors = buildOutputProcessors(options.getOutputTypes(), options.getOutputGroupBy(), options.getOutputDir(), options.getJsonOutputFile());
+        List<File> filesToProcess = buildFilesToProcess(options.getFiles());
+        return executeRules(filesToProcess, options.getExcludedFiles(), outputProcessors);
+    }
+
     public static boolean executeRules(List<File> filesToProcess, List<String> excludedFiles, Set<OutputProcessor> outputProcessors) {
         var isValid = new AtomicBoolean(true);
         var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, excludedFiles)).toList();
@@ -47,7 +53,7 @@ public class ValidationRunner {
                         try {
                             Files.createDirectories(outputPath);
                         } catch (IOException e) {
-                            log.error(outputPath + " directory doesn't exist and cannot be created!", e);
+                            log.error("{} directory doesn't exist and cannot be created!", outputPath, e);
                         }
                         outputProcessors.add(new JUnitOutputProcessor(groupBy, outputPath.toFile()));
                         break;
@@ -58,7 +64,7 @@ public class ValidationRunner {
                         try {
                             Files.createDirectories(jsonOutputFile.getParentFile().toPath());
                         } catch (IOException e) {
-                            log.error(jsonOutputFile.getParentFile().toPath() + " directory doesn't exist and cannot be created!", e);
+                            log.error("{} directory doesn't exist and cannot be created!", jsonOutputFile.getParentFile().toPath(), e);
                         }
                         outputProcessors.add(new JsonOutputProcessor(groupBy, jsonOutputFile));
                         break;
