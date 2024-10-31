@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.cli.options;
 
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
-import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import lombok.Getter;
 import picocli.CommandLine;
 
@@ -32,24 +31,24 @@ public class ValidatorOptions {
     @CommandLine.Option(names = {"-o", "--outputDir"}, defaultValue = "${DEFAULT-VALUE}", description = "Output directory for the validation report file (when outputType writes to a file)")
     private Path outputDir = Paths.get("").toAbsolutePath();
 
-    private File jsonOutputFile = new File(outputDir.toFile(), "validationReport.json");
-
     @CommandLine.Option(names = {"-j", "--jsonOutputFile"}, defaultValue = "{outputDir}/validationReport.json", description = "Output file for JSON validation report.")
-    public void setJsonOutputFile(File jsonOutputFile) {
-        if (jsonOutputFile.getParentFile().toString().equals("{outputDir}")) {
-            return;
-        }
-        if (jsonOutputFile.isAbsolute()) {
-            this.jsonOutputFile = jsonOutputFile;
-        } else {
-            this.jsonOutputFile = new File(outputDir.toFile(), jsonOutputFile.getPath());
-        }
-    }
+    private File jsonOutputFile = new File(outputDir.toFile(), "validationReport.json");
 
     @CommandLine.Option(names = {"-g", "--groupBy"}, defaultValue = "rule", description = "Specify how you want to group the violation output")
     private String groupBy;
 
     public List<String> getExcludedFiles() {
         return excludedFiles != null ? excludedFiles : new ArrayList<>();
+    }
+
+    public File getJsonOutputFile() {
+        if (jsonOutputFile.getParentFile().toString().equals("{outputDir}")) {
+            return new File(outputDir.toFile(), "validationReport.json");
+        }
+        if (jsonOutputFile.isAbsolute()) {
+            return this.jsonOutputFile;
+        } else {
+            return new File(outputDir.toFile(), jsonOutputFile.getPath());
+        }
     }
 }

@@ -10,6 +10,7 @@ import picocli.CommandLine;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 
 @Slf4j
@@ -19,22 +20,22 @@ import java.util.List;
         footer = "https://github.com/belgif/rest-guide-validator/blob/main/readme.md",
         mixinStandardHelpOptions = true,
         showDefaultValues = true)
-public class BelgifRestGuideCli implements Runnable {
+public class BelgifRestGuideCli implements Callable<Integer> {
 
     @CommandLine.Mixin
     private ValidatorOptions options;
 
     @Override
-    public void run() {
+    public Integer call() {
         try {
             if (executeRules()) {
-                System.exit(0);
+                return 0;
             } else {
-                System.exit(11);
+                return 11;
             }
         } catch (Exception e) {
             log.error(e.getMessage());
-            System.exit(1);
+            return 1;
         }
     }
 
