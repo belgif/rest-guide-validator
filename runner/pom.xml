@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-master</artifactId>
-        <version>latest</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>belgif-rest-guide-validator-runner</artifactId>
