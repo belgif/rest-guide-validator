@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
@@ -67,6 +68,9 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
     List<String> excludeResources = new ArrayList<>();
 
     protected boolean executeRules() throws MojoFailureException {
+        if (Objects.equals(jsonOutputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
+            jsonOutputFile = new File(String.valueOf(outputDir), DEFAULT_FILE_NAME);
+        }
         ValidationRunner runner = ValidationRunner.builder()
                 .files(files)
                 .excludedFiles(excludedFiles)
