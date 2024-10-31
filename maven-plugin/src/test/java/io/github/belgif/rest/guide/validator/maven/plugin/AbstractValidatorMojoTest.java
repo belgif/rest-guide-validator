@@ -1,10 +1,21 @@
 package io.github.belgif.rest.guide.validator.maven.plugin;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import org.apache.maven.plugin.MojoFailureException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,7 +74,7 @@ public abstract class AbstractValidatorMojoTest {
                 var openApiMojo = getMojo();
                 openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml")});
                 openApiMojo.groupBy = "rule";
-                openApiMojo.outputDir = Paths.get("target").toFile();
+                openApiMojo.outputDir = Paths.get("target");
                 var tempFile = Files.createTempFile("tmpFile", "custom.json").toFile();
                 outputFiles.add(tempFile);
                 openApiMojo.jsonOutputFile = tempFile;
