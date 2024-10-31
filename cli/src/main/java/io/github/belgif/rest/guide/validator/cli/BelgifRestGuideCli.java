@@ -4,7 +4,8 @@ import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.output.OutputType;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.FileNotFoundException;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 
-@Slf4j
 @CommandLine.Command(name = "belgif-validate-openapi",
         description = "The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide.",
         footerHeading = "For additional information: ",
@@ -21,6 +21,8 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         showDefaultValues = true)
 public class BelgifRestGuideCli implements Callable<Integer> {
+
+    private static final Logger log = LoggerFactory.getLogger(BelgifRestGuideCli.class);
 
     @CommandLine.Mixin
     private ValidatorOptions options;
