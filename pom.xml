@@ -38,6 +38,7 @@
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <drools.version>8.44.0.Final</drools.version>
         <lombok.version>1.18.32</lombok.version>
     </properties>
 
