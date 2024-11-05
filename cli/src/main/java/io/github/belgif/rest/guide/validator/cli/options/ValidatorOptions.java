@@ -19,13 +19,13 @@ import java.util.List;
 @Getter
 public class ValidatorOptions {
 
-    @CommandLine.Parameters(paramLabel = "files", defaultValue = "openapi.yaml", description = "Files or folders. For a folder all json and yaml files will be used.")
+    @CommandLine.Parameters(paramLabel = "file", defaultValue = "openapi.yaml", description = "File(s) or folder(s), space separated. For a folder all json and yaml files will be used.")
     private List<File> files;
 
-    @CommandLine.Option(names = {"-e", "--excludedFiles"}, description = "File(s) or folder(s) to exclude from validation. Use of wildcards is possible.")
+    @CommandLine.Option(names = {"-e", "--excludedFile"}, description = "File(s) or folder(s) to exclude from validation. For multiple values, repeat -e or --excludedFile. Use of wildcards is possible.")
     private List<String> excludedFiles;
 
-    @CommandLine.Option(names = {"-t", "--outputTypes"}, defaultValue = "console", description = "Output processors. Options: CONSOLE, JUNIT, JSON, LOG4J, NONE")
+    @CommandLine.Option(names = {"-t", "--outputType"}, defaultValue = "console", description = "Output processors. For multiple values, repeat -t or --outputType. Options: CONSOLE, JUNIT, JSON, LOG4J, NONE")
     private List<String> outputTypes;
 
     @CommandLine.Option(names = {"-o", "--outputDir"}, defaultValue = "${DEFAULT-VALUE}", description = "Output directory for the validation report file (when outputType writes to a file)")
