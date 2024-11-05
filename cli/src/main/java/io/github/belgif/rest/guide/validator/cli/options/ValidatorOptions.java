@@ -19,7 +19,7 @@ import java.util.List;
 @Getter
 public class ValidatorOptions {
 
-    @CommandLine.Option(names = {"-f", "--files"}, defaultValue = "openapi.yaml", description = "File or folder. For a folder all json and yaml files will be used.")
+    @CommandLine.Parameters(paramLabel = "files", defaultValue = "openapi.yaml", description = "Files or folders. For a folder all json and yaml files will be used.")
     private List<File> files;
 
     @CommandLine.Option(names = {"-e", "--excludedFiles"}, description = "File(s) or folder(s) to exclude from validation. Use of wildcards is possible.")

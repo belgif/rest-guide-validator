@@ -56,7 +56,7 @@ class BelgifRestGuideCliTest {
         CommandLine cmd = new CommandLine(cli);
         StringWriter sw = new StringWriter();
         cmd.setOut(new PrintWriter(sw));
-        int exitCode = cmd.execute("--files="+path);
+        int exitCode = cmd.execute(path.toString());
         assertEquals(11, exitCode);
     }
 
@@ -68,7 +68,7 @@ class BelgifRestGuideCliTest {
         CommandLine cmd = new CommandLine(cli);
         StringWriter sw = new StringWriter();
         cmd.setOut(new PrintWriter(sw));
-        int exitCode = cmd.execute("--files="+path);
+        int exitCode = cmd.execute(path.toString());
         assertEquals(0, exitCode);
     }
 
