@@ -12,15 +12,7 @@
 
     <artifactId>belgif-rest-guide-validator-core</artifactId>
 
-<!--    <properties>-->
-<!--&lt;!&ndash;        <jaxb.api.version>3.0.0</jaxb.api.version>&ndash;&gt;-->
-<!--    </properties>-->
-
     <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -72,25 +64,6 @@
             <version>2.17.2</version>
         </dependency>
 
-<!--        &lt;!&ndash; jaxb &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.sun.xml.bind</groupId>-->
-<!--            <artifactId>jaxb-impl</artifactId>-->
-<!--            <version>${jaxb.api.version}</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; JAXB API only &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>jakarta.xml.bind</groupId>-->
-<!--            <artifactId>jakarta.xml.bind-api</artifactId>-->
-<!--            <version>${jaxb.api.version}</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.assertj</groupId>-->
-<!--            <artifactId>assertj-core</artifactId>-->
-<!--            <version>3.24.2</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
