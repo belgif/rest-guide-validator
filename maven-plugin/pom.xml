@@ -14,7 +14,7 @@
 
     <properties>
         <maven.version>3.8.5</maven.version>
-        <jaxb.api.version>3.0.0</jaxb.api.version>
+<!--        <jaxb.api.version>3.0.0</jaxb.api.version>-->
     </properties>
 
     <dependencies>
@@ -54,6 +54,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
