@@ -110,50 +110,9 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-                        <!--                        TODO verify if path below is necessary-->
-                        <path>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>belgif-rest-guide-validator-runner</artifactId>
-                            <version>${project.version}</version>
-                        </path>
-                        <path>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>belgif-rest-guide-validator-rules</artifactId>
-                            <version>${project.version}</version>
-                        </path>
-                        <!--                        <path>-->
-                        <!--                            <groupId>com.thoughtworks.xstream</groupId>-->
-                        <!--                            <artifactId>xstream</artifactId>-->
-                        <!--                            <version>1.4.20</version>-->
-                        <!--                        </path>-->
-                        <!--                        <path>-->
-                        <!--                            <groupId>org.drools</groupId>-->
-                        <!--                            <artifactId>drools-ruleunits-engine</artifactId>-->
-                        <!--                            <version>${drools.version}</version>-->
-                        <!--                        </path>-->
-                        <!--                        <path>-->
-                        <!--                            <groupId>org.drools</groupId>-->
-                        <!--                            <artifactId>drools-mvel</artifactId>-->
-                        <!--                            <version>${drools.version}</version>-->
-                        <!--                        </path>-->
-                        <!--                        <path>-->
-                        <!--                            <groupId>org.drools</groupId>-->
-                        <!--                            <artifactId>drools-commands</artifactId>-->
-                        <!--                            <version>${drools.version}</version>-->
-                        <!--                        </path>-->
-                        <!--                        <path>-->
-                        <!--                            <groupId>org.drools</groupId>-->
-                        <!--                            <artifactId>drools-xml-support</artifactId>-->
-                        <!--                            <version>${drools.version}</version>-->
-                        <!--                        </path>-->
-
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
-                        <arg>
-                            -Aother.resource.patterns=".*\\.drl$","META-INF/kmodule.xml","io/github/belgif/rest/guide/validator/util/version.properties",".*\\.xml$",".*\\.xsd$"
-                        </arg>
-                        <!--                        <arg>-Aother.resource.patterns=META-INF/kmodule.xml</arg>-->
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -178,13 +137,13 @@
                                 </goals>
                                 <phase>package</phase>
                             </execution>
-                            <!--                            <execution>-->
-                            <!--                                <id>test-native</id>-->
-                            <!--                                <goals>-->
-                            <!--                                    <goal>test</goal>-->
-                            <!--                                </goals>-->
-                            <!--                                <phase>test</phase>-->
-                            <!--                            </execution>-->
+<!--                            <execution>-->
+<!--                                <id>test-native</id>-->
+<!--                                <goals>-->
+<!--                                    <goal>test</goal>-->
+<!--                                </goals>-->
+<!--                                <phase>test</phase>-->
+<!--                            </execution>-->
                         </executions>
                     </plugin>
                 </plugins>

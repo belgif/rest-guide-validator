@@ -13,6 +13,10 @@
     <artifactId>belgif-rest-guide-validator-rules</artifactId>
     <packaging>kjar</packaging>
 
+    <properties>
+        <drools.version>8.44.0.Final</drools.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -51,18 +55,6 @@
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-xml-support</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-wiring-dynamic</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>compile</scope>
         </dependency>
 
         <!-- test dependencies-->
