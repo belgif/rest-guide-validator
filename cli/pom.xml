@@ -111,16 +111,16 @@
                             <version>${lombok.version}</version>
                         </path>
                         <!--                        TODO verify if path below is necessary-->
-<!--                        <path>-->
-<!--                            <groupId>${project.groupId}</groupId>-->
-<!--                            <artifactId>belgif-rest-guide-validator-runner</artifactId>-->
-<!--                            <version>${project.version}</version>-->
-<!--                        </path>-->
-<!--                        <path>-->
-<!--                            <groupId>${project.groupId}</groupId>-->
-<!--                            <artifactId>belgif-rest-guide-validator-rules</artifactId>-->
-<!--                            <version>${project.version}</version>-->
-<!--                        </path>-->
+                        <path>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>belgif-rest-guide-validator-runner</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>belgif-rest-guide-validator-rules</artifactId>
+                            <version>${project.version}</version>
+                        </path>
                         <!--                        <path>-->
                         <!--                            <groupId>com.thoughtworks.xstream</groupId>-->
                         <!--                            <artifactId>xstream</artifactId>-->
