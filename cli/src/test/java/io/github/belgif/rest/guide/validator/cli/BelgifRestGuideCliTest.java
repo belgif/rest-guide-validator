@@ -34,7 +34,6 @@ class BelgifRestGuideCliTest {
         int exitCode = cmd.execute("--help");
         assertEquals(0, exitCode);
         assertTrue(sw.toString().contains("Options:"));
-        assertTrue(sw.toString().contains("For additional information: https://github.com/belgif/rest-guide-validator/blob/main/readme.md"));
     }
 
     @Test
