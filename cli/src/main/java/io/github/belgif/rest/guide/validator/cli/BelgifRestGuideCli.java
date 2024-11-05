@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 
 
 @CommandLine.Command(name = "belgif-validate-openapi",
-        description = "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide.",
+        description = "Validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide.",
         footerHeading = "For additional information: ",
         footer = "https://github.com/belgif/rest-guide-validator/blob/main/readme.md",
         mixinStandardHelpOptions = true,
