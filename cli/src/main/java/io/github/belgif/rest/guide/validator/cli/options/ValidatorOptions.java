@@ -25,7 +25,7 @@ public class ValidatorOptions {
     @CommandLine.Option(names = {"-e", "--excludedFiles"}, description = "File(s) or folder(s) to exclude from validation. Use of wildcards is possible.")
     private List<String> excludedFiles;
 
-    @CommandLine.Option(names = {"-t", "--outputTypes"}, defaultValue = "console", description = "Output processors. The value can be: CONSOLE, JUNIT, JSON, LOG4J, NONE")
+    @CommandLine.Option(names = {"-t", "--outputTypes"}, defaultValue = "console", description = "Output processors. Options: CONSOLE, JUNIT, JSON, LOG4J, NONE")
     private List<String> outputTypes;
 
     @CommandLine.Option(names = {"-o", "--outputDir"}, defaultValue = "${DEFAULT-VALUE}", description = "Output directory for the validation report file (when outputType writes to a file)")
@@ -34,7 +34,7 @@ public class ValidatorOptions {
     @CommandLine.Option(names = {"-j", "--jsonOutputFile"}, defaultValue = "{outputDir}/validationReport.json", description = "Output file for JSON validation report.")
     private File jsonOutputFile = new File(outputDir.toFile(), "validationReport.json");
 
-    @CommandLine.Option(names = {"-g", "--groupBy"}, defaultValue = "rule", description = "Specify how you want to group the violation output")
+    @CommandLine.Option(names = {"-g", "--groupBy"}, defaultValue = "rule", description = "Specify how you want to group the violation output. Options: 'rule' or 'file'")
     private String groupBy;
 
     public List<String> getExcludedFiles() {
