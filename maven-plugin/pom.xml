@@ -14,7 +14,6 @@
 
     <properties>
         <maven.version>3.8.5</maven.version>
-<!--        <jaxb.api.version>3.0.0</jaxb.api.version>-->
     </properties>
 
     <dependencies>
