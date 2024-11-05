@@ -48,7 +48,6 @@ public class BelgifRestGuideCli implements Callable<Integer> {
     }
 
     private boolean executeRules() throws FileNotFoundException {
-        log.info("Starting OpenApi validation");
         ValidationRunner runner = ValidationRunner.builder()
                 .files(options.getFiles())
                 .excludedFiles(options.getExcludedFiles())
@@ -57,6 +56,8 @@ public class BelgifRestGuideCli implements Callable<Integer> {
                 .outputTypes(initOutputTypes())
                 .groupBy(options.getGroupBy())
                 .build();
+        log.info("Validating with the following options: \n{}", runner.listOptions());
+        log.info("Starting OpenApi validation");
         return runner.executeRules();
     }
 
@@ -66,7 +67,7 @@ public class BelgifRestGuideCli implements Callable<Integer> {
         for (String arg : args) {
             sb.append(arg).append("\t");
         }
-        log.info("Options: {}", sb);
+        log.info("Arguments: {}", sb);
     }
 
     /**
