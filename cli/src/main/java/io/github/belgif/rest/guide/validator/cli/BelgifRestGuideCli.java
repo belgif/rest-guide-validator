@@ -56,7 +56,7 @@ public class BelgifRestGuideCli implements Callable<Integer> {
                 .outputTypes(initOutputTypes())
                 .groupBy(options.getGroupBy())
                 .build();
-        log.info("Validating with the following options: \n{}", runner.listOptions());
+        log.info(runner.listOptions());
         log.info("Starting OpenApi validation");
         return runner.executeRules();
     }

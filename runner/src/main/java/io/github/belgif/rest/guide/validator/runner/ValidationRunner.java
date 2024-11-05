@@ -120,32 +120,33 @@ public class ValidationRunner {
 
     public String listOptions() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Using the following options:\n");
         if (files.size() == 1) {
-            sb.append("File: ").append(files.get(0).getAbsolutePath()).append("\n");
+            sb.append("\t").append("File: ").append(files.get(0).getAbsolutePath()).append("\n");
         } else {
-            sb.append("Files:\n");
+            sb.append("\t").append("Files:\n");
             for (File file : files) {
-                sb.append("\t").append(file.getAbsolutePath()).append("\n");
+                sb.append("\t\t").append(file.getAbsolutePath()).append("\n");
             }
         }
         if (excludedFiles != null && !excludedFiles.isEmpty()) {
-            sb.append("Excluded Files: ");
+            sb.append("\t").append("Excluded Files: ");
             for (String excludedFile : excludedFiles) {
-                sb.append("\t").append(excludedFile).append("\n");
+                sb.append("\t\t").append(excludedFile).append("\n");
             }
         }
         if (outputTypes.size() == 1) {
-            sb.append("Output Type: ").append(outputTypes.get(0)).append("\n");
+            sb.append("\t").append("Output Type: ").append(outputTypes.get(0)).append("\n");
         } else {
-            sb.append("Output Types:\n");
+            sb.append("\t").append("Output Types:\n");
             for (OutputType outputType : outputTypes) {
-                sb.append("\t").append(outputType).append("\n");
+                sb.append("\t\t").append(outputType).append("\n");
             }
         }
-        sb.append("GroupBy: ").append(groupBy).append("\n");
-        sb.append("OutputDir: ").append(outputDir).append("\n");
+        sb.append("\t").append("GroupBy: ").append(groupBy).append("\n");
+        sb.append("\t").append("OutputDir: ").append(outputDir).append("\n");
         if (outputTypes.contains(OutputType.JSON)) {
-            sb.append("JSON Output File: ").append(jsonOutputFile).append("\n");
+            sb.append("\t").append("JSON Output File: ").append(jsonOutputFile).append("\n");
         }
         return sb.toString();
     }
