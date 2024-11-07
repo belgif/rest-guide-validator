@@ -1,0 +1,82 @@
+# Release belgif openapi projects to Maven Central when a version tag is created
+name: rest-guide-validator-release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build-and-deploy-jars:
+    runs-on: ubuntu-latest
+    steps:
+#    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
+    - name: Setup Maven Action
+      uses: s4u/setup-maven-action@v1.14.0
+      with:
+        java-version: '17'
+        java-distribution: 'adopt'
+        maven-version: '3.9.9'
+        cache-enabled: 'false'
+        settings-servers: | 
+          [{
+          "id": "ossrh", 
+          "username": "${{ secrets.OPENAPI_OSSRH_USERNAME }}",
+          "password": "${{ secrets.OPENAPI_OSSRH_TOKEN }}"
+          }]
+    - name: Build and deploy with Maven
+      run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
+      env:
+        MAVEN_GPG_KEY: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        MAVEN_CENTRAL_USER: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
+    - id: upload-cli-folder
+      name: Upload CLI Folder
+      uses: actions/upload-artifact@v4
+      with:
+        path: ./cli/
+        name: cli-folder
+        retention-days: 1
+        overwrite: 'true'
+
+  build-windows-installer:
+    runs-on: windows-latest
+    needs: [build-and-deploy-jars]
+    steps:
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'adopt'
+      - name: Download CLI Folder
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-folder
+      - name: Package Windows Installer
+        run: |
+          jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./cli/target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
+          jpackage --input ./cli/target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-${GITHUB_REF_NAME:1}.jar --type msi --app-version ${GITHUB_REF_NAME:1} --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./cli/package/belgif.ico --win-console --resource-dir "./cli/package/windows" --runtime-image ./cli/target/custom-jre --dest ./cli/target --verbose
+          ren ./cli/target/belgif-validate-openapi-${GITHUB_REF_NAME:1}.msi belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi
+      - id: upload-windows-installer
+        name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./cli/target/belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi
+          name: windows-installer
+          retention-days: 1
+          overwrite: 'true'
+
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-windows-installer]
+    steps:
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
+          - [placeholder]" "belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi#belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi"
