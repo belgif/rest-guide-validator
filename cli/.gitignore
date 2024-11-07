@@ -1,0 +1,32 @@
+# Output folders
+target/
+out/
+bin/
+tmp/
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# Eclipse Core
+.project
+.settings/
+
+#Eclipse pydev
+*.pydevproject
+
+#Eclipse .NET development
+*.sln
+*.csproj
+
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+*.iml
+.idea/
+
+*.jar
+*.war
+
+*.log
+
+dependency-reduced-pom.xml
+*.exe
+*.msi

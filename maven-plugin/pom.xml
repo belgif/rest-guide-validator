@@ -14,13 +14,12 @@
 
     <properties>
         <maven.version>3.8.5</maven.version>
-        <jaxb.api.version>3.0.0</jaxb.api.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>
-            <artifactId>belgif-rest-guide-validator-rules</artifactId>
+            <artifactId>belgif-rest-guide-validator-runner</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -54,6 +53,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

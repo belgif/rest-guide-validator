@@ -1,0 +1,81 @@
+openapi: 3.0.1
+info:
+  title: PresenceOfPayloadFailingOpenApi
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /everythingIsGoodHere:
+    get:
+      summary: This path is completely compliant with the guidelines
+      description: Nice path
+      operationId: getEverythingIsGoodHere
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        default:
+          description: unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: post where everything is good
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        '201':
+          description: Very good 201
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  requestBodies:
+    RequestBodyWithSchema:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    Pet:
+      type: "object"
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
+    Pets:
+      type: array
+      items:
+        $ref: '#/components/schemas/Pet'
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

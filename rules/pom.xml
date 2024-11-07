@@ -30,7 +30,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>
             <artifactId>belgif-rest-guide-validator-core</artifactId>
@@ -38,8 +37,23 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.drools</groupId>
-            <artifactId>drools-engine</artifactId>
+            <artifactId>drools-ruleunits-engine</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-mvel</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-commands</artifactId>
         </dependency>
 
         <dependency>
@@ -48,15 +62,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.kie</groupId>
-            <artifactId>kie-ci</artifactId>
-        </dependency>
-
-        <!-- test dependencies-->
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.8.2</version>
+            <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

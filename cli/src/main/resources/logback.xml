@@ -1,0 +1,46 @@
+<configuration>
+
+    <!--    Appender for INFO level (without level shown) -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%X{prefix}%msg%X{suffix}%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- Appender for WARNING and ERROR levels (with level shown) -->
+    <appender name="STDOUT_WARN" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %X{prefix}%msg%X{suffix}%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="STDOUT_ERROR" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %X{prefix}%msg%X{suffix}%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <logger name="org.javers" level="WARN"/>
+    <logger name="org.drools" level="ERROR"/>
+
+    <root level="info">
+        <appender-ref ref="STDOUT_WARN"/>
+        <appender-ref ref="STDOUT_ERROR"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
