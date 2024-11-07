@@ -1,0 +1,34 @@
+name: Build CLI Installer
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows-installer:
+    name: Build Installer on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.14.0
+        with:
+          java-version: '17'
+          java-distribution: 'adopt'
+          maven-version: '3.9.9'
+          cache-enabled: 'false'
+
+      - name: Build distribution
+        run: |
+          mvn install
+          jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./cli/target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
+          jpackage --input ./cli/target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 0.0.1 --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./cli/package/belgif.ico --win-console --resource-dir "./cli/package/windows" --runtime-image ./cli/target/custom-jre --dest ./cli/target --verbose
+          ren ./cli/target/belgif-validate-openapi-0.0.1.msi belgif-rest-guide-validator-latest.msi
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./cli/target/belgif-rest-guide-validator-latest.msi
+          name: windows-installer
+          retention-days: 1
+          overwrite: 'true'
