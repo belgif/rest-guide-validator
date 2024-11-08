@@ -54,7 +54,9 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: Set environment variables
-        run: echo "RELEASED_VERSION=$env:GITHUB_REF_NAME.Substring(1)" >> $env:GITHUB_ENV
+        run: |
+          $env:SEMANTIC_VERSION=$env:GITHUB_REF_NAME.Substring(1)
+          echo "RELEASED_VERSION=$env:SEMANTIC_VERSION" >> $env:GITHUB_ENV
       - name: Package Windows Installer
         run: |
           jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
