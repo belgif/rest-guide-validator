@@ -11,6 +11,7 @@ import picocli.CommandLine;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 
@@ -27,22 +28,34 @@ public class BelgifRestGuideCli implements Callable<Integer> {
     @CommandLine.Mixin
     private ValidatorOptions options;
 
+    /**
+     * postInstall flag is used by the windows installer to start the application after installation.
+     * This will show a welcome message.
+     */
+    @CommandLine.Option(names = {"--postInstall"}, hidden = true)
+    private boolean postInstall;
+
     @Override
     public Integer call() {
-        try {
-            if (executeRules()) {
-                return 0;
-            } else {
-                return 11;
+        if (postInstall) {
+            printPostInstall();
+            return 0;
+        } else {
+            log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
+            try {
+                if (executeRules()) {
+                    return 0;
+                } else {
+                    return 11;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                return 1;
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return 1;
         }
     }
 
     public static void main(String[] args) {
-        printCommandLineArguments(args);
         int exitCode = new CommandLine(new BelgifRestGuideCli()).execute(args);
         System.exit(exitCode);
     }
@@ -61,15 +74,6 @@ public class BelgifRestGuideCli implements Callable<Integer> {
         return runner.executeRules();
     }
 
-    private static void printCommandLineArguments(String[] args) {
-        log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
-        StringBuilder sb = new StringBuilder();
-        for (String arg : args) {
-            sb.append(arg).append("\t");
-        }
-        log.info("Arguments: {}", sb);
-    }
-
     /**
      * Makes sure that the enum can be selected case-insensitive in the CLI.
      */
@@ -79,6 +83,15 @@ public class BelgifRestGuideCli implements Callable<Integer> {
             types.add(OutputType.valueOf(type.toUpperCase()));
         }
         return types;
+    }
+
+    private void printPostInstall() {
+        log.info("belgif-rest-guide-validator-{} successfully installed!", VersionProvider.getValidatorVersion());
+        log.info("\nUse command: 'belgif-validate-openapi' followed by a file name or path to start.");
+        log.info("Use 'belgif-validate-openapi --help' for all options.");
+        log.info("\n\n========================");
+        log.info("\nPress Enter to exit...");
+        new Scanner(System.in).nextLine();
     }
 
 }

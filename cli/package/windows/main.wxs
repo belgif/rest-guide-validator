@@ -42,6 +42,16 @@
       InstallScope="$(var.JpInstallScope)" Platform="x64"
     />
 
+<!--      Start modification to start application post-install -->
+
+    <CustomAction Id="LaunchApplication"
+             ExeCommand='&quot;[INSTALLDIR]belgif-validate-openapi.exe&quot; --postInstall'
+             Directory="INSTALLDIR"
+             Impersonate="yes"
+             Return="asyncNoWait"/>
+
+<!--      End modification to start application post-install -->
+
     <Media Id="1" Cabinet="Data.cab" EmbedCab="yes" />
 
     <Upgrade Id="$(var.JpProductUpgradeCode)">
@@ -126,6 +136,11 @@
       <Custom Action="JpDisallowDowngrade" After="FindRelatedProducts">JP_DOWNGRADABLE_FOUND</Custom>
       <?endif?>
       <RemoveExistingProducts Before="CostInitialize"/>
+<!--        Start modification to start postInstall -->
+
+      <Custom Action="LaunchApplication" After="InstallFinalize">Not Installed</Custom>
+
+<!--        End modification to start postInstall -->
     </InstallExecuteSequence>
 
   </Product>
