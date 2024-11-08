@@ -22,11 +22,8 @@ jobs:
           "username": "${{ secrets.OPENAPI_OSSRH_USERNAME }}",
           "password": "${{ secrets.OPENAPI_OSSRH_TOKEN }}"
           }]
-    - name: Format version
-      run: |
-        echo "VALIDATOR_RELEASE_VERSION=${GITHUB_REF_NAME:1}" >> $GITHUB_ENV
     - name: Build and deploy with Maven
-      run: mvn -B deploy -Drevision=${VALIDATOR_RELEASE_VERSION} -Prelease
+      run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
       env:
         MAVEN_GPG_KEY: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
@@ -56,9 +53,10 @@ jobs:
           name: cli-folder
       - name: Package Windows Installer
         run: |
+          $env:RELEASED_VERSION = $env:GITHUB_REF_NAME.Substring(1)
           jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./cli/target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
-          jpackage --input ./cli/target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-%VALIDATOR_RELEASE_VERSION%.jar --type msi --app-version %VALIDATOR_RELEASE_VERSION% --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./cli/package/belgif.ico --win-console --resource-dir "./cli/package/windows" --runtime-image ./cli/target/custom-jre --dest ./cli/target --verbose
-          ren cli\target\belgif-validate-openapi-%VALIDATOR_RELEASE_VERSION%.msi belgif-rest-guide-validator-%VALIDATOR_RELEASE_VERSION%.msi
+          jpackage --input ./cli/target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./cli/package/belgif.ico --win-console --resource-dir "./cli/package/windows" --runtime-image ./cli/target/custom-jre --dest ./cli/target --verbose
+          ren cli\target\belgif-validate-openapi-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
         uses: actions/upload-artifact@v4
@@ -82,4 +80,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
-          - [placeholder]" "belgif-rest-guide-validator-${VALIDATOR_RELEASE_VERSION}.msi#belgif-rest-guide-validator-${VALIDATOR_RELEASE_VERSION}.msi"
+          - [placeholder]" "belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi#belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi"
