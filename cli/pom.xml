@@ -78,6 +78,7 @@
                         <outputDirectory>
                             ${project.build.directory}/libs
                         </outputDirectory>
+                        <includeScope>compile</includeScope>
                     </configuration>
                 </execution>
             </executions>
