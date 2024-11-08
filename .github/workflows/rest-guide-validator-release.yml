@@ -56,14 +56,14 @@ jobs:
       - name: Package Windows Installer
         run: |
           $env:RELEASED_VERSION = $env:GITHUB_REF_NAME.Substring(1)
-          jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./cli/target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
-          jpackage --input ./cli/target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./cli/package/belgif.ico --win-console --resource-dir "./cli/package/windows" --runtime-image ./cli/target/custom-jre --dest ./cli/target --verbose
-          ren cli\target\belgif-validate-openapi-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
+          jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
+          jpackage --input .target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./package/belgif.ico --win-console --resource-dir "./package/windows" --runtime-image ./target/custom-jre --dest ./target --verbose
+          ren target\belgif-validate-openapi-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          path: ./cli/target/belgif-rest-guide-validator-${VALIDATOR_RELEASE_VERSION}.msi
+          path: ./target/belgif-rest-guide-validator-${VALIDATOR_RELEASE_VERSION}.msi
           name: windows-installer
           retention-days: 1
           overwrite: 'true'
