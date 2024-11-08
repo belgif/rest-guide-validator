@@ -33,7 +33,10 @@ jobs:
       name: Upload CLI Folder
       uses: actions/upload-artifact@v4
       with:
-        path: ./cli/
+        path: |
+          ./cli/package/
+          ./cli/target/belgif-rest-guide-validator-cli-${GITHUB_REF_NAME:1}.jar
+          ./cli/target/libs/
         name: cli-folder
         retention-days: 1
         overwrite: 'true'
