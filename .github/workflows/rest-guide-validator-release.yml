@@ -35,7 +35,7 @@ jobs:
       with:
         path: |
           ./cli/package/
-          ./cli/target/belgif-rest-guide-validator-cli-${GITHUB_REF_NAME:1}.jar
+          ./cli/target/belgif-rest-guide-validator-cli-*.jar
           ./cli/target/libs/
         name: cli-folder
         retention-days: 1
