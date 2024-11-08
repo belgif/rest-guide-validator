@@ -63,7 +63,7 @@ jobs:
         name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          path: ./target/belgif-rest-guide-validator-${VALIDATOR_RELEASE_VERSION}.msi
+          path: ./target/belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
           name: windows-installer
           retention-days: 1
           overwrite: 'true'
