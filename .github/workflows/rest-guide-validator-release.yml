@@ -51,6 +51,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cli-folder
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Package Windows Installer
         run: |
           $env:RELEASED_VERSION = $env:GITHUB_REF_NAME.Substring(1)
