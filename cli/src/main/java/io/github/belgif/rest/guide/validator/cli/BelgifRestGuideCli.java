@@ -35,23 +35,32 @@ public class BelgifRestGuideCli implements Callable<Integer> {
     @CommandLine.Option(names = {"--postInstall"}, hidden = true)
     private boolean postInstall;
 
+    @CommandLine.Option(names = {"--holdOpen"}, hidden = true)
+    private boolean holdOpen;
+
     @Override
     public Integer call() {
         if (postInstall) {
             printPostInstall();
             return 0;
         } else {
+            int returnCode;
             log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
             try {
                 if (executeRules()) {
-                    return 0;
+                    returnCode = 0;
                 } else {
-                    return 11;
+                    returnCode = 11;
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-                return 1;
+                returnCode = 1;
             }
+            if (holdOpen) {
+                log.info("\nPress Enter to close...");
+                new Scanner(System.in).nextLine();
+            }
+            return returnCode;
         }
     }
 

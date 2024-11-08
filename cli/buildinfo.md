@@ -15,5 +15,5 @@ jlink --add-modules java.base,java.naming,java.xml,java.desktop --output custom-
 
 To build the installer with a custom JRE (for windows) use:
 ```bash
-jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre
+jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "Validate OpenApi according to Belgif guidelines" --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre --arguments "--holdOpen" --file-associations "../package/file-associations/json.properties" --file-associations "../package/file-associations/yaml.properties"
 ```
