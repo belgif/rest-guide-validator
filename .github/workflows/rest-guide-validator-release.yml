@@ -37,6 +37,7 @@ jobs:
           ./cli/package/
           ./cli/target/belgif-rest-guide-validator-cli-*.jar
           ./cli/target/libs/
+          !./cli/target/belgif-rest-guide-validator-cli-*-javadoc.jar
         name: cli-folder
         retention-days: 1
         overwrite: 'true'
