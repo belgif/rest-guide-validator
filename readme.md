@@ -8,7 +8,6 @@ Note that the JDK version used to compile the source code of the project can dif
 IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
 The minimum maven version is 3.8.5.
 
-A standalone distribution that doesn't require Maven is [under development](https://github.com/belgif/rest-guide-validator/issues/13).
 
 ## Goal Overview
 The goal `validate` binds by default to the lifecycle phase `prepare-package`.
@@ -229,6 +228,23 @@ You can execute the plugin to validate the api files without breaking the build 
 | outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
 | jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
+
+# Standalone belgif-rest-guide-validator
+From version 2.2.0 a standalone installer for windows is included. [See releases](https://github.com/belgif/rest-guide-validator/releases)
+
+This tool can be used as a commandline tool by invoking:
+```bash
+belgif-validate-openapi path/to/my/file.yaml
+```
+
+For all options use:
+```bash
+belgif-validate-openapi --help
+```
+
+You could also right-click on an openapi or swagger file and open with: 'Validate OpenApi according to Belgif guidelines'
+
+In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in Program Files -> 'right-click-and-validate.exe'
 
 ## Building
 
