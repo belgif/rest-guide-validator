@@ -15,5 +15,18 @@ jlink --add-modules java.base,java.naming,java.xml,java.desktop --output custom-
 
 To build the installer with a custom JRE (for windows) use:
 ```bash
-jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "Validate OpenApi according to Belgif guidelines" --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre --arguments "--holdOpen" --file-associations "../package/file-associations/json.properties" --file-associations "../package/file-associations/yaml.properties"
+jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "Validate OpenApi according to Belgif guidelines" --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre --arguments "--holdOpen"
 ```
+
+## Customization for windows installer.
+In order to be able to right-click on a json or yaml file, there were some extra modifications needed not directly supported by jpackage.
+This included some modifications in the bundle.wxf file.
+
+To generate these files run the basic jpackage command with all the extra config you'll need and add --temp "../myProperties" to generate.
+To already have the file associations setup in the wxf file, include the file associations properties files:
+```bash
+jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "Validate OpenApi according to Belgif guidelines" --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre --arguments "--holdOpen" --file-associations "../package/file-associations/json.properties" --file-associations "../package/file-associations/yaml.properties" --temp "../myTempProperties"
+```
+
+
+jpackage --input . --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-latest.jar --type msi --app-version 2.2.0 --description "Validate OpenApi according to Belgif guidelines" --vendor "Belgif" --icon ../package/belgif.ico --win-console --resource-dir "../package/windows" --runtime-image custom-jre

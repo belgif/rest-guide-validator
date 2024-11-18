@@ -83,68 +83,6 @@
       <ComponentGroupRef Id="Shortcuts"/>
       <ComponentGroupRef Id="Files"/>
       <ComponentGroupRef Id="FileAssociations"/>
-<!--        START Modification to file associations -->
-<!--       <Component Id="BelgifYamlFileAssociation" Guid="9a91c174-61d2-46ac-bb69-e440d1bb8cc3"> -->
-<!--         <FileAssociation -->
-<!--           Id="YamlFileAssociation" -->
-<!--           Extension=".yaml" -->
-<!--           ProgId="Belgif.YamlProgId" -->
-<!--           ApplicationName="Belgif Validate OpenApi" -->
-<!--           Advertise="yes" /> -->
-<!--         <RegistryValue Root="HKCR" Key=".yaml" Value="Belgif.YamlProgId" Type="string" /> -->
-<!--         <ProgId Id="Belgif.YamlProgId" Description="Belgif Validate yaml OpenApi"> -->
-<!--           <Extension Id="yaml" Advertise="no" ContentType="application/yaml"> -->
-<!--             <Verb Id="open" Command="Open" Argument="&quot;%1&quot;" /> -->
-<!--           </Extension> -->
-<!--         </ProgId> -->
-<!--       </Component> -->
-
-            <Component Win64="yes" Id="BelgifYamlFileAssociation" Guid="{04cff3ae-f7bb-311f-8d02-992ce036c617}" Directory="INSTALLDIR">
-              <RegistryKey Root="HKLM" Key="Software\Belgif\belgif-validate-openapi\$(var.JpAppVersion)\yaml">
-                <RegistryValue Type="string" KeyPath="yes" Name="ProductCode" Value="progid04cff3aef7bb311f8d02992ce036c617"></RegistryValue>
-              </RegistryKey>
-              <RemoveFolder Id="rm8b2c667d69f337dbb804586cd131c835_2" On="uninstall"></RemoveFolder>
-              <ProgId Id="progid04cff3aef7bb311f8d02992ce036c617" Description="YAML document">
-                <Extension Id="yaml" Advertise="no" ContentType="application/yaml">
-                  <MIME ContentType="application/yaml" Default="yes"></MIME>
-                  <Verb Id="open" Command="Open" Argument="&quot;%1&quot; --holdOpen" TargetFile="filecd8d1537529a3a4db1c77344b1095ff4"></Verb>
-                </Extension>
-              </ProgId>
-            </Component>
-
-
-            <Component Win64="yes" Id="cprogiddc1de0c35c7e37358e280a80660b1fd3" Guid="{dc1de0c3-5c7e-3735-8e28-0a80660b1fd3}" Directory="INSTALLDIR">
-              <RegistryKey Root="HKLM" Key="Software\Belgif\belgif-validate-openapi\$(var.JpAppVersion)\json">
-                <RegistryValue Type="string" KeyPath="yes" Name="ProductCode" Value="progiddc1de0c35c7e37358e280a80660b1fd3"></RegistryValue>
-              </RegistryKey>
-              <RemoveFolder Id="rm8b2c667d69f337dbb804586cd131c835_1" On="uninstall"></RemoveFolder>
-              <ProgId Id="progiddc1de0c35c7e37358e280a80660b1fd3" Description="JSON document">
-                <Extension Id="json" Advertise="no" ContentType="application/json">
-                  <MIME ContentType="application/json" Default="yes"></MIME>
-                  <Verb Id="open" Command="Open" Argument="&quot;%1&quot; --holdOpen" TargetFile="filecd8d1537529a3a4db1c77344b1095ff4"></Verb>
-                </Extension>
-              </ProgId>
-            </Component>
-
-<!--             <Component Win64="yes" Id="cfilecd8d1537529a3a4db1c77344b1095ff4" Guid="{cd8d1537-529a-3a4d-b1c7-7344b1095ff4}" Directory="INSTALLDIR"> -->
-<!--                     <File Id="filecd8d1537529a3a4db1c77344b1095ff4" KeyPath="yes" Source="[INSTALLDIR]belgif-validate-openapi.exe"></File> -->
-<!--             </Component> -->
-
-<!--       <Component Id="BelgifJsonFileAssociation" Guid="5e01b047-8bb1-4201-b6dd-092d4de732cb"> -->
-<!--               <FileAssociation -->
-<!--                 Id="JsonFileAssociation" -->
-<!--                 Extension=".json" -->
-<!--                 ProgId="Belgif.JsonProgId" -->
-<!--                 ApplicationName="Belgif Validate OpenApi" -->
-<!--                 Advertise="yes" /> -->
-<!--               <RegistryValue Root="HKCR" Key=".json" Value="Belgif.JsonProgId" Type="string" /> -->
-<!--               <ProgId Id="Belgif.JsonProgId" Description="Belgif Validate json OpenApi"> -->
-<!--                 <Extension Id="json" Advertise="no" ContentType="application/json"> -->
-<!--                   <Verb Id="open" Command="Open" Argument="&quot;%1&quot; holdOpen" /> -->
-<!--                 </Extension> -->
-<!--               </ProgId> -->
-<!--             </Component> -->
-<!--        END Modification to file associations -->
 <!--        START Modification to add application to PATH -->
       <Component Id="pathEnvironmentVariable" Guid="1d1c55ff-4e93-458f-8624-b1338fc52731" KeyPath="yes" Directory="TARGETDIR">
           <Environment Id="MyPathVariable" Name="Path" Value="[INSTALLDIR]" Action="set" System="no" Permanent="no" Part="last" Separator=";" />
