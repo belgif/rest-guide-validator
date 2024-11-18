@@ -65,7 +65,7 @@ jobs:
       - name: Package Windows Installer
         run: |
           jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
-          jpackage --input ./target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./package/belgif.ico --win-console --resource-dir "./package/windows" --runtime-image ./target/custom-jre --dest ./target --add-launcher belgif-rest-guide-validator="./package/right-clickable-launcher.properties" --verbose
+          jpackage --input ./target --name belgif-validate-openapi --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "The belgif-rest-guide-validator is used to validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide." --vendor "Belgif" --icon ./package/belgif.ico --win-console --resource-dir "./package/windows" --runtime-image ./target/custom-jre --dest ./target --install-dir belgif-rest-guide-validator --add-launcher right-click-and-validate="./package/right-clickable-launcher.properties" --verbose
           ren target\belgif-validate-openapi-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
