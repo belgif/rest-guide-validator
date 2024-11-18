@@ -35,9 +35,6 @@ public class BelgifRestGuideCli implements Callable<Integer> {
     @CommandLine.Option(names = {"--postInstall"}, hidden = true)
     private boolean postInstall;
 
-    @CommandLine.Option(names = {"--holdOpen"}, hidden = true)
-    private boolean holdOpen;
-
     @Override
     public Integer call() {
         if (postInstall) {
@@ -55,10 +52,6 @@ public class BelgifRestGuideCli implements Callable<Integer> {
             } catch (Exception e) {
                 log.error(e.getMessage());
                 returnCode = 1;
-            }
-            if (holdOpen) {
-                log.info("\nPress Enter to close...");
-                new Scanner(System.in).nextLine();
             }
             return returnCode;
         }
