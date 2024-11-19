@@ -112,6 +112,9 @@ public class Testsuite {
         if(this.testcase == null) {
             this.testcase = new ArrayList<>();
         }
+        if(testcase.getTime() != null) {
+            time += Float.parseFloat(testcase.getTime());
+        }
         this.testcase.add(testcase);
     }
 }
