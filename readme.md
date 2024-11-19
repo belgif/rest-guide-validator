@@ -1,20 +1,25 @@
-# belgif-rest-guide-validator plugin
+# belgif-rest-guide-validator
+The belgif-rest-guide-validator contains:
+- A [belgif-rest-guide-validator-maven-plugin](#belgif-rest-guide-validator-plugin)
+- A [standalone windows application](#standalone-belgif-rest-guide-validator)
+
+## belgif-rest-guide-validator plugin
 
 The belgif-rest-guide-validator Maven plugin is used to validate if an OpenAPI document conforms to the guidelines in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/).
 
-# Prerequisites
+## Prerequisites
 This Maven plugin requires JDK 17 or higher to be used in the Maven runtime. 
 Note that the JDK version used to compile the source code of the project can differ. 
 IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
 The minimum maven version is 3.8.5.
 
 
-## Goal Overview
+### Goal Overview
 The goal `validate` binds by default to the lifecycle phase `prepare-package`.
 
 The goal `validate-openapi` can be used to validate an OpenAPI document outside a Maven project build execution.
 
-## Usage
+### Usage
 
 There are two ways to run the validator:
 
@@ -33,7 +38,7 @@ Only OpenAPI documents on the local file system are currently supported.
 
 The validator supports OpenAPI 2.0 and 3.0, but some rules aren't checked for OpenAPI 2.0 documents. OpenAPI 3.1 isn't supported yet.
 
-### Example output
+#### Example output
 
 The validation report will be in the console output of the maven execution.
 Any rule violations in the report are linked to a rule identifier (e.g. [uri-notat]) that can be looked up in the [Belgif REST guide](https://www.belgif.be/specification/rest/api-guide/) for more information and examples.
@@ -72,7 +77,7 @@ employer.yaml   ln  40  #/components/schemas/Employer/example
 -- employerId: Value '164893015' does not match format 'int64'. In Schema: employer.yaml#/components/schemas/Employer : <belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId>.<format>
 ```
 
-### Basic example
+#### Basic example
 The following example demonstrates a basic plugin configuration for validating an OpenAPI document.
 ```xml
 <plugins>
@@ -99,7 +104,7 @@ You can now build you package as usual with:
 ```bash
 mvn package  
 ```
-### Exclusions in an OpenAPI file
+#### Exclusions in an OpenAPI file
 
 The `x-ignore-rules` property can be added inside a yaml object in the OpenAPI document to ignore this object for one or more rules.
 
@@ -127,7 +132,7 @@ BelgianRegionCode:
     - BE-VLG
 ```
 
-### Exclude an external OpenApi file
+#### Exclude an external OpenApi file
 The excludedFiles maven parameter can be used to exclude certain imported openapi files.
 The intended use is to exclude validation of imported openapi files which are conform Belgif standards and are not under the developers influence to modify.
 Wildcards could be used.
@@ -158,7 +163,7 @@ Example:
 </plugins>
 ```
 
-### Output options
+#### Output options
 The plugin provides the following options to write the validation report:
 * CONSOLE: default option. Write to the console.
 * JUNIT: generate a junit xml file.
@@ -189,7 +194,7 @@ The plugin provides the following options to write the validation report:
     </plugin>
 </plugins>
 ```
-### skipOnErrors
+#### skipOnErrors
 You can execute the plugin to validate the api files without breaking the build in case of validation errors with the 'skipOnErrors' parameter.
 
 ```xml
@@ -215,7 +220,7 @@ You can execute the plugin to validate the api files without breaking the build 
 </plugins>
 ```
 
-## Configuration reference
+### Configuration reference
 
 | Parameter | Type | Default | Description                                                                                                                 | User property name                 |
 | --------- | ---- | ------- |-----------------------------------------------------------------------------------------------------------------------------|------------------------------------|
@@ -229,7 +234,7 @@ You can execute the plugin to validate the api files without breaking the build 
 | jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
 
-# Standalone belgif-rest-guide-validator
+## Standalone belgif-rest-guide-validator
 From version 2.2.0 a standalone installer for windows is included. [See releases](https://github.com/belgif/rest-guide-validator/releases)
 
 This tool can be used as a commandline tool by invoking:
@@ -243,9 +248,7 @@ belgif-validate-openapi --help
 ```
 
 You could also right-click on an openapi or swagger file and open with: 'Validate OpenApi according to Belgif guidelines'
-
 In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in Program Files -> 'launch-belgif-rest-guide-validator.exe'
 
 ## Building
-
 The build process of this project is documented [here](https://github.com/belgif/openapi-common/blob/master/BUILDING.md).
