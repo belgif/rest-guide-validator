@@ -229,6 +229,7 @@ You can execute the plugin to validate the api files without breaking the build 
 | outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
 | jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
+| failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found | rest-guide-validator.failOnMissingOpenAPI |
 
 ## Building
 

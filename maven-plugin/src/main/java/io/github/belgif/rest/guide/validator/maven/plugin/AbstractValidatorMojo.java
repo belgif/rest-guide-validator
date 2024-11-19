@@ -5,6 +5,8 @@ import io.github.belgif.rest.guide.validator.runner.output.OutputType;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +18,8 @@ import java.util.Objects;
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
     private static final String DEFAULT_FILE_NAME = "validationReport.json";
+
+    private Logger log = LoggerFactory.getLogger(AbstractValidatorMojo.class);
 
     /**
      * A list of files to validate
@@ -46,6 +50,9 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
      */
     @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "${project.build.directory}")
     Path outputDir;
+
+    @Parameter(property = "rest-guide-validator.failOnMissingOpenAPI", defaultValue = "true")
+    protected boolean failOnMissingOpenAPI = true;
 
     /**
      * Output file for JSON validation report. If absent, default filename will be placed in rest-guide-validator.outputDir
@@ -82,7 +89,12 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         try {
             return runner.executeRules();
         } catch (FileNotFoundException e) {
-            throw new MojoFailureException(e.getMessage());
+            if (failOnMissingOpenAPI) {
+                throw new MojoFailureException(e.getMessage());
+            } else {
+                log.info(e.getMessage());
+                return true;
+            }
         }
     }
 
