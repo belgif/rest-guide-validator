@@ -31,9 +31,12 @@ public class JUnitOutputProcessor extends OutputProcessor {
      */
     private final File outputDirectory;
 
+    private final long start;
+
     public JUnitOutputProcessor(OutputGroupBy outputGroupBy, File outputDirectory) {
         super(outputGroupBy);
         this.outputDirectory = outputDirectory;
+        this.start = System.currentTimeMillis();
     }
 
 
@@ -81,7 +84,7 @@ public class JUnitOutputProcessor extends OutputProcessor {
                     testcaseBuilder.skipped(key);
                 }
 
-                var testcase = testcaseBuilder.build();
+                var testcase = testcaseBuilder.time(calculateTime()+"").build();
                 violationsForGroup.forEach(v -> testcase.appendSysOut(v.getReportMessage()));
                 testsuite.addTestcase(testcase);
             });
@@ -102,5 +105,9 @@ public class JUnitOutputProcessor extends OutputProcessor {
             }
         });
         return testSuitesGroupedViolationMap;
+    }
+
+    private float calculateTime() {
+        return (System.currentTimeMillis() - start) / 1000f;
     }
 }
