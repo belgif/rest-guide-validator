@@ -66,7 +66,7 @@ jobs:
         run: |
           jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
           jpackage --input ./target --name launch-belgif-rest-guide-validator --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "Validate OpenApi to Belgif guidelines" --vendor "Belgif" --icon ./package/belgif.ico --win-console --resource-dir "./package/windows" --runtime-image ./target/custom-jre --dest ./target --install-dir belgif-rest-guide-validator --file-associations package\file-associations\FAyaml.properties --file-associations package\file-associations\FAjson.properties --add-launcher belgif-validate-openapi="./package/cli-launcher.properties" --win-per-user-install --verbose
-          ren target\belgif-validate-openapi-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
+          ren target\launch-belgif-rest-guide-validator-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
         uses: actions/upload-artifact@v4
