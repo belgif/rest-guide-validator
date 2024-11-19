@@ -96,7 +96,7 @@ public class BelgifRestGuideCli implements Callable<Integer> {
         log.info("belgif-rest-guide-validator-{} successfully installed!", VersionProvider.getValidatorVersion());
         log.info("\nUse command: 'belgif-validate-openapi' followed by a file name or path to start.");
         log.info("Use 'belgif-validate-openapi --help' for all options.");
-        log.info("\nRight click on a openapi or swagger file and open with 'Validate OpenApi according to Belgif guidelines'");
+        log.info("\nRight click on an openapi or swagger file and open with 'Validate OpenApi according to Belgif guidelines'");
         log.info("In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in Program Files -> 'right-click-and-validate.exe'");
         log.info("\n\n========================");
         log.info("\nPress Enter to exit...");
