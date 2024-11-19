@@ -40,7 +40,12 @@ public class BelgifRestGuideCli implements Callable<Integer> {
         if (postInstall) {
             printPostInstall();
             return 0;
-        } else {
+        }
+        if (options.getFiles() == null || options.getFiles().isEmpty()) {
+            log.error("belgif-rest-guide-validator requires at least one file. Use command \"belgif-validate-openapi --help\" for more information.");
+            return 1;
+        }
+        else {
             int returnCode;
             log.info("Using: belgif-rest-guide-validator-{}", VersionProvider.getValidatorVersion());
             try {
