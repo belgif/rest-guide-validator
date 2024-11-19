@@ -248,7 +248,7 @@ belgif-validate-openapi --help
 ```
 
 You could also right-click on an openapi or swagger file and open with: 'Validate OpenApi to Belgif guidelines'
-In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in C:\Users\user-name\AppData\Local\ -> 'launch-belgif-rest-guide-validator.exe'
+In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in C:\Users\user-name\AppData\Local\ -> 'belgif-validator-rest.exe'
 
 ## Building
 The build process of this project is documented [here](https://github.com/belgif/openapi-common/blob/master/BUILDING.md).
