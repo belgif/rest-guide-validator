@@ -1,4 +1,7 @@
-A windows installer can be built (locally for now) by invoking the following command in the cli/target folder after a maven build.
+This project is build using Maven and GitHub actions.
+The release process of this project is documented [here](https://github.com/belgif/openapi-common/blob/master/BUILDING.md).
+
+To build the windows installer locally, invoke the following command in the cli/target folder after a maven build.
 
 To inspect which modules are actually needed for the jar to run:
 ```bash
