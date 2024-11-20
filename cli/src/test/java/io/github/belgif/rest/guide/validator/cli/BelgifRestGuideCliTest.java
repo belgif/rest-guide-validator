@@ -10,8 +10,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BelgifRestGuideCliTest {
 
@@ -34,6 +33,7 @@ class BelgifRestGuideCliTest {
         int exitCode = cmd.execute("--help");
         assertEquals(0, exitCode);
         assertTrue(sw.toString().contains("Options:"));
+        assertFalse(sw.toString().contains("postInstall"));
     }
 
     @Test

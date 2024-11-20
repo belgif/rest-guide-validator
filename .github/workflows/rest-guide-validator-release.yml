@@ -1,0 +1,95 @@
+# Release belgif openapi projects to Maven Central when a version tag is created
+name: rest-guide-validator-release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build-and-deploy-jars:
+    runs-on: ubuntu-latest
+    steps:
+#    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
+    - name: Setup Maven Action
+      uses: s4u/setup-maven-action@v1.14.0
+      with:
+        java-version: '17'
+        java-distribution: 'adopt'
+        maven-version: '3.9.9'
+        cache-enabled: 'false'
+        settings-servers: | 
+          [{
+          "id": "ossrh", 
+          "username": "${{ secrets.OPENAPI_OSSRH_USERNAME }}",
+          "password": "${{ secrets.OPENAPI_OSSRH_TOKEN }}"
+          }]
+    - name: Build and deploy with Maven
+      run: mvn -B deploy -Drevision=${GITHUB_REF_NAME:1} -Prelease
+      env:
+        MAVEN_GPG_KEY: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        MAVEN_CENTRAL_USER: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
+    - id: upload-cli-folder
+      name: Upload CLI Folder
+      uses: actions/upload-artifact@v4
+      with:
+        path: |
+          ./cli/package/
+          ./cli/target/belgif-rest-guide-validator-cli-*.jar
+          ./cli/target/libs/
+          !./cli/target/belgif-rest-guide-validator-cli-*-*.jar
+        name: cli-folder
+        retention-days: 1
+        overwrite: 'true'
+        if-no-files-found: 'error'
+
+  build-windows-installer:
+    runs-on: windows-latest
+    needs: [build-and-deploy-jars]
+    steps:
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'adopt'
+      - name: Download CLI Folder
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-folder
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Set environment variables
+        run: |
+          $env:SEMANTIC_VERSION=$env:GITHUB_REF_NAME.Substring(1)
+          echo "RELEASED_VERSION=$env:SEMANTIC_VERSION" >> $env:GITHUB_ENV
+      - name: Package Windows Installer
+        run: |
+          jlink --add-modules java.base,java.naming,java.xml,java.desktop --output ./target/custom-jre --strip-debug --no-header-files --no-man-pages --verbose
+          jpackage --input ./target --name belgif-validator-rest --main-jar belgif-rest-guide-validator-cli-$env:RELEASED_VERSION.jar --type msi --app-version $env:RELEASED_VERSION --description "Validate OpenApi to Belgif guidelines" --vendor "Belgif" --icon ./package/belgif.ico --win-console --resource-dir "./package/windows" --runtime-image ./target/custom-jre --dest ./target --install-dir belgif-rest-guide-validator --file-associations package\file-associations\FAyaml.properties --file-associations package\file-associations\FAjson.properties --add-launcher belgif-validate-openapi="./package/cli-launcher.properties" --win-per-user-install --verbose
+          ren target\belgif-validator-rest-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
+      - id: upload-windows-installer
+        name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./target/belgif-rest-guide-validator-${{ env.RELEASED_VERSION }}.msi
+          name: windows-installer
+          retention-days: 1
+          overwrite: 'true'
+          if-no-files-found: 'error'
+
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-windows-installer]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
+          - [placeholder]" "belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi#belgif-rest-guide-validator-${GITHUB_REF_NAME:1}.msi"

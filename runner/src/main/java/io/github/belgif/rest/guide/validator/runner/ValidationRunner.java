@@ -143,8 +143,10 @@ public class ValidationRunner {
                 sb.append("\t\t").append(outputType).append("\n");
             }
         }
-        sb.append("\t").append("GroupBy: ").append(groupBy).append("\n");
-        sb.append("\t").append("OutputDir: ").append(outputDir).append("\n");
+            sb.append("\t").append("GroupBy: ").append(groupBy).append("\n");
+        if (outputTypes.size() > 1 || (!outputTypes.contains(OutputType.CONSOLE) && !outputTypes.contains(OutputType.NONE))) {
+            sb.append("\t").append("OutputDir: ").append(outputDir).append("\n");
+        }
         if (outputTypes.contains(OutputType.JSON)) {
             sb.append("\t").append("JSON Output File: ").append(jsonOutputFile).append("\n");
         }

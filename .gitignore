@@ -26,3 +26,4 @@ tmp/
 *.war
 
 *.log
+*.msi

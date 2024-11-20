@@ -14,7 +14,6 @@ class ValidatorOptionsTest {
     @Test
     void testDefaultValues() {
         ValidatorOptions options = CommandLine.populateCommand(new ValidatorOptions());
-        assertEquals("openapi.yaml", options.getFiles().get(0).getName());
         assertNotNull(options.getExcludedFiles());
         assertTrue(options.getExcludedFiles().isEmpty());
         assertEquals("console", options.getOutputTypes().get(0));

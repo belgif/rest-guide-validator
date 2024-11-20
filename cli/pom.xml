@@ -78,6 +78,7 @@
                         <outputDirectory>
                             ${project.build.directory}/libs
                         </outputDirectory>
+                        <includeScope>compile</includeScope>
                     </configuration>
                 </execution>
             </executions>
@@ -91,7 +92,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs</classpathPrefix>
-                            <mainClass>io.github.belgif.rest.guide.validator.cli.BelgifRestGuideCli</mainClass>
+                            <mainClass>io.github.belgif.rest.guide.validator.cli.BelgifRestGuideValidator</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
