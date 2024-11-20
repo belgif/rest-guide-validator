@@ -11,7 +11,11 @@ import org.openapi4j.schema.validator.BaseJsonValidator;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 
@@ -25,6 +29,8 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
  * This was caused by getReferences() (not existing in this file anymore).
  * All references in all subschemas and properties within an allOf schema were checked for a discriminator.
  * Now getReference() is used and only the immediate schema items within an allOf are checked for a discriminator instead of all nested nodes.
+ *
+ * Also added method resolveRelativeRef()
  */
 
 abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
@@ -229,8 +235,65 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         }
 
         // Check if Schema Object exists
-        return context.getContext().getReferenceRegistry().getRef(ref) != null;
+        // Modification for Belgif validator: Resolve relative refs
+//        return context.getContext().getReferenceRegistry().getRef(ref) != null;
+        return resolveRelativeRef(ref) != null;
     }
+
+    //    Custom method for Belgif Validator to resolve ref
+    private Reference resolveRelativeRef(String ref) {
+        List<String> refCrumbs = new ArrayList<>();
+        addExternalRefCrumb(this.crumbInfo, refCrumbs);
+        SchemaValidator schemaValidator = this.getParentSchema();
+        while (schemaValidator != null) {
+            addExternalRefCrumb(schemaValidator.getCrumbInfo(), refCrumbs);
+            schemaValidator = schemaValidator.getParentSchema();
+        }
+        try {
+            Path basePath = Paths.get(context.getContext().getBaseUrl().toURI());
+            String resolvedRef = buildRef(refCrumbs, getComponentRef(ref), basePath);
+            return context.getContext().getReferenceRegistry().getRef(resolvedRef);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String getComponentRef(String ref) { // to only fetch the part after #
+        String[] refSplit = ref.split("#/");
+        return "#/" + refSplit[refSplit.length - 1];
+    }
+
+    private static String buildRef(List<String> refCrumbs, String ref, Path basePath) {
+        if (refCrumbs.isEmpty()) {
+            return ref;
+        }
+        String file = getFileNameFromRef(refCrumbs.get(0));
+        StringBuilder sb = new StringBuilder();
+        Collections.reverse(refCrumbs);
+        for (String crumb : refCrumbs) {
+            String fileName = getFileNameFromRef(crumb);
+            String pathInCrumb = crumb.replace(fileName, "");
+            if (pathInCrumb.isEmpty()) {
+                continue;
+            }
+            sb.append(pathInCrumb);
+        }
+        sb.append(file);
+        return basePath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref;
+    }
+
+    private static String getFileNameFromRef(String ref) {
+        String[] splits = ref.split("/");
+        return splits[splits.length - 1];
+    }
+
+    private static void addExternalRefCrumb(ValidationResults.CrumbInfo crumbInfo, List<String> refCrumbs) {
+        if (crumbInfo != null && crumbInfo.crumb() != null && crumbInfo.crumb().contains("#/") && !crumbInfo.crumb().startsWith("#/")) { // Crumb contains an external ref
+            refCrumbs.add(crumbInfo.crumb().split("#/")[0]); // Add file reference to refCrumbs
+        }
+    }
+
+    // End of customizations for Belgif Validator
 
     private SchemaValidator getOneAnyOfValidator(final String discriminatorValue) {
         // Explicit case with mapping

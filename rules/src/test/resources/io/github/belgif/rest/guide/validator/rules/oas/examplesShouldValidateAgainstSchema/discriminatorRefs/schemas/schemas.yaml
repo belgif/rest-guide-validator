@@ -1,0 +1,47 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    FirstChild:
+      description: description
+      allOf:
+        - $ref: "#/components/schemas/TopLevel"
+        - type: object
+          properties:
+            firstChildProperty:
+              type: string
+
+    SecondChild:
+      description: Doesnt matter
+      allOf:
+        - $ref: "#/components/schemas/TopLevel"
+        - type: object
+          properties:
+            secondChildProperty:
+              type: string
+
+    TopLevel:
+      type: object
+      description: description
+      required:
+        - objectType
+      properties:
+        objectType:
+          $ref: "#/components/schemas/ObjectType"
+        topLevelProperty:
+          type: string
+      discriminator:
+        propertyName: objectType
+        mapping:
+          firstChild: "#/components/schemas/FirstChild"
+          secondChild: "#/components/schemas/SecondChild"
+
+    ObjectType:
+      type: string
+      enum:
+        - firstChild
+        - secondChild
+      description: type of thing
