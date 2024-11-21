@@ -75,7 +75,11 @@ public class ViolationReport {
     }
 
     public void addViolation(String ruleName, String description) {
-        this.addViolation(ruleName, description, null, new Line("", 0), ViolationLevel.MANDATORY, "");
+        this.addViolation(ruleName, description, ViolationLevel.MANDATORY);
+    }
+
+    public void addViolation(String ruleName, String description, ViolationLevel violationLevel) {
+        this.addViolation(ruleName, description, null, new Line("", 0), violationLevel, "");
     }
 
     public List<Violation> getActionableViolations() {
