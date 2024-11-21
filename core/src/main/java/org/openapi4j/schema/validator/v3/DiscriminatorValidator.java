@@ -244,16 +244,16 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
      * Resolves the reference within the discriminatorMapping
      */
     private Reference resolveRelativeRef(String ref) {
-        List<String> refCrumbs = new ArrayList<>();
-        addExternalRefCrumb(this.crumbInfo, refCrumbs);
+        List<String> fileCrumbs = new ArrayList<>();
+        addExternalFileCrumb(this.crumbInfo, fileCrumbs);
         SchemaValidator schemaValidator = this.getParentSchema();
         while (schemaValidator != null) {
-            addExternalRefCrumb(schemaValidator.getCrumbInfo(), refCrumbs);
+            addExternalFileCrumb(schemaValidator.getCrumbInfo(), fileCrumbs);
             schemaValidator = schemaValidator.getParentSchema();
         }
         try {
             Path basePath = Paths.get(context.getContext().getBaseUrl().toURI());
-            String resolvedRef = buildRef(refCrumbs, getComponentRef(ref), basePath);
+            String resolvedRef = buildRef(fileCrumbs, getComponentRef(ref), basePath);
             return context.getContext().getReferenceRegistry().getRef(resolvedRef);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -281,10 +281,9 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         for (String crumb : refCrumbs) {
             String fileName = getFileNameFromRef(crumb);
             String pathInCrumb = crumb.replace(fileName, "");
-            if (pathInCrumb.isEmpty()) {
-                continue;
+            if (!pathInCrumb.isEmpty()) {
+                sb.append(pathInCrumb);
             }
-            sb.append(pathInCrumb);
         }
         sb.append(file);
         return basePath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref;
@@ -295,7 +294,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         return splits[splits.length - 1];
     }
 
-    private static void addExternalRefCrumb(ValidationResults.CrumbInfo crumbInfo, List<String> refCrumbs) {
+    private static void addExternalFileCrumb(ValidationResults.CrumbInfo crumbInfo, List<String> refCrumbs) {
         if (crumbInfo != null && crumbInfo.crumb() != null && crumbInfo.crumb().contains("#/") && !crumbInfo.crumb().startsWith("#/")) { // Crumb contains an external ref
             refCrumbs.add(crumbInfo.crumb().split("#/")[0]); // Add file reference to refCrumbs
         }
