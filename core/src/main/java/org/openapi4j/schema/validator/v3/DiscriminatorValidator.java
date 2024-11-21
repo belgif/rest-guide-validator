@@ -236,11 +236,13 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
 
         // Check if Schema Object exists
         // Modification for Belgif validator: Resolve relative refs
-//        return context.getContext().getReferenceRegistry().getRef(ref) != null;
         return resolveRelativeRef(ref) != null;
     }
 
-    //    Custom method for Belgif Validator to resolve ref
+    /**
+     * Custom method for Belgif Validator
+     * Resolves the reference within the discriminatorMapping
+     */
     private Reference resolveRelativeRef(String ref) {
         List<String> refCrumbs = new ArrayList<>();
         addExternalRefCrumb(this.crumbInfo, refCrumbs);
@@ -258,11 +260,17 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         }
     }
 
-    private static String getComponentRef(String ref) { // to only fetch the part after #
+    /**
+     * Returns only the reference within a file
+     */
+    private static String getComponentRef(String ref) {
         String[] refSplit = ref.split("#/");
         return "#/" + refSplit[refSplit.length - 1];
     }
 
+    /**
+     * Returns an absolute reference String based on the crumbInfo found in the validators
+     */
     private static String buildRef(List<String> refCrumbs, String ref, Path basePath) {
         if (refCrumbs.isEmpty()) {
             return ref;
