@@ -1,0 +1,50 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import java.util.Map
+import java.util.Set
+
+import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.models.security.SecurityScheme.Type;
+import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
+import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
+
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.model.SecurityRequirementDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SecuritySchemeDefinition
+import java.util.HashSet;
+
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationScopes(ViolationReport oas, SecurityRequirementDefinition securityRequirementDefinition, String scope, String securitySchemePointer){
+    oas.addViolation("[scopes]", "Scopes defined in a security requirement must also be defined in the referenced security scheme.", "Scope: <<" + scope + ">> not found in: " + securitySchemePointer,
+                     securityRequirementDefinition);
+}
+
+function Set fetchScopesFromFlows(OAuthFlows flows) {
+    Set<String> scopes = new HashSet<>();
+    if (flows.getImplicit() != null && flows.getImplicit().getScopes() != null) {
+      scopes.addAll(flows.getImplicit().getScopes().keySet());
+    }
+    if (flows.getAuthorizationCode() != null && flows.getAuthorizationCode().getScopes() != null) {
+      scopes.addAll(flows.getAuthorizationCode().getScopes().keySet());
+    }
+    if (flows.getClientCredentials() != null && flows.getClientCredentials().getScopes() != null) {
+      scopes.addAll(flows.getClientCredentials().getScopes().keySet());
+    }
+    return Set.of(scopes);
+}
+
+rule "Rule-ScopesAreDefinedInSecurityScheme"
+  when
+    $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet)
+    $securitySchemeName: String() from $schemes.getKey()
+    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && model.getType()==Type.OAUTH2)
+    SecuritySchemeDefinition($flows: /model/flows#OAuthFlows) from $securitySchemeDefinition
+    $definedScopes: Set() from fetchScopesFromFlows($flows)
+    $scope: String() from $schemes.getValue()
+    eval ( !$definedScopes.contains($scope) )
+  then
+    violationScopes(oas, $securityRequirementDefinition, $scope, $securitySchemeDefinition.getPrintableJsonPointer());
+end
