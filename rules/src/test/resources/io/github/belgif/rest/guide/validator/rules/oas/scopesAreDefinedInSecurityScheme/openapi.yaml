@@ -10,6 +10,8 @@ paths:
       security:
         - Oauth:
             - "my:first:scope"
+            - "my:third:scope"
+            - "my:fourth:scope"
       responses:
         default:
           description: default
@@ -27,3 +29,12 @@ components:
           scopes:
             'my:first:scope' : This is my first scope
             'my:second:scope': This is my second scope
+        clientCredentials:
+          tokenUrl: 'https://myTokenUrl.com'
+          scopes:
+            'my:third:scope' : This is my third scope
+        authorizationCode:
+          authorizationUrl: 'https://myAuthorization.com'
+          tokenUrl: 'https://myTokenUrl.com'
+          scopes:
+            'my:fourth:scope' : This is my fourth scope
