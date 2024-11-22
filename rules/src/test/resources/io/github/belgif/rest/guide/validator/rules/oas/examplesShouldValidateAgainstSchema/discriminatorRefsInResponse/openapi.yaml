@@ -1,0 +1,10 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        default:
+          $ref: ./responses/responses.yaml#/components/responses/MyReponse
