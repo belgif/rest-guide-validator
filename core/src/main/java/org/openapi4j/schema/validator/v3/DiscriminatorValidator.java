@@ -277,10 +277,10 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         }
         String file = getFileNameFromRef(refCrumbs.get(0));
         StringBuilder sb = new StringBuilder();
-        Collections.reverse(refCrumbs);
+        Collections.reverse(refCrumbs); // So refs are in order starting from the 'entry' file.
         for (String crumb : refCrumbs) {
             String fileName = getFileNameFromRef(crumb);
-            String pathInCrumb = crumb.replace(fileName, "");
+            String pathInCrumb = crumb.replace(fileName, ""); //Ditch filename so only folder hopping in refs is taken into account.
             if (!pathInCrumb.isEmpty()) {
                 sb.append(pathInCrumb);
             }
