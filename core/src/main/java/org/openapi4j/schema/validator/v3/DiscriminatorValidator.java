@@ -244,6 +244,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
      * Resolves the reference within the discriminatorMapping
      */
     private Reference resolveRelativeRef(String ref) {
+        // create list of files traversed through references to the discriminator
         List<String> fileCrumbs = new ArrayList<>();
         addExternalFileCrumb(this.crumbInfo, fileCrumbs);
         SchemaValidator schemaValidator = this.getParentSchema();
@@ -251,9 +252,11 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
             addExternalFileCrumb(schemaValidator.getCrumbInfo(), fileCrumbs);
             schemaValidator = schemaValidator.getParentSchema();
         }
+        Collections.reverse(fileCrumbs); // So refs are in order starting from the 'entry' file.
+
         try {
-            Path basePath = Paths.get(context.getContext().getBaseUrl().toURI());
-            String resolvedRef = buildRef(fileCrumbs, getComponentRef(ref), basePath);
+            Path initialOpenApiPath = Paths.get(context.getContext().getBaseUrl().toURI()); // absolute file name of the initial OpenAPI file
+            String resolvedRef = buildRef(fileCrumbs, getComponentRef(ref), initialOpenApiPath);
             return context.getContext().getReferenceRegistry().getRef(resolvedRef);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -261,7 +264,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
     }
 
     /**
-     * Returns only the reference within a file
+     * Returns only the reference without file name
      */
     private static String getComponentRef(String ref) {
         String[] refSplit = ref.split("#/");
@@ -269,28 +272,29 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
     }
 
     /**
-     * Returns an absolute reference String based on the crumbInfo found in the validators
+     * Returns a reference with absolute file path to the given ref
+     * based on the files traversed to the discriminator
      */
-    private static String buildRef(List<String> refCrumbs, String ref, Path basePath) {
-        if (refCrumbs.isEmpty()) {
+    private static String buildRef(List<String> fileCrumbs, String ref, Path initialOpenApiPath) {
+        if (fileCrumbs.isEmpty()) {
             return ref;
         }
-        String file = getFileNameFromRef(refCrumbs.get(0));
+
+        // build path to the ref, combining all paths traversed to it
         StringBuilder sb = new StringBuilder();
-        Collections.reverse(refCrumbs); // So refs are in order starting from the 'entry' file.
-        for (String crumb : refCrumbs) {
-            String fileName = getFileNameFromRef(crumb);
+        for (String crumb : fileCrumbs) {
+            String fileName = getFileNameFromPath(crumb);
             String pathInCrumb = crumb.replace(fileName, ""); //Ditch filename so only folder hopping in refs is taken into account.
             if (!pathInCrumb.isEmpty()) {
                 sb.append(pathInCrumb);
             }
         }
-        sb.append(file);
-        return basePath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref;
+        sb.append(getFileNameFromPath(fileCrumbs.get(fileCrumbs.size()-1))); // append file containing the ref, i.e. with the discriminator
+        return initialOpenApiPath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref; // TODO: what if ref in another file than discriminator?
     }
 
-    private static String getFileNameFromRef(String ref) {
-        String[] splits = ref.split("/");
+    private static String getFileNameFromPath(String filePath) {
+        String[] splits = filePath.split("/");
         return splits[splits.length - 1];
     }
 
