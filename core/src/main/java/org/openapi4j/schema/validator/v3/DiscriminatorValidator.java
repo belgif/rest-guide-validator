@@ -1,6 +1,11 @@
 package org.openapi4j.schema.validator.v3;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.MissingNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.openapi4j.core.model.reference.Reference;
 import org.openapi4j.core.model.reference.ReferenceRegistry;
 import org.openapi4j.core.model.v3.OAI3;
@@ -11,7 +16,12 @@ import org.openapi4j.schema.validator.BaseJsonValidator;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +39,7 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
  * This was caused by getReferences() (not existing in this file anymore).
  * All references in all subschemas and properties within an allOf schema were checked for a discriminator.
  * Now getReference() is used and only the immediate schema items within an allOf are checked for a discriminator instead of all nested nodes.
- *
+ * <p>
  * Also added method resolveRelativeRef()
  */
 
@@ -151,6 +161,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
                 discriminatorNode = reference.getContent().get(DISCRIMINATOR);
                 if (discriminatorNode != null) {
                     setupAllOfDiscriminatorSchemas(schemaNode, refNode, reference, schemaParentNode, parentSchema);
+                    addDiscriminatorMappingReferences(discriminatorNode, reference);
                     return;
                 }
             }
@@ -160,6 +171,58 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         for (JsonNode node : schemaNode) {
             validators.add(new SchemaValidator(context, crumbInfo, node, schemaParentNode, parentSchema));
         }
+    }
+
+    /**
+     * Adds references in Discriminator Mapping if reference actually exists
+     */
+    private void addDiscriminatorMappingReferences(JsonNode discriminatorNode, Reference parentReference) {
+        if (discriminatorNode.get(MAPPING) != null) {
+            for (JsonNode mappingNode : discriminatorNode.path(MAPPING)) {
+                try {
+                    String ref = mappingNode.textValue();
+                    String parentFilePath = parentReference.getCanonicalRef().split("#/")[0];
+                    URL baseUrl;
+                    if (ref.startsWith("#/")) { // refs to same file as discriminator itself
+                        baseUrl = URI.create(parentFilePath).toURL();
+                    } else {
+                        String[] refSplits = ref.split("#/");
+                        String endRef = refSplits[1];
+                        String mappingFilePath = refSplits[0];
+                        Path parentPath = Paths.get(URI.create(parentFilePath));
+                        baseUrl = parentPath.getParent().resolve(mappingFilePath).normalize().toFile().toURI().toURL();
+                        ref = "#/" + endRef;
+                    }
+                    if (referenceExists(baseUrl, ref)) {
+                        context.getContext().getReferenceRegistry().addRef(baseUrl, ref);
+                    }
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private boolean referenceExists(URL baseUrl, String ref) {
+        File file = new File(baseUrl.getFile());
+        JsonFactory factory;
+        if (file.exists()) {
+            if (file.getName().endsWith(".yaml") || file.getName().endsWith(".yml")) {
+                factory = new YAMLFactory();
+            } else {
+                factory = new JsonFactory();
+            }
+            try {
+                ObjectMapper mapper = new ObjectMapper(factory);
+                JsonNode referencedFile = mapper.readTree(file);
+                JsonPointer jsonPointer = JsonPointer.compile(ref.substring(1));
+                JsonNode resolvedNode = referencedFile.at(jsonPointer);
+                return resolvedNode != null && !(resolvedNode instanceof MissingNode);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
     }
 
     private void setupAnyOneOfDiscriminatorSchemas(final ValidationContext<OAI3> context,
@@ -246,7 +309,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
     private Reference resolveRelativeRef(String ref) {
         // create list of files traversed through references to the discriminator
         List<String> fileCrumbs = new ArrayList<>();
-        addExternalFileCrumb(this.crumbInfo, fileCrumbs);
+        addFirstFileCrumb(fileCrumbs, ref);
         SchemaValidator schemaValidator = this.getParentSchema();
         while (schemaValidator != null) {
             addExternalFileCrumb(schemaValidator.getCrumbInfo(), fileCrumbs);
@@ -260,6 +323,22 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
             return context.getContext().getReferenceRegistry().getRef(resolvedRef);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void addFirstFileCrumb(List<String> fileCrumbs, String ref) {
+        if (!ref.startsWith("#/")) { // There is a file in the ref of the Discriminator Mapping
+            fileCrumbs.add(ref.split("#/")[0]);
+        }
+        if (this.getSchemaNode().has(DISCRIMINATOR)) { //The discriminator is directly in the AllOf schema
+            addExternalFileCrumb(this.crumbInfo, fileCrumbs);
+        } else {
+            for (SchemaValidator childValidator : validators) { // The discriminator is in one of the referenced schemas
+                if (childValidator.getSchemaNode().has(DISCRIMINATOR)) {
+                    addExternalFileCrumb(childValidator.getCrumbInfo(), fileCrumbs);
+                    break;
+                }
+            }
         }
     }
 
@@ -289,8 +368,8 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
                 sb.append(pathInCrumb);
             }
         }
-        sb.append(getFileNameFromPath(fileCrumbs.get(fileCrumbs.size()-1))); // append file containing the ref, i.e. with the discriminator
-        return initialOpenApiPath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref; // TODO: what if ref in another file than discriminator?
+        sb.append(getFileNameFromPath(fileCrumbs.get(fileCrumbs.size() - 1))); // append file containing the ref, i.e. with the discriminator
+        return initialOpenApiPath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref;
     }
 
     private static String getFileNameFromPath(String filePath) {

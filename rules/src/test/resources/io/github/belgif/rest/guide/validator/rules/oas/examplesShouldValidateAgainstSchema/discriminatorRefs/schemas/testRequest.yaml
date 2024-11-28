@@ -18,5 +18,5 @@ components:
               description: a property
             schemaUnderTest:
               allOf:
-                - $ref: "../complex/childs/schemas.yaml#/components/schemas/FirstChild"
+                - $ref: "../complex/main/schemas.yaml#/components/schemas/TopLevel"
                 - description: nope
