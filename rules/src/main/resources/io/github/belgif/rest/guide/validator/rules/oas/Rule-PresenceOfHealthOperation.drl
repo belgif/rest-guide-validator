@@ -56,6 +56,7 @@ end
 rule "Rule-HealthOperationWithoutGet"
     when
         $path: PathDefinition( identifier == "/health" )
+//        TODO: Once GH issue #40 is resolved, the PathDefinition or PathItem definition should be resolved here.
         eval ( $path.getModel().getGET() == null )
     then
         healthGetOperationViolation(oas, $path);
