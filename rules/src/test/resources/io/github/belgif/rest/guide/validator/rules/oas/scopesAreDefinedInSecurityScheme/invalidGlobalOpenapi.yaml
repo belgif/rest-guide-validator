@@ -1,0 +1,29 @@
+openapi: 3.0.0
+info:
+  title: Scopes
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        default:
+          description: default
+          content:
+            application/json:
+              schema:
+                type: object
+security:
+  - Oauth:
+    - "my:non:existing:scope"
+components:
+  securitySchemes:
+    Oauth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://myAuthorization.com'
+          scopes:
+            'my:first:scope' : This is my first scope
+            'my:second:scope': This is my second scope

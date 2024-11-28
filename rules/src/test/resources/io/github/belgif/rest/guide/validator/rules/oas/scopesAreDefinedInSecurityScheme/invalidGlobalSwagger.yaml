@@ -1,0 +1,32 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: scopes
+basePath: /v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      responses:
+        "200":
+          description: Very good 200
+          schema:
+            type: string
+security:
+  - Oauth:
+    - 'my:non:existing:scope'
+securityDefinitions:
+  Oauth:
+    type: oauth2
+    authorizationUrl: 'https://myAuthorizationUrl.com'
+    flow: implicit
+    scopes:
+      'my:first:scope' : This is my first scope
+      'my:second:scope' : This is my second scope
