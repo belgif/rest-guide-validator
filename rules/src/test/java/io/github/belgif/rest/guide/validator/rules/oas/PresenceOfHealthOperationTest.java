@@ -28,4 +28,9 @@ class PresenceOfHealthOperationTest extends AbstractOasRuleTest {
     void testHealthOperationWithoutGET() {
         assertErrorCount(1, callRules("healthOperationWithoutGet.yaml"));
     }
+
+    @Test
+    void testIgnoreMissingHealthPath() {
+        assertNoViolations(callRules("ignoreMissingHealthPath.yaml"));
+    }
 }
