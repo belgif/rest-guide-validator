@@ -24,16 +24,16 @@ function void healthViolation(ViolationReport oas, PathsDefinition pathsDefiniti
 
 function void healthResponseViolation(ViolationReport oas, OperationDefinition operation){
     oas.addViolation("[hlth-res]",
+                 "Each REST API SHOULD expose a GET /health operation which returns the availability of the API’s functionality for its clients.",
            		 "The HTTP response status of a health operation SHOULD be either 200 OK when the service is up or partially available, or 503 Service Unavailable when the service is down or out of service.",
-           		 null,
            		 operation,
            		 ViolationLevel.RECOMMENDED);
 }
 
 function void healthGetOperationViolation(ViolationReport oas, PathDefinition path){
     oas.addViolation("[hlth-res]",
+                 "Each REST API SHOULD expose a GET /health operation which returns the availability of the API’s functionality for its clients.",
            		 "The /health path should have a GET operation",
-           		 null,
            		 path,
            		 ViolationLevel.RECOMMENDED);
 }
