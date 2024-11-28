@@ -10,8 +10,8 @@ class PresenceOfHealthOperationTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testInvalidOpenapi() {
-        assertErrorCount(1, callRules("invalidOpenapi.yaml"));
+    void testMissingHealthPath() {
+        assertErrorCount(1, callRules("missingHealthPath.yaml"));
     }
 
     @Test
