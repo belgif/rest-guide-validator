@@ -19,11 +19,11 @@ function void healthViolation(ViolationReport oas){
            		 ViolationLevel.RECOMMENDED);
 }
 
-function void healthResponseViolation(ViolationReport oas, PathDefinition path){
+function void healthResponseViolation(ViolationReport oas, OperationDefinition operation){
     oas.addViolation("[hlth-res]",
            		 "The HTTP response status of a health operation SHOULD be either 200 OK when the service is up or partially available, or 503 Service Unavailable when the service is down or out of service.",
            		 null,
-           		 path,
+           		 operation,
            		 ViolationLevel.RECOMMENDED);
 }
 
@@ -50,7 +50,7 @@ rule "Rule-ResponsesOfHealthOperation"
         $operationDefinition: OperationDefinition($responses: /model/responses) from parserResult.resolve($operation)
         eval ( !$responses.hasAPIResponse("200") || !$responses.hasAPIResponse("503") )
     then
-        healthResponseViolation(oas, $path);
+        healthResponseViolation(oas, $operationDefinition);
 end
 
 rule "Rule-HealthOperationWithoutGet"
