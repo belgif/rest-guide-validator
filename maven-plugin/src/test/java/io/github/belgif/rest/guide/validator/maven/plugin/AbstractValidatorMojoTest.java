@@ -63,7 +63,7 @@ public abstract class AbstractValidatorMojoTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(referenceBytes);
         assertTrue(node.has("violations"));
-        assertEquals(4, node.get("totalViolations").asInt());
+        assertEquals(5, node.get("totalViolations").asInt());
     }
 
     private List<Callable<Void>> getCallables(List<File> outputFiles) {

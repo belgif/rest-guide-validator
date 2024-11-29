@@ -1,0 +1,18 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Health
+servers:
+  - url: http://myServer.com
+paths:
+  x-ignore-rules:
+    "hlth-res": "This is a test on ignoring the missing health path"
+  /myPath:
+    get:
+      responses:
+        default:
+          description: default description
+          content:
+            application/json:
+              schema:
+                type: object

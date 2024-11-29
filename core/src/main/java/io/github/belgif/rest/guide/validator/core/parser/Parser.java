@@ -45,6 +45,7 @@ public class Parser {
     @Getter
     @Setter
     public static class ParserResult {
+        private Set<PathsDefinition> pathsDefinitions = new HashSet<>();
         private Set<PathDefinition> pathDefinitions = new HashSet<>();
         private Set<MediaTypeDefinition> mediaTypes = new HashSet<>();
         private Set<RequestBodyDefinition> requestBodies = new HashSet<>();
@@ -69,6 +70,7 @@ public class Parser {
         private final Map<Constructible, OpenApiDefinition<?>> modelDefinitionMap = new HashMap<>();
 
         private void assembleAllDefinitions() {
+            allDefinitions.addAll(pathsDefinitions);
             allDefinitions.addAll(pathDefinitions);
             allDefinitions.addAll(requestBodies);
             allDefinitions.addAll(responses);
@@ -250,9 +252,11 @@ public class Parser {
         if (paths == null) {
             return;
         }
+        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApiFile, result);
+        result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            var pathDef = new PathDefinition(pathitem, path, openApiFile, result);
+            var pathDef = new PathDefinition(pathitem, pathsDefinition, path);
             result.pathDefinitions.add(pathDef);
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
