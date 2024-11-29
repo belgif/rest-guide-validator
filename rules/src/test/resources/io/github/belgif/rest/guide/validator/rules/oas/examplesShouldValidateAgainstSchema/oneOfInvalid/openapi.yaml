@@ -1,0 +1,23 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    myRequest:
+      description: Doesn't matter
+      type: object
+      properties:
+        testRequest:
+          $ref: 'schemas.yaml#/components/schemas/TestRequest'
+      example: {
+        "testRequest" : {
+          "myFirstProperty": "yes",
+          "schemaUnderTest": {
+            "objectType": "other",
+            "dataSource": "myDataSource",
+            "firstChildProperty": "seems good"
+          }
+        }
+      }

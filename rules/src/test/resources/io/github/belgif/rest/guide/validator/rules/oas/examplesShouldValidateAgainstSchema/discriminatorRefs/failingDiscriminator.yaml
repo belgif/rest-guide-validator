@@ -1,0 +1,30 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    TestRequest:
+      description: Doesn't matter
+      allOf:
+        - type: object
+        - type: object
+          required:
+            - schemaUnderTest
+          properties:
+            myFirstProperty:
+              type: string
+              description: a property
+            schemaUnderTest:
+              allOf:
+                - $ref: "failingSchemas.yaml#/components/schemas/FirstChild"
+                - description: nope
+      example: {
+        "myFirstProperty": "yes",
+        "schemaUnderTest": {
+          "objectType": "firstChild",
+          "dataSource": "myDataSource",
+          "firstChildProperty": "seems good"
+        }
+      }
