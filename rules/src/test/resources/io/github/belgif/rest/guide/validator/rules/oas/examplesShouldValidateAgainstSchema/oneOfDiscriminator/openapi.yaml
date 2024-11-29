@@ -10,7 +10,7 @@ components:
       type: object
       properties:
         testRequest:
-          $ref: 'schemas/testRequest.yaml#/components/schemas/TestRequest'
+          $ref: 'schemas.yaml#/components/schemas/TestRequest'
       example: {
         "testRequest" : {
           "myFirstProperty": "yes",

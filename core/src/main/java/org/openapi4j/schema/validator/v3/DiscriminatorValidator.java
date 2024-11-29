@@ -161,7 +161,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
                 discriminatorNode = reference.getContent().get(DISCRIMINATOR);
                 if (discriminatorNode != null) {
                     setupAllOfDiscriminatorSchemas(schemaNode, refNode, reference, schemaParentNode, parentSchema);
-                    addDiscriminatorMappingReferences(discriminatorNode, reference);
+//                    addDiscriminatorMappingReferences(discriminatorNode, reference);
                     return;
                 }
             }
@@ -299,14 +299,43 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
 
         // Check if Schema Object exists
         // Modification for Belgif validator: Resolve relative refs
-        return resolveRelativeRef(ref) != null;
+        String resolvedRef = resolveRelativeRef(ref);
+        return context.getContext().getReferenceRegistry().getRef(resolvedRef) != null || refExists(resolvedRef);
+    }
+
+    private boolean refExists(String ref) {
+        try {
+            URL baseUrl = URI.create(ref.split("#/")[0]).toURL();
+            String internalRef = ref.split("#/")[1];
+            File file = new File(baseUrl.getFile());
+            JsonFactory factory;
+            if (file.exists()) {
+                if (file.getName().endsWith(".yaml") || file.getName().endsWith(".yml")) {
+                    factory = new YAMLFactory();
+                } else {
+                    factory = new JsonFactory();
+                }
+                try {
+                    ObjectMapper mapper = new ObjectMapper(factory);
+                    JsonNode referencedFile = mapper.readTree(file);
+                    JsonPointer jsonPointer = JsonPointer.compile("/"+internalRef);
+                    JsonNode resolvedNode = referencedFile.at(jsonPointer);
+                    return resolvedNode != null && !(resolvedNode instanceof MissingNode);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     /**
      * Custom method for Belgif Validator
      * Resolves the reference within the discriminatorMapping
      */
-    private Reference resolveRelativeRef(String ref) {
+    private String resolveRelativeRef(String ref) {
         // create list of files traversed through references to the discriminator
         List<String> fileCrumbs = new ArrayList<>();
         addFirstFileCrumb(fileCrumbs, ref);
@@ -319,8 +348,7 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
 
         try {
             Path initialOpenApiPath = Paths.get(context.getContext().getBaseUrl().toURI()); // absolute file name of the initial OpenAPI file
-            String resolvedRef = buildRef(fileCrumbs, getComponentRef(ref), initialOpenApiPath);
-            return context.getContext().getReferenceRegistry().getRef(resolvedRef);
+            return buildRef(fileCrumbs, getComponentRef(ref), initialOpenApiPath);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

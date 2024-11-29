@@ -17,11 +17,10 @@ components:
               type: string
               description: a property
             schemaUnderTest:
-              discriminator:
-                propertyName: objectType
-                mapping:
-                  firstChild: "complex/childs/schemas.yaml#/components/schemas/FirstChild"
-                  secondChild: "complex/childs/schemas.yaml#/components/schemas/SecondChild"
               oneOf:
-                - $ref: "complex/childs/schemas.yaml#/components/schemas/FirstChild"
-                - $ref: "complex/childs/schemas.yaml#/components/schemas/SecondChild"
+                - $ref: "complex/main/schemas.yaml#/components/schemas/TopLevel"
+                - type: object
+                  additionalProperties: false
+                  properties:
+                    something:
+                      type: string

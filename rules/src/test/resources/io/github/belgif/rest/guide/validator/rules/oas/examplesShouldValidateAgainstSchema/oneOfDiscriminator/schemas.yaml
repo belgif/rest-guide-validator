@@ -17,6 +17,11 @@ components:
               type: string
               description: a property
             schemaUnderTest:
-              allOf:
-                - $ref: "../complex/main/schemas.yaml#/components/schemas/TopLevel"
-                - description: nope
+              discriminator:
+                propertyName: objectType
+                mapping:
+                  firstChild: "complex/childs/schemas.yaml#/components/schemas/FirstChild"
+                  secondChild: "complex/childs/schemas.yaml#/components/schemas/SecondChild"
+              oneOf:
+                - $ref: "complex/childs/schemas.yaml#/components/schemas/FirstChild"
+                - $ref: "complex/childs/schemas.yaml#/components/schemas/SecondChild"

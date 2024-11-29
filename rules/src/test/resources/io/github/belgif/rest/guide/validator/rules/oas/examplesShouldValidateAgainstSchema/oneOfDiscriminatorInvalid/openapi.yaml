@@ -15,7 +15,7 @@ components:
         "testRequest" : {
           "myFirstProperty": "yes",
           "schemaUnderTest": {
-            "objectType": "firstChild",
+            "objectType": "other",
             "dataSource": "myDataSource",
             "firstChildProperty": "seems good"
           }
