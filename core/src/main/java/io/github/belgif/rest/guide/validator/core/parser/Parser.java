@@ -252,10 +252,11 @@ public class Parser {
         if (paths == null) {
             return;
         }
-        result.pathsDefinitions.add(new PathsDefinition(paths, sourceDefinition.getFileName()+"/paths", openApiFile, result));
+        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApiFile, result);
+        result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            var pathDef = new PathDefinition(pathitem, path, openApiFile, result);
+            var pathDef = new PathDefinition(pathitem, pathsDefinition, path);
             result.pathDefinitions.add(pathDef);
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
