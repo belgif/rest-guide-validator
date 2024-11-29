@@ -59,6 +59,7 @@ public class Parser {
         private Set<SecuritySchemeDefinition> securitySchemes = new HashSet<>();
         private Set<LinkDefinition> links = new HashSet<>();
         private Set<SecurityRequirementDefinition> securityRequirements = new HashSet<>();
+        private Set<PathItemDefinition> pathItemDefinitions = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
@@ -84,6 +85,7 @@ public class Parser {
             allDefinitions.addAll(securitySchemes);
             allDefinitions.addAll(links);
             allDefinitions.addAll(securityRequirements);
+            allDefinitions.addAll(pathItemDefinitions);
             allDefinitions.forEach(def -> modelDefinitionMap.put(def.getModel(), def));
         }
 
@@ -140,13 +142,13 @@ public class Parser {
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
             for (SourceDefinition sourceDefinition : result.src.values()) {
+                parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
                 parseGlobalSecurityRequirements(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
                     result.setOasVersion(getOasVersion(sourceDefinition));
                     parseServers(result);
-                    parsePaths(sourceDefinition, result);
                 }
             }
             verifySecurityRequirements(result);
@@ -256,8 +258,15 @@ public class Parser {
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            var pathDef = new PathDefinition(pathitem, pathsDefinition, path);
-            result.pathDefinitions.add(pathDef);
+            OpenApiDefinition<?> pathDef;
+            if (openApiFile == result.openApiFile) {
+                pathDef = new PathDefinition(pathitem, pathsDefinition, path);
+                result.pathDefinitions.add((PathDefinition) pathDef);
+            } else {
+                pathDef = new PathItemDefinition(pathitem, pathsDefinition, path);
+                result.pathItemDefinitions.add((PathItemDefinition) pathDef);
+            }
+
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
                     var operationDef = new OperationDefinition(operation, pathDef, method);
