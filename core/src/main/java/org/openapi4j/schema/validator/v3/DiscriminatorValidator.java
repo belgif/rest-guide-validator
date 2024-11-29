@@ -161,7 +161,6 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
                 discriminatorNode = reference.getContent().get(DISCRIMINATOR);
                 if (discriminatorNode != null) {
                     setupAllOfDiscriminatorSchemas(schemaNode, refNode, reference, schemaParentNode, parentSchema);
-//                    addDiscriminatorMappingReferences(discriminatorNode, reference);
                     return;
                 }
             }
@@ -171,58 +170,6 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         for (JsonNode node : schemaNode) {
             validators.add(new SchemaValidator(context, crumbInfo, node, schemaParentNode, parentSchema));
         }
-    }
-
-    /**
-     * Adds references in Discriminator Mapping if reference actually exists
-     */
-    private void addDiscriminatorMappingReferences(JsonNode discriminatorNode, Reference parentReference) {
-        if (discriminatorNode.get(MAPPING) != null) {
-            for (JsonNode mappingNode : discriminatorNode.path(MAPPING)) {
-                try {
-                    String ref = mappingNode.textValue();
-                    String parentFilePath = parentReference.getCanonicalRef().split("#/")[0];
-                    URL baseUrl;
-                    if (ref.startsWith("#/")) { // refs to same file as discriminator itself
-                        baseUrl = URI.create(parentFilePath).toURL();
-                    } else {
-                        String[] refSplits = ref.split("#/");
-                        String endRef = refSplits[1];
-                        String mappingFilePath = refSplits[0];
-                        Path parentPath = Paths.get(URI.create(parentFilePath));
-                        baseUrl = parentPath.getParent().resolve(mappingFilePath).normalize().toFile().toURI().toURL();
-                        ref = "#/" + endRef;
-                    }
-                    if (referenceExists(baseUrl, ref)) {
-                        context.getContext().getReferenceRegistry().addRef(baseUrl, ref);
-                    }
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private boolean referenceExists(URL baseUrl, String ref) {
-        File file = new File(baseUrl.getFile());
-        JsonFactory factory;
-        if (file.exists()) {
-            if (file.getName().endsWith(".yaml") || file.getName().endsWith(".yml")) {
-                factory = new YAMLFactory();
-            } else {
-                factory = new JsonFactory();
-            }
-            try {
-                ObjectMapper mapper = new ObjectMapper(factory);
-                JsonNode referencedFile = mapper.readTree(file);
-                JsonPointer jsonPointer = JsonPointer.compile(ref.substring(1));
-                JsonNode resolvedNode = referencedFile.at(jsonPointer);
-                return resolvedNode != null && !(resolvedNode instanceof MissingNode);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return false;
     }
 
     private void setupAnyOneOfDiscriminatorSchemas(final ValidationContext<OAI3> context,
