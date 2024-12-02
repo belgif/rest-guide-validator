@@ -12,7 +12,7 @@ function void violationSlash(ViolationReport oas, PathDefinition path){
 
 rule "Path Trailing Slash V2"
 	when
-        $path: PathDefinition(isDirectPath(), $pathString: getIdentifier())
+        $path: PathDefinition(directPath == true, $pathString: getIdentifier())
         String( this.endsWith("/") ) from $pathString
     then
         violationSlash(oas, $path);
