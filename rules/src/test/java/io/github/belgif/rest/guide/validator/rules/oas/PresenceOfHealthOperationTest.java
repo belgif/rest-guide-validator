@@ -33,4 +33,9 @@ class PresenceOfHealthOperationTest extends AbstractOasRuleTest {
     void testIgnoreMissingHealthPath() {
         assertNoViolations(callRules("ignoreMissingHealthPath.yaml"));
     }
+
+    @Test
+    void testReferencedHealthOperation() {
+        assertNoViolations(callRules("referencedHealthOperation.yaml"));
+    }
 }

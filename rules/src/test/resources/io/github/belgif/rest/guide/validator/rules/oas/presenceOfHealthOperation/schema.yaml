@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Health
+servers:
+  - url: http://myServer.com
+paths:
+  /Health:
+    get:
+      responses:
+        200:
+          description: good
+          content:
+            application/json:
+              schema:
+                type: object
+        503:
+          description: good
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: default description
+          content:
+            application/json:
+              schema:
+                type: object

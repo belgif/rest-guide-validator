@@ -140,13 +140,13 @@ public class Parser {
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
             for (SourceDefinition sourceDefinition : result.src.values()) {
+                parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
                 parseGlobalSecurityRequirements(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
                     result.setOasVersion(getOasVersion(sourceDefinition));
                     parseServers(result);
-                    parsePaths(sourceDefinition, result);
                 }
             }
             verifySecurityRequirements(result);
@@ -256,8 +256,9 @@ public class Parser {
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            var pathDef = new PathDefinition(pathitem, pathsDefinition, path);
+            PathDefinition pathDef = new PathDefinition(pathitem, pathsDefinition, path);
             result.pathDefinitions.add(pathDef);
+
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {
                     var operationDef = new OperationDefinition(operation, pathDef, method);

@@ -31,7 +31,7 @@ function void violationQueryParam(ViolationReport oas, ParameterDefinition param
 
 rule "Path CamelCase"
 	when
-        $path: PathDefinition( $pathString: getIdentifier() )
+        $path: PathDefinition(directPath == true, $pathString: identifier )
         String(!this.endsWith("/doc/swagger.json") && !this.endsWith("/doc/swagger.yaml") && !this.endsWith("/doc/openapi.json") && !this.endsWith("/doc/openapi.yaml")) from $pathString
         String($pathSegmentList: this.split("/")) from $pathString
         $pathSegment: String( !this.equals("") && !this.startsWith("{") && !this.endsWith("}")) from $pathSegmentList
