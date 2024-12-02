@@ -35,7 +35,7 @@ function boolean hasCollectionResponse(OperationDefinition operation, ParserResu
 
 rule "Rule-PathInPlural"
     when
-        $path: PathDefinition($pathName: getIdentifier(), $operation: /model/GET)
+        $path: PathDefinition(isDirectPath(), $pathName: getIdentifier(), $operation: /model/GET)
         $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
         eval( hasCollectionResponse($operationDefinition, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
         String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName

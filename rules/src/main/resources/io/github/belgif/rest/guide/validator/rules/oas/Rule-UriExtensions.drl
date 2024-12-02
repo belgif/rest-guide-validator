@@ -13,7 +13,7 @@ function void violationUriExt(ViolationReport oas, PathDefinition path){
 
 rule "Uri Extensions V3"
    	when
-      $path: PathDefinition($pathUrl: getIdentifier())
+      $path: PathDefinition(isDirectPath(), $pathUrl: getIdentifier())
       String( this matches(".+\\..+$") ) from $pathUrl
       eval( !$pathUrl.equalsIgnoreCase("/doc/swagger.json") && !$pathUrl.equalsIgnoreCase("/doc/swagger.yaml") &&
             !$pathUrl.equalsIgnoreCase("/doc/openapi.json") && !$pathUrl.equalsIgnoreCase("/doc/openapi.yaml") )

@@ -59,7 +59,6 @@ public class Parser {
         private Set<SecuritySchemeDefinition> securitySchemes = new HashSet<>();
         private Set<LinkDefinition> links = new HashSet<>();
         private Set<SecurityRequirementDefinition> securityRequirements = new HashSet<>();
-        private Set<PathItemDefinition> pathItemDefinitions = new HashSet<>();
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
@@ -85,7 +84,6 @@ public class Parser {
             allDefinitions.addAll(securitySchemes);
             allDefinitions.addAll(links);
             allDefinitions.addAll(securityRequirements);
-            allDefinitions.addAll(pathItemDefinitions);
             allDefinitions.forEach(def -> modelDefinitionMap.put(def.getModel(), def));
         }
 
@@ -258,14 +256,8 @@ public class Parser {
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            OpenApiDefinition<?> pathDef;
-            if (openApiFile == result.openApiFile) {
-                pathDef = new PathDefinition(pathitem, pathsDefinition, path);
-                result.pathDefinitions.add((PathDefinition) pathDef);
-            } else {
-                pathDef = new PathItemDefinition(pathitem, pathsDefinition, path);
-                result.pathItemDefinitions.add((PathItemDefinition) pathDef);
-            }
+            PathDefinition pathDef = new PathDefinition(pathitem, pathsDefinition, path);
+            result.pathDefinitions.add(pathDef);
 
             if (pathitem.getOperations() != null) {
                 pathitem.getOperations().forEach((method, operation) -> {

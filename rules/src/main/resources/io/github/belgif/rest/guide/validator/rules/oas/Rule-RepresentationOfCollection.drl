@@ -51,7 +51,7 @@ function boolean isObjectType(Schema schema, ParserResult parserResult) {
 
 rule "Rule-Representation Of Collection should have items property of type array"
     when
-       $path: PathDefinition($operation: /model/GET)
+       $path: PathDefinition(isDirectPath(), $operation: /model/GET)
        eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
        $operationDefinition: OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse) from parserResult.resolve($operation)
        ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response)
@@ -65,7 +65,7 @@ end
 
 rule "Rule-Representation Of Collection items in a collection should be of type object"
     when
-       $path: PathDefinition($operation: /model/GET)
+       $path: PathDefinition(isDirectPath(), $operation: /model/GET)
        eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
        $operationDefinition: OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse) from parserResult.resolve($operation)
        ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response)

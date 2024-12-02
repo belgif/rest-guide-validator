@@ -6,4 +6,4 @@ servers:
   - url: http://myServer.com
 paths:
   /health:
-    $ref: 'schema.yaml#/paths/~1health'
+    $ref: 'schema.yaml#/paths/~1Health'

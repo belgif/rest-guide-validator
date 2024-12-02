@@ -12,7 +12,7 @@ public class OperationDefinition extends OpenApiDefinition<Operation> {
     @Setter
     private PathItem.HttpMethod method;
 
-    public OperationDefinition(Operation model, OpenApiDefinition<?> parent, PathItem.HttpMethod method) {
+    public OperationDefinition(Operation model, PathDefinition parent, PathItem.HttpMethod method) {
         super(model, parent, method.name()+" "+parent.getIdentifier(), JsonPointer.relative(method.toString().toLowerCase()));
         this.method = method;
     }
