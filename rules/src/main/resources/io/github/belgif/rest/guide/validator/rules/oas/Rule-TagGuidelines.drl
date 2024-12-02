@@ -46,7 +46,7 @@ function boolean isTagDeclaredInTopLevelTagsList(String tag, ParserResult parser
 rule "Rule-Tag Guidelines an operation should not have more than one tag"
     when
         $operationDefinition: OperationDefinition($operation: /model)
-        Operation(getTags() != null && this.getTags.size() > 1) from $operation
+        Operation(tags != null && tags.size() > 1) from $operation
     then
         operationShouldNotHaveMoreThanOneTagViolation(oas, $operationDefinition);
 end

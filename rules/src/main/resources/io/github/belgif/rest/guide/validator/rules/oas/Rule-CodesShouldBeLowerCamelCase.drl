@@ -22,7 +22,7 @@ rule "Codes should io lowerCamelCase"
     when
         $schema: SchemaDefinition($schemaType: /model/type)
         SchemaType( equals(SchemaType.STRING) ) from $schemaType
-        Schema( getEnumeration() != null ) from $schema.getModel()
+        Schema( enumeration != null ) from $schema.getModel()
         eval(((!$schema.getEffectiveIdentifier().contains("sort") && !$schema.getEffectiveIdentifier().contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration()))
         || (( $schema.getEffectiveIdentifier().contains("sort") || $schema.getEffectiveIdentifier().contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration(), "-")))
         eval( ApiFunctions.isNotInSet($schema.getIdentifier(), excludeCodes()) )
