@@ -1,14 +1,12 @@
 package io.github.belgif.rest.guide.validator.core.model;
 
+import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import org.eclipse.microprofile.openapi.models.PathItem;
 
-/**
- * Only contains pathItems that are in the main openapi file. Not the ones referenced.
- */
-public class PathDefinition extends PathItemDefinition {
+public class PathDefinition extends OpenApiDefinition<PathItem>{
 
     public PathDefinition(PathItem model, PathsDefinition parent, String identifier) {
-        super(model, parent, identifier);
+        super(model, parent, identifier, JsonPointer.relative(identifier));
     }
 
     @Override

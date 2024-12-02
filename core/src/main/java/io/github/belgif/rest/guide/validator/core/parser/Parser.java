@@ -258,14 +258,13 @@ public class Parser {
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
-            PathItemDefinition pathDef;
+            OpenApiDefinition<?> pathDef;
             if (openApiFile == result.openApiFile) {
                 pathDef = new PathDefinition(pathitem, pathsDefinition, path);
                 result.pathDefinitions.add((PathDefinition) pathDef);
-                result.pathItemDefinitions.add(pathDef);
             } else {
                 pathDef = new PathItemDefinition(pathitem, pathsDefinition, path);
-                result.pathItemDefinitions.add(pathDef);
+                result.pathItemDefinitions.add((PathItemDefinition) pathDef);
             }
 
             if (pathitem.getOperations() != null) {
