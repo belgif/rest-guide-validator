@@ -8,23 +8,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        maven: [ '3.8.5', '3.9.9' ]
+
     steps:
 #    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
     - name: Setup Maven Action
-      uses: s4u/setup-maven-action@v1.14.0
+      uses: s4u/setup-maven-action@v1.16.0
       with:
         java-version: '17'
         java-distribution: 'adopt'
-        maven-version: '3.9.9'
+        maven-version: ${{ matrix.maven }}
         cache-enabled: 'false'
     - name: Build with Maven
       run: mvn -B verify
-    - name: Setup minimum maven environment for Integration Tests
-      uses: s4u/setup-maven-action@v1.14.0
-      with:
-        java-version: '17'
-        java-distribution: 'adopt'
-        maven-version: '3.8.5'
-        cache-enabled: 'false'
-    - name: Run Integration Tests
-      run: mvn -B -pl integrationtest verify
