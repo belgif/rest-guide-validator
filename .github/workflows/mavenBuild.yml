@@ -19,3 +19,12 @@ jobs:
         cache-enabled: 'false'
     - name: Build with Maven
       run: mvn -B verify
+    - name: Setup minimum maven environment for Integration Tests
+      uses: s4u/setup-maven-action@v1.14.0
+      with:
+        java-version: '17'
+        java-distribution: 'adopt'
+        maven-version: '3.8.5'
+        cache-enabled: 'false'
+    - name: Build with Maven
+      run: mvn -B -pl integrationtests verify
