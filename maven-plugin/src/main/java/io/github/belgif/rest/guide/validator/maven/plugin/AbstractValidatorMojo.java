@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class AbstractValidatorMojo extends AbstractMojo {
     protected static final String FAILURE_MESSAGE = "At least 1 error in validation !";
@@ -77,11 +79,16 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
         if (Objects.equals(jsonOutputFile, new File(DEFAULT_FILE_NAME).getAbsoluteFile())) {
             jsonOutputFile = new File(String.valueOf(outputDir), DEFAULT_FILE_NAME);
         }
+
+        Path outputPath = Optional.ofNullable(outputDir)
+                .map(File::toPath)
+                .orElse(null);
+
         ValidationRunner runner = ValidationRunner.builder()
                 .files(files)
                 .excludedFiles(excludedFiles)
                 .jsonOutputFile(jsonOutputFile)
-                .outputDir(outputDir.toPath())
+                .outputDir(outputPath)
                 .outputTypes(outputTypes)
                 .groupBy(groupBy)
                 .build();
