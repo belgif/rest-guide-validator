@@ -74,7 +74,7 @@ public abstract class AbstractValidatorMojoTest {
                 var openApiMojo = getMojo();
                 openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml")});
                 openApiMojo.groupBy = "rule";
-                openApiMojo.outputDir = Paths.get("target");
+                openApiMojo.outputDir = Paths.get("target").toFile();
                 var tempFile = Files.createTempFile("tmpFile", "custom.json").toFile();
                 outputFiles.add(tempFile);
                 openApiMojo.jsonOutputFile = tempFile;

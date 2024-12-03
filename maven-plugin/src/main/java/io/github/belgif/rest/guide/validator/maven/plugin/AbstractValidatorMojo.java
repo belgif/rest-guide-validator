@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -49,7 +48,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
      * Output directory for the validation report file
      */
     @Parameter(property = "rest-guide-validator.outputDir", defaultValue = "${project.build.directory}")
-    Path outputDir;
+    File outputDir;
 
     @Parameter(property = "rest-guide-validator.failOnMissingOpenAPI", defaultValue = "true")
     protected boolean failOnMissingOpenAPI = true;
@@ -82,7 +81,7 @@ public abstract class AbstractValidatorMojo extends AbstractMojo {
                 .files(files)
                 .excludedFiles(excludedFiles)
                 .jsonOutputFile(jsonOutputFile)
-                .outputDir(outputDir)
+                .outputDir(outputDir.toPath())
                 .outputTypes(outputTypes)
                 .groupBy(groupBy)
                 .build();
