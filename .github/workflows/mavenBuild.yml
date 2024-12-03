@@ -26,5 +26,5 @@ jobs:
         java-distribution: 'adopt'
         maven-version: '3.8.5'
         cache-enabled: 'false'
-    - name: Build with Maven
-      run: mvn -B -pl integrationtests verify
+    - name: Run Integration Tests
+      run: mvn -B -pl integrationtest verify
