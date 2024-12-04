@@ -27,7 +27,6 @@
                 </executions>
                 <configuration>
                     <files>
-                        <file>openapi/common/v1/common-v1.yaml</file>
                         <file>swagger/common/v1/common-v1.yaml</file>
                     </files>
                 </configuration>

@@ -139,13 +139,14 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
+            result.setOasVersion(
+                    getOasVersion(result.src.get(openApiFile.getAbsolutePath())));
             for (SourceDefinition sourceDefinition : result.src.values()) {
                 parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
                 parseGlobalSecurityRequirements(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
-                    result.setOasVersion(getOasVersion(sourceDefinition));
                     parseServers(result);
                 }
             }
