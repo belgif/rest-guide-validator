@@ -88,7 +88,6 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                     }
                     log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath);
                     this.result.setParsingValid(false);
-
                 }
             }
         }
