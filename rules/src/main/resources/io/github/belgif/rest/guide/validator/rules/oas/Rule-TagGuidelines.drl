@@ -5,6 +5,7 @@ import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.ViolationReport
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
@@ -53,7 +54,8 @@ end
 
 rule "Rule-Tag Guidelines each tag should be declared in the top level tags list"
     when
-        $operationDefinition: OperationDefinition($tag: /model/tags#String)
+        $path: PathDefinition(directPath == true, $operation: /model/operations/entrySet/value#Operation)
+        $operationDefinition: OperationDefinition($tag: /model/tags#String) from parserResult.resolve($operation)
         eval( !isTagDeclaredInTopLevelTagsList($tag, parserResult) )
     then
         eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(oas, $operationDefinition, $tag);

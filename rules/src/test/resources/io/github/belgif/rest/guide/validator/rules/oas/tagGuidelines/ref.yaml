@@ -1,0 +1,18 @@
+swagger: "2.0"
+info:
+  title: My api
+  version: "1.0"
+paths:
+  /refPath:
+    get:
+      tags:
+        - My Tag
+      operationId: myReferencedOperation
+      produces:
+        - application/json
+      security: [ ]
+      responses:
+        default:
+          schema:
+            type: object
+          description: mandatory description
