@@ -23,4 +23,10 @@ class TagGuidelinesTest extends AbstractOasRuleTest {
         assertEquals(1, nonDeclaredViolations);
         assertErrorCount(3, aggregator);
     }
+
+    @Test
+    void testTagsDeclaredInReferencedFiles() {
+        assertNoViolations(callRules("swagger.yaml"));
+    }
+
 }
