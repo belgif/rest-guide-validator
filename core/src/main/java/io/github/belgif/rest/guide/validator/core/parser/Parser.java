@@ -10,6 +10,7 @@ import com.google.gson.JsonParser;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
@@ -110,6 +111,25 @@ public class Parser {
 
         private JsonPointer buildJsonPointerFromRef(String ref) {
             ref = !ref.startsWith("#") ? ref.split("#")[1] : ref.substring(1);
+            if (!ref.startsWith("/components") && this.oasVersion == 2) {
+                String[] refParts = ref.substring(1).split("/");
+                String refGroup = "/" + refParts[0];
+                String objectName = refParts[refParts.length - 1];
+                if (refGroup.equals("/parameters")) {
+                    // Special case because this can be both a parameter and requestBody in oas3.
+                    var object = allDefinitions.stream().filter(definition -> definition instanceof ParameterDefinition || definition instanceof RequestBodyDefinition)
+                            .filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals(objectName)).findFirst();
+                    if (object.isPresent()) {
+                        return object.get().getJsonPointer();
+                    }
+                }
+                for (Map.Entry<Class<?>, String> entry : ExpectedReferencePathConstants.OAS_2_LOCATIONS.entrySet()) {
+                    if (entry.getValue().equals(refGroup)) {
+                        ref = ExpectedReferencePathConstants.OAS_3_LOCATIONS.get(entry.getKey()) + "/" + objectName;
+                        break;
+                    }
+                }
+            }
             return new JsonPointer(ref);
         }
 

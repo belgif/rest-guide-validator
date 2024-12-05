@@ -1,14 +1,14 @@
 package io.github.belgif.rest.guide.validator.core.model;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Constructible;
@@ -83,8 +83,12 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                     return;
                 }
                 if (!ref.contains(expectedPath)) {
+                    if (!ref.startsWith("#") && expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 && ref.contains("/definitions")) {
+                        return;
+                    }
                     log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath);
                     this.result.setParsingValid(false);
+
                 }
             }
         }
@@ -122,7 +126,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public OpenApiDefinition<?> getTopLevelParent() {
-       var indirectParent = this.parent;
+        var indirectParent = this.parent;
         while (indirectParent.definitionType == DefinitionType.INLINE) {
             indirectParent = indirectParent.getParent();
         }
@@ -220,31 +224,31 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
             if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && pointers.get(0).equals(jsonParser.getCurrentName())) {
-                    pointers.remove(0);
-                    wantedNestingLevel++;
-                    if (jsonParser.getCurrentLocation() != null) {
-                        lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
-                        if (pointers.isEmpty()) {
-                            return jsonParser.getCurrentLocation().getLineNr();
-                        }
+                pointers.remove(0);
+                wantedNestingLevel++;
+                if (jsonParser.getCurrentLocation() != null) {
+                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                    if (pointers.isEmpty()) {
+                        return jsonParser.getCurrentLocation().getLineNr();
                     }
-                    continue;
                 }
+                continue;
+            }
 
             if (currentNestingLevel == wantedNestingLevel && token == JsonToken.START_OBJECT && pointers.get(0).equals(arrayIndex + "")) {
-                    pointers.remove(0);
-                    wantedNestingLevel++;
-                    inArray = false;
-                    arrayIndex = 0;
-                    currentNestingLevel++;
-                    if (jsonParser.getCurrentLocation() != null) {
-                        lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
-                        if (pointers.isEmpty()) {
-                            return jsonParser.getCurrentLocation().getLineNr();
-                        }
+                pointers.remove(0);
+                wantedNestingLevel++;
+                inArray = false;
+                arrayIndex = 0;
+                currentNestingLevel++;
+                if (jsonParser.getCurrentLocation() != null) {
+                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                    if (pointers.isEmpty()) {
+                        return jsonParser.getCurrentLocation().getLineNr();
                     }
-                    continue;
                 }
+                continue;
+            }
 
             if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
                 if (token == JsonToken.START_OBJECT && inArray && currentNestingLevel == wantedNestingLevel) {
@@ -305,27 +309,27 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
             if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && !objectFound && pointers.get(0).equals(jsonParser.getCurrentName())) {
-                    pointers.remove(0);
-                    wantedNestingLevel++;
-                    if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
-                            objectFound = true;
-                        }
+                pointers.remove(0);
+                wantedNestingLevel++;
+                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                    objectFound = true;
+                }
 
                 continue;
-                }
+            }
 
             if (currentNestingLevel == wantedNestingLevel && token == JsonToken.START_OBJECT && !objectFound && pointers.get(0).equals(arrayIndex + "")) {
-                    pointers.remove(0);
-                    wantedNestingLevel++;
-                    inArray = false;
-                    arrayIndex = 0;
-                    currentNestingLevel++;
-                    if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
-                            objectFound = true;
-                        }
+                pointers.remove(0);
+                wantedNestingLevel++;
+                inArray = false;
+                arrayIndex = 0;
+                currentNestingLevel++;
+                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                    objectFound = true;
+                }
 
                 continue;
-                }
+            }
 
             if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
                 if (token == JsonToken.START_OBJECT && inArray && currentNestingLevel == wantedNestingLevel) {

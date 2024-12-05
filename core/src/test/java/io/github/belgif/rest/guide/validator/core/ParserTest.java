@@ -222,6 +222,25 @@ class ParserTest {
     }
 
     @Test
+    void testNonTranslatedOAS2Refs() {
+        var oas = new ViolationReport();
+        var file = new File(getClass().getResource("../rules/oas2refs/main.yaml").getFile());
+
+        Parser.ParserResult result = new Parser(file).parse(oas);
+        PathDefinition pathDefinition = result.getPathDefinitions().stream().findFirst().get();
+        ResponseDefinition responseDefinition = result.getResponses().stream().filter(def -> def.getDefinitionType().equals(OpenApiDefinition.DefinitionType.TOP_LEVEL)).findFirst().get();
+        RequestBodyDefinition requestBodyDefinition = result.getRequestBodies().stream().findFirst().get();
+        ParameterDefinition parameterDefinition = result.getParameters().stream().filter(def -> def.getDefinitionType().equals(OpenApiDefinition.DefinitionType.TOP_LEVEL)).findFirst().get();
+
+        //assert resolve to response works
+        assertEquals(responseDefinition, result.resolve(pathDefinition.getModel().getGET().getResponses().getAPIResponse("default")));
+        //assert resolve to requestbody works
+        assertEquals(requestBodyDefinition, result.resolve(pathDefinition.getModel().getPOST().getParameters().get(0)));
+        //assert resolve to parameter works
+        assertEquals(parameterDefinition, result.resolve(pathDefinition.getModel().getPOST().getParameters().get(1)));
+    }
+
+    @Test
     void testNonExistingSecuritySchemes() {
         var logger = (Logger) LoggerFactory.getLogger(Parser.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
