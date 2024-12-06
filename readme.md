@@ -243,9 +243,13 @@ The `outputTypes` option determines how the validation report will be available:
 | failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found | rest-guide-validator.failOnMissingOpenAPI |
 
 ## Standalone belgif-rest-guide-validator
-From version 2.2.0 a standalone installer for Windows is included. You can download the .msi installer from the [releases page](https://github.com/belgif/rest-guide-validator/releases).
+From version 2.2.0 onwards, a standalone installer for Windows is included. You can download the .msi installer from the [releases page](https://github.com/belgif/rest-guide-validator/releases).
 
-After installation, the tool can be launched from command line:
+After installation, you can right-click on an OpenAPI or Swagger file and open with: 'Validate OpenApi to Belgif guidelines'.
+
+In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in C:\Users\\[your-user-name]\AppData\Local\ -> 'belgif-validator-rest.exe'
+
+The tool can also be launched from command line:
 ```bash
 belgif-validate-openapi path/to/my/file.yaml
 ```
@@ -254,6 +258,3 @@ To display all options, launch:
 ```bash
 belgif-validate-openapi --help
 ```
-
-You can also right-click on an OpenAPI or Swagger file and open with: 'Validate OpenApi to Belgif guidelines'
-In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in C:\Users\user-name\AppData\Local\ -> 'belgif-validator-rest.exe'
