@@ -14,11 +14,15 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
 
     public PathDefinition(PathItem model, PathsDefinition parent, String identifier) {
         super(model, parent, identifier, JsonPointer.relative(identifier));
-        this.isDirectPath = parent.isInMainFile();
+        this.isDirectPath = parent.isInMainFile() && !pathsUsedAsRefsOnly();
     }
 
     @Override
     public PathItem getModel() {
         return super.getModel();
+    }
+
+    private boolean pathsUsedAsRefsOnly() {
+        return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).isPathsUsedAsRefsOnly();
     }
 }
