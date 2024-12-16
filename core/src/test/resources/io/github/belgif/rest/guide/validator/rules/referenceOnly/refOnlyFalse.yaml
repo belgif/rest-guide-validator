@@ -1,0 +1,18 @@
+openapi: 3.0.0
+x-paths-used-as-refs-only: false
+info:
+  title: test
+  description: test
+  version: "1.0"
+servers:
+  - url: https://myserver.com
+paths:
+  /myPath:
+    get:
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: myDescription
