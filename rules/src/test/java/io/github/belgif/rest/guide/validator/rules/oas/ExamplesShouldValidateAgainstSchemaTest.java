@@ -62,7 +62,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testDiscriminator() {
-        assertErrorCount(2, callRules("discriminator.yaml"));
+        assertErrorCount(4, callRules("discriminator.yaml"));
     }
 
     @Test
@@ -114,7 +114,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidDiscriminatorInSubSchemaOfOneOf() {
-        assertErrorCount(1, callRules("oneOfInvalid/openapi.yaml"));
+        assertErrorCount(2, callRules("oneOfInvalid/openapi.yaml"));
     }
 
     @Test
@@ -125,5 +125,15 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     @Test
     void testComplexAdditionalProperties() {
         assertErrorCount(1, callRules("additionalProperties/complexAdditionalProperty.yaml"));
+    }
+
+    @Test
+    void testDuplicatePropertyNames() {
+        assertNoViolations(callRules("additionalProperties/duplicateNames.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertiesInArray() {
+        assertErrorCount(2, callRules("additionalProperties/array/arrayProperties.yaml"));
     }
 }

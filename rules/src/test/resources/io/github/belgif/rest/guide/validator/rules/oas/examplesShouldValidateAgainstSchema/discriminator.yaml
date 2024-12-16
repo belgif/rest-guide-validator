@@ -63,4 +63,3 @@ components:
               description: yes
               value:
                 petType: Monkey
-                food: banana

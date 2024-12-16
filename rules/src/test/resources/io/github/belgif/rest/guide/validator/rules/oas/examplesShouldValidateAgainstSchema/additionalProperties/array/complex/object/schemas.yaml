@@ -1,0 +1,13 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    ObjectType:
+      type: string
+      enum:
+        - firstChild
+        - secondChild
+      description: type of thing

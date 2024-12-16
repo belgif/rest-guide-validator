@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
@@ -66,8 +65,8 @@ public class Parser {
 
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
-        public int oasVersion;
-        public File openApiFile;
+        private int oasVersion;
+        private File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
         private final Map<Constructible, OpenApiDefinition<?>> modelDefinitionMap = new HashMap<>();
@@ -109,6 +108,20 @@ public class Parser {
             } else {
                 throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
             }
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T extends Constructible> OpenApiDefinition<T> resolve(String ref, File currentFile) {
+            File refOpenApiFile;
+            if (!ref.startsWith("#")) {
+                refOpenApiFile = Path.of(currentFile.getParentFile().getAbsolutePath()).resolve(ref.split("#")[0]).normalize().toFile();
+            } else {
+                refOpenApiFile = currentFile.getAbsoluteFile();
+            }
+            JsonPointer pointer = buildJsonPointerFromRef(ref, refOpenApiFile);
+            return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
+                            def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                    .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
         }
 
         private JsonPointer buildJsonPointerFromRef(String ref, File refOpenApiFile) {
@@ -194,7 +207,7 @@ public class Parser {
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
                 if (!allowedRequirements.contains(securityScheme)) {
-                    log.error(securityRequirement.getFullyQualifiedPointer() + ": Security Scheme <<{}>> is not defined", securityScheme);
+                    log.error("{}: Security Scheme <<{}>> is not defined", securityRequirement.getFullyQualifiedPointer(), securityScheme);
                     result.setParsingValid(false);
                 }
             }
@@ -566,7 +579,8 @@ public class Parser {
 
     private static List<String> getLines(File file) throws IOException {
         var lines = Files.readAllLines(file.toPath());
-        if (lines.size() < 1) throw new RuntimeException("[Internal error] File: " + file.getName() + " appears to be empty!");
+        if (lines.isEmpty())
+            throw new RuntimeException("[Internal error] File: " + file.getName() + " appears to be empty!");
         // lines > 1 then is a yaml or a pretty json file
         if (lines.size() > 1) return lines;
 

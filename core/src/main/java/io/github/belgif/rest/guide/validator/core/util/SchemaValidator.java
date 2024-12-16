@@ -40,7 +40,7 @@ public class SchemaValidator {
         SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
         ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
         JsonNode exampleNode = getExampleNode(example);
-        if (schemaDefinition.getModel().getAdditionalPropertiesBoolean() != null && schemaDefinition.getModel().getAdditionalPropertiesBoolean()) {
+        if (schemaDefinition.getModel().getAdditionalPropertiesBoolean() != null) { //Other example validator will point out issues when additionalProperties is specifically set to false or true
             return new ArrayList<>();
         }
         return getNonDefinedProperties(exampleNode, schemaDefinition);
@@ -48,15 +48,23 @@ public class SchemaValidator {
 
     private static List<String> getNonDefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
         List<String> missingProperties = new ArrayList<>();
+        missingProperties.addAll(getNonDefinedPropertiesFromArrayNode(exampleNode, schemaDefinition));
+        missingProperties.addAll(getNonDefinedPropertiesFromObjectNode(exampleNode, schemaDefinition));
+
+        return missingProperties;
+    }
+
+    private static List<String> getNonDefinedPropertiesFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        Map<String, Schema> definedProperties = ApiFunctions.getRecursiveProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
+
         Iterator<String> exampleFieldNames = exampleNode.fieldNames();
-        Map<String, Schema> definedProperties = ApiFunctions.getRecursiveProperties(schemaDefinition.getModel(), schemaDefinition.getResult());
         while (exampleFieldNames.hasNext()) {
             String exampleFieldName = exampleFieldNames.next();
             if (!definedProperties.containsKey(exampleFieldName)) {
-                missingProperties.add(exampleFieldName + " in: #" + schemaDefinition.getPrintableJsonPointer());
+                missingProperties.add(exampleFieldName + " not found in: #" + schemaDefinition.getPrintableJsonPointer());
             } else {
                 SchemaDefinition def = (SchemaDefinition) schemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
-                //TODO check what to do when schemaType is array
                 if (subSchemaShouldBeInspectedFurther(def)) {
                     missingProperties.addAll(getNonDefinedProperties(exampleNode.get(exampleFieldName), def));
                 }
@@ -65,34 +73,22 @@ public class SchemaValidator {
         return missingProperties;
     }
 
-//    private static List<String> getNonDefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-//        List<String> missingProperties = new ArrayList<>();
-//        Iterator<String> exampleFieldNames = exampleNode.fieldNames();
-//        Set<SchemaDefinition> subSchemas = ApiFunctions.getSubSchemas(schemaDefinition, schemaDefinition.getResult(), true);
-//        subSchemas.add(schemaDefinition);
-//        while (exampleFieldNames.hasNext()) {
-//            String exampleFieldName = exampleFieldNames.next();
-//            List<SchemaDefinition> subSchemasContainingFieldName = subSchemas.stream()
-//                    .filter(schema -> schema.getModel().getProperties() != null && schema.getModel().getProperties().containsKey(exampleFieldName)).toList();
-//            if (subSchemasContainingFieldName.isEmpty()) {
-//                missingProperties.add(exampleFieldName + " in: #" + schemaDefinition.getPrintableJsonPointer());
-//            } else {
-//                for (SchemaDefinition subSchema : subSchemasContainingFieldName) {
-//                    Schema schema = subSchema.getModel().getProperties().get(exampleFieldName);
-//                    SchemaDefinition def = (SchemaDefinition) subSchema.getResult().resolve(schema);
-//                    //TODO check what to do when schemaType is array
-//                    if (subSchemaShouldBeInspectedFurther(def)) {
-//                        missingProperties.addAll(getNonDefinedProperties(exampleNode.get(exampleFieldName), def));
-//                    }
-//                }
-//            }
-//        }
-//        return missingProperties;
-//    }
+    private static List<String> getNonDefinedPropertiesFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) {
+            SchemaDefinition arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
+            if (subSchemaShouldBeInspectedFurther(arrayItemSchemaDefinition)) {
+                for (JsonNode arrayItem : exampleNode) {
+                    missingProperties.addAll(getNonDefinedProperties(arrayItem, arrayItemSchemaDefinition));
+                }
+            }
+        }
+        return missingProperties;
+    }
 
     private static boolean subSchemaShouldBeInspectedFurther(SchemaDefinition schemaDefinition) {
         Schema schema = schemaDefinition.getModel();
-        return (schema.getType() != null && schema.getType().equals(Schema.SchemaType.OBJECT)) ||
+        return (schema.getType() != null && (schema.getType().equals(Schema.SchemaType.OBJECT) || schema.getType().equals(Schema.SchemaType.ARRAY))) ||
                 schema.getAllOf() != null || schema.getAnyOf() != null || schema.getOneOf() != null;
     }
 
@@ -238,14 +234,14 @@ public class SchemaValidator {
     private static SchemaDefinition getSchemaDefinition(ExampleDefinition exampleDefinition) {
         OpenApiDefinition<?> parentDef = exampleDefinition.getParent();
         Schema schema;
-        if (parentDef instanceof SchemaDefinition) {
-            schema = ((SchemaDefinition) parentDef).getModel();
-        } else if (parentDef instanceof MediaTypeDefinition) {
-            schema = ((MediaTypeDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ParameterDefinition) {
-            schema = ((ParameterDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ResponseHeaderDefinition) {
-            schema = ((ResponseHeaderDefinition) parentDef).getModel().getSchema();
+        if (parentDef instanceof SchemaDefinition schemaDefinition) {
+            schema = schemaDefinition.getModel();
+        } else if (parentDef instanceof MediaTypeDefinition mediaTypeDefinition) {
+            schema = mediaTypeDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ParameterDefinition parameterDefinition) {
+            schema = parameterDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ResponseHeaderDefinition responseHeaderDefinition) {
+            schema = responseHeaderDefinition.getModel().getSchema();
         } else {
             throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getSrcVersionedJsonPointer());
         }

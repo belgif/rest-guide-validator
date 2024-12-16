@@ -16,7 +16,7 @@ components:
           "myFirstProperty": "yes",
           "schemaUnderTest": {
             "objectType": "firstChild",
-            "dataSource": "myDataSource",
+            "topLevelProperty": "yes",
             "firstChildProperty": "seems good",
             "myAdditionalProperty": "should be flagged"
           }

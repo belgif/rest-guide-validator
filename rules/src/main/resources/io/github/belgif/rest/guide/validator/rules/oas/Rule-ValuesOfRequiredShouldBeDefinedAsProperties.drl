@@ -17,11 +17,11 @@ function void violationRequiredProperties(ViolationReport oas, SchemaDefinition 
         schema);
 }
 
-rule "Values of required should io defined as properties"
+rule "Values of required should be defined as properties"
     when
         $schema: SchemaDefinition(isHighLevelSchema())
         $required: String() from ApiFunctions.getRequiredValues($schema, parserResult)
-        not Map( containsKey($required) ) from ApiFunctions.getRecursiveProperties($schema.getModel(), parserResult)
+        not Map( containsKey($required) ) from ApiFunctions.getRecursiveProperties($schema.getModel(), parserResult, null)
     then
         violationRequiredProperties(oas, $schema, $required);
 end
