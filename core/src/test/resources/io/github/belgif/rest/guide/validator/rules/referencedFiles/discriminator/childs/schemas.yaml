@@ -8,7 +8,7 @@ components:
     FirstChild:
       description: description
       allOf:
-        - $ref: "../main/schemas.yaml#/components/schemas/TopLevel"
+        - $ref: "../schemas.yaml#/components/schemas/TopLevel"
         - type: object
           properties:
             firstChildProperty:
@@ -17,7 +17,7 @@ components:
     SecondChild:
       description: Doesnt matter
       allOf:
-        - $ref: "../main/schemas.yaml#/components/schemas/TopLevel"
+        - $ref: "../schemas.yaml#/components/schemas/TopLevel"
         - type: object
           properties:
             secondChildProperty:
