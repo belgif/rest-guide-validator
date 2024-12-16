@@ -3,6 +3,7 @@ package io.github.belgif.rest.guide.validator.core.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
@@ -19,9 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,6 +36,66 @@ public class SchemaValidator {
     private SchemaValidator() {
     }
 
+    public static List<String> getNonDefinedProperties(ExampleDefinition exampleDefinition) {
+        SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
+        ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
+        JsonNode exampleNode = getExampleNode(example);
+        if (schemaDefinition.getModel().getAdditionalPropertiesBoolean() != null && schemaDefinition.getModel().getAdditionalPropertiesBoolean()) {
+            return new ArrayList<>();
+        }
+        return getNonDefinedProperties(exampleNode, schemaDefinition);
+    }
+
+    private static List<String> getNonDefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        Iterator<String> exampleFieldNames = exampleNode.fieldNames();
+        Map<String, Schema> definedProperties = ApiFunctions.getRecursiveProperties(schemaDefinition.getModel(), schemaDefinition.getResult());
+        while (exampleFieldNames.hasNext()) {
+            String exampleFieldName = exampleFieldNames.next();
+            if (!definedProperties.containsKey(exampleFieldName)) {
+                missingProperties.add(exampleFieldName + " in: #" + schemaDefinition.getPrintableJsonPointer());
+            } else {
+                SchemaDefinition def = (SchemaDefinition) schemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
+                //TODO check what to do when schemaType is array
+                if (subSchemaShouldBeInspectedFurther(def)) {
+                    missingProperties.addAll(getNonDefinedProperties(exampleNode.get(exampleFieldName), def));
+                }
+            }
+        }
+        return missingProperties;
+    }
+
+//    private static List<String> getNonDefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+//        List<String> missingProperties = new ArrayList<>();
+//        Iterator<String> exampleFieldNames = exampleNode.fieldNames();
+//        Set<SchemaDefinition> subSchemas = ApiFunctions.getSubSchemas(schemaDefinition, schemaDefinition.getResult(), true);
+//        subSchemas.add(schemaDefinition);
+//        while (exampleFieldNames.hasNext()) {
+//            String exampleFieldName = exampleFieldNames.next();
+//            List<SchemaDefinition> subSchemasContainingFieldName = subSchemas.stream()
+//                    .filter(schema -> schema.getModel().getProperties() != null && schema.getModel().getProperties().containsKey(exampleFieldName)).toList();
+//            if (subSchemasContainingFieldName.isEmpty()) {
+//                missingProperties.add(exampleFieldName + " in: #" + schemaDefinition.getPrintableJsonPointer());
+//            } else {
+//                for (SchemaDefinition subSchema : subSchemasContainingFieldName) {
+//                    Schema schema = subSchema.getModel().getProperties().get(exampleFieldName);
+//                    SchemaDefinition def = (SchemaDefinition) subSchema.getResult().resolve(schema);
+//                    //TODO check what to do when schemaType is array
+//                    if (subSchemaShouldBeInspectedFurther(def)) {
+//                        missingProperties.addAll(getNonDefinedProperties(exampleNode.get(exampleFieldName), def));
+//                    }
+//                }
+//            }
+//        }
+//        return missingProperties;
+//    }
+
+    private static boolean subSchemaShouldBeInspectedFurther(SchemaDefinition schemaDefinition) {
+        Schema schema = schemaDefinition.getModel();
+        return (schema.getType() != null && schema.getType().equals(Schema.SchemaType.OBJECT)) ||
+                schema.getAllOf() != null || schema.getAnyOf() != null || schema.getOneOf() != null;
+    }
+
     public static String getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
             SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
@@ -50,7 +109,7 @@ public class SchemaValidator {
             throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getSrcVersionedJsonPointer().toPrettyString() + ": Unable to validate example", ex);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        }  catch (JsonPointerOas2Exception e) {
+        } catch (JsonPointerOas2Exception e) {
             log.debug("Unable to validate example: {}", exampleDefinition.getJsonPointer().toPrettyString());
             return null;
         } catch (Exception e) {

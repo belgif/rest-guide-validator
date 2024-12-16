@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -117,4 +117,13 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
         assertErrorCount(1, callRules("oneOfInvalid/openapi.yaml"));
     }
 
+    @Test
+    void testAdditionalProperties() {
+        assertErrorCount(1, callRules("additionalProperties/additionalProperties.yaml"));
+    }
+
+    @Test
+    void testComplexAdditionalProperties() {
+        assertErrorCount(1, callRules("additionalProperties/complexAdditionalProperty.yaml"));
+    }
 }

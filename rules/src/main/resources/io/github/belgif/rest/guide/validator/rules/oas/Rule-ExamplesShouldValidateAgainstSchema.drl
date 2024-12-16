@@ -23,3 +23,11 @@ rule "Example should be valid against schema"
     then
         violationExamplesShouldValidateAgainstSchema(oas, $example, $violation);
 end
+
+rule "Example should not contain undefined properties"
+    when
+        $example: ExampleDefinition(definitionType.equals(DefinitionType.INLINE))
+        $violation: String() from SchemaValidator.getNonDefinedProperties($example)
+    then
+        violationExamplesShouldValidateAgainstSchema(oas, $example, $violation);
+end

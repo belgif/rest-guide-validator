@@ -94,7 +94,7 @@ public class ApiFunctions {
         return false;
     }
 
-    private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    public static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
         Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) -> includeTopLevelSchemas || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
         if (schemaDefinition.getModel().getAllOf() != null) {
