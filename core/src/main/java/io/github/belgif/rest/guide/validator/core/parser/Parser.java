@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
@@ -639,6 +641,17 @@ public class Parser {
                     }
                 } else {
                     findRefFields(field.getValue(), refs);
+                }
+                if (field.getKey().equals("discriminator") && field.getValue().has("mapping")) {
+                    var mappingNode = field.getValue().get("mapping");
+                    mappingNode.forEach(mapping -> {
+                        if (mapping.getNodeType().equals(JsonNodeType.STRING)) {
+                            String ref = mapping.textValue();
+                            if (isExternalReference(ref)) {
+                                refs.add(ref.split("#")[0]);
+                            }
+                        }
+                    });
                 }
             });
         }
