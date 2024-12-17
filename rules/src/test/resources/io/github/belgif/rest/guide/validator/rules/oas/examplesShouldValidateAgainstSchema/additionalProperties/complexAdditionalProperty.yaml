@@ -16,7 +16,9 @@ components:
           "myFirstProperty": "yes",
           "schemaUnderTest": {
             "objectType": "firstChild",
-            "firstChildProperty": "seems good"
+            "topLevelProperty": "yes",
+            "firstChildProperty": "seems good",
+            "myAdditionalProperty": "should be flagged"
           }
         }
       }

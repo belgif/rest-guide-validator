@@ -18,12 +18,5 @@ components:
               description: a property
             schemaUnderTest:
               allOf:
-                - $ref: "failingSchemas.yaml#/components/schemas/FirstChild"
+                - $ref: "../complex/main/schemas.yaml#/components/schemas/TopLevel"
                 - description: nope
-      example: {
-        "myFirstProperty": "yes",
-        "schemaUnderTest": {
-          "objectType": "firstChild",
-          "firstChildProperty": "seems good"
-        }
-      }

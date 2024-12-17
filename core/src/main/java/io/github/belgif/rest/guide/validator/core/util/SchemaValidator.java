@@ -3,6 +3,7 @@ package io.github.belgif.rest.guide.validator.core.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
@@ -19,9 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,6 +36,62 @@ public class SchemaValidator {
     private SchemaValidator() {
     }
 
+    public static List<String> getNonDefinedProperties(ExampleDefinition exampleDefinition) {
+        SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
+        ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
+        JsonNode exampleNode = getExampleNode(example);
+        if (schemaDefinition.getModel().getAdditionalPropertiesBoolean() != null) { //Other example validator will point out issues when additionalProperties is specifically set to false or true
+            return new ArrayList<>();
+        }
+        return getNonDefinedProperties(exampleNode, schemaDefinition);
+    }
+
+    private static List<String> getNonDefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        missingProperties.addAll(getNonDefinedPropertiesFromArrayNode(exampleNode, schemaDefinition));
+        missingProperties.addAll(getNonDefinedPropertiesFromObjectNode(exampleNode, schemaDefinition));
+
+        return missingProperties;
+    }
+
+    private static List<String> getNonDefinedPropertiesFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        Map<String, Schema> definedProperties = ApiFunctions.getRecursiveProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
+
+        Iterator<String> exampleFieldNames = exampleNode.fieldNames();
+        while (exampleFieldNames.hasNext()) {
+            String exampleFieldName = exampleFieldNames.next();
+            if (!definedProperties.containsKey(exampleFieldName)) {
+                missingProperties.add(exampleFieldName + " not found in: #" + schemaDefinition.getPrintableJsonPointer());
+            } else {
+                SchemaDefinition def = (SchemaDefinition) schemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
+                if (subSchemaShouldBeInspectedFurther(def)) {
+                    missingProperties.addAll(getNonDefinedProperties(exampleNode.get(exampleFieldName), def));
+                }
+            }
+        }
+        return missingProperties;
+    }
+
+    private static List<String> getNonDefinedPropertiesFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) {
+            SchemaDefinition arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
+            if (subSchemaShouldBeInspectedFurther(arrayItemSchemaDefinition)) {
+                for (JsonNode arrayItem : exampleNode) {
+                    missingProperties.addAll(getNonDefinedProperties(arrayItem, arrayItemSchemaDefinition));
+                }
+            }
+        }
+        return missingProperties;
+    }
+
+    private static boolean subSchemaShouldBeInspectedFurther(SchemaDefinition schemaDefinition) {
+        Schema schema = schemaDefinition.getModel();
+        return (schema.getType() != null && (schema.getType().equals(Schema.SchemaType.OBJECT) || schema.getType().equals(Schema.SchemaType.ARRAY))) ||
+                schema.getAllOf() != null || schema.getAnyOf() != null || schema.getOneOf() != null;
+    }
+
     public static String getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
             SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
@@ -50,7 +105,7 @@ public class SchemaValidator {
             throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getSrcVersionedJsonPointer().toPrettyString() + ": Unable to validate example", ex);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        }  catch (JsonPointerOas2Exception e) {
+        } catch (JsonPointerOas2Exception e) {
             log.debug("Unable to validate example: {}", exampleDefinition.getJsonPointer().toPrettyString());
             return null;
         } catch (Exception e) {
@@ -179,14 +234,14 @@ public class SchemaValidator {
     private static SchemaDefinition getSchemaDefinition(ExampleDefinition exampleDefinition) {
         OpenApiDefinition<?> parentDef = exampleDefinition.getParent();
         Schema schema;
-        if (parentDef instanceof SchemaDefinition) {
-            schema = ((SchemaDefinition) parentDef).getModel();
-        } else if (parentDef instanceof MediaTypeDefinition) {
-            schema = ((MediaTypeDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ParameterDefinition) {
-            schema = ((ParameterDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ResponseHeaderDefinition) {
-            schema = ((ResponseHeaderDefinition) parentDef).getModel().getSchema();
+        if (parentDef instanceof SchemaDefinition schemaDefinition) {
+            schema = schemaDefinition.getModel();
+        } else if (parentDef instanceof MediaTypeDefinition mediaTypeDefinition) {
+            schema = mediaTypeDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ParameterDefinition parameterDefinition) {
+            schema = parameterDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ResponseHeaderDefinition responseHeaderDefinition) {
+            schema = responseHeaderDefinition.getModel().getSchema();
         } else {
             throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getSrcVersionedJsonPointer());
         }

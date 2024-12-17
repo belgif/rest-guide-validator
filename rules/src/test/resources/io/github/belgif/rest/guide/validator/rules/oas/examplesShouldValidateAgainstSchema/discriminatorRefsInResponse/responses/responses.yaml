@@ -18,7 +18,6 @@ components:
                   "myFirstProperty": "yes",
                   "schemaUnderTest": {
                     "objectType": "firstChild",
-                    "dataSource": "myDataSource",
                     "firstChildProperty": "seems good"
                   }
                 }

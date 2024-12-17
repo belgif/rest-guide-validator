@@ -25,7 +25,7 @@ rule "Mandatory Mediatype"
   when
     $mediaTypeDefinition: MediaTypeDefinition($schema: /model/schema)
     eval( $schema != null )
-    eval( parserResult.oasVersion != 2 || $mediaTypeDefinition.getParent().getDefinitionType() == DefinitionType.INLINE )
+    eval( parserResult.getOasVersion() != 2 || $mediaTypeDefinition.getParent().getDefinitionType() == DefinitionType.INLINE )
     $schemaDefinition: SchemaDefinition(model.getType() != SchemaType.STRING || (model.getFormat() != "binary" && model.getFormat != "byte" && model.getFormat != "base64")) from parserResult.resolve($schema)
     eval( !ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includedMediaTypes()) )
   then
