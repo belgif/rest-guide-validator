@@ -1,5 +1,5 @@
 openapi: 3.0.0
-x-paths-used-as-refs-only: true
+x-reusable-definitions-only: true
 info:
   title: test
   description: test

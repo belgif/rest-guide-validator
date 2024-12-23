@@ -9,6 +9,7 @@ import java.nio.file.Files;
 
 @Getter
 public class SourceDefinition {
+    private static final String REF_ONLY_KEY = "x-reusable-definitions-only";
 
     private final String fileName;
     private final File file;
@@ -32,9 +33,9 @@ public class SourceDefinition {
 
     private static boolean findPathsUsedAsRefsOnly(OpenAPI openApi) {
         if (openApi.getExtensions() != null &&
-                openApi.getExtensions().containsKey("x-paths-used-as-refs-only") &&
-                openApi.getExtensions().get("x-paths-used-as-refs-only") instanceof Boolean) {
-                return ((Boolean) openApi.getExtensions().get("x-paths-used-as-refs-only"));
+                openApi.getExtensions().containsKey(REF_ONLY_KEY) &&
+                openApi.getExtensions().get(REF_ONLY_KEY) instanceof Boolean) {
+                return ((Boolean) openApi.getExtensions().get(REF_ONLY_KEY));
             }
         return false;
     }

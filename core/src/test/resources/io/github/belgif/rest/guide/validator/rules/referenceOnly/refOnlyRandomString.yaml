@@ -1,5 +1,5 @@
 openapi: 3.0.0
-x-paths-used-as-refs-only: "random string"
+x-reusable-definitions-only: "random string"
 info:
   title: test
   description: test
