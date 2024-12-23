@@ -295,7 +295,6 @@ class ParserTest {
         var file = new File(Objects.requireNonNull(getClass().getResource("../rules/referenceOnly/refOnly.yaml")).getFile());
 
         Parser.ParserResult result = new Parser(file).parse(oas);
-        assertEquals(0, result.getServers().size());
         assertFalse(result.getPathDefinitions().stream().findFirst().get().isDirectPath());
     }
 

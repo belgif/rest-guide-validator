@@ -23,6 +23,6 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
     }
 
     private boolean pathsUsedAsRefsOnly() {
-        return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).isPathsUsedAsRefsOnly();
+        return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).hasReusablePathsOnly();
     }
 }

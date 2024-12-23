@@ -169,9 +169,7 @@ public class Parser {
                 parseGlobalSecurityRequirements(sourceDefinition, result);
                 if (sourceDefinition.getFile() == result.openApiFile) {
                     result.openAPI = sourceDefinition.getOpenApi();
-                    if (!sourceDefinition.isPathsUsedAsRefsOnly()) {
-                        parseServers(result);
-                    }
+                    parseServers(result);
                 }
             }
             verifySecurityRequirements(result);
