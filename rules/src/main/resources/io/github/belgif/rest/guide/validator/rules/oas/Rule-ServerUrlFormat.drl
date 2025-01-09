@@ -19,8 +19,8 @@ function void violationServerUrlFormat(ViolationReport oas, ServerDefinition ser
 
 rule "Server Url or basePath Format"
     when
-        eval( !parserResult.getPathDefinitions().isEmpty() )
         $server: ServerDefinition($url: /model/url)
+        eval( !parserResult.getSrc().get($server.getOpenApiFile().getAbsolutePath()).hasReusableDefinitionsOnly() && !parserResult.getPathDefinitions().isEmpty() )
         not String( this matches(urlPattern()) ) from $url
     then
         violationServerUrlFormat(oas, $server);

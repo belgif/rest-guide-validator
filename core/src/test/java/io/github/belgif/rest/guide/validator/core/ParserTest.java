@@ -288,4 +288,33 @@ class ParserTest {
         Parser.ParserResult result = new Parser(file).parse(oas);
         assertEquals(2, result.getExamples().size());
     }
+
+    @Test
+    void testRefOnly() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/referenceOnly/refOnly.yaml")).getFile());
+
+        Parser.ParserResult result = new Parser(file).parse(oas);
+        assertFalse(result.getPathDefinitions().stream().findFirst().get().isDirectPath());
+    }
+
+    @Test
+    void testRefOnlyFalse() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/referenceOnly/refOnlyFalse.yaml")).getFile());
+
+        Parser.ParserResult result = new Parser(file).parse(oas);
+        assertEquals(1, result.getServers().size());
+        assertTrue(result.getPathDefinitions().stream().findFirst().get().isDirectPath());
+    }
+
+    @Test
+    void testRefOnlyRandomString() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/referenceOnly/refOnlyRandomString.yaml")).getFile());
+
+        Parser.ParserResult result = new Parser(file).parse(oas);
+        assertEquals(1, result.getServers().size());
+        assertTrue(result.getPathDefinitions().stream().findFirst().get().isDirectPath());
+    }
 }

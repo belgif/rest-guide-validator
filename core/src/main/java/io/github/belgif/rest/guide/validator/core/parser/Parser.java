@@ -564,7 +564,8 @@ public class Parser {
 
     private static List<String> getLines(File file) throws IOException {
         var lines = Files.readAllLines(file.toPath());
-        if (lines.size() < 1) throw new RuntimeException("[Internal error] File: " + file.getName() + " appears to be empty!");
+        if (lines.isEmpty())
+            throw new RuntimeException("[Internal error] File: " + file.getName() + " appears to be empty!");
         // lines > 1 then is a yaml or a pretty json file
         if (lines.size() > 1) return lines;
 
