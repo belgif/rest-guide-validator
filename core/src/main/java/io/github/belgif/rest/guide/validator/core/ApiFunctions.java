@@ -112,31 +112,35 @@ public class ApiFunctions {
         return subSchemas;
     }
 
-    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    /**
+     * @return all subschemas of given schema, including recursively referenced ones
+     */
+    private static Set<SchemaDefinition> getAllSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
         Set<SchemaDefinition> subSchemas = getSubSchemas(schemaDefinition, result, includeTopLevelSchemas);
         Set<SchemaDefinition> output = new HashSet<>();
         for (SchemaDefinition schema : subSchemas) {
-            output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas));
+            output.addAll(getAllSubSchemas(schema, result, includeTopLevelSchemas));
         }
         output.addAll(subSchemas);
         return output;
     }
 
     /**
-     * Returns all the properties (schemas) in a complex schema
+     * Returns all the properties (with their schemas) at top-level of a possibly composite schema.
+     * Properties only reachable via discriminator are not added, unless valueNode parameter is used.
      *
      * @param result      Result from validationparser
      * @param schema      Schema of which the properties have to be returned
-     * @param exampleNode JsonNode of an example that can be used to also collect all properties based on a discriminator value
+     * @param valueNode   optional JSON value compliant with the schema
      */
-    public static Map<String, Schema> getRecursiveProperties(Schema schema, Parser.ParserResult result, JsonNode exampleNode) {
+    public static Map<String, Schema> getAllProperties(Schema schema, Parser.ParserResult result, JsonNode valueNode) {
         Map<String, Schema> properties = new HashMap<>();
         SchemaDefinition schemaDef = recursiveResolve(schema, result);
         Set<SchemaDefinition> definitions = new HashSet<>();
         definitions.add(schemaDef);
-        definitions.addAll(getRecursiveSubSchemas(schemaDef, result, true));
-        if (exampleNode != null) {
-            definitions.addAll(findDiscriminatorSchemas(definitions, result, exampleNode));
+        definitions.addAll(getAllSubSchemas(schemaDef, result, true));
+        if (valueNode != null) {
+            definitions.addAll(findDiscriminatorSchemas(definitions, result, valueNode));
         }
         definitions.forEach(schemaDefinition -> {
             if (schemaDefinition.getModel().getProperties() != null) {
@@ -146,19 +150,20 @@ public class ApiFunctions {
         return properties;
     }
 
-    private static Set<SchemaDefinition> findDiscriminatorSchemas(Set<SchemaDefinition> schemaDefinitions, Parser.ParserResult result, JsonNode exampleNode) {
+    private static Set<SchemaDefinition> findDiscriminatorSchemas(Set<SchemaDefinition> schemaDefinitions, Parser.ParserResult result, JsonNode valueNode) {
         Set<SchemaDefinition> schemaDefinitionsWithDiscriminators = schemaDefinitions.stream()
-                .filter(def -> def.getModel().getDiscriminator() != null && exampleNode.has(def.getModel().getDiscriminator().getPropertyName()))
+                .filter(def -> def.getModel().getDiscriminator() != null && valueNode.has(def.getModel().getDiscriminator().getPropertyName()))
                 .collect(Collectors.toSet());
 
         Set<SchemaDefinition> schemaDefinitionMappings = new HashSet<>();
         for (SchemaDefinition schemaDefinition : schemaDefinitionsWithDiscriminators) {
             String discriminator = schemaDefinition.getModel().getDiscriminator().getPropertyName();
-            String discriminatorValue = exampleNode.get(discriminator).asText();
+            String discriminatorValue = valueNode.get(discriminator).asText();
             String mapping;
             if (schemaDefinition.getModel().getDiscriminator().getMapping() != null) {
                 mapping = schemaDefinition.getModel().getDiscriminator().getMapping().get(discriminatorValue);
             } else {
+                // TODO: if mapping present, but property value not found in discriminator mapping, also fallback to this
                 mapping = "#/components/schemas/" + discriminatorValue;
             }
 
@@ -166,7 +171,7 @@ public class ApiFunctions {
                 OpenApiDefinition<Schema> resolvedDef = result.resolve(mapping, schemaDefinition.getOpenApiFile());
                 SchemaDefinition schemaDef = (SchemaDefinition) resolvedDef;
                 schemaDefinitionMappings.add(schemaDef);
-                schemaDefinitionMappings.addAll(ApiFunctions.getRecursiveSubSchemas(schemaDef, result, true));
+                schemaDefinitionMappings.addAll(ApiFunctions.getAllSubSchemas(schemaDef, result, true)); // TODO: move this to caller?
             } catch (RuntimeException e) {
                 log.error("Cannot find schema for discriminator {} : {}", discriminator, discriminatorValue);
             }
@@ -174,13 +179,13 @@ public class ApiFunctions {
         return schemaDefinitionMappings;
     }
 
-    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
-        Set<String> requiredValues = new HashSet<>();
+    public static Set<String> getRequiredProperties(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        Set<String> requiredProperties = new HashSet<>();
         if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
-            requiredValues.addAll(schemaDefinition.getModel().getRequired());
+            requiredProperties.addAll(schemaDefinition.getModel().getRequired());
         }
-        getRecursiveSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
-        return requiredValues;
+        getAllSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredProperties.addAll(getRequiredProperties(schema, result)));
+        return requiredProperties;
     }
 
     public static boolean isPropertyRequiredAndReadOnly(SchemaDefinition schemaDefinition, String propertyName, Parser.ParserResult result) {
