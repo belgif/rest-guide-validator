@@ -14,7 +14,7 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
 
     public PathDefinition(PathItem model, PathsDefinition parent, String identifier) {
         super(model, parent, identifier, JsonPointer.relative(identifier));
-        this.isDirectPath = parent.isInMainFile() && !pathsUsedAsRefsOnly();
+        this.isDirectPath = parent.isInMainFile() && !hasReusableDefinitionsOnly();
     }
 
     @Override
@@ -22,7 +22,7 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
         return super.getModel();
     }
 
-    private boolean pathsUsedAsRefsOnly() {
-        return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).hasReusablePathsOnly();
+    private boolean hasReusableDefinitionsOnly() {
+        return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).hasReusableDefinitionsOnly();
     }
 }

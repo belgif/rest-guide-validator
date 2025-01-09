@@ -16,7 +16,7 @@ public class SourceDefinition {
     private final String src;
     private final boolean isYaml;
     private final OpenAPI openApi;
-    private final boolean hasReusablePathsOnly;
+    private final boolean hasReusableDefinitionsOnly;
 
     public SourceDefinition(File file, OpenAPI openApi) throws IOException {
         this.file = file;
@@ -24,18 +24,18 @@ public class SourceDefinition {
         this.src = Files.readString(file.toPath());
         this.isYaml = checkIsYaml(this.fileName);
         this.openApi = openApi;
-        this.hasReusablePathsOnly = findHasReusablePathsOnly(openApi);
+        this.hasReusableDefinitionsOnly = findHasReusableDefinitionsOnly(openApi);
     }
 
     public static boolean checkIsYaml(String fileName) {
         return fileName.endsWith("yaml") || fileName.endsWith("yml");
     }
 
-    public boolean hasReusablePathsOnly() {
-        return hasReusablePathsOnly;
+    public boolean hasReusableDefinitionsOnly() {
+        return hasReusableDefinitionsOnly;
     }
 
-    private static boolean findHasReusablePathsOnly(OpenAPI openApi) {
+    private static boolean findHasReusableDefinitionsOnly(OpenAPI openApi) {
         if (openApi.getExtensions() != null &&
                 openApi.getExtensions().containsKey(REF_ONLY_KEY) &&
                 openApi.getExtensions().get(REF_ONLY_KEY) instanceof Boolean) {
