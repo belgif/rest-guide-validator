@@ -44,7 +44,24 @@ public class SchemaValidator {
             // Properties are only considered as undefined when additionalProperties are not explicitly allowed in the schema
             // if additionalProperties is false, example schema validation will mark any undefined properties as invalid, so can be ignored here
 
-            // TODO: composite with additional properties? What if in nested object only? - move to fromObjectNode?
+            // TODO: what if composite schema with additional properties in subschema?
+            /**
+             * MySchema:
+             *   type: object
+             *   allOf:
+             *   - additionalProperties: true
+             *   - someProperty:
+             *       type: integer
+             */
+            // TODO: What if additional properties set in nested object? - move to fromObjectNode?
+            /**
+             * MySchema:
+             *   type: object
+             *   properties:
+             *   someProperty:
+             *     type: object
+             *     additionalProperties: true
+             */
             return new ArrayList<>();
         }
         return getUndefinedProperties(exampleNode, schemaDefinition);
