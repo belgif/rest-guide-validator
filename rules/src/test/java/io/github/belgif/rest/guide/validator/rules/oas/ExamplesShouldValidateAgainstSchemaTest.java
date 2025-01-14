@@ -136,4 +136,9 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testAdditionalPropertiesInArray() {
         assertErrorCount(2, callRules("additionalProperties/array/arrayProperties.yaml"));
     }
+
+    @Test
+    void testAdditionalPropertiesInComplexArray() {
+        assertErrorCount(2, callRules("additionalProperties/complexArray/arrayProperties.yaml"));
+    }
 }

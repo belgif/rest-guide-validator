@@ -1,0 +1,35 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    myRequest:
+      description: Doesn't matter
+      type: object
+      properties:
+        testRequest:
+          $ref: 'schemas/testRequest.yaml#/components/schemas/TestRequest'
+      example: {
+        "testRequest" : {
+          "myFirstProperty": "yes",
+          "schemas": [
+            {
+              "objectType": "firstChild",
+              "topLevelProperty": "yes",
+              "myAdditionalProperty": "should be flagged"
+            },
+            {
+              "objectType": "secondChild",
+              "topLevelProperty": "yes",
+              "firstChildProperty": "should be flagged"
+            },
+            {
+              "objectType": "firstChild",
+              "topLevelProperty": "yes"
+            }
+          ]
+
+        }
+      }

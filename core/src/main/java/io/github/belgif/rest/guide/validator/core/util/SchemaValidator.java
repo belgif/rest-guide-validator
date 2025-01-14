@@ -52,23 +52,29 @@ public class SchemaValidator {
 
     private static List<String> getUndefinedProperties(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
         List<String> missingProperties = new ArrayList<>();
-        missingProperties.addAll(getUndefinedPropertiesFromArrayNode(exampleNode, schemaDefinition));
-        missingProperties.addAll(getUndefinedPropertiesFromObjectNode(exampleNode, schemaDefinition));
+        if (exampleNode.isArray()) {
+            missingProperties.addAll(getUndefinedPropertiesFromArrayNode(exampleNode, schemaDefinition));
+        } else {
+            missingProperties.addAll(getUndefinedPropertiesFromObjectNode(exampleNode, schemaDefinition));
+        }
 
         return missingProperties;
     }
 
     private static List<String> getUndefinedPropertiesFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-        List<String> missingProperties = new ArrayList<>();
         Map<String, Schema> definedProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
+        return getUndefinedProperties(exampleNode, schemaDefinition, definedProperties);
+    }
 
+    private static List<String> getUndefinedProperties(JsonNode exampleNode, SchemaDefinition startingSchemaDefinition, Map<String, Schema> definedProperties) {
+        List<String> missingProperties = new ArrayList<>();
         Iterator<String> exampleFieldNames = exampleNode.fieldNames();
         while (exampleFieldNames.hasNext()) {
             String exampleFieldName = exampleFieldNames.next();
             if (!definedProperties.containsKey(exampleFieldName)) {
-                missingProperties.add(exampleFieldName + " not found in: #" + schemaDefinition.getPrintableJsonPointer());
+                missingProperties.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
             } else {
-                SchemaDefinition def = (SchemaDefinition) schemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
+                SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
                 missingProperties.addAll(getUndefinedProperties(exampleNode.get(exampleFieldName), def));
             }
         }
@@ -77,14 +83,79 @@ public class SchemaValidator {
 
     private static List<String> getUndefinedPropertiesFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
         List<String> missingProperties = new ArrayList<>();
-        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) { // TODO: What if schema is an allOf of an array and a description?
-            SchemaDefinition arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
-            for (JsonNode arrayItem : exampleNode) { //TODO: should we test exampleNode.isArray here (returns properties if it's on object)?
+        SchemaDefinition arrayItemSchemaDefinition;
+        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) {
+            arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
+            for (JsonNode arrayItem : exampleNode) {
                 missingProperties.addAll(getUndefinedProperties(arrayItem, arrayItemSchemaDefinition));
             }
+        } else {
+            missingProperties.addAll(getUndefinedPropertiesFromComplexArrayNode(exampleNode, schemaDefinition));
         }
         return missingProperties;
     }
+
+    private static List<String> getUndefinedPropertiesFromComplexArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        List<String> missingProperties = new ArrayList<>();
+        List<SchemaDefinition> allOfSchemaDefinitions = new ArrayList<>();
+        List<SchemaDefinition> anyAndOneOfSchemaDefinitions = new ArrayList<>();
+        if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
+            allOfSchemaDefinitions = schemaDefinition.getModel().getAllOf().stream()
+                    .filter(schema -> schema.getType() != null && schema.getType().equals(Schema.SchemaType.ARRAY) && schema.getItems() != null)
+                    .map(schema -> ApiFunctions.recursiveResolve(schema.getItems(), schemaDefinition.getResult())).toList();
+        }
+        if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty()) {
+            anyAndOneOfSchemaDefinitions.addAll(
+                    schemaDefinition.getModel().getAnyOf().stream()
+                            .filter(schema -> schema.getType() != null && schema.getType().equals(Schema.SchemaType.ARRAY) && schema.getItems() != null)
+                            .map(schema -> ApiFunctions.recursiveResolve(schema.getItems(), schemaDefinition.getResult())).toList()
+            );
+        }
+        if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty()) {
+            anyAndOneOfSchemaDefinitions.addAll(
+                    schemaDefinition.getModel().getOneOf().stream()
+                            .filter(schema -> schema.getType() != null && schema.getType().equals(Schema.SchemaType.ARRAY) && schema.getItems() != null)
+                            .map(schema -> ApiFunctions.recursiveResolve(schema.getItems(), schemaDefinition.getResult())).toList()
+            );
+        }
+
+        for (JsonNode arrayItem : exampleNode) {
+            List<List<String>> listOfMissingPropertiesList = new ArrayList<>();
+            if (anyAndOneOfSchemaDefinitions.isEmpty()) {
+                listOfMissingPropertiesList.add(getUndefinedPropertiesFromComposedSchemaDefinitions(arrayItem, allOfSchemaDefinitions, schemaDefinition));
+            } else {
+                for (SchemaDefinition oneOfSchema : anyAndOneOfSchemaDefinitions) {
+                    List<SchemaDefinition> schemaDefinitionsToCheck = new ArrayList<>(allOfSchemaDefinitions);
+                    schemaDefinitionsToCheck.add(oneOfSchema);
+                    listOfMissingPropertiesList.add(getUndefinedPropertiesFromComposedSchemaDefinitions(arrayItem, schemaDefinitionsToCheck, schemaDefinition));
+                }
+            }
+            missingProperties.addAll(listOfMissingPropertiesList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
+        }
+        return missingProperties;
+    }
+
+    private static List<String> getUndefinedPropertiesFromComposedSchemaDefinitions(JsonNode exampleNode, List<SchemaDefinition> schemaDefinitions, SchemaDefinition parentSchema) {
+        Map<String, Schema> definedProperties = new HashMap<>();
+        schemaDefinitions.forEach(schema -> definedProperties.putAll(ApiFunctions.getAllProperties(schema.getModel(), schema.getResult(), exampleNode)));
+        return getUndefinedProperties(exampleNode, parentSchema, definedProperties);
+    }
+
+//    private static List<String> getUndefinedPropertiesFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+//        List<String> missingProperties = new ArrayList<>();
+//        if (schemaDefinition.getModel().getType() == null && schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
+//            Map<String, Schema> allProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode.get(0));
+//            SchemaDefinition finalSchemaDefinition = schemaDefinition;
+//            schemaDefinition = (SchemaDefinition) finalSchemaDefinition.getModel().getAllOf().stream().filter(schema -> schema.getType() != null && schema.getType().equals(Schema.SchemaType.ARRAY)).findFirst().map(schema -> finalSchemaDefinition.getResult().resolve(schema)).orElse(finalSchemaDefinition);
+//        }
+//        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) { // TODO: What if schema is an allOf of an array and a description?
+//            SchemaDefinition arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
+//            for (JsonNode arrayItem : exampleNode) { //TODO: should we test exampleNode.isArray here (returns properties if it's on object)?
+//                missingProperties.addAll(getUndefinedProperties(arrayItem, arrayItemSchemaDefinition));
+//            }
+//        }
+//        return missingProperties;
+//    }
 
     public static String getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
