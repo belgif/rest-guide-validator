@@ -95,6 +95,9 @@ public class SchemaValidator {
         return missingProperties;
     }
 
+    /*
+    Does not return warning if property is found in the wrong oneOf schema for example.
+     */
     private static List<String> getUndefinedPropertiesFromComplexArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
         List<String> missingProperties = new ArrayList<>();
         List<SchemaDefinition> allOfSchemaDefinitions = new ArrayList<>();
@@ -140,22 +143,6 @@ public class SchemaValidator {
         schemaDefinitions.forEach(schema -> definedProperties.putAll(ApiFunctions.getAllProperties(schema.getModel(), schema.getResult(), exampleNode)));
         return getUndefinedProperties(exampleNode, parentSchema, definedProperties);
     }
-
-//    private static List<String> getUndefinedPropertiesFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-//        List<String> missingProperties = new ArrayList<>();
-//        if (schemaDefinition.getModel().getType() == null && schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-//            Map<String, Schema> allProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode.get(0));
-//            SchemaDefinition finalSchemaDefinition = schemaDefinition;
-//            schemaDefinition = (SchemaDefinition) finalSchemaDefinition.getModel().getAllOf().stream().filter(schema -> schema.getType() != null && schema.getType().equals(Schema.SchemaType.ARRAY)).findFirst().map(schema -> finalSchemaDefinition.getResult().resolve(schema)).orElse(finalSchemaDefinition);
-//        }
-//        if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) { // TODO: What if schema is an allOf of an array and a description?
-//            SchemaDefinition arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
-//            for (JsonNode arrayItem : exampleNode) { //TODO: should we test exampleNode.isArray here (returns properties if it's on object)?
-//                missingProperties.addAll(getUndefinedProperties(arrayItem, arrayItemSchemaDefinition));
-//            }
-//        }
-//        return missingProperties;
-//    }
 
     public static String getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
