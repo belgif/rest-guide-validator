@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.model.*;
+import io.github.belgif.rest.guide.validator.core.model.helper.PropertiesCollection;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
@@ -62,20 +63,30 @@ public class SchemaValidator {
     }
 
     private static List<String> getUndefinedPropertiesFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-        Map<String, Schema> definedProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
+        PropertiesCollection definedProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
         return getUndefinedProperties(exampleNode, schemaDefinition, definedProperties);
     }
 
-    private static List<String> getUndefinedProperties(JsonNode exampleNode, SchemaDefinition startingSchemaDefinition, Map<String, Schema> definedProperties) {
+    private static List<String> getUndefinedProperties(JsonNode exampleNode, SchemaDefinition startingSchemaDefinition, PropertiesCollection definedProperties) {
         List<String> missingProperties = new ArrayList<>();
         Iterator<String> exampleFieldNames = exampleNode.fieldNames();
         while (exampleFieldNames.hasNext()) {
             String exampleFieldName = exampleFieldNames.next();
-            if (!definedProperties.containsKey(exampleFieldName)) {
+            if (!definedProperties.containsProperty(exampleFieldName)) {
                 missingProperties.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
             } else {
-                SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(definedProperties.get(exampleFieldName));
-                missingProperties.addAll(getUndefinedProperties(exampleNode.get(exampleFieldName), def));
+                List<Schema> schemasWithPropertyName = definedProperties.getPropertySchemas(exampleFieldName);
+                if (schemasWithPropertyName.size() == 1) {
+                    SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schemasWithPropertyName.get(0));
+                    missingProperties.addAll(getUndefinedProperties(exampleNode.get(exampleFieldName), def));
+                } else {
+                    List<List<String>> listOfMissingPropertiesList = new ArrayList<>();
+                    for (Schema schema : schemasWithPropertyName) {
+                        SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schema);
+                        listOfMissingPropertiesList.add(getUndefinedProperties(exampleNode.get(exampleFieldName), def));
+                    }
+                    missingProperties.addAll(listOfMissingPropertiesList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
+                }
             }
         }
         return missingProperties;
@@ -139,8 +150,8 @@ public class SchemaValidator {
     }
 
     private static List<String> getUndefinedPropertiesFromComposedSchemaDefinitions(JsonNode exampleNode, List<SchemaDefinition> schemaDefinitions, SchemaDefinition parentSchema) {
-        Map<String, Schema> definedProperties = new HashMap<>();
-        schemaDefinitions.forEach(schema -> definedProperties.putAll(ApiFunctions.getAllProperties(schema.getModel(), schema.getResult(), exampleNode)));
+        PropertiesCollection definedProperties = new PropertiesCollection(parentSchema);
+        schemaDefinitions.forEach(schema -> definedProperties.addPropertiesCollection(ApiFunctions.getAllProperties(schema.getModel(), schema.getResult(), exampleNode)));
         return getUndefinedProperties(exampleNode, parentSchema, definedProperties);
     }
 

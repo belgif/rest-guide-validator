@@ -8,8 +8,8 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
-import java.util.Map
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import io.github.belgif.rest.guide.validator.core.model.helper.PropertiesCollection;
 
 function void violationReadOnlyProperties(ViolationReport oas, SchemaDefinition schema, String propertyName){
     oas.addViolation("[oas-rdonly]",
@@ -20,8 +20,8 @@ function void violationReadOnlyProperties(ViolationReport oas, SchemaDefinition 
 rule "ReadOnly Properties"
     when
         $schema: SchemaDefinition(model.getRef() == null)
-        Map($property: /entrySet) from ApiFunctions.getAllProperties($schema.getModel(), parserResult, null)
-        $propertyKey: String() from $property.getKey()
+        PropertiesCollection($properties: getPropertyNames())  from ApiFunctions.getAllProperties($schema.getModel(), parserResult, null)
+        $propertyKey: String() from $properties
         eval ( ApiFunctions.isPropertyRequiredAndReadOnly($schema, $propertyKey, parserResult) )
     then
         violationReadOnlyProperties(oas, $schema, $propertyKey);

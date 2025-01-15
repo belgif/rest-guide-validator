@@ -8,8 +8,8 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
-import java.util.Map
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import io.github.belgif.rest.guide.validator.core.model.helper.PropertiesCollection;
 
 function void violationRequiredProperties(ViolationReport oas, SchemaDefinition schema, String requiredValue){
     oas.addViolation("[propertyReq]",
@@ -21,7 +21,7 @@ rule "Values of required should be defined as properties"
     when
         $schema: SchemaDefinition(isHighLevelSchema())
         $required: String() from ApiFunctions.getRequiredProperties($schema, parserResult)
-        not Map( containsKey($required) ) from ApiFunctions.getAllProperties($schema.getModel(), parserResult, null)
+        not PropertiesCollection( containsProperty($required) ) from ApiFunctions.getAllProperties($schema.getModel(), parserResult, null)
     then
         violationRequiredProperties(oas, $schema, $required);
 end

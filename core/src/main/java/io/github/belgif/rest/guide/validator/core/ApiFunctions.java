@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
+import io.github.belgif.rest.guide.validator.core.model.helper.PropertiesCollection;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -133,9 +134,9 @@ public class ApiFunctions {
      * @param schema      Schema of which the properties have to be returned
      * @param valueNode   optional JSON value compliant with the schema
      */
-    public static Map<String, Schema> getAllProperties(Schema schema, Parser.ParserResult result, JsonNode valueNode) {
-        Map<String, Schema> properties = new HashMap<>();
+    public static PropertiesCollection getAllProperties(Schema schema, Parser.ParserResult result, JsonNode valueNode) {
         SchemaDefinition schemaDef = recursiveResolve(schema, result);
+        PropertiesCollection collection = new PropertiesCollection(schemaDef);
         Set<SchemaDefinition> definitions = new HashSet<>();
         definitions.add(schemaDef);
         definitions.addAll(getAllSubSchemas(schemaDef, result, true));
@@ -144,10 +145,10 @@ public class ApiFunctions {
         }
         definitions.forEach(schemaDefinition -> {
             if (schemaDefinition.getModel().getProperties() != null) {
-                properties.putAll(schemaDefinition.getModel().getProperties());
+                collection.addAll(schemaDefinition.getModel().getProperties());
             }
         });
-        return properties;
+        return collection;
     }
 
     private static Set<SchemaDefinition> findDiscriminatorSchemas(Set<SchemaDefinition> schemaDefinitions, Parser.ParserResult result, JsonNode valueNode) {
