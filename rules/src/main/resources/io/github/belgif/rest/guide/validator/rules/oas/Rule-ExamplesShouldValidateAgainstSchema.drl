@@ -14,12 +14,12 @@ global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult par
 
 function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, ExampleDefinition example, String violation){
     oas.addViolation("[oas-exampl]",
-    "Example does not validate against schema", violation, example);
+    "Example must be schema-valid and shouldn't have undefined properties", violation, example);
 }
 
 function void violationExamplesShouldNotHaveUndefinedProperties(ViolationReport oas, ExampleDefinition example, String violation) {
     oas.addViolation("[oas-exampl]",
-    "Example shouldn't contain undefined property", violation, example, ViolationLevel.RECOMMENDED);
+    "Example must be schema-valid and shouldn't have undefined properties", violation, example, ViolationLevel.RECOMMENDED);
 }
 
 rule "Example should be valid against schema"
