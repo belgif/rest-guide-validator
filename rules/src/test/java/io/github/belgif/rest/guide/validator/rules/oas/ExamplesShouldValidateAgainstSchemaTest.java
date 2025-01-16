@@ -123,6 +123,16 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testAdditionalPropertiesAllowedInAllOf() {
+        assertNoViolations(callRules("additionalProperties/additionalPropertiesAllowedInAllOf.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertyInSubSchema() {
+        assertNoViolations(callRules("additionalProperties/additionalPropertiesInSubSchemas.yaml"));
+    }
+
+    @Test
     void testComplexAdditionalProperties() {
         assertErrorCount(1, callRules("additionalProperties/complexAdditionalProperty.yaml"));
     }

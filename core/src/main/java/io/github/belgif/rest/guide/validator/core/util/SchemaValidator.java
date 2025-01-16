@@ -41,30 +41,6 @@ public class SchemaValidator {
         SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
         ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
         JsonNode exampleNode = getExampleNode(example);
-        if (schemaDefinition.getModel().getAdditionalPropertiesBoolean() != null) {
-            // Properties are only considered as undefined when additionalProperties are not explicitly allowed in the schema
-            // if additionalProperties is false, example schema validation will mark any undefined properties as invalid, so can be ignored here
-
-            // TODO: what if composite schema with additional properties in subschema?
-            /**
-             * MySchema:
-             *   type: object
-             *   allOf:
-             *   - additionalProperties: true
-             *   - someProperty:
-             *       type: integer
-             */
-            // TODO: What if additional properties set in nested object? - move to fromObjectNode?
-            /**
-             * MySchema:
-             *   type: object
-             *   properties:
-             *   someProperty:
-             *     type: object
-             *     additionalProperties: true
-             */
-            return new ArrayList<>();
-        }
         return getUndefinedProperties(exampleNode, schemaDefinition);
     }
 
@@ -80,6 +56,13 @@ public class SchemaValidator {
     }
 
     private static List<String> getUndefinedPropertiesFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
+        /*
+        Properties are only considered as undefined when additionalProperties are not explicitly allowed in the schema
+        if additionalProperties is false, example schema validation will mark any undefined properties as invalid, so can be ignored here
+         */
+        if (isAdditionalPropertiesSet(schemaDefinition.getModel())) {
+            return Collections.emptyList();
+        }
         PropertiesCollection definedProperties = ApiFunctions.getAllProperties(schemaDefinition.getModel(), schemaDefinition.getResult(), exampleNode);
         return getUndefinedProperties(exampleNode, schemaDefinition, definedProperties);
     }
@@ -352,5 +335,18 @@ public class SchemaValidator {
             sb.append(violation).append("\n");
         }
         return sb.toString().strip();
+    }
+
+    private static boolean isAdditionalPropertiesSet(Schema schema) {
+        if (schema.getAdditionalPropertiesBoolean() != null) {
+            return true;
+        } else if (schema.getAllOf() != null) {
+            for (Schema subSchema : schema.getAllOf()) {
+                if (isAdditionalPropertiesSet(subSchema)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
