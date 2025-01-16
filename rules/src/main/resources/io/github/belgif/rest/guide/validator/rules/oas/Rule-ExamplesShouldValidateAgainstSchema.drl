@@ -8,12 +8,18 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
-import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
+import io.github.belgif.rest.guide.validator.core.util.SchemaValidator
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, ExampleDefinition example, String violation){
     oas.addViolation("[oas-exampl]",
-    "Example does not validate against schema", violation, example);
+    "Example must be schema-valid and shouldn't have undefined properties", violation, example);
+}
+
+function void violationExamplesShouldNotHaveUndefinedProperties(ViolationReport oas, ExampleDefinition example, String violation) {
+    oas.addViolation("[oas-exampl]",
+    "Example must be schema-valid and shouldn't have undefined properties", "Undefined property: " + violation, example, ViolationLevel.RECOMMENDED);
 }
 
 rule "Example should be valid against schema"
@@ -22,4 +28,12 @@ rule "Example should be valid against schema"
         $violation: String() from SchemaValidator.getExampleViolations($example)
     then
         violationExamplesShouldValidateAgainstSchema(oas, $example, $violation);
+end
+
+rule "Example should not contain undefined properties"
+    when
+        $example: ExampleDefinition(definitionType.equals(DefinitionType.INLINE))
+        $violation: String() from SchemaValidator.getUndefinedPropertiesViolations($example)
+    then
+        violationExamplesShouldNotHaveUndefinedProperties(oas, $example, $violation);
 end

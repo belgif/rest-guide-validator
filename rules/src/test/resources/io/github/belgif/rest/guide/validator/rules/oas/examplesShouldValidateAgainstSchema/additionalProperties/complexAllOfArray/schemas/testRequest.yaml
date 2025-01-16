@@ -1,0 +1,32 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    TestRequest:
+      description: Doesn't matter
+      allOf:
+        - type: object
+        - type: object
+          required:
+            - schemas
+          properties:
+            myFirstProperty:
+              type: string
+              description: a property
+            schemas:
+              allOf:
+                - description: This makes it even more complex
+                - type: array
+                  items:
+                    allOf:
+                      - $ref: "../complex/main/schemas.yaml#/components/schemas/TopLevel"
+                      - description: nope
+                - type: array
+                  items:
+                    type: object
+                    properties:
+                      myExtraProperty:
+                        type: string

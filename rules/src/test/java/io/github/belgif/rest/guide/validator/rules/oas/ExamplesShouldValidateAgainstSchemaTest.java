@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,7 +62,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testDiscriminator() {
-        assertErrorCount(2, callRules("discriminator.yaml"));
+        assertErrorCount(4, callRules("discriminator.yaml"));
     }
 
     @Test
@@ -114,7 +114,46 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidDiscriminatorInSubSchemaOfOneOf() {
-        assertErrorCount(1, callRules("oneOfInvalid/openapi.yaml"));
+        assertErrorCount(2, callRules("oneOfInvalid/openapi.yaml"));
     }
 
+    @Test
+    void testAdditionalProperties() {
+        assertErrorCount(1, callRules("additionalProperties/additionalProperties.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertiesAllowedInAllOf() {
+        assertNoViolations(callRules("additionalProperties/additionalPropertiesAllowedInAllOf.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertyInSubSchema() {
+        assertNoViolations(callRules("additionalProperties/additionalPropertiesInSubSchemas.yaml"));
+    }
+
+    @Test
+    void testComplexAdditionalProperties() {
+        assertErrorCount(1, callRules("additionalProperties/complexAdditionalProperty.yaml"));
+    }
+
+    @Test
+    void testDuplicatePropertyNames() {
+        assertNoViolations(callRules("additionalProperties/duplicateNames.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertiesInArray() {
+        assertErrorCount(2, callRules("additionalProperties/array/arrayProperties.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertiesInComplexAllOfArray() {
+        assertErrorCount(2, callRules("additionalProperties/complexAllOfArray/arrayProperties.yaml"));
+    }
+
+    @Test
+    void testAdditionalPropertiesInComplexOneOfArray() {
+        assertErrorCount(1, callRules("additionalProperties/complexOneOfArray/arrayProperties.yaml"));
+    }
 }

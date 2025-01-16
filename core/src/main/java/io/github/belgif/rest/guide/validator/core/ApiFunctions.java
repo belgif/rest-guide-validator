@@ -1,8 +1,10 @@
 package io.github.belgif.rest.guide.validator.core;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
+import io.github.belgif.rest.guide.validator.core.model.helper.PropertiesCollection;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApiFunctions {
 
+    private static final String ITEMS_KEY = "items";
+
     /**
      * avoid instance creation.
      */
@@ -21,12 +25,12 @@ public class ApiFunctions {
     }
 
     public static Predicate<SchemaDefinition> getCollectionResponseCondition(Parser.ParserResult parserResult) {
-        return (schemaDefinition) -> schemaDefinition.getModel().getProperties() != null &&
-                schemaDefinition.getModel().getProperties().containsKey("items") &&
-                schemaDefinition.getModel().getProperties().get("items").getType() != null &&
-                schemaDefinition.getModel().getProperties().get("items").getType().equals(Schema.SchemaType.ARRAY) &&
-                schemaDefinition.getModel().getProperties().get("items").getItems() != null
-                && ApiFunctions.isSchemaOfType(schemaDefinition.getModel().getProperties().get("items").getItems(), Schema.SchemaType.OBJECT, parserResult);
+        return schemaDefinition -> schemaDefinition.getModel().getProperties() != null &&
+                schemaDefinition.getModel().getProperties().containsKey(ITEMS_KEY) &&
+                schemaDefinition.getModel().getProperties().get(ITEMS_KEY).getType() != null &&
+                schemaDefinition.getModel().getProperties().get(ITEMS_KEY).getType().equals(Schema.SchemaType.ARRAY) &&
+                schemaDefinition.getModel().getProperties().get(ITEMS_KEY).getItems() != null
+                && ApiFunctions.isSchemaOfType(schemaDefinition.getModel().getProperties().get(ITEMS_KEY).getItems(), Schema.SchemaType.OBJECT, parserResult);
     }
 
     public static boolean existsPathWithPathParamAfter(String pathString, Parser.ParserResult result) {
@@ -96,7 +100,7 @@ public class ApiFunctions {
 
     private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
-        Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) -> includeTopLevelSchemas || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
+        Predicate<SchemaDefinition> filterSchemaDefinitions = schemaDef -> includeTopLevelSchemas || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
         if (schemaDefinition.getModel().getAllOf() != null) {
             subSchemas.addAll(schemaDefinition.getModel().getAllOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
         }
@@ -109,43 +113,79 @@ public class ApiFunctions {
         return subSchemas;
     }
 
-    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    /**
+     * @return all subschemas of given schema, including recursively referenced ones
+     */
+    private static Set<SchemaDefinition> getAllSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
         Set<SchemaDefinition> subSchemas = getSubSchemas(schemaDefinition, result, includeTopLevelSchemas);
         Set<SchemaDefinition> output = new HashSet<>();
         for (SchemaDefinition schema : subSchemas) {
-            output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas));
+            output.addAll(getAllSubSchemas(schema, result, includeTopLevelSchemas));
         }
         output.addAll(subSchemas);
         return output;
     }
 
     /**
-     * Returns all the properties (schemas) in a complex schema
+     * Returns all the properties (with their schemas) at top-level of a possibly composite schema.
+     * Properties only reachable via discriminator are not added, unless valueNode parameter is used.
      *
-     * @param result Result from validationparser
-     * @param schema Schema of which the properties have to be returned
+     * @param result      Result from validationparser
+     * @param schema      Schema of which the properties have to be returned
+     * @param valueNode   optional JSON value compliant with the schema
      */
-    public static Map<String, Schema> getRecursiveProperties(Schema schema, Parser.ParserResult result) {
-        Map<String, Schema> properties = new HashMap<>();
+    public static PropertiesCollection getAllProperties(Schema schema, Parser.ParserResult result, JsonNode valueNode) {
         SchemaDefinition schemaDef = recursiveResolve(schema, result);
-        if (schemaDef.getModel().getProperties() != null) {
-            properties.putAll(schemaDef.getModel().getProperties());
+        PropertiesCollection collection = new PropertiesCollection(schemaDef);
+        Set<SchemaDefinition> definitions = new HashSet<>();
+        definitions.add(schemaDef);
+        definitions.addAll(getAllSubSchemas(schemaDef, result, true));
+        if (valueNode != null) {
+            definitions.addAll(findDiscriminatorSchemas(definitions, result, valueNode));
         }
-        getRecursiveSubSchemas(schemaDef, result, true).forEach(schemaDefinition -> {
+        definitions.forEach(schemaDefinition -> {
             if (schemaDefinition.getModel().getProperties() != null) {
-                properties.putAll(schemaDefinition.getModel().getProperties());
+                collection.addAll(schemaDefinition.getModel().getProperties());
             }
         });
-        return properties;
+        return collection;
     }
 
-    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
-        Set<String> requiredValues = new HashSet<>();
-        if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
-            requiredValues.addAll(schemaDefinition.getModel().getRequired());
+    private static Set<SchemaDefinition> findDiscriminatorSchemas(Set<SchemaDefinition> schemaDefinitions, Parser.ParserResult result, JsonNode valueNode) {
+        Set<SchemaDefinition> schemaDefinitionsWithDiscriminators = schemaDefinitions.stream()
+                .filter(def -> def.getModel().getDiscriminator() != null && valueNode.has(def.getModel().getDiscriminator().getPropertyName()))
+                .collect(Collectors.toSet());
+
+        Set<SchemaDefinition> schemaDefinitionMappings = new HashSet<>();
+        for (SchemaDefinition schemaDefinition : schemaDefinitionsWithDiscriminators) {
+            String discriminator = schemaDefinition.getModel().getDiscriminator().getPropertyName();
+            String discriminatorValue = valueNode.get(discriminator).asText();
+            String mapping;
+            if (schemaDefinition.getModel().getDiscriminator().getMapping() != null && schemaDefinition.getModel().getDiscriminator().getMapping().containsKey(discriminatorValue)) {
+                mapping = schemaDefinition.getModel().getDiscriminator().getMapping().get(discriminatorValue);
+            } else {
+                mapping = "#/components/schemas/" + discriminatorValue;
+            }
+
+            try {
+                OpenApiDefinition<Schema> resolvedDef = result.resolve(mapping, schemaDefinition.getOpenApiFile());
+                SchemaDefinition schemaDef = (SchemaDefinition) resolvedDef;
+                schemaDefinitionMappings.add(schemaDef);
+                schemaDefinitionMappings.addAll(ApiFunctions.getAllSubSchemas(schemaDef, result, true)); // TODO: move this to caller?
+            } catch (RuntimeException e) {
+                log.error("Cannot find schema for discriminator {} : {}", discriminator, discriminatorValue);
+            }
         }
-        getRecursiveSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
-        return requiredValues;
+        return schemaDefinitionMappings;
+    }
+
+    public static Set<String> getRequiredProperties(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        Set<String> requiredProperties = new HashSet<>();
+        if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
+            requiredProperties.addAll(schemaDefinition.getModel().getRequired());
+        }
+        getAllSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredProperties.addAll(getRequiredProperties(schema, result)));
+        return requiredProperties;
     }
 
     public static boolean isPropertyRequiredAndReadOnly(SchemaDefinition schemaDefinition, String propertyName, Parser.ParserResult result) {
@@ -153,11 +193,11 @@ public class ApiFunctions {
             return false;
         }
 
-        Predicate<SchemaDefinition> propertyRequired = (schemaDef) -> schemaDef.getModel().getRequired() != null && schemaDef.getModel().getRequired().contains(propertyName);
-        Predicate<SchemaDefinition> propertyReadOnly = (schemaDef) -> schemaDef.getModel().getProperties() != null && schemaDef.getModel().getProperties().containsKey(propertyName) &&
+        Predicate<SchemaDefinition> propertyRequired = schemaDef -> schemaDef.getModel().getRequired() != null && schemaDef.getModel().getRequired().contains(propertyName);
+        Predicate<SchemaDefinition> propertyReadOnly = schemaDef -> schemaDef.getModel().getProperties() != null && schemaDef.getModel().getProperties().containsKey(propertyName) &&
                 schemaDef.getModel().getProperties().get(propertyName).getReadOnly() != null && schemaDef.getModel().getProperties().get(propertyName).getReadOnly();
 
-        Predicate<SchemaDefinition> propertyRequiredAndReadOnly = (schemaDef) -> ((schemaMeetsCondition(schemaDef.getModel(), result, propertyReadOnly) && schemaCanMeetCondition(schemaDef.getModel(), result, propertyRequired)) ||
+        Predicate<SchemaDefinition> propertyRequiredAndReadOnly = schemaDef -> ((schemaMeetsCondition(schemaDef.getModel(), result, propertyReadOnly) && schemaCanMeetCondition(schemaDef.getModel(), result, propertyRequired)) ||
                 (schemaCanMeetCondition(schemaDef.getModel(), result, propertyReadOnly) && schemaMeetsCondition(schemaDef.getModel(), result, propertyRequired)));
 
         return propertyRequiredAndReadOnly.test(schemaDefinition) &&
@@ -173,7 +213,7 @@ public class ApiFunctions {
      * @param schemaType type of the schema wanted, eg. object, string, array etc.
      */
     public static boolean isSchemaOfType(Schema schema, Schema.SchemaType schemaType, Parser.ParserResult result) {
-        Predicate<SchemaDefinition> condition = (schemaDefinition) -> schemaDefinition.getModel().getType() == schemaType;
+        Predicate<SchemaDefinition> condition = schemaDefinition -> schemaDefinition.getModel().getType() == schemaType;
         return schemaMeetsCondition(schema, result, condition);
     }
 
@@ -210,10 +250,9 @@ public class ApiFunctions {
 
     public static boolean isLowerCamelCase(List<Object> objects, String stripCharacter) {
         for (Object object : objects) {
-            if (!(object instanceof String)) {
+            if (!(object instanceof String string)) {
                 continue;
             }
-            String string = (String) object;
             if (stripCharacter != null && !stripCharacter.isEmpty()) {
                 string = string.replaceAll(stripCharacter, "");
             }

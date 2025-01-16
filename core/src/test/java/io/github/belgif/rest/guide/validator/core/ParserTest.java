@@ -76,6 +76,16 @@ class ParserTest {
     }
 
     @Test
+    void getReferencedFilesFromDiscriminatorMappingTest() {
+        var oas = new ViolationReport();
+        var file = new File(getClass().getResource("../rules/referencedFiles/discriminator/schemas.yaml").getFile());
+        var parserResult = new Parser(file).parse(oas);
+        var files = parserResult.getSrc().keySet();
+
+        assertEquals(3, files.size());
+    }
+
+    @Test
     void getReferencedFilesTestJson() {
         var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/ugly.json").getFile());
@@ -169,7 +179,7 @@ class ParserTest {
         var file = new File(getClass().getResource("../rules/headersTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        result.oasVersion = 2;
+        result.setOasVersion(2);
         var parent = result.getResponses().stream().findAny();
         assertTrue(parent.isPresent());
 

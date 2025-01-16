@@ -28,7 +28,7 @@ rule "Should use ProblemResponse schema for default responses oas3 or inline res
     $operation: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
     OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "default"]/value#APIResponse) from $operation
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
-    eval( parserResult.oasVersion != 2 || $responseDefinition.getDefinitionType() == DefinitionType.INLINE )
+    eval( parserResult.getOasVersion() != 2 || $responseDefinition.getDefinitionType() == DefinitionType.INLINE )
     ResponseDefinition($schema: /model/content/mediaTypes/entrySet[key#String == "application/problem+json"]/value#MediaType/schema) from $responseDefinition
     Schema( ref == null || !ref.contains(referenceName()) ) from $schema
   then
@@ -38,7 +38,7 @@ end
 // For OAS2 this seperate rule is necessary because the top level responses in OAS2 do not contain any mediatypes. So in this case the schema that is present will io checked, regardless of the mediaType
 rule "Should use ProblemResponse schema for default responses oas2 and toplevel responseDefinition"
   when
-    eval( parserResult.oasVersion == 2 )
+    eval( parserResult.getOasVersion() == 2 )
     $operation: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
     OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "default"]/value#APIResponse) from $operation
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)

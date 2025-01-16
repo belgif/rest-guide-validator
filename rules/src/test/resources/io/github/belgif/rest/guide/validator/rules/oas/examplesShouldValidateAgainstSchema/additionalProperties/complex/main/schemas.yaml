@@ -1,0 +1,22 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    TopLevel:
+      type: object
+      description: description
+      required:
+        - objectType
+      properties:
+        objectType:
+          $ref: "../object/schemas.yaml#/components/schemas/ObjectType"
+        topLevelProperty:
+          type: string
+      discriminator:
+        propertyName: objectType
+        mapping:
+          firstChild: "../childs/schemas.yaml#/components/schemas/FirstChild"
+          secondChild: "../childs/schemas.yaml#/components/schemas/SecondChild"
