@@ -258,7 +258,7 @@ public class SchemaValidator {
                 missingProperties.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
             } else {
                 /*
-                In cases where there are multiple schemas with the same propertyName, all schemas are inspected further, and the violations for the schema that returns the least amount of violations are returned.
+                In cases where there are multiple schemas with the same propertyName, all schemas are inspected further, and the violations for the schema that returns the least amount of violations is returned.
                 This is needed in cases where multiple oneOf schemas contain a different implementation of the same property name.
                  */
                 List<Schema> schemasWithPropertyName = definedProperties.getPropertySchemas(exampleFieldName);
