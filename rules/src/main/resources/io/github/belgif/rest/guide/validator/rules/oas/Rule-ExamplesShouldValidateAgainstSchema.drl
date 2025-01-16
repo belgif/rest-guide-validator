@@ -19,7 +19,7 @@ function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, 
 
 function void violationExamplesShouldNotHaveUndefinedProperties(ViolationReport oas, ExampleDefinition example, String violation) {
     oas.addViolation("[oas-exampl]",
-    "Example must be schema-valid and shouldn't have undefined properties", violation, example, ViolationLevel.RECOMMENDED);
+    "Example must be schema-valid and shouldn't have undefined properties", "Undefined property: " + violation, example, ViolationLevel.RECOMMENDED);
 }
 
 rule "Example should be valid against schema"
