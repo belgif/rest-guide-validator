@@ -233,7 +233,6 @@ public class SchemaValidator {
         } else {
             missingProperties.addAll(getUndefinedPropertiesViolationsFromObjectNode(exampleNode, schemaDefinition));
         }
-
         return missingProperties;
     }
 
@@ -241,6 +240,7 @@ public class SchemaValidator {
         /*
         Properties are only considered as undefined when additionalProperties are not explicitly allowed in the schema
         if additionalProperties is false, example schema validation will mark any undefined properties as invalid, so can be ignored here
+        So if additionalProperties is explicitly set we do not run this validation.
          */
         if (isAdditionalPropertiesSet(schemaDefinition.getModel())) {
             return Collections.emptyList();
@@ -258,17 +258,12 @@ public class SchemaValidator {
                 missingProperties.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
             } else {
                 List<Schema> schemasWithPropertyName = definedProperties.getPropertySchemas(exampleFieldName);
-                if (schemasWithPropertyName.size() == 1) {
-                    SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schemasWithPropertyName.get(0));
-                    missingProperties.addAll(getUndefinedPropertiesViolations(exampleNode.get(exampleFieldName), def));
-                } else {
-                    List<List<String>> listOfMissingPropertiesList = new ArrayList<>();
-                    for (Schema schema : schemasWithPropertyName) {
-                        SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schema);
-                        listOfMissingPropertiesList.add(getUndefinedPropertiesViolations(exampleNode.get(exampleFieldName), def));
-                    }
-                    missingProperties.addAll(listOfMissingPropertiesList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
+                List<List<String>> listOfMissingPropertiesViolationsList = new ArrayList<>();
+                for (Schema schema : schemasWithPropertyName) {
+                    SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schema);
+                    listOfMissingPropertiesViolationsList.add(getUndefinedPropertiesViolations(exampleNode.get(exampleFieldName), def));
                 }
+                missingProperties.addAll(listOfMissingPropertiesViolationsList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
             }
         }
         return missingProperties;
