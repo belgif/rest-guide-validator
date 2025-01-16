@@ -5,7 +5,10 @@ import lombok.Getter;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.util.*;
-
+/*
+For schemas which contain multiple oneOf schemas that contain a (possibly differently implemented) property with the same name.
+Just a hashMap would not work because there are duplicate keys
+ */
 @Getter
 public class PropertiesCollection {
     private final SchemaDefinition parent;
