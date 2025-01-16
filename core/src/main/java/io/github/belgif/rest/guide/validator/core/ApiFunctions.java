@@ -161,10 +161,9 @@ public class ApiFunctions {
             String discriminator = schemaDefinition.getModel().getDiscriminator().getPropertyName();
             String discriminatorValue = valueNode.get(discriminator).asText();
             String mapping;
-            if (schemaDefinition.getModel().getDiscriminator().getMapping() != null) {
+            if (schemaDefinition.getModel().getDiscriminator().getMapping() != null && schemaDefinition.getModel().getDiscriminator().getMapping().containsKey(discriminatorValue)) {
                 mapping = schemaDefinition.getModel().getDiscriminator().getMapping().get(discriminatorValue);
             } else {
-                // TODO: if mapping present, but property value not found in discriminator mapping, also fallback to this
                 mapping = "#/components/schemas/" + discriminatorValue;
             }
 
