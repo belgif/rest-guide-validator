@@ -227,13 +227,13 @@ public class SchemaValidator {
     }
 
     private static List<String> getUndefinedPropertiesViolations(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-        List<String> missingProperties = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
         if (exampleNode.isArray()) {
-            missingProperties.addAll(getUndefinedPropertiesViolationsFromArrayNode(exampleNode, schemaDefinition));
+            violations.addAll(getUndefinedPropertiesViolationsFromArrayNode(exampleNode, schemaDefinition));
         } else {
-            missingProperties.addAll(getUndefinedPropertiesViolationsFromObjectNode(exampleNode, schemaDefinition));
+            violations.addAll(getUndefinedPropertiesViolationsFromObjectNode(exampleNode, schemaDefinition));
         }
-        return missingProperties;
+        return violations;
     }
 
     private static List<String> getUndefinedPropertiesViolationsFromObjectNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
@@ -250,57 +250,57 @@ public class SchemaValidator {
     }
 
     private static List<String> getUndefinedPropertiesViolations(JsonNode exampleNode, SchemaDefinition startingSchemaDefinition, PropertiesCollection definedProperties) {
-        List<String> missingProperties = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
         Iterator<String> exampleFieldNames = exampleNode.fieldNames();
         while (exampleFieldNames.hasNext()) {
             String exampleFieldName = exampleFieldNames.next();
             if (!definedProperties.containsProperty(exampleFieldName)) {
-                missingProperties.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
+                violations.add(exampleFieldName + " not found in: #" + startingSchemaDefinition.getPrintableJsonPointer());
             } else {
                 /*
                 In cases where there are multiple schemas with the same propertyName, all schemas are inspected further, and the violations for the schema that returns the least amount of violations is returned.
                 This is needed in cases where multiple oneOf schemas contain a different implementation of the same property name.
                  */
                 List<Schema> schemasWithPropertyName = definedProperties.getPropertySchemas(exampleFieldName);
-                List<List<String>> listOfMissingPropertiesViolationsList = new ArrayList<>();
+                List<List<String>> violationsList = new ArrayList<>();
                 for (Schema schema : schemasWithPropertyName) {
                     SchemaDefinition def = (SchemaDefinition) startingSchemaDefinition.getResult().resolve(schema);
-                    listOfMissingPropertiesViolationsList.add(getUndefinedPropertiesViolations(exampleNode.get(exampleFieldName), def));
+                    violationsList.add(getUndefinedPropertiesViolations(exampleNode.get(exampleFieldName), def));
                 }
-                missingProperties.addAll(listOfMissingPropertiesViolationsList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
+                violations.addAll(violationsList.stream().min(Comparator.comparing(List::size)).orElse(Collections.emptyList()));
             }
         }
-        return missingProperties;
+        return violations;
     }
 
     private static List<String> getUndefinedPropertiesViolationsFromArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-        List<String> missingProperties = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
         SchemaDefinition arrayItemSchemaDefinition;
         if (schemaDefinition.getModel().getType() != null && schemaDefinition.getModel().getType().equals(Schema.SchemaType.ARRAY)) {
             arrayItemSchemaDefinition = (SchemaDefinition) schemaDefinition.getResult().resolve(schemaDefinition.getModel().getItems());
             for (JsonNode arrayItem : exampleNode) {
-                missingProperties.addAll(getUndefinedPropertiesViolations(arrayItem, arrayItemSchemaDefinition));
+                violations.addAll(getUndefinedPropertiesViolations(arrayItem, arrayItemSchemaDefinition));
             }
         } else {
-            missingProperties.addAll(getUndefinedPropertiesViolationsFromComplexArrayNode(exampleNode, schemaDefinition));
+            violations.addAll(getUndefinedPropertiesViolationsFromComplexArrayNode(exampleNode, schemaDefinition));
         }
-        return missingProperties;
+        return violations;
     }
 
     /*
     Does not return warning if property is found in the wrong oneOf schema for example.
      */
     private static List<String> getUndefinedPropertiesViolationsFromComplexArrayNode(JsonNode exampleNode, SchemaDefinition schemaDefinition) {
-        List<String> missingProperties = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
         List<SchemaDefinition> schemas = extractItemsSchemas(schemaDefinition);
 
         PropertiesCollection definedProperties = new PropertiesCollection(schemaDefinition);
         schemas.forEach(schema -> definedProperties.addPropertiesCollection(ApiFunctions.getAllProperties(schema.getModel(), schema.getResult(), exampleNode)));
 
         for (JsonNode arrayItem : exampleNode) {
-            missingProperties.addAll(getUndefinedPropertiesViolations(arrayItem, schemaDefinition, definedProperties));
+            violations.addAll(getUndefinedPropertiesViolations(arrayItem, schemaDefinition, definedProperties));
         }
-        return missingProperties;
+        return violations;
     }
 
     private static List<SchemaDefinition> extractItemsSchemas(SchemaDefinition schemaDefinition) {
