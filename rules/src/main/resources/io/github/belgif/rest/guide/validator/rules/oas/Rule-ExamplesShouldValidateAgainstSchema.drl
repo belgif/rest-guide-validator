@@ -33,7 +33,7 @@ end
 rule "Example should not contain undefined properties"
     when
         $example: ExampleDefinition(definitionType.equals(DefinitionType.INLINE))
-        $violation: String() from SchemaValidator.getUndefinedProperties($example)
+        $violation: String() from SchemaValidator.getUndefinedPropertiesViolations($example)
     then
         violationExamplesShouldNotHaveUndefinedProperties(oas, $example, $violation);
 end
