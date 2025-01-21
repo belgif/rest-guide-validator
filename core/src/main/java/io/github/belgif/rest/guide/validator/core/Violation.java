@@ -10,7 +10,7 @@ import java.util.Objects;
 @EqualsAndHashCode
 public class Violation implements Comparable<Violation> {
     private final String ruleId;
-    // general description of the rule. Should be the same for all instances of the same ruleId
+    // general description of the rule. Should be the same for each set of violations that is grouped together when grouped by rule.
     private final String description;
     // specific message for this violation
     private String message;
