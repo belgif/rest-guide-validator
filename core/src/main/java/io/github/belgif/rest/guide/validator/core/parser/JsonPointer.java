@@ -61,48 +61,6 @@ public class JsonPointer {
         return Arrays.stream(jsonPointer.split("/")).filter(pointer -> !pointer.isEmpty()).map(JsonPointer::unescape).collect(Collectors.toList());
     }
 
-    public List<String> translate(int oasVersion) {
-        var pointers = this.splitSegments();
-        if (pointers.isEmpty()) {
-            log.warn("Invalid location for definition: " + jsonPointer);
-            return null;
-        }
-        if (oasVersion == 2 && "components".equals(pointers.get(0))) {
-            pointers.remove(0);
-            if ("schemas".equals(pointers.get(0))) {
-                pointers.set(0, "definitions");
-            }
-            if ("requestBodies".equals(pointers.get(0))) {
-                pointers.set(0, "parameters");
-            }
-            if ("securitySchemes".equals(pointers.get(0))) {
-                pointers.set(0, "securityDefinitions");
-            }
-            if ("parameters".equals(pointers.get(0)) && pointers.size() > 2) {
-                pointers.remove(pointers.get(2));
-            }
-        }
-        if (oasVersion == 2 && "servers".equals(pointers.get(0))) {
-            pointers.set(0, "basePath");
-            pointers.remove(1);
-        }
-        if (oasVersion == 2 && (pointers.indexOf("parameters") == pointers.indexOf("schema")-2)) {
-            throw new JsonPointerOas2Exception(toPrettyString());
-        }
-        if (oasVersion == 2 && "paths".equals(pointers.get(0)) && pointers.contains("requestBody")) {
-            throw new JsonPointerOas2Exception(toPrettyString());
-        }
-        return pointers;
-    }
-
-    public JsonPointer translateToJsonPointer(int oasVersion) {
-        var pointer = new JsonPointer("");
-        for (String segment : this.translate(oasVersion)) {
-            pointer = pointer.add(segment);
-        }
-        return pointer;
-    }
-
     @Override
     public String toString() {
         return jsonPointer;

@@ -531,33 +531,19 @@ public class Parser {
     This custom implementation retrieves the example as JsonNode from the contract file itself.
      */
     private void constructExamples(OpenApiDefinition<?> definition, ParserResult result) {
-        try {
-            var schemaNode = SchemaValidator.getSchemaNode(definition);
-            if (schemaNode.has("example")) {
-                var exampleValue = schemaNode.get("example");
-                var exampleObject = new SwExample();
-                exampleObject.setValue(exampleValue);
-                result.examples.add(new ExampleDefinition(exampleObject, definition));
-            } else if (schemaNode.has("examples")) {
-                var examplesNode = schemaNode.get("examples");
-                var iterator = examplesNode.fieldNames();
-                while (iterator.hasNext()) {
-                    var fieldName = iterator.next();
-                    var exampleObject = ExampleMapper.mapToExampleObject(examplesNode.get(fieldName));
-                    result.examples.add(new ExampleDefinition(exampleObject, definition, fieldName));
-                }
-            }
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Example validation in this location isn't supported for OAS2: {}", e.getMessage());
-        } catch (Exception e) {
-            if (result.getOasVersion() == 2) {
-                /*
-                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
-                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
-                 */
-                log.warn("Unable to parse example due to OAS2 incompatibility: {}", definition.getJsonPointer().toPrettyString());
-            } else {
-                throw e;
+        var schemaNode = SchemaValidator.getSchemaNode(definition);
+        if (schemaNode.has("example")) {
+            var exampleValue = schemaNode.get("example");
+            var exampleObject = new SwExample();
+            exampleObject.setValue(exampleValue);
+            result.examples.add(new ExampleDefinition(exampleObject, definition));
+        } else if (schemaNode.has("examples")) {
+            var examplesNode = schemaNode.get("examples");
+            var iterator = examplesNode.fieldNames();
+            while (iterator.hasNext()) {
+                var fieldName = iterator.next();
+                var exampleObject = ExampleMapper.mapToExampleObject(examplesNode.get(fieldName));
+                result.examples.add(new ExampleDefinition(exampleObject, definition, fieldName));
             }
         }
     }

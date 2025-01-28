@@ -7,7 +7,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
-import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -149,25 +148,14 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         return range;
     }
 
-    public JsonPointer getSrcVersionedJsonPointer() {
-        return this.jsonPointer.translateToJsonPointer(this.result.getOasVersion());
-    }
 
-    /**
-     * @return String of JsonPointer, when translation to OAS2 fails, it will return the OAS3 JsonPointer string.
-     */
     public String getPrintableJsonPointer() {
-        try {
-            return getSrcVersionedJsonPointer().toPrettyString();
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Ignoring JsonPointer exception for violation printing purposes.", e);
-            return this.jsonPointer.toPrettyString() + " (approximate pointer in OpenAPI 3.0 equivalent)";
-        }
+        return getJsonPointer().toPrettyString();
     }
 
     private Line getTopLevelLineNumber() {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            List<String> pointers = this.jsonPointer.translate(result.getOasVersion());
+            List<String> pointers = this.jsonPointer.splitSegments();
             Line line = searchObjectInFile(this.openApiFile, pointers, false);
             if (line != null) {
                 return line;
@@ -180,14 +168,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private Line getInlineLineNumber() {
-        JsonPointer pointer;
-        try {
-            pointer = getSrcVersionedJsonPointer();
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Catched JsonPointerException, ignored for lineNumber calculation.", e);
-            pointer = this.jsonPointer;
-        }
-        return searchObjectInFile(getTopLevelParent().openApiFile, pointer.splitSegments(), true);
+        return searchObjectInFile(getTopLevelParent().openApiFile, this.jsonPointer.splitSegments(), true);
     }
 
     private Line searchObjectInFile(File file, List<String> pointers, boolean approximate) {
@@ -222,13 +203,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         while (!jsonParser.isClosed()) {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
-            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && pointers.get(0).equals(jsonParser.getCurrentName())) {
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && pointers.get(0).equals(jsonParser.currentName())) {
                 pointers.remove(0);
                 wantedNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null) {
-                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                if (jsonParser.currentLocation() != null) {
+                    lnNumberSoFar = jsonParser.currentLocation().getLineNr();
                     if (pointers.isEmpty()) {
-                        return jsonParser.getCurrentLocation().getLineNr();
+                        return jsonParser.currentLocation().getLineNr();
                     }
                 }
                 continue;
@@ -240,10 +221,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 inArray = false;
                 arrayIndex = 0;
                 currentNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null) {
-                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                if (jsonParser.currentLocation() != null) {
+                    lnNumberSoFar = jsonParser.currentLocation().getLineNr();
                     if (pointers.isEmpty()) {
-                        return jsonParser.getCurrentLocation().getLineNr();
+                        return jsonParser.currentLocation().getLineNr();
                     }
                 }
                 continue;
@@ -285,7 +266,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             factory = new JsonFactory();
         }
 
-        var pointers = this.jsonPointer.translate(result.getOasVersion());
+        var pointers = this.jsonPointer.splitSegments();
         try {
             var jsonParser = factory.createParser(result.getSrc().get(file.getAbsolutePath()).getSrc());
             int ln = followPointersEndOfObject(pointers, jsonParser);
@@ -307,10 +288,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         while (!jsonParser.isClosed()) {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
-            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && !objectFound && pointers.get(0).equals(jsonParser.getCurrentName())) {
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && !objectFound && pointers.get(0).equals(jsonParser.currentName())) {
                 pointers.remove(0);
                 wantedNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                if (jsonParser.currentLocation() != null && pointers.isEmpty()) {
                     objectFound = true;
                 }
 
@@ -323,7 +304,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 inArray = false;
                 arrayIndex = 0;
                 currentNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                if (jsonParser.currentLocation() != null && pointers.isEmpty()) {
                     objectFound = true;
                 }
 
@@ -341,7 +322,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             }
             if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
                 if (objectFound && currentNestingLevel == wantedNestingLevel) {
-                    return jsonParser.getCurrentLocation().getLineNr();
+                    return jsonParser.currentLocation().getLineNr();
                 }
                 currentNestingLevel--;
                 if (token == JsonToken.END_ARRAY && currentNestingLevel == wantedNestingLevel) {
