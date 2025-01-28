@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants.OAS_2_LOCATIONS;
 import static io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants.OAS_3_LOCATIONS;
+
 
 @Slf4j
 @Getter
@@ -94,7 +94,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
 
     private String getExpectedRefPath() {
-        Map<Class<?>, String> versionedRefs = this.result.oasVersion == 2 ? OAS_2_LOCATIONS : OAS_3_LOCATIONS;
+        Map<Class<?>, String> versionedRefs = OAS_3_LOCATIONS;
         for (Map.Entry<Class<?>, String> entry : versionedRefs.entrySet()) {
             if (entry.getKey().isInstance(model)) {
                 return entry.getValue();

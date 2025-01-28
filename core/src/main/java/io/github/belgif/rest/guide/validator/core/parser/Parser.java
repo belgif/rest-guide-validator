@@ -94,7 +94,7 @@ public class Parser {
                 var ref = ((Reference<?>) model).getRef();
                 if (ref != null) {
                     File refOpenApiFile = findOpenApiFileForRef(ref, model);
-                    JsonPointer pointer = buildJsonPointerFromRef(ref, refOpenApiFile);
+                    JsonPointer pointer = buildJsonPointerFromRef(ref);
                     return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
                                     def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
                             .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
@@ -109,29 +109,8 @@ public class Parser {
             }
         }
 
-        private JsonPointer buildJsonPointerFromRef(String ref, File refOpenApiFile) {
+        private JsonPointer buildJsonPointerFromRef(String ref) {
             ref = !ref.startsWith("#") ? ref.split("#")[1] : ref.substring(1);
-            if (!ref.startsWith("/components") && this.oasVersion == 2) {
-                // SwaggerParser usually changes references to OAS3 standard. But not for external references.
-                // So we have to try both options.
-                String[] refParts = ref.substring(1).split("/");
-                String refGroup = "/" + refParts[0];
-                String objectName = refParts[refParts.length - 1];
-                if (refGroup.equals("/parameters")) {
-                    // Special case because this can be both a parameter and requestBody in oas3.
-                    var object = allDefinitions.stream().filter(definition -> definition instanceof ParameterDefinition || definition instanceof RequestBodyDefinition)
-                            .filter(definition -> definition.getOpenApiFile().equals(refOpenApiFile) && definition.getIdentifier() != null && definition.getIdentifier().equals(objectName)).findFirst();
-                    if (object.isPresent()) {
-                        return object.get().getJsonPointer();
-                    }
-                }
-                for (Map.Entry<Class<?>, String> entry : ExpectedReferencePathConstants.OAS_2_LOCATIONS.entrySet()) {
-                    if (entry.getValue().equals(refGroup)) {
-                        ref = ExpectedReferencePathConstants.OAS_3_LOCATIONS.get(entry.getKey()) + "/" + objectName;
-                        break;
-                    }
-                }
-            }
             return new JsonPointer(ref);
         }
 
@@ -161,6 +140,7 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
+            //TODO evaluate if still necessary, since only version3 is supported
             result.setOasVersion(
                     getOasVersion(result.src.get(openApiFile.getAbsolutePath())));
             for (SourceDefinition sourceDefinition : result.src.values()) {
