@@ -14,7 +14,7 @@
     <packaging>kjar</packaging>
 
     <properties>
-        <drools.version>8.44.0.Final</drools.version>
+        <drools.version>10.0.0</drools.version>
     </properties>
 
     <dependencyManagement>
@@ -43,22 +43,17 @@
 
         <dependency>
             <groupId>org.drools</groupId>
-            <artifactId>drools-ruleunits-engine</artifactId>
+            <artifactId>drools-engine</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-mvel</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-commands</artifactId>
-        </dependency>
-
-        <dependency>
+        <dependency> <!-- when not using Rule Unit and using `kmodule.xml` for defining a rule base -->
             <groupId>org.drools</groupId>
             <artifactId>drools-xml-support</artifactId>
+        </dependency>
+
+        <dependency> <!-- to enable runtime compilation for tests -->
+            <groupId>org.drools</groupId>
+            <artifactId>drools-model-compiler</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
