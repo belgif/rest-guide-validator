@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator;
 
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import org.drools.model.codegen.ExecutableModelProject;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieRepository;
@@ -29,7 +30,10 @@ public class OpenApiSingleRuleValidator {
         kieFileSystem.write(ResourceFactory.newFileResource(ruleFile).setResourceType(ResourceType.DRL));
 
         KieBuilder kieBuilder = kieServices.newKieBuilder(kieFileSystem);
-        kieBuilder.buildAll();
+        // ExecutableModelProject.class compiles DRLs to Java (so we can build without deprecated drools-mvel)
+        // https://docs.drools.org/8.44.0.Final/drools-docs/drools/KIE/index.html#executable-model-modify-proc_packaging-deploying
+        kieBuilder.buildAll(ExecutableModelProject.class);
+
 
         if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
             throw new RuntimeException("Build Errors:\n" + kieBuilder.getResults().toString());
