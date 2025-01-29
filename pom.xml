@@ -34,8 +34,9 @@
     <properties>
         <revision>latest</revision>
         <javaVersion>17</javaVersion>
-        <maven.compiler.release>${javaVersion}
-        </maven.compiler.release> <!-- has to be set using property for kie-maven-plugin -->
+        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+        <quarkus.platform.version>3.17.8</quarkus.platform.version>
+        <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to be set using property for kie-maven-plugin -->
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -45,6 +46,13 @@
     <dependencyManagement>
         <!-- Log -->
         <dependencies>
+            <dependency>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
