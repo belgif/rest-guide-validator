@@ -63,7 +63,7 @@ public class Parser {
 
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
-        public File openApiFile;
+        private File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
         private final Map<Constructible, OpenApiDefinition<?>> modelDefinitionMap = new HashMap<>();
@@ -171,7 +171,7 @@ public class Parser {
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
                 if (!allowedRequirements.contains(securityScheme)) {
-                    log.error(securityRequirement.getFullyQualifiedPointer() + ": Security Scheme <<{}>> is not defined", securityScheme);
+                    log.error("{}: Security Scheme <<{}>> is not defined", securityRequirement.getFullyQualifiedPointer(), securityScheme);
                     result.setParsingValid(false);
                 }
             }
@@ -250,11 +250,11 @@ public class Parser {
 
     private void parsePaths(SourceDefinition sourceDefinition, ParserResult result) {
         var paths = sourceDefinition.getOpenApi().getPaths();
-        var openApiFile = sourceDefinition.getFile();
+        var openApi = sourceDefinition.getFile();
         if (paths == null) {
             return;
         }
-        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApiFile, result);
+        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApi, result);
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
@@ -335,14 +335,14 @@ public class Parser {
 
     public void parseComponents(SourceDefinition sourceDefinition, ParserResult result) {
         var components = sourceDefinition.getOpenApi().getComponents();
-        var openApiFile = sourceDefinition.getFile();
+        var openApi = sourceDefinition.getFile();
         if (components == null) {
             return;
         }
         var responses = components.getResponses();
         if (responses != null) {
             responses.forEach((name, response) -> {
-                var responseDef = new ResponseDefinition(response, name, openApiFile, result);
+                var responseDef = new ResponseDefinition(response, name, openApi, result);
                 result.responses.add(responseDef);
                 parseResponse(responseDef, result);
             });
@@ -351,7 +351,7 @@ public class Parser {
         var requestBodies = components.getRequestBodies();
         if (requestBodies != null) {
             requestBodies.forEach((name, requestBody) -> {
-                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApiFile, result);
+                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApi, result);
                 result.requestBodies.add(requestBodyDef);
                 parseRequestBody(requestBodyDef, result);
             });
@@ -360,7 +360,7 @@ public class Parser {
         var schemas = components.getSchemas();
         if (schemas != null) {
             schemas.forEach((name, schema) -> {
-                var schemaDef = new SchemaDefinition(schema, name, openApiFile, result);
+                var schemaDef = new SchemaDefinition(schema, name, openApi, result);
                 result.schemas.add(schemaDef);
                 parseSchema(schemaDef, result);
             });
@@ -369,7 +369,7 @@ public class Parser {
         var headers = components.getHeaders();
         if (headers != null) {
             headers.forEach((name, header) -> {
-                var headerDef = new ResponseHeaderDefinition(header, name, openApiFile, result);
+                var headerDef = new ResponseHeaderDefinition(header, name, openApi, result);
                 result.headers.add(headerDef);
                 parseHeaders(headerDef, result);
             });
@@ -377,7 +377,7 @@ public class Parser {
         var parameters = components.getParameters();
         if (parameters != null) {
             parameters.forEach((name, parameter) -> {
-                var parameterDef = new ParameterDefinition(parameter, name, openApiFile, result);
+                var parameterDef = new ParameterDefinition(parameter, name, openApi, result);
                 result.parameters.add(parameterDef);
                 parseParameter(parameterDef, result);
             });
@@ -385,17 +385,17 @@ public class Parser {
         var examples = components.getExamples();
         if (examples != null) {
             examples.forEach((name, example) -> {
-                var exampleDef = new ExampleDefinition(example, name, openApiFile, result);
+                var exampleDef = new ExampleDefinition(example, name, openApi, result);
                 result.examples.add(exampleDef);
             });
         }
         var securitySchemes = components.getSecuritySchemes();
         if (securitySchemes != null) {
-            securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApiFile, result)));
+            securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApi, result)));
         }
         var links = components.getLinks();
         if (links != null) {
-            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApiFile, result)));
+            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApi, result)));
         }
     }
 
@@ -537,7 +537,7 @@ public class Parser {
         // else is a ugly json file
         var gson = new GsonBuilder().setPrettyPrinting().create();
         var pretty = gson.toJson(JsonParser.parseString(lines.get(0)));
-        return pretty.lines().collect(Collectors.toList());
+        return pretty.lines().toList();
     }
 
     private Set<File> getReferencedFiles(File file) {
@@ -579,13 +579,11 @@ public class Parser {
         try {
             JsonNode jsonNode = mapper.readTree(file);
             findRefFields(jsonNode, references);
+        } catch (JsonProcessingException e) {
+            int location = e.getLocation().getLineNr();
+            throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
         } catch (Exception e) {
-            if (e instanceof JsonProcessingException) {
-                int location = ((JsonProcessingException) e).getLocation().getLineNr();
-                throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
-            } else {
-                throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
-            }
+            throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
         }
         return references;
     }

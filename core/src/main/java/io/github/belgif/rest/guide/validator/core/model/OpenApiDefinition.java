@@ -112,11 +112,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public String getEffectiveIdentifier() {
-        if (this.getIdentifier() == null) {
-            return parent.getEffectiveIdentifier();
-        } else {
-            return identifier;
-        }
+        return identifier == null ? parent.getEffectiveIdentifier() : identifier;
     }
 
     public OpenApiDefinition<?> getTopLevelParent() {
@@ -156,7 +152,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             if (line != null) {
                 return line;
             }
-            log.warn("No correct line number found for: " + jsonPointer);
+            log.warn("No correct line number found for: {}", jsonPointer);
             return new Line(openApiFile.getName(), 0);
         } else {
             return getTopLevelParent().getTopLevelLineNumber();
@@ -249,7 +245,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         if (approximate) {
             return lnNumberSoFar;
         } else {
-            log.info("LineNumber for " + jsonPointer + " might not be correct!");
+            log.info("LineNumber for {} might not be correct!", jsonPointer);
             return -1;
         }
     }
@@ -330,7 +326,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 break;
             }
         }
-        log.info("LineNumber for end of " + jsonPointer + " might not be correct!");
+        log.info("LineNumber for end of {} might not be correct!", jsonPointer);
         return -1;
     }
 
@@ -344,14 +340,11 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             return new HashMap<>();
         }
         var ignoreObj = extensions.get("x-ignore-rules");
-        if (ignoreObj instanceof Map) {
+        if (ignoreObj instanceof Map<?, ?> ignored) {
             Map<String, String> resultMap = new HashMap<>();
-            Map<?, ?> ignored = (Map<?, ?>) ignoreObj;
-            for (Object key : ignored.keySet()) {
-                if (key instanceof String) {
-                    String k = (String) key;
-                    if (ignored.get(key) instanceof String) {
-                        String v = (String) ignored.get(key);
+            for (Map.Entry<?, ?> entry : ignored.entrySet()) {
+                if (entry.getKey() instanceof String k) {
+                    if (entry.getValue() instanceof String v) {
                         resultMap.put(k, v);
                     } else {
                         log.error("Value of {} in x-ignored-rules for {} not of type String", k, jsonPointer.toPrettyString());
