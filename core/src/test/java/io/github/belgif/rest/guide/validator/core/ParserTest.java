@@ -179,8 +179,8 @@ class ParserTest {
         headerModel.setRef("#/blabla");
 
         listAppender.start();
-        var headerDef = new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("[Internal error] Use of $ref is not supported by validator for type org.openapitools.empoa.swagger.core.internal.models.headers.SwHeader (#/blabla).")));
+        new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("'#/blabla' is not of correct type")));
     }
 
     @Test

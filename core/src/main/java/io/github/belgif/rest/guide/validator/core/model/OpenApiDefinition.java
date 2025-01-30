@@ -35,7 +35,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final String identifier; // mandatory when definitionType is TOP_LEVEL, optional otherwise
 
     private final File openApiFile;
-    private final JsonPointer jsonPointer; //Due to parser used, jsonPointer always points to equivalent locations in OAS 3 spec for OAS 2.0 documents. Conversion to OAS2 locations is handled by getExpectedRefPath() and handleJsonPointer()
+    private final JsonPointer jsonPointer;
 
     /**
      * Key: Name of the ignored rule.
@@ -82,10 +82,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                     return;
                 }
                 if (!ref.contains(expectedPath)) {
-                    if (!ref.startsWith("#") && expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 && ref.contains("/definitions")) {
-                        return;
-                    }
-                    log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath);
+                    log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath);
                     this.result.setParsingValid(false);
                 }
             }
@@ -94,8 +91,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
 
     private String getExpectedRefPath() {
-        Map<Class<?>, String> versionedRefs = OAS_3_LOCATIONS;
-        for (Map.Entry<Class<?>, String> entry : versionedRefs.entrySet()) {
+        for (Map.Entry<Class<?>, String> entry : OAS_3_LOCATIONS.entrySet()) {
             if (entry.getKey().isInstance(model)) {
                 return entry.getValue();
             }
