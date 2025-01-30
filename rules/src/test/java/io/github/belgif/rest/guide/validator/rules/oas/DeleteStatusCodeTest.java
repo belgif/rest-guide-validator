@@ -5,15 +5,14 @@ import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 @Getter
-public class DeleteStatusCodeTest extends AbstractOasRuleTest {
+class DeleteStatusCodeTest extends AbstractOasRuleTest {
     @Test
-    public void testValidSwagger() {
-        assertNoViolations(callRules("swagger.yaml"));
+    void testValidOpenApi() {
+        assertNoViolations(callRules("openapi.yaml"));
     }
 
     @Test
-    public void testInvalidSwagger() {
-        assertErrorCount(1, callRules("swagger_bad.yaml"));
+    void testInvalidOpenApi() {
+        assertErrorCount(1, callRules("openapi_bad.yaml"));
     }
-
 }

@@ -5,29 +5,29 @@ import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 @Getter
-public class PathInPluralTest extends AbstractOasRuleTest {
+class PathInPluralTest extends AbstractOasRuleTest {
     @Test
-    public void testValidSwagger() {
-        assertNoViolations(callRules("swagger.yaml"));
+    void testValidOpenApi() {
+        assertNoViolations(callRules("openapi.yaml"));
     }
 
     @Test
-    public void testInvalidSwagger() {
-        assertErrorCount(1, callRules("swagger_bad.yaml"));
+    void testInvalidOpenApi() {
+        assertErrorCount(1, callRules("openapi_bad.yaml"));
     }
 
     @Test
-    public void historyAllowedExceptionTest() {
+    void historyAllowedExceptionTest() {
         assertNoViolations(callRules("historyAllowed.yaml"));
     }
 
     @Test
-    public void testSiblingSchema() {
+    void testSiblingSchema() {
         assertErrorCount(1, callRules("siblingSchema.yaml"));
     }
 
     @Test
-    public void testReferencesAreFollowed() {
+    void testReferencesAreFollowed() {
         assertNoViolations(callRules("referencesFollowed.yaml"));
     }
 }

@@ -1,0 +1,37 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+servers:
+  - url: http://myserver.com
+paths:
+  /pathPARAMs/{firstParam}:{SECONDPARAM}:
+    get:
+      operationId: params
+      summary: yes
+      parameters:
+        - name: firstParam
+          in: path
+          description: ID of contact to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: SECONDPARAM
+          in: path
+          description: name of contact
+          required: true
+          schema:
+            type: string
+        - name: VeryBADQueryParam
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object

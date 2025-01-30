@@ -1,0 +1,58 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+servers:
+  - url: http://myserver.com
+paths:
+  /myPath/{id}:
+    options:
+      summary: delete
+      operationId: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+      responses:
+        201:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        204:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        304:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        405:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        409:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        412:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+        413:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object

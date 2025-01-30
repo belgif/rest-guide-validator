@@ -1,0 +1,36 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+servers:
+  - url: http://myserver.com
+paths:
+  /veryWrong/{wrongId}:
+    get:
+      summary: delete
+      operationId: delete
+      parameters:
+        - name: wrongId
+          in: path
+          description: uhuh
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+  /veryWrong:
+    get:
+      summary: delete
+      operationId: delete
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object

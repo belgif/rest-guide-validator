@@ -1,0 +1,9 @@
+openapi: 3.0.1
+info:
+  title: TagGuidelines
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myPath:
+    $ref: 'ref.yaml#/paths/~1refPath'

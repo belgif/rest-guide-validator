@@ -1,9 +1,11 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
+import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
- class TitleShouldNotBeSetTest extends AbstractOasRuleTest {
+@Getter
+ class OpenApiSpecificationTest extends AbstractOasRuleTest {
     @Test
      void testValidOpenApi() {
         assertNoViolations(callRules("openapi.yaml"));
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
     @Test
      void testInvalidOpenApi() {
-        assertErrorCount(2 , callRules("openapi_bad.yaml"));
+        assertViolations(callRules("openapi_bad.yaml"));
     }
+
 }
