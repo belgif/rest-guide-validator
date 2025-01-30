@@ -138,8 +138,10 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
-            //TODO check on OAS version here and throw exception / log warning?
-            getOasVersion(result.src.get(openApiFile.getAbsolutePath()));
+            if (getOasVersion(result.src.get(openApiFile.getAbsolutePath())) == 2) {
+                violationReport.addViolation("[unsupported]", "Input files with OAS2 / Swagger specification are not supported.");
+                return null;
+            }
             for (SourceDefinition sourceDefinition : result.src.values()) {
                 parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
