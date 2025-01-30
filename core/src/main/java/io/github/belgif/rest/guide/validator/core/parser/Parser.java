@@ -210,7 +210,7 @@ public class Parser {
             if (openApiLine.isPresent()) {
                 version = openApiLine.get().substring(9);
             } else {
-                throw new RuntimeException("Input file is not an OpenApi, or version number could not be found. <<" + file.getAbsolutePath() + ">>");
+                throw new RuntimeException("Input file is not an OpenApi file, or version number could not be found. <<" + file.getAbsolutePath() + ">>");
             }
             openAPI.setOpenapi(version);
         }

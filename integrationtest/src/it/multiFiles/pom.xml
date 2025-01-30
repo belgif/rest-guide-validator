@@ -27,7 +27,7 @@
                 </executions>
                 <configuration>
                     <files>
-                        <file>swagger.yaml</file>
+                        <file>openapi.yaml</file>
                         <file>petstore.json</file>
                     </files>
                 </configuration>
