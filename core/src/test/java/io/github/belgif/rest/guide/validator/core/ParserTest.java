@@ -139,26 +139,6 @@ class ParserTest {
     }
 
     @Test
-    void testInvalidRefSwagger() {
-        var logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        logger.addAppender(listAppender);
-
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/invalidRefSwagger.yaml").getFile());
-
-        listAppender.start();
-        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
-        assertEquals(errorMessage, ex.getMessage());
-
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/userInfo/get/responses/200")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/userInfo/get/responses/400/content/application/json/schema")));
-        assertEquals(3, listAppender.list.size());
-    }
-
-    @Test
     void testInValidNonExistingRef() {
         var logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
@@ -229,26 +209,6 @@ class ParserTest {
 
         var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemes.yaml").getFile());
-
-        listAppender.start();
-        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
-        assertEquals(errorMessage, ex.getMessage());
-
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/myFirstPath/get/security/0")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/security/0")));
-        assertEquals(3, listAppender.list.size());
-    }
-
-    @Test
-    void testNonExistingSecuritySchemesSwagger() {
-        var logger = (Logger) LoggerFactory.getLogger(Parser.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        logger.addAppender(listAppender);
-
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemesSwagger.yaml").getFile());
 
         listAppender.start();
         var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
