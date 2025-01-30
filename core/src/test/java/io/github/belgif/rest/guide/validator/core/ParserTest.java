@@ -169,7 +169,6 @@ class ParserTest {
         var file = new File(getClass().getResource("../rules/headersTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        result.oasVersion = 2;
         var parent = result.getResponses().stream().findAny();
         assertTrue(parent.isPresent());
 

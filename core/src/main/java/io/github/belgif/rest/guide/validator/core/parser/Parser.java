@@ -10,7 +10,6 @@ import com.google.gson.JsonParser;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
@@ -64,7 +63,6 @@ public class Parser {
 
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
-        public int oasVersion;
         public File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
@@ -140,9 +138,8 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
-            //TODO evaluate if still necessary, since only version3 is supported
-            result.setOasVersion(
-                    getOasVersion(result.src.get(openApiFile.getAbsolutePath())));
+            //TODO check on OAS version here and throw exception / log warning?
+            getOasVersion(result.src.get(openApiFile.getAbsolutePath()));
             for (SourceDefinition sourceDefinition : result.src.values()) {
                 parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
