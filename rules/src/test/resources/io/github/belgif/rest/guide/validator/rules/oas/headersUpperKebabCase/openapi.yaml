@@ -17,6 +17,11 @@ paths:
           schema:
             type: string
           required: true
+        - name: ETag
+          in: header
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: Very good 200
@@ -27,6 +32,9 @@ paths:
               required: true
             My-First-Response-Header:
               $ref: '#/components/headers/My-First-Response-Header'
+            ETag:
+              schema:
+                type: string
           content:
             application/json:
               schema:
