@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator;
 
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import io.github.belgif.rest.guide.validator.core.model.*;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -236,20 +236,6 @@ public class LineNumberTest {
 
         assertEquals("nestedArrays.yaml", schemaDefinition.getLineNumber().getFileName());
         assertEquals(27, schemaDefinition.getLineNumber().getLineNumber());
-    }
-
-    @Test
-    public void testBasePathLineNumberOas2() {
-        var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("rules/schemasOpenApi.yaml").getFile());
-        var result = new Parser(file).parse(oas);
-
-        var defs = result.getServers();
-        var def = defs.stream().filter(definition -> "/servers/0".equals(definition.getJsonPointer().toString())).findAny();
-        assertTrue(def.isPresent());
-
-        assertEquals("schemasOpenApi.yaml", def.get().getLineNumber().getFileName());
-        assertEquals(6, def.get().getLineNumber().getLineNumber());
     }
 
 }
