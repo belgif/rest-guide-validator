@@ -10,7 +10,6 @@ import com.google.gson.JsonParser;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
@@ -64,8 +63,7 @@ public class Parser {
 
         private OpenAPI openAPI;
         private List<LineRangePath> paths;
-        public int oasVersion;
-        public File openApiFile;
+        private File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
         private final Map<Constructible, OpenApiDefinition<?>> modelDefinitionMap = new HashMap<>();
@@ -94,7 +92,7 @@ public class Parser {
                 var ref = ((Reference<?>) model).getRef();
                 if (ref != null) {
                     File refOpenApiFile = findOpenApiFileForRef(ref, model);
-                    JsonPointer pointer = buildJsonPointerFromRef(ref, refOpenApiFile);
+                    JsonPointer pointer = buildJsonPointerFromRef(ref);
                     return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
                                     def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
                             .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
@@ -109,29 +107,8 @@ public class Parser {
             }
         }
 
-        private JsonPointer buildJsonPointerFromRef(String ref, File refOpenApiFile) {
+        private JsonPointer buildJsonPointerFromRef(String ref) {
             ref = !ref.startsWith("#") ? ref.split("#")[1] : ref.substring(1);
-            if (!ref.startsWith("/components") && this.oasVersion == 2) {
-                // SwaggerParser usually changes references to OAS3 standard. But not for external references.
-                // So we have to try both options.
-                String[] refParts = ref.substring(1).split("/");
-                String refGroup = "/" + refParts[0];
-                String objectName = refParts[refParts.length - 1];
-                if (refGroup.equals("/parameters")) {
-                    // Special case because this can be both a parameter and requestBody in oas3.
-                    var object = allDefinitions.stream().filter(definition -> definition instanceof ParameterDefinition || definition instanceof RequestBodyDefinition)
-                            .filter(definition -> definition.getOpenApiFile().equals(refOpenApiFile) && definition.getIdentifier() != null && definition.getIdentifier().equals(objectName)).findFirst();
-                    if (object.isPresent()) {
-                        return object.get().getJsonPointer();
-                    }
-                }
-                for (Map.Entry<Class<?>, String> entry : ExpectedReferencePathConstants.OAS_2_LOCATIONS.entrySet()) {
-                    if (entry.getValue().equals(refGroup)) {
-                        ref = ExpectedReferencePathConstants.OAS_3_LOCATIONS.get(entry.getKey()) + "/" + objectName;
-                        break;
-                    }
-                }
-            }
             return new JsonPointer(ref);
         }
 
@@ -161,8 +138,13 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
-            result.setOasVersion(
-                    getOasVersion(result.src.get(openApiFile.getAbsolutePath())));
+//            if (getOasVersion(result.src.get(openApiFile.getAbsolutePath())) == 2) {
+//                violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2 / Swagger are not supported. Only OpenAPI 3.0 documents are supported");
+//                return null;
+//            }
+            if (!isOasVersionSupported(result.src.values(), violationReport)) {
+                return null;
+            }
             for (SourceDefinition sourceDefinition : result.src.values()) {
                 parsePaths(sourceDefinition, result);
                 parseComponents(sourceDefinition, result);
@@ -187,12 +169,22 @@ public class Parser {
         }
     }
 
+    private static boolean isOasVersionSupported(Collection<SourceDefinition> sources, ViolationReport violationReport) {
+        Set<SourceDefinition> invalidSources = sources.stream().filter(sourceDefinition -> getOasVersion(sourceDefinition) == 2).collect(Collectors.toSet());
+        if (invalidSources.isEmpty()) {
+            return true;
+        } else {
+            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2.0 / Swagger 2.0 are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName()));
+        }
+        return false;
+    }
+
     public void verifySecurityRequirements(ParserResult result) {
         var allowedRequirements = result.getSecuritySchemes().stream().map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
                 if (!allowedRequirements.contains(securityScheme)) {
-                    log.error(securityRequirement.getFullyQualifiedPointer() + ": Security Scheme <<{}>> is not defined", securityScheme);
+                    log.error("{}: Security Scheme <<{}>> is not defined", securityRequirement.getFullyQualifiedPointer(), securityScheme);
                     result.setParsingValid(false);
                 }
             }
@@ -233,7 +225,7 @@ public class Parser {
             if (openApiLine.isPresent()) {
                 version = openApiLine.get().substring(9);
             } else {
-                throw new RuntimeException("Input file is not an OpenApi or Swagger file, or version number could not be found. <<" + file.getAbsolutePath() + ">>");
+                throw new RuntimeException("Input file is not an OpenApi file, or version number could not be found. <<" + file.getAbsolutePath() + ">>");
             }
             openAPI.setOpenapi(version);
         }
@@ -271,11 +263,11 @@ public class Parser {
 
     private void parsePaths(SourceDefinition sourceDefinition, ParserResult result) {
         var paths = sourceDefinition.getOpenApi().getPaths();
-        var openApiFile = sourceDefinition.getFile();
+        var openApi = sourceDefinition.getFile();
         if (paths == null) {
             return;
         }
-        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApiFile, result);
+        PathsDefinition pathsDefinition = new PathsDefinition(paths, openApi, result);
         result.pathsDefinitions.add(pathsDefinition);
         var pathItems = paths.getPathItems();
         pathItems.forEach((path, pathitem) -> {
@@ -356,14 +348,14 @@ public class Parser {
 
     public void parseComponents(SourceDefinition sourceDefinition, ParserResult result) {
         var components = sourceDefinition.getOpenApi().getComponents();
-        var openApiFile = sourceDefinition.getFile();
+        var openApi = sourceDefinition.getFile();
         if (components == null) {
             return;
         }
         var responses = components.getResponses();
         if (responses != null) {
             responses.forEach((name, response) -> {
-                var responseDef = new ResponseDefinition(response, name, openApiFile, result);
+                var responseDef = new ResponseDefinition(response, name, openApi, result);
                 result.responses.add(responseDef);
                 parseResponse(responseDef, result);
             });
@@ -372,7 +364,7 @@ public class Parser {
         var requestBodies = components.getRequestBodies();
         if (requestBodies != null) {
             requestBodies.forEach((name, requestBody) -> {
-                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApiFile, result);
+                var requestBodyDef = new RequestBodyDefinition(requestBody, name, openApi, result);
                 result.requestBodies.add(requestBodyDef);
                 parseRequestBody(requestBodyDef, result);
             });
@@ -381,7 +373,7 @@ public class Parser {
         var schemas = components.getSchemas();
         if (schemas != null) {
             schemas.forEach((name, schema) -> {
-                var schemaDef = new SchemaDefinition(schema, name, openApiFile, result);
+                var schemaDef = new SchemaDefinition(schema, name, openApi, result);
                 result.schemas.add(schemaDef);
                 parseSchema(schemaDef, result);
             });
@@ -390,7 +382,7 @@ public class Parser {
         var headers = components.getHeaders();
         if (headers != null) {
             headers.forEach((name, header) -> {
-                var headerDef = new ResponseHeaderDefinition(header, name, openApiFile, result);
+                var headerDef = new ResponseHeaderDefinition(header, name, openApi, result);
                 result.headers.add(headerDef);
                 parseHeaders(headerDef, result);
             });
@@ -398,7 +390,7 @@ public class Parser {
         var parameters = components.getParameters();
         if (parameters != null) {
             parameters.forEach((name, parameter) -> {
-                var parameterDef = new ParameterDefinition(parameter, name, openApiFile, result);
+                var parameterDef = new ParameterDefinition(parameter, name, openApi, result);
                 result.parameters.add(parameterDef);
                 parseParameter(parameterDef, result);
             });
@@ -406,17 +398,17 @@ public class Parser {
         var examples = components.getExamples();
         if (examples != null) {
             examples.forEach((name, example) -> {
-                var exampleDef = new ExampleDefinition(example, name, openApiFile, result);
+                var exampleDef = new ExampleDefinition(example, name, openApi, result);
                 result.examples.add(exampleDef);
             });
         }
         var securitySchemes = components.getSecuritySchemes();
         if (securitySchemes != null) {
-            securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApiFile, result)));
+            securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApi, result)));
         }
         var links = components.getLinks();
         if (links != null) {
-            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApiFile, result)));
+            links.forEach((name, link) -> result.links.add(new LinkDefinition(link, name, openApi, result)));
         }
     }
 
@@ -531,33 +523,19 @@ public class Parser {
     This custom implementation retrieves the example as JsonNode from the contract file itself.
      */
     private void constructExamples(OpenApiDefinition<?> definition, ParserResult result) {
-        try {
-            var schemaNode = SchemaValidator.getSchemaNode(definition);
-            if (schemaNode.has("example")) {
-                var exampleValue = schemaNode.get("example");
-                var exampleObject = new SwExample();
-                exampleObject.setValue(exampleValue);
-                result.examples.add(new ExampleDefinition(exampleObject, definition));
-            } else if (schemaNode.has("examples")) {
-                var examplesNode = schemaNode.get("examples");
-                var iterator = examplesNode.fieldNames();
-                while (iterator.hasNext()) {
-                    var fieldName = iterator.next();
-                    var exampleObject = ExampleMapper.mapToExampleObject(examplesNode.get(fieldName));
-                    result.examples.add(new ExampleDefinition(exampleObject, definition, fieldName));
-                }
-            }
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Example validation in this location isn't supported for OAS2: {}", e.getMessage());
-        } catch (Exception e) {
-            if (result.getOasVersion() == 2) {
-                /*
-                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
-                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
-                 */
-                log.warn("Unable to parse example due to OAS2 incompatibility: {}", definition.getJsonPointer().toPrettyString());
-            } else {
-                throw e;
+        var schemaNode = SchemaValidator.getSchemaNode(definition);
+        if (schemaNode.has("example")) {
+            var exampleValue = schemaNode.get("example");
+            var exampleObject = new SwExample();
+            exampleObject.setValue(exampleValue);
+            result.examples.add(new ExampleDefinition(exampleObject, definition));
+        } else if (schemaNode.has("examples")) {
+            var examplesNode = schemaNode.get("examples");
+            var iterator = examplesNode.fieldNames();
+            while (iterator.hasNext()) {
+                var fieldName = iterator.next();
+                var exampleObject = ExampleMapper.mapToExampleObject(examplesNode.get(fieldName));
+                result.examples.add(new ExampleDefinition(exampleObject, definition, fieldName));
             }
         }
     }
@@ -572,7 +550,7 @@ public class Parser {
         // else is a ugly json file
         var gson = new GsonBuilder().setPrettyPrinting().create();
         var pretty = gson.toJson(JsonParser.parseString(lines.get(0)));
-        return pretty.lines().collect(Collectors.toList());
+        return pretty.lines().toList();
     }
 
     private Set<File> getReferencedFiles(File file) {
@@ -614,13 +592,11 @@ public class Parser {
         try {
             JsonNode jsonNode = mapper.readTree(file);
             findRefFields(jsonNode, references);
+        } catch (JsonProcessingException e) {
+            int location = e.getLocation().getLineNr();
+            throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
         } catch (Exception e) {
-            if (e instanceof JsonProcessingException) {
-                int location = ((JsonProcessingException) e).getLocation().getLineNr();
-                throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
-            } else {
-                throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
-            }
+            throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
         }
         return references;
     }

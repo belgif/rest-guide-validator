@@ -16,9 +16,4 @@ class ProblemJsonNotAllowedWithSuccessfulStatusCodeTest extends AbstractOasRuleT
         assertErrorCount(3, callRules("problemJsonResponses.yaml"));
     }
 
-    @Test
-    void testValidSwagger() {
-        assertNoViolations(callRules("swagger.yaml"));
-    }
-
 }

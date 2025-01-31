@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
-import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -47,56 +46,28 @@ public class SchemaValidator {
             var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
             return buildViolationString(validateSchema(schemaNode, exampleNode, apiContext, schemaDefinition));
         } catch (ResolutionException ex) {
-            throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getSrcVersionedJsonPointer().toPrettyString() + ": Unable to validate example", ex);
+            throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getJsonPointer().toPrettyString() + ": Unable to validate example", ex);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        }  catch (JsonPointerOas2Exception e) {
-            log.debug("Unable to validate example: {}", exampleDefinition.getJsonPointer().toPrettyString());
-            return null;
-        } catch (Exception e) {
-            if (exampleDefinition.getResult().getOasVersion() == 2) {
-                /*
-                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
-                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
-                 */
-                log.warn("Unable to validate example due to OAS2 incompatibility: {}", exampleDefinition.getJsonPointer().toPrettyString());
-                return null;
-            } else {
-                throw e;
-            }
         }
     }
 
     public static Set<Map.Entry<String, String>> getEnumViolations(SchemaDefinition schemaDefinition) {
         Set<Map.Entry<String, String>> violations = new HashSet<>();
+        JsonNode schemaNode = getSchemaNode(schemaDefinition.getHighLevelSchema());
         try {
-            JsonNode schemaNode = getSchemaNode(schemaDefinition.getHighLevelSchema());
-            try {
-                var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
-                Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
-                for (JsonNode nodeToValidate : enumNodes) {
-                    String violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
-                    if (violation != null) {
-                        violations.add(Map.entry(nodeToValidate.toString(), violation));
-                    }
+            var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+            Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
+            for (JsonNode nodeToValidate : enumNodes) {
+                String violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
+                if (violation != null) {
+                    violations.add(Map.entry(nodeToValidate.toString(), violation));
                 }
-            } catch (ResolutionException ex) {
-                throw new RuntimeException(schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getSrcVersionedJsonPointer().toPrettyString() + ": Unable to validate enums", ex);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
             }
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Unable to validate enums in schema definition: {}", schemaDefinition.getHighLevelSchema().getJsonPointer().toPrettyString());
-        } catch (Exception e) {
-            if (schemaDefinition.getResult().getOasVersion() == 2) {
-                /*
-                It seems impossible to predict all JsonPointer translation mistakes from OAS3 to OAS2.
-                To not let builds fail due to shortcomings of the validator, these parsing exceptions are ignored for OAS2 contracts.
-                 */
-                log.warn("Unable to validate enum due to OAS2 incompatibility: {}", schemaDefinition.getJsonPointer().toPrettyString());
-            } else {
-                throw e;
-            }
+        } catch (ResolutionException ex) {
+            throw new RuntimeException(schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer().toPrettyString() + ": Unable to validate enums", ex);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
 
         return violations;
@@ -116,7 +87,7 @@ public class SchemaValidator {
      */
     private static JsonNode getExampleNode(ExampleDefinition exampleDefinition) {
         JsonNode openApiNode = getOpenApiNode(exampleDefinition);
-        JsonNode exampleNode = getNodeAtLocation(openApiNode, exampleDefinition.getSrcVersionedJsonPointer());
+        JsonNode exampleNode = getNodeAtLocation(openApiNode, exampleDefinition.getJsonPointer());
         if (exampleDefinition.isOasExampleObject() && exampleNode.has("value")) {
             exampleNode = exampleNode.get("value");
         }
@@ -135,7 +106,7 @@ public class SchemaValidator {
     private static Set<JsonNode> getEnumerationNodes(SchemaDefinition schemaDefinition) {
         Set<JsonNode> enumerations = new HashSet<>();
         JsonNode openApiNode = getOpenApiNode(schemaDefinition);
-        JsonNode schema = getNodeAtLocation(openApiNode, schemaDefinition.getSrcVersionedJsonPointer());
+        JsonNode schema = getNodeAtLocation(openApiNode, schemaDefinition.getJsonPointer());
         for (JsonNode enumeration : schema.get("enum")) {
             enumerations.add(enumeration);
         }
@@ -157,7 +128,7 @@ public class SchemaValidator {
             return validation.results().items().stream()
                     .map(validationItem ->
                             (!validationItem.dataCrumbs().isEmpty() ? validationItem.dataCrumbs() + ": " : "") + validationItem.message() + " " +
-                                    "In Schema: " + schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getSrcVersionedJsonPointer() +
+                                    "In Schema: " + schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer() +
                                     " : " + (validationItem.dataCrumbs().isEmpty() ? validationItem.schemaCrumbs() : validationItem.schemaCrumbs().replaceFirst(validationItem.dataCrumbs() + ".", ""))
                     )
                     .collect(Collectors.toSet());
@@ -172,7 +143,7 @@ public class SchemaValidator {
     public static JsonNode getSchemaNode(OpenApiDefinition<?> parent) {
         return schemaNodesCache.computeIfAbsent(parent, parentDef -> {
             JsonNode openApiNode = getOpenApiNode(parentDef);
-            return getNodeAtLocation(openApiNode, parentDef.getSrcVersionedJsonPointer());
+            return getNodeAtLocation(openApiNode, parentDef.getJsonPointer());
         });
     }
 
@@ -188,7 +159,7 @@ public class SchemaValidator {
         } else if (parentDef instanceof ResponseHeaderDefinition) {
             schema = ((ResponseHeaderDefinition) parentDef).getModel().getSchema();
         } else {
-            throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getSrcVersionedJsonPointer());
+            throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getJsonPointer());
         }
         return (SchemaDefinition) exampleDefinition.getResult().resolve(schema);
     }

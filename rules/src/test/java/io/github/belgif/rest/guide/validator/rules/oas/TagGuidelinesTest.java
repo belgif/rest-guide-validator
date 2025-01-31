@@ -26,7 +26,7 @@ class TagGuidelinesTest extends AbstractOasRuleTest {
 
     @Test
     void testTagsDeclaredInReferencedFiles() {
-        assertNoViolations(callRules("swagger.yaml"));
+        assertNoViolations(callRules("referenced.yaml"));
     }
 
 }

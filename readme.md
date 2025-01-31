@@ -250,7 +250,7 @@ The `outputTypes` option determines how the validation report will be available:
 ## Standalone belgif-rest-guide-validator
 From version 2.2.0 onwards, a standalone installer for Windows is included. You can download the .msi installer from the [releases page](https://github.com/belgif/rest-guide-validator/releases).
 
-After installation, you can right-click on an OpenAPI or Swagger file and open with: 'Validate OpenApi to Belgif guidelines'.
+After installation, you can right-click on an OpenAPI file and open with: 'Validate OpenApi to Belgif guidelines'.
 
 In some cases you'll have to set this up manually by selecting 'Choose another app' -> 'Choose an app on your PC' -> navigate to belgif-rest-guide-validator folder in C:\Users\\[your-user-name]\AppData\Local\ -> 'belgif-validator-rest.exe'
 

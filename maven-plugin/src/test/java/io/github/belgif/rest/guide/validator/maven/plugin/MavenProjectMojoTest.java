@@ -17,7 +17,7 @@ class MavenProjectMojoTest extends AbstractValidatorMojoTest {
     @Test
     void executeSkipOnErrors() {
         var openApiMojo = getMojo();
-        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml")});
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "openapi_bad.yaml")});
         openApiMojo.skipOnErrors = true;
         assertDoesNotThrow(openApiMojo::execute);
     }

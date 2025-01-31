@@ -13,11 +13,6 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testValidSwagger() {
-        assertNoViolations(callRules("swagger.yaml"));
-    }
-
-    @Test
     void testInvalidOpenApi() {
         assertErrorCount(1, callRules("invalidOpenapi.yaml"));
     }
@@ -25,15 +20,5 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     @Test
     void testInvalidGlobalOpenApi() {
         assertErrorCount(1, callRules("invalidGlobalOpenapi.yaml"));
-    }
-
-    @Test
-    void testInvalidSwagger() {
-        assertErrorCount(1, callRules("invalidSwagger.yaml"));
-    }
-
-    @Test
-    void testInvalidGlobalSwagger() {
-        assertErrorCount(1, callRules("invalidGlobalSwagger.yaml"));
     }
 }

@@ -5,14 +5,14 @@ import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 @Getter
-public class PropertiesCamelCaseTest extends AbstractOasRuleTest {
+class PropertiesCamelCaseTest extends AbstractOasRuleTest {
     @Test
-    public void testValidSwagger() {
-        assertNoViolations(callRules("swagger.yaml"));
+    void testValidOpenApi() {
+        assertNoViolations(callRules("openapi.yaml"));
     }
 
     @Test
-    public void testInvalidSwagger() {
-        assertViolations( callRules("swagger_bad.yaml"));
+    void testInvalidOpenApi() {
+        assertViolations( callRules("openapi_bad.yaml"));
     }
 }

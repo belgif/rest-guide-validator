@@ -5,19 +5,19 @@ import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 @Getter
-public class ReadOnlyPropertiesTest extends AbstractOasRuleTest {
+ class ReadOnlyPropertiesTest extends AbstractOasRuleTest {
     @Test
-    public void testValidOpenApi() {
+     void testValidOpenApi() {
         assertNoViolations(callRules("openapi.yaml"));
     }
 
     @Test
-    public void testValidOpenApiEdgeCase() {
+     void testValidOpenApiEdgeCase() {
         assertNoViolations(callRules("openapi_edge_case.yaml"));
     }
 
     @Test
-    public void testInvalidOpenApi() {
+     void testInvalidOpenApi() {
         assertErrorCount(3, callRules("openapi_bad.yaml"));
     }
 }

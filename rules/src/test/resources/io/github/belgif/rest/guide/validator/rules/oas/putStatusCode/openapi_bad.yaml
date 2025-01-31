@@ -1,0 +1,24 @@
+openapi: "3.0.1"
+info:
+  version: 1.0.0
+  title: testcase PutStatusCodeTest
+servers:
+  - url: petstore.swagger.io
+paths:
+  /pets:
+    put:
+      summary: List all pets
+      operationId: listPets
+      responses:
+        "202":
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: string
+        "304":
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: string

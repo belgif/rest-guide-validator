@@ -139,26 +139,6 @@ class ParserTest {
     }
 
     @Test
-    void testInvalidRefSwagger() {
-        var logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        logger.addAppender(listAppender);
-
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/invalidRefSwagger.yaml").getFile());
-
-        listAppender.start();
-        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
-        assertEquals(errorMessage, ex.getMessage());
-
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/userInfo/get/responses/200")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/userInfo/get/responses/400/content/application/json/schema")));
-        assertEquals(3, listAppender.list.size());
-    }
-
-    @Test
     void testInValidNonExistingRef() {
         var logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
@@ -169,7 +149,6 @@ class ParserTest {
         var file = new File(getClass().getResource("../rules/headersTest.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
-        result.oasVersion = 2;
         var parent = result.getResponses().stream().findAny();
         assertTrue(parent.isPresent());
 
@@ -179,8 +158,8 @@ class ParserTest {
         headerModel.setRef("#/blabla");
 
         listAppender.start();
-        var headerDef = new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().equals("[Internal error] Use of $ref is not supported by validator for type org.openapitools.empoa.swagger.core.internal.models.headers.SwHeader (#/blabla).")));
+        new ResponseHeaderDefinition(headerModel, parent.get(), "myFalseHeader");
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("'#/blabla' is not of correct type")));
     }
 
     @Test
@@ -222,25 +201,6 @@ class ParserTest {
     }
 
     @Test
-    void testNonTranslatedOAS2Refs() {
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/oas2refs/main.yaml").getFile());
-
-        Parser.ParserResult result = new Parser(file).parse(oas);
-        PathDefinition pathDefinition = result.getPathDefinitions().stream().findFirst().get();
-        ResponseDefinition responseDefinition = result.getResponses().stream().filter(def -> def.getDefinitionType().equals(OpenApiDefinition.DefinitionType.TOP_LEVEL)).findFirst().get();
-        RequestBodyDefinition requestBodyDefinition = result.getRequestBodies().stream().findFirst().get();
-        ParameterDefinition parameterDefinition = result.getParameters().stream().filter(def -> def.getDefinitionType().equals(OpenApiDefinition.DefinitionType.TOP_LEVEL)).findFirst().get();
-
-        //assert resolve to response works
-        assertEquals(responseDefinition, result.resolve(pathDefinition.getModel().getGET().getResponses().getAPIResponse("default")));
-        //assert resolve to requestbody works
-        assertEquals(requestBodyDefinition, result.resolve(pathDefinition.getModel().getPOST().getParameters().get(0)));
-        //assert resolve to parameter works
-        assertEquals(parameterDefinition, result.resolve(pathDefinition.getModel().getPOST().getParameters().get(1)));
-    }
-
-    @Test
     void testNonExistingSecuritySchemes() {
         var logger = (Logger) LoggerFactory.getLogger(Parser.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
@@ -249,26 +209,6 @@ class ParserTest {
 
         var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemes.yaml").getFile());
-
-        listAppender.start();
-        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
-        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
-        assertEquals(errorMessage, ex.getMessage());
-
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/myFirstPath/get/security/0")));
-        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/security/0")));
-        assertEquals(3, listAppender.list.size());
-    }
-
-    @Test
-    void testNonExistingSecuritySchemesSwagger() {
-        var logger = (Logger) LoggerFactory.getLogger(Parser.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        logger.addAppender(listAppender);
-
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/nonExistingSecuritySchemesSwagger.yaml").getFile());
 
         listAppender.start();
         var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));

@@ -21,7 +21,6 @@ function void violationProblemJson(ViolationReport oas, ResponseDefinition respo
 
 rule "application/problem+json not allowed in 1xx, 2xx and 3xx responses"
   when
-    eval( parserResult.oasVersion != 2 )
     $response: ResponseDefinition( definitionType == DefinitionType.INLINE )
     String( startsWith("1") || startsWith("2") || startsWith("3") ) from $response.statusCode
     ResponseDefinition($mediaType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response.getModel())

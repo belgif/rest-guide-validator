@@ -1,12 +1,10 @@
 package io.github.belgif.rest.guide.validator.core;
 
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
-import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
 class JsonPointerTest {
@@ -39,31 +37,4 @@ class JsonPointerTest {
         pointer = pointer.add(secondPointer);
         assertEquals("/first/second/third/fourth", pointer.toString());
     }
-
-    @Test
-    void translateTest() {
-        var pointer = new JsonPointer("/components/schemas/Contact/properties/preferredLanguage");
-        var translatedPointer = pointer.translateToJsonPointer(2);
-        assertEquals("/definitions/Contact/properties/preferredLanguage", translatedPointer.toPrettyString());
-    }
-
-    @Test
-    void translateSchemaParametersTest() {
-        JsonPointer pointer = new JsonPointer("/components/parameters/FileStatus/schema/items");
-        JsonPointer translatedPointer = pointer.translateToJsonPointer(2);
-        assertEquals("/parameters/FileStatus/items", translatedPointer.toPrettyString());
-    }
-
-    @Test
-    void inlineRequestBodyThrowsExceptionForOas2Test() {
-        var pointer = new JsonPointer("/paths/~1myPath~1{myId}/post/requestBody/content/application~1json/schema/properties/myPropertyObject/myParam");
-        assertThrows(JsonPointerOas2Exception.class, () -> pointer.translateToJsonPointer(2));
-    }
-
-    @Test
-    void parameterSchemaThrowsExceptionForOas2Test() {
-        var pointer = new JsonPointer("/paths/~1myPath~1myOtherPath/get/parameters/2/schema/items");
-        assertThrows(JsonPointerOas2Exception.class, () -> pointer.translateToJsonPointer(2));
-    }
-
 }
