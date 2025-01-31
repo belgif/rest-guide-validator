@@ -138,8 +138,11 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
-            if (getOasVersion(result.src.get(openApiFile.getAbsolutePath())) == 2) {
-                violationReport.addViolation("[unsupported]", "Input files with OAS2 / Swagger specification are not supported.");
+//            if (getOasVersion(result.src.get(openApiFile.getAbsolutePath())) == 2) {
+//                violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2 / Swagger are not supported. Only OpenAPI 3.0 documents are supported");
+//                return null;
+//            }
+            if (!isOasVersionSupported(result.src.values(), violationReport)) {
                 return null;
             }
             for (SourceDefinition sourceDefinition : result.src.values()) {
@@ -164,6 +167,16 @@ public class Parser {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
         }
+    }
+
+    private static boolean isOasVersionSupported(Collection<SourceDefinition> sources, ViolationReport violationReport) {
+        Set<SourceDefinition> invalidSources = sources.stream().filter(sourceDefinition -> getOasVersion(sourceDefinition) == 2).collect(Collectors.toSet());
+        if (invalidSources.isEmpty()) {
+            return true;
+        } else {
+            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2 / Swagger are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName()));
+        }
+        return false;
     }
 
     public void verifySecurityRequirements(ParserResult result) {
