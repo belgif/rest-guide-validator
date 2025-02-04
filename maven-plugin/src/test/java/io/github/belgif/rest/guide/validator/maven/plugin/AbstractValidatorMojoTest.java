@@ -27,7 +27,7 @@ public abstract class AbstractValidatorMojoTest {
     @Test
     void execute() {
         var openApiMojo = getMojo();
-        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "openapi.yaml"), new File(BAS_DIR + "swagger_bad.yaml")});
+        openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "openapi.yaml"), new File(BAS_DIR + "openapi_bad.yaml")});
         var exception = assertThrows(MojoFailureException.class, openApiMojo::execute);
         assertEquals(MavenProjectMojo.FAILURE_MESSAGE, exception.getMessage());
     }
@@ -72,7 +72,7 @@ public abstract class AbstractValidatorMojoTest {
         for (int i = 0; i < 48; i++) {
             tasks.add(() -> {
                 var openApiMojo = getMojo();
-                openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "swagger_bad.yaml")});
+                openApiMojo.files = List.of(new File[]{new File(BAS_DIR + "openapi_bad.yaml")});
                 openApiMojo.groupBy = "rule";
                 openApiMojo.outputDir = Paths.get("target").toFile();
                 var tempFile = Files.createTempFile("tmpFile", "custom.json").toFile();

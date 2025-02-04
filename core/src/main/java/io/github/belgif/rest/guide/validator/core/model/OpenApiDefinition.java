@@ -7,7 +7,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
-import io.github.belgif.rest.guide.validator.core.parser.JsonPointerOas2Exception;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants.OAS_2_LOCATIONS;
 import static io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants.OAS_3_LOCATIONS;
+
 
 @Slf4j
 @Getter
@@ -36,7 +35,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final String identifier; // mandatory when definitionType is TOP_LEVEL, optional otherwise
 
     private final File openApiFile;
-    private final JsonPointer jsonPointer; //Due to parser used, jsonPointer always points to equivalent locations in OAS 3 spec for OAS 2.0 documents. Conversion to OAS2 locations is handled by getExpectedRefPath() and handleJsonPointer()
+    private final JsonPointer jsonPointer;
 
     /**
      * Key: Name of the ignored rule.
@@ -83,10 +82,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                     return;
                 }
                 if (!ref.contains(expectedPath)) {
-                    if (!ref.startsWith("#") && expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 && ref.contains("/definitions")) {
-                        return;
-                    }
-                    log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath.equals("/components/schemas") && this.result.getOasVersion() == 2 ? "/definitions" : expectedPath);
+                    log.error("{}/$ref: '{}' is not of correct type (expected a component in \"{}\")", getFullyQualifiedPointer(), ref, expectedPath);
                     this.result.setParsingValid(false);
                 }
             }
@@ -95,8 +91,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
 
     private String getExpectedRefPath() {
-        Map<Class<?>, String> versionedRefs = this.result.oasVersion == 2 ? OAS_2_LOCATIONS : OAS_3_LOCATIONS;
-        for (Map.Entry<Class<?>, String> entry : versionedRefs.entrySet()) {
+        for (Map.Entry<Class<?>, String> entry : OAS_3_LOCATIONS.entrySet()) {
             if (entry.getKey().isInstance(model)) {
                 return entry.getValue();
             }
@@ -117,11 +112,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public String getEffectiveIdentifier() {
-        if (this.getIdentifier() == null) {
-            return parent.getEffectiveIdentifier();
-        } else {
-            return identifier;
-        }
+        return identifier == null ? parent.getEffectiveIdentifier() : identifier;
     }
 
     public OpenApiDefinition<?> getTopLevelParent() {
@@ -149,30 +140,19 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         return range;
     }
 
-    public JsonPointer getSrcVersionedJsonPointer() {
-        return this.jsonPointer.translateToJsonPointer(this.result.getOasVersion());
-    }
 
-    /**
-     * @return String of JsonPointer, when translation to OAS2 fails, it will return the OAS3 JsonPointer string.
-     */
     public String getPrintableJsonPointer() {
-        try {
-            return getSrcVersionedJsonPointer().toPrettyString();
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Ignoring JsonPointer exception for violation printing purposes.", e);
-            return this.jsonPointer.toPrettyString() + " (approximate pointer in OpenAPI 3.0 equivalent)";
-        }
+        return getJsonPointer().toPrettyString();
     }
 
     private Line getTopLevelLineNumber() {
         if (definitionType == DefinitionType.TOP_LEVEL) {
-            List<String> pointers = this.jsonPointer.translate(result.getOasVersion());
+            List<String> pointers = this.jsonPointer.splitSegments();
             Line line = searchObjectInFile(this.openApiFile, pointers, false);
             if (line != null) {
                 return line;
             }
-            log.warn("No correct line number found for: " + jsonPointer);
+            log.warn("No correct line number found for: {}", jsonPointer);
             return new Line(openApiFile.getName(), 0);
         } else {
             return getTopLevelParent().getTopLevelLineNumber();
@@ -180,14 +160,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private Line getInlineLineNumber() {
-        JsonPointer pointer;
-        try {
-            pointer = getSrcVersionedJsonPointer();
-        } catch (JsonPointerOas2Exception e) {
-            log.debug("Catched JsonPointerException, ignored for lineNumber calculation.", e);
-            pointer = this.jsonPointer;
-        }
-        return searchObjectInFile(getTopLevelParent().openApiFile, pointer.splitSegments(), true);
+        return searchObjectInFile(getTopLevelParent().openApiFile, this.jsonPointer.splitSegments(), true);
     }
 
     private Line searchObjectInFile(File file, List<String> pointers, boolean approximate) {
@@ -222,13 +195,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         while (!jsonParser.isClosed()) {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
-            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && pointers.get(0).equals(jsonParser.getCurrentName())) {
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && pointers.get(0).equals(jsonParser.currentName())) {
                 pointers.remove(0);
                 wantedNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null) {
-                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                if (jsonParser.currentLocation() != null) {
+                    lnNumberSoFar = jsonParser.currentLocation().getLineNr();
                     if (pointers.isEmpty()) {
-                        return jsonParser.getCurrentLocation().getLineNr();
+                        return jsonParser.currentLocation().getLineNr();
                     }
                 }
                 continue;
@@ -240,10 +213,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 inArray = false;
                 arrayIndex = 0;
                 currentNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null) {
-                    lnNumberSoFar = jsonParser.getCurrentLocation().getLineNr();
+                if (jsonParser.currentLocation() != null) {
+                    lnNumberSoFar = jsonParser.currentLocation().getLineNr();
                     if (pointers.isEmpty()) {
-                        return jsonParser.getCurrentLocation().getLineNr();
+                        return jsonParser.currentLocation().getLineNr();
                     }
                 }
                 continue;
@@ -272,7 +245,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         if (approximate) {
             return lnNumberSoFar;
         } else {
-            log.info("LineNumber for " + jsonPointer + " might not be correct!");
+            log.info("LineNumber for {} might not be correct!", jsonPointer);
             return -1;
         }
     }
@@ -285,7 +258,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             factory = new JsonFactory();
         }
 
-        var pointers = this.jsonPointer.translate(result.getOasVersion());
+        var pointers = this.jsonPointer.splitSegments();
         try {
             var jsonParser = factory.createParser(result.getSrc().get(file.getAbsolutePath()).getSrc());
             int ln = followPointersEndOfObject(pointers, jsonParser);
@@ -307,10 +280,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         while (!jsonParser.isClosed()) {
             jsonParser.nextToken();
             var token = jsonParser.getCurrentToken();
-            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && !objectFound && pointers.get(0).equals(jsonParser.getCurrentName())) {
+            if (currentNestingLevel == wantedNestingLevel && token == JsonToken.FIELD_NAME && !inArray && !objectFound && pointers.get(0).equals(jsonParser.currentName())) {
                 pointers.remove(0);
                 wantedNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                if (jsonParser.currentLocation() != null && pointers.isEmpty()) {
                     objectFound = true;
                 }
 
@@ -323,7 +296,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 inArray = false;
                 arrayIndex = 0;
                 currentNestingLevel++;
-                if (jsonParser.getCurrentLocation() != null && pointers.isEmpty()) {
+                if (jsonParser.currentLocation() != null && pointers.isEmpty()) {
                     objectFound = true;
                 }
 
@@ -341,7 +314,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             }
             if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
                 if (objectFound && currentNestingLevel == wantedNestingLevel) {
-                    return jsonParser.getCurrentLocation().getLineNr();
+                    return jsonParser.currentLocation().getLineNr();
                 }
                 currentNestingLevel--;
                 if (token == JsonToken.END_ARRAY && currentNestingLevel == wantedNestingLevel) {
@@ -353,7 +326,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 break;
             }
         }
-        log.info("LineNumber for end of " + jsonPointer + " might not be correct!");
+        log.info("LineNumber for end of {} might not be correct!", jsonPointer);
         return -1;
     }
 
@@ -367,14 +340,11 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             return new HashMap<>();
         }
         var ignoreObj = extensions.get("x-ignore-rules");
-        if (ignoreObj instanceof Map) {
+        if (ignoreObj instanceof Map<?, ?> ignored) {
             Map<String, String> resultMap = new HashMap<>();
-            Map<?, ?> ignored = (Map<?, ?>) ignoreObj;
-            for (Object key : ignored.keySet()) {
-                if (key instanceof String) {
-                    String k = (String) key;
-                    if (ignored.get(key) instanceof String) {
-                        String v = (String) ignored.get(key);
+            for (Map.Entry<?, ?> entry : ignored.entrySet()) {
+                if (entry.getKey() instanceof String k) {
+                    if (entry.getValue() instanceof String v) {
                         resultMap.put(k, v);
                     } else {
                         log.error("Value of {} in x-ignored-rules for {} not of type String", k, jsonPointer.toPrettyString());

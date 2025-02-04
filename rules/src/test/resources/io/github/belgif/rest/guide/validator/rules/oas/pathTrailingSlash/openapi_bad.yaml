@@ -1,0 +1,18 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+servers:
+  - url: http://myserver.com
+paths:
+  /userInfo/:
+    get:
+      summary: delete
+      operationId: delete
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object

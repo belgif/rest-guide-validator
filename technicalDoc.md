@@ -1,6 +1,6 @@
 # Introduction
 
-The belgif-rest-guide-validator plugin is used to validate a Swagger API to conforms the belgif standards.
+The belgif-rest-guide-validator plugin is used to validate if an OpenAPI document conforms to the belgif standards.
 
 ## Overview
 

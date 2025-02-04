@@ -9,7 +9,7 @@ import org.apache.maven.project.MavenProject;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Maven plugin that checks if a Swagger or an OpenAPI is conform to the Belgif REST guide standards.
+ * Maven plugin that checks if an OpenAPI is conform to the Belgif REST guide standards.
  */
 
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.TEST_COMPILE)

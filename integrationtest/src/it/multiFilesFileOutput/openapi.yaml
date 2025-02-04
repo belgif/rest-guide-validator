@@ -1,0 +1,22 @@
+openapi: "3.0.1"
+info:
+  description: "Test API swagger definition"
+  version: "${artifact.version}"
+  title: "Test API"
+servers:
+  - url: /TEST/api
+paths:
+  /myOnlyPath:
+    get:
+      summary : "pathWithoutProperResponse"
+      operationId: "myPath"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string

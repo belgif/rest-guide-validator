@@ -23,8 +23,6 @@ function void violationErrorResponseWrongMediaType(ViolationReport oas, Operatio
     response);
 }
 
-// Check for OAS2 is necessary because top level responses in OAS2 do not have a mediaType. If there is a ref in the inline response, the content is null.
-// Inline responses in OAS2 are still checked.
 rule "Error Response with problem+json media type is missing"
   when
     $operationDefinition: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
@@ -33,7 +31,6 @@ rule "Error Response with problem+json media type is missing"
     $response: APIResponse() from $operationDefinition.getModel().getResponses().getAPIResponse($statusCode)
     not(APIResponse(/content/mediaTypes[keySet contains "application/problem+json"]) from $response)
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
-    eval(parserResult.oasVersion != 2 || $responseDefinition.getDefinitionType() == DefinitionType.INLINE )
     not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
     eval( !("GET /health".equals($operationDefinition.getIdentifier()) && "503".equals($statusCode)) )
   then

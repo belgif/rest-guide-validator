@@ -1,4 +1,4 @@
-swagger: "2.0"
+openapi: "3.0.1"
 info:
   title: My api
   version: "1.0"
@@ -8,11 +8,10 @@ paths:
       tags:
         - My Tag
       operationId: myReferencedOperation
-      produces:
-        - application/json
-      security: [ ]
       responses:
         default:
-          schema:
-            type: object
           description: mandatory description
+          content:
+            application/json:
+              schema:
+                type: object

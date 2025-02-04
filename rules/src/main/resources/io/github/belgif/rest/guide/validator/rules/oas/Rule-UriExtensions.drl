@@ -7,7 +7,7 @@ global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void violationUriExt(ViolationReport oas, PathDefinition path){
         oas.addViolation("[uri-extens]",
-                         "The URI SHOULD NOT contain a file extension (A notable exception to this rule is the swagger/OpenAPI file).",
+                         "The URI SHOULD NOT contain a file extension (A notable exception to this rule is the OpenAPI file).",
                          path);
 }
 
@@ -15,8 +15,7 @@ rule "Uri Extensions V3"
    	when
       $path: PathDefinition(directPath == true, $pathUrl: identifier)
       String( this matches(".+\\..+$") ) from $pathUrl
-      eval( !$pathUrl.equalsIgnoreCase("/doc/swagger.json") && !$pathUrl.equalsIgnoreCase("/doc/swagger.yaml") &&
-            !$pathUrl.equalsIgnoreCase("/doc/openapi.json") && !$pathUrl.equalsIgnoreCase("/doc/openapi.yaml") )
+      eval( !$pathUrl.equalsIgnoreCase("/doc/openapi.json") && !$pathUrl.equalsIgnoreCase("/doc/openapi.yaml") )
     then
       violationUriExt(oas, $path);
 end
