@@ -35,23 +35,36 @@
         <revision>latest</revision>
         <javaVersion>17</javaVersion>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.17.8</quarkus.platform.version>
+        <quarkus.platform.version>3.18.1</quarkus.platform.version>
         <maven.compiler.release>${javaVersion}</maven.compiler.release> <!-- has to be set using property for kie-maven-plugin -->
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <drools.version>10.0.0</drools.version>
     </properties>
 
     <dependencyManagement>
         <!-- Log -->
         <dependencies>
             <dependency>
+                <groupId>org.drools</groupId>
+                <artifactId>drools-bom</artifactId>
+                <version>${drools.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-bom</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.openapi</groupId>
+                <artifactId>microprofile-openapi-api</artifactId>
+                <!-- conflicts between quarkus and empoa dependency version. Can be removed once empoa dependency is removed -->
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
