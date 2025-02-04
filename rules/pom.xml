@@ -20,6 +20,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency> <!-- needed when running in quarkus -->
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
