@@ -1,0 +1,30 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationProblemJson(ViolationReport oas, ResponseDefinition response){
+    oas.addViolation("[err-problem]", "A " + response.getStatusCode() + " response should not have a media-type of application/problem+json",
+      response);
+}
+
+rule "application/problem+json not allowed in 1xx, 2xx and 3xx responses"
+  when
+    $response: ResponseDefinition( definitionType == DefinitionType.INLINE )
+    String( startsWith("1") || startsWith("2") || startsWith("3") ) from $response.statusCode
+    ResponseDefinition($mediaType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response.getModel())
+    eval( ApiFunctions.isMediaTypeIncluded($mediaType, Set.of("application/problem+json")) )
+  then
+    violationProblemJson(oas, $response);
+end

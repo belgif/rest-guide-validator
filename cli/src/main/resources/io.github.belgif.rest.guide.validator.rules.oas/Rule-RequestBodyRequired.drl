@@ -1,0 +1,21 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.model.RequestBodyDefinition
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+
+
+function void violationRequestBodyRequired(ViolationReport oas, RequestBodyDefinition requestBody){
+    oas.addViolation("[reqBodyReq]",
+    "The 'required' property for this requestBody is not explicitly set. It defaults to false which may not be intended. Please review and set the 'required' property explicitly.", null, requestBody,
+    ViolationLevel.RECOMMENDED);
+}
+
+rule "requestBody is not set as required"
+    when
+        $requestBody: RequestBodyDefinition(/model[required == null && ref == null])
+    then
+        violationRequestBodyRequired(oas, $requestBody);
+end

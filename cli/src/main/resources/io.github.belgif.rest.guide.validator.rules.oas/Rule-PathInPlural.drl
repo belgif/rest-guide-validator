@@ -1,0 +1,45 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import java.util.function.Predicate
+import org.eclipse.microprofile.openapi.models.media.Schema
+import io.swagger.annotations.ApiResponse
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+
+function void pluralViolation(ViolationReport oas, PathDefinition path){
+    oas.addViolation("[col-name]",
+           		 "A plural noun SHOULD be used for collection names. ",
+           		 null,
+           		 path,
+           		 ViolationLevel.RECOMMENDED);
+}
+
+function boolean hasCollectionResponse(OperationDefinition operation, ParserResult parserResult) {
+    if (operation.getModel().getResponses().hasAPIResponse("200")) {
+        APIResponse response = parserResult.resolve(operation.getModel().getResponses().getAPIResponse("200")).getModel();
+        if (response.getContent().hasMediaType("application/json")) {
+            return ApiFunctions.schemaMeetsCondition(response.getContent().getMediaType("application/json").getSchema(), parserResult, ApiFunctions.getCollectionResponseCondition(parserResult));
+        }
+    }
+    return false;
+}
+
+rule "Rule-PathInPlural"
+    when
+        $path: PathDefinition(directPath == true, $pathName: identifier)
+        PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
+        $operationDefinition: OperationDefinition() from parserResult.resolve($operation)
+        eval( hasCollectionResponse($operationDefinition, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult) )
+        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.endsWith("/history") ) from $pathName
+    then
+        pluralViolation(oas, $path);
+end

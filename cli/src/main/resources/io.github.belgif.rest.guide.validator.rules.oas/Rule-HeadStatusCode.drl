@@ -1,0 +1,54 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationHead(ViolationReport oas, OperationDefinition operation, String code){
+    oas.addViolation("[stat-codes]", "HEAD operation should not have this status code", "[statuscode: " + code + "]",
+                     operation);
+}
+
+rule "Head Status Code 201 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.HEAD)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "201"]) from $operation
+	then
+        violationHead(oas, $operation, "201");
+end
+rule "Head Status Code 202 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.HEAD)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "202"]) from $operation
+	then
+        violationHead(oas, $operation, "202");
+end
+rule "Head Status Code 409 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.HEAD)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "409"]) from $operation
+	then
+        violationHead(oas, $operation, "409");
+end
+rule "Head Status Code 412 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.HEAD)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "412"]) from $operation
+	then
+        violationHead(oas, $operation, "412");
+end
+rule "Head Status Code 413 v2"
+	when
+		$operation: OperationDefinition( method == HttpMethod.HEAD)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "413"]) from $operation
+	then
+        violationHead(oas, $operation, "413");
+end

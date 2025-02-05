@@ -1,0 +1,31 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import java.util.Set;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.model.MediaTypeDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+
+
+function Set includeContentTypes() {
+  return Set.of("application/json", "multipart/*");
+}
+
+function void violationJsonObjectAsTopLevelStructure(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
+  oas.addViolation("[evo-object]",
+    "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility. ",
+    mediaTypeDefinition);
+}
+
+rule "[evo-object] JSON object as top level structure"
+  when
+    $mediaTypeDefinition: MediaTypeDefinition()
+    eval(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includeContentTypes()))
+    MediaTypeDefinition($schema: /model/schema) from $mediaTypeDefinition
+    eval( ApiFunctions.isSchemaOfType($schema, SchemaType.OBJECT, parserResult) == false )
+  then
+    violationJsonObjectAsTopLevelStructure(oas, $mediaTypeDefinition);
+end

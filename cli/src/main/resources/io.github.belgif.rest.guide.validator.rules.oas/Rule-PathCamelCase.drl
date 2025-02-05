@@ -1,0 +1,61 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import java.util.Set;
+import java.util.List;
+import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+
+function void violationPath(ViolationReport oas, PathDefinition path){
+    oas.addViolation("[uri-notat]",
+           		 "Path segments SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
+           		 path);
+}
+
+function void violationPathParam(ViolationReport oas, ParameterDefinition parameterDefinition){
+  oas.addViolation("[path-param]",
+    "Path parameters SHOULD use lowerCamelCase notation.",
+    parameterDefinition);
+}
+
+function void violationQueryParam(ViolationReport oas, ParameterDefinition parameterDefinition){
+    oas.addViolation("[uri-notat]",
+           		 "Query parameters SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
+           		 parameterDefinition);
+}
+
+rule "Path CamelCase"
+	when
+        $path: PathDefinition(directPath == true, $pathString: identifier )
+        String(!this.endsWith("/doc/openapi.json") && !this.endsWith("/doc/openapi.yaml")) from $pathString
+        String($pathSegmentList: this.split("/")) from $pathString
+        $pathSegment: String( !this.equals("") && !this.startsWith("{") && !this.endsWith("}")) from $pathSegmentList
+        eval( !ApiFunctions.isLowerCamelCase($pathSegment) )
+    then
+        violationPath(oas, $path);
+end
+
+rule "Path Parameter CamelCase"
+  when
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.PATH)) from $in
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
+    eval( !ApiFunctions.isLowerCamelCase($parameterName) )
+  then
+    violationPathParam(oas, $parameterDefinition);
+end
+
+rule "Query Parameter lowerCamelCase with extra characters"
+  when
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.QUERY)) from $in
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
+    eval( !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_")) )
+  then
+    violationQueryParam(oas, $parameterDefinition);
+end

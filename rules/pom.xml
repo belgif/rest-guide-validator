@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>belgif-rest-guide-validator-rules</artifactId>
-    <packaging>kjar</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -36,10 +36,11 @@
             <artifactId>drools-engine</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-xml-support</artifactId>
-        </dependency>
+        <!-- not needed for quarkus -->
+        <!--        <dependency>-->
+<!--            <groupId>org.drools</groupId>-->
+<!--            <artifactId>drools-xml-support</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -48,14 +49,16 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.kie</groupId>
-                <artifactId>kie-maven-plugin</artifactId>
-                <version>${drools.version}</version>
-                <extensions>true</extensions>
-            </plugin>
+<!--            <plugin> -->
+<!--                &lt;!&ndash; not needed for quarkus &ndash;&gt;-->
+<!--                <groupId>org.kie</groupId>-->
+<!--                <artifactId>kie-maven-plugin</artifactId>-->
+<!--                <version>${drools.version}</version>-->
+<!--                <extensions>true</extensions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 

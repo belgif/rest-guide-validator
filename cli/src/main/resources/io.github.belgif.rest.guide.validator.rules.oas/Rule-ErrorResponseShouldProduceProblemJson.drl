@@ -1,0 +1,38 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.Operation;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.eclipse.microprofile.openapi.models.media.Content;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import java.util.Set;
+
+
+function void violationErrorResponseWrongMediaType(ViolationReport oas, OperationDefinition operation, ResponseDefinition response){
+  oas.addViolation("[err-problem]",
+    "Each error response of each operation SHOULD have a media type \"application/problem+json\"",
+    "[Operation: " + operation.getIdentifier() + "]",
+    response);
+}
+
+rule "Error Response with problem+json media type is missing"
+  when
+    $operationDefinition: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
+    OperationDefinition($statusCode: /model/responses/APIResponses/keySet#String) from $operationDefinition
+    String( this.startsWith("4") || this.startsWith("5") || this == "default" ) from $statusCode
+    $response: APIResponse() from $operationDefinition.getModel().getResponses().getAPIResponse($statusCode)
+    not(APIResponse(/content/mediaTypes[keySet contains "application/problem+json"]) from $response)
+    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
+    eval( !("GET /health".equals($operationDefinition.getIdentifier()) && "503".equals($statusCode)) )
+  then
+    violationErrorResponseWrongMediaType(oas, $operationDefinition, $responseDefinition);
+end
