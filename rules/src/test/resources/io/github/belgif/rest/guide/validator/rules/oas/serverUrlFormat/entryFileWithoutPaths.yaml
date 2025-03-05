@@ -1,0 +1,12 @@
+openapi: 3.0.1
+info:
+  title: aFileWithoutPathsConfigured
+  version: "1.0"
+paths: {}
+components:
+  schemas:
+    MySchema:
+      type: object
+      properties:
+        myProperty:
+          $ref: 'referencedFileWithPath.yaml#/components/schemas/MyOtherSchema'

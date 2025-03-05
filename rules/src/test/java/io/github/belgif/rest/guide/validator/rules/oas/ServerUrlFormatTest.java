@@ -56,4 +56,9 @@ import org.junit.jupiter.api.Test;
      void testViolatingAbsentVersionBasepath() {
         assertViolations(callRules("violatingAbsentVersionBasepath.yaml"));
     }
+
+    @Test
+     void testEntryFileWithoutPathsReferencingFileWithPath() {
+        assertNoViolations(callRules("entryFileWithoutPaths.yaml"));
+    }
 }

@@ -1,0 +1,20 @@
+openapi: 3.0.1
+info:
+  title: referencedFileWithPath
+  version: "1.0"
+paths:
+  /myFirstPath:
+    get:
+      summary: yes
+      operationId: yes
+      responses:
+        default:
+          description: default
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    MyOtherSchema:
+      type: string
