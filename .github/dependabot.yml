@@ -10,6 +10,10 @@ updates:
       maven:
         patterns:
           - "*"
+        exclude-patterns: # belgif-rest-guide-validator-maven-plugin is compiled against the oldest Maven version it supports
+          - "org.apache.maven:maven-core"
+          - "org.apache.maven:maven-model"
+          - "org.apache.maven:maven-plugin-api"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
