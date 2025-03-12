@@ -1,0 +1,40 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import java.util.Set;
+
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationPatch(ViolationReport oas, OperationDefinition operation, String code){
+    oas.addViolation("[stat-codes]", "PATCH operation should not have this status code", "[statuscode: " + code + "]",
+                     operation);
+}
+
+rule "Patch Status Code 201 v3"
+	when
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "201"]) from $operation
+	then
+        violationPatch(oas, $operation, "201");
+end
+rule "Patch Status Code 202 v3"
+	when
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "202"]) from $operation
+	then
+        violationPatch(oas, $operation, "202");
+end
+rule "Patch Status Code 304 v3"
+	when
+		$operation: OperationDefinition( method == HttpMethod.PATCH)
+		OperationDefinition($response: /model/responses/APIResponses[keySet contains "304"]) from $operation
+	then
+        violationPatch(oas, $operation, "304");
+end

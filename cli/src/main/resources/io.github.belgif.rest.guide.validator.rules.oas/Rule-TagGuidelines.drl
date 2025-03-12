@@ -1,0 +1,71 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+import org.eclipse.microprofile.openapi.models.tags.Tag;
+import org.eclipse.microprofile.openapi.models.Operation;
+import java.util.List;
+
+function void operationShouldNotHaveMoreThanOneTagViolation(ViolationReport oas, OperationDefinition operation) {
+    oas.addViolation("[oas-tags]",
+           		 "An operation SHOULD NOT have more than one tag.",
+           		 operation);
+}
+
+function void eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(ViolationReport oas, OperationDefinition operation, String tag) {
+    oas.addViolation("[oas-tags]",
+           		 "Each tag used on an operation SHOULD also be declared in the top level tags list of the OpenAPI document, with an optional description.", "Tag: <<" + tag + ">> used but not declared.",
+           		 operation);
+}
+
+function void nameOfTagShouldStartWithCapitalLetterViolation(ViolationReport oas, OperationDefinition operation, String tag) {
+    oas.addViolation("[oas-tags]",
+           		 "The name of a tag SHOULD start with a capital letter.", "Tag: <<" + tag + ">>",
+           		 operation);
+}
+
+function boolean isTagDeclaredInTopLevelTagsList(String tag, ParserResult parserResult) {
+        return parserResult.getSrc().values().stream()
+                        .map(SourceDefinition::getOpenApi)
+                        .filter(openAPI -> openAPI.getTags() != null)
+                        .flatMap(openAPI -> openAPI.getTags().stream().map(Tag::getName))
+                        .anyMatch(name -> name.equals(tag));
+}
+
+rule "Rule-Tag Guidelines an operation should not have more than one tag"
+    when
+        $operationDefinition: OperationDefinition($operation: /model)
+        Operation(tags != null && tags.size() > 1) from $operation
+    then
+        operationShouldNotHaveMoreThanOneTagViolation(oas, $operationDefinition);
+end
+
+rule "Rule-Tag Guidelines each tag should be declared in the top level tags list"
+    when
+        $path: PathDefinition(directPath == true, $operation: /model/operations/entrySet/value#Operation)
+        $operationDefinition: OperationDefinition($tag: /model/tags#String) from parserResult.resolve($operation)
+        eval( !isTagDeclaredInTopLevelTagsList($tag, parserResult) )
+    then
+        eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(oas, $operationDefinition, $tag);
+end
+
+rule "Rule-Tag Guidelines name of tag should start with a capital letter"
+    when
+        $operationDefinition: OperationDefinition($tag: /model/tags)
+        String(!this.isEmpty()) from $tag
+        eval( !Character.isUpperCase($tag.charAt(0)) )
+    then
+        nameOfTagShouldStartWithCapitalLetterViolation(oas, $operationDefinition, $tag);
+end

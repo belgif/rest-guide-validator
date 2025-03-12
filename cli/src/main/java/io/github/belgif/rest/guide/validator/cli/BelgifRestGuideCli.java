@@ -4,6 +4,7 @@ import io.github.belgif.rest.guide.validator.cli.options.ValidatorOptions;
 import io.github.belgif.rest.guide.validator.cli.util.VersionProvider;
 import io.github.belgif.rest.guide.validator.runner.ValidationRunner;
 import io.github.belgif.rest.guide.validator.runner.output.OutputType;
+import io.quarkus.picocli.runtime.annotations.TopCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-
+@TopCommand //annotation shouldn't be required according to doc, but cannot start quarkus-run else
 @CommandLine.Command(name = "belgif-validate-openapi",
         description = "Validate if an OpenAPI document conforms to the guidelines in the Belgif REST guide.",
         footerHeading = "For additional information: ",
