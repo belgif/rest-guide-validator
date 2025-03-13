@@ -26,7 +26,7 @@ function void pluralViolation(ViolationReport oas, PathDefinition path){
 function boolean hasCollectionResponse(OperationDefinition operation, ParserResult parserResult) {
     if (operation.getModel().getResponses().hasAPIResponse("200")) {
         APIResponse response = parserResult.resolve(operation.getModel().getResponses().getAPIResponse("200")).getModel();
-        if (response.getContent().hasMediaType("application/json")) {
+        if (response.getContent() != null && response.getContent().hasMediaType("application/json")) {
             return ApiFunctions.schemaMeetsCondition(response.getContent().getMediaType("application/json").getSchema(), parserResult, ApiFunctions.getCollectionResponseCondition(parserResult));
         }
     }

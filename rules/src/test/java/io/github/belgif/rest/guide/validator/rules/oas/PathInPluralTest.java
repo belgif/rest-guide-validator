@@ -30,4 +30,9 @@ class PathInPluralTest extends AbstractOasRuleTest {
     void testReferencesAreFollowed() {
         assertNoViolations(callRules("referencesFollowed.yaml"));
     }
+
+    @Test
+    void testResponseWithoutPayload() {
+        assertNoViolations(callRules("responseWithoutPayload.yaml"));
+    }
 }
