@@ -138,10 +138,6 @@ public class Parser {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
             result.src = readOpenApiFiles(openApiFile);
-//            if (getOasVersion(result.src.get(openApiFile.getAbsolutePath())) == 2) {
-//                violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2 / Swagger are not supported. Only OpenAPI 3.0 documents are supported");
-//                return null;
-//            }
             if (!isOasVersionSupported(result.src.values(), violationReport)) {
                 return null;
             }
