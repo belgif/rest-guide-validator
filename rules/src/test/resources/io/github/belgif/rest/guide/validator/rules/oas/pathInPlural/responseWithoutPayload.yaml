@@ -1,0 +1,18 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+paths:
+  /myOperation/{stringParam}:
+    get:
+      description: test operation
+      operationId: getResource
+      parameters:
+        - in: path
+          name: stringParam
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: success
