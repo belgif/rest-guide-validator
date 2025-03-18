@@ -6,14 +6,14 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore: # belgif-rest-guide-validator-maven-plugin is compiled against the oldest Maven version it supports
+      - dependency-name: "org.apache.maven:maven-core"
+      - dependency-name: "org.apache.maven:maven-model"
+      - dependency-name: "org.apache.maven:maven-plugin-api"
     groups:
       maven:
         patterns:
           - "*"
-        exclude-patterns: # belgif-rest-guide-validator-maven-plugin is compiled against the oldest Maven version it supports
-          - "org.apache.maven:maven-core"
-          - "org.apache.maven:maven-model"
-          - "org.apache.maven:maven-plugin-api"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
