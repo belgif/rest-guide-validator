@@ -1,0 +1,20 @@
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore: # belgif-rest-guide-validator-maven-plugin is compiled against the oldest Maven version it supports
+      - dependency-name: "org.apache.maven:maven-core"
+      - dependency-name: "org.apache.maven:maven-model"
+      - dependency-name: "org.apache.maven:maven-plugin-api"
+    groups:
+      maven:
+        patterns:
+          - "*"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
