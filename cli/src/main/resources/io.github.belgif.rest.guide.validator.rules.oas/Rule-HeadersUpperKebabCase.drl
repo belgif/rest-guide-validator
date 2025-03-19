@@ -1,0 +1,47 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import java.util.Set;
+import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In
+import io.github.belgif.rest.guide.validator.core.parser.Parser;
+
+function Set excludeHeaders() {
+  return Set.of("ETag");
+}
+
+function void violationRequestHeaderParam(ViolationReport oas, ParameterDefinition parameterDefinition, String headerName){
+  oas.addViolation("[hdr-case]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ", "["+headerName+"]",
+    parameterDefinition);
+}
+
+function void violationResponseHeaderParam(ViolationReport oas, ResponseDefinition headerDefinition, String headerName){
+  oas.addViolation("[hdr-case]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.", "["+headerName+"]",
+    headerDefinition);
+}
+
+rule "RequestHeader parameter should be Upper-Kebab-Case"
+  when
+    $parameterDefinition: ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.HEADER)) from $in
+    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
+    eval( ApiFunctions.isNotInSet($parameterName, excludeHeaders()) )
+    eval( !ApiFunctions.isUpperKebabCase($parameterName) )
+  then
+    violationRequestHeaderParam(oas, $parameterDefinition, $parameterName);
+end
+
+rule "ResponseHeader should be Upper-Kebab-Case"
+  when
+    $response: ResponseDefinition($headerName: /model/headers/keySet#String)
+    eval( ApiFunctions.isNotInSet($headerName, excludeHeaders()) )
+    eval( !ApiFunctions.isUpperKebabCase($headerName) )
+  then
+    violationResponseHeaderParam(oas, $response, $headerName);
+end

@@ -29,6 +29,8 @@ public class ValidationRunner {
     @NonNull
     private final List<File> files;
 
+    private final OpenApiValidator validator = new OpenApiValidator();
+
     /**
      * Files that should not be validated.
      */
@@ -49,9 +51,9 @@ public class ValidationRunner {
         return executeRules(filesToProcess, this.excludedFiles, outputProcessors);
     }
 
-    private static boolean executeRules(List<File> filesToProcess, List<String> excludedFiles, Set<OutputProcessor> outputProcessors) {
+    private boolean executeRules(List<File> filesToProcess, List<String> excludedFiles, Set<OutputProcessor> outputProcessors) {
         var isValid = new AtomicBoolean(true);
-        var violationReports = filesToProcess.stream().map(file -> OpenApiValidator.callRules(file, excludedFiles)).toList();
+        var violationReports = filesToProcess.stream().map(file -> this.validator.callRules(file, excludedFiles)).toList();
         isValid.set(violationReports.stream().allMatch(ViolationReport::isOasValid));
         outputProcessors.forEach(processor -> processor.process(new ViolationReport(violationReports)));
         return isValid.get();

@@ -11,29 +11,19 @@
     </parent>
 
     <artifactId>belgif-rest-guide-validator-rules</artifactId>
-    <packaging>kjar</packaging>
-
-    <properties>
-        <drools.version>10.0.0</drools.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.drools</groupId>
-                <artifactId>drools-bom</artifactId>
-                <version>${drools.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>
             <artifactId>belgif-rest-guide-validator-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency> <!-- needed when running in quarkus -->
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -46,10 +36,11 @@
             <artifactId>drools-engine</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-xml-support</artifactId>
-        </dependency>
+        <!-- not needed for quarkus -->
+        <!--        <dependency>-->
+<!--            <groupId>org.drools</groupId>-->
+<!--            <artifactId>drools-xml-support</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -58,14 +49,16 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.kie</groupId>
-                <artifactId>kie-maven-plugin</artifactId>
-                <version>${drools.version}</version>
-                <extensions>true</extensions>
-            </plugin>
+<!--            <plugin> -->
+<!--                &lt;!&ndash; not needed for quarkus &ndash;&gt;-->
+<!--                <groupId>org.kie</groupId>-->
+<!--                <artifactId>kie-maven-plugin</artifactId>-->
+<!--                <version>${drools.version}</version>-->
+<!--                <extensions>true</extensions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
