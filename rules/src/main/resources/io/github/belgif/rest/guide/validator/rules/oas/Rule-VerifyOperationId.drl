@@ -1,0 +1,93 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+//import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import java.util.Set;
+import java.util.List;
+import java.util.Map;
+//import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+//import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import org.eclipse.microprofile.openapi.models.Operation
+import java.util.HashMap
+import java.util.HashSet;
+//import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+
+function String printAllJsonPointers(List<OperationDefinition> operations) {
+    StringBuilder sb = new StringBuilder();
+    for (Object object : operations) {
+      OperationDefinition operation = (OperationDefinition) object;
+      sb.append(", ").append(operation.getPrintableJsonPointer());
+    }
+    String pointers = sb.toString();
+    pointers = pointers.substring(2);
+    return "<<" + pointers + ">>";
+}
+
+function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
+    Map<String, List<OperationDefinition>> operationIds = new HashMap<>();
+    for (Object object : operations) {
+      OperationDefinition def = (OperationDefinition) object;
+      String operationId = def.getModel().getOperationId();
+      if (operationId != null) {
+        if (operationIds.containsKey(operationId)) {
+          operationIds.get(operationId).add(def);
+        } else {
+          operationIds.put(operationId, List.of(def));
+        }
+      }
+    }
+    return new HashSet<>(operationIds.values());
+}
+
+function void violationOperatioIdNotUnique(ViolationReport oas, List<OperationDefinition> operations){
+    oas.addViolation("[openapi-opid]",
+           		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+           		 "OperationId not unique, present in: " + printAllJsonPointers(operations),
+           		 (OperationDefinition) operations.get(0));
+}
+
+function void violationOperationIdNotSpecified(ViolationReport oas, OperationDefinition operation) {
+    oas.addViolation("[openapi-opid]",
+               		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "OperationId not specified.",
+               		 operation);
+}
+
+function void violationOperationIdNotLowerCamelCase(ViolationReport oas, OperationDefinition operation) {
+    oas.addViolation("[openapi-opid]",
+               		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "OperationId not lowerCamelCase: " + operation.getModel().getOperationId(),
+               		 operation);
+}
+
+rule "OperationId Not Specified"
+	when
+        $operationDef: OperationDefinition($operation: /model)
+        eval( $operation.getOperationId() == null || $operation.getOperationId().isEmpty() )
+    then
+        violationOperationIdNotSpecified(oas, $operationDef);
+end
+
+rule "OperationId Not lowerCamelCase"
+  when
+    $operationDef: OperationDefinition($operationId: /model/operationId)
+    eval( !ApiFunctions.isLowerCamelCase($operationId) )
+  then
+    violationOperationIdNotLowerCamelCase(oas, $operationDef);
+end
+
+//rule "OperationId Not Unique"
+//  when
+//    eval( $operationSet: findDuplicateOperationIds(parserResult.getOperations) )
+//    eval( !$operationSet.isEmpty() )
+//  then
+//    for( Object object : $operationSet ) {
+//      List<OperationDefinition> operationDefinitions = (List<OperationDefinition>) object;
+//      violationOperatioIdNotUnique(oas, operationDefinitions);
+//    }
+//end
