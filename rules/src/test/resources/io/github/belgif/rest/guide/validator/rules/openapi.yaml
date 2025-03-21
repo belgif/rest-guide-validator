@@ -25,6 +25,7 @@ paths:
                 $ref: "#/components/schemas/Error"
     post:
       summary: post where everything is good
+      operationId: alsoVeryGoodButItsPost
       requestBody:
         content:
           application/json:
