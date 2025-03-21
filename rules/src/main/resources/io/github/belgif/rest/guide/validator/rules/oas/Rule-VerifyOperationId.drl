@@ -1,6 +1,5 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-//import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
@@ -9,19 +8,15 @@ global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
-//import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
-//import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.Operation
 import java.util.HashMap
 import java.util.HashSet
 import java.util.ArrayList;
-//import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 
 function String printAllJsonPointers(List<OperationDefinition> operations) {
     StringBuilder sb = new StringBuilder();
-    for (Object object : operations) {
-      OperationDefinition operation = (OperationDefinition) object;
+    for (OperationDefinition operation : operations) {
       sb.append(", ").append(operation.getPrintableJsonPointer());
     }
     String pointers = sb.toString();
@@ -31,8 +26,7 @@ function String printAllJsonPointers(List<OperationDefinition> operations) {
 
 function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
     Map<String, List<OperationDefinition>> operationIds = new HashMap<>();
-    for (Object object : operations) {
-      OperationDefinition def = (OperationDefinition) object;
+    for (OperationDefinition def : operations) {
       String operationId = def.getModel().getOperationId();
       if (operationId != null) {
         if (operationIds.containsKey(operationId)) {
@@ -89,5 +83,5 @@ rule "OperationId Not Unique"
     $operations: List() from findDuplicateOperationIds(parserResult.getOperations)
     eval( $operations.size() > 1 )
   then
-  violationOperationIdNotUnique(oas, $operations);
+    violationOperationIdNotUnique(oas, $operations);
 end
