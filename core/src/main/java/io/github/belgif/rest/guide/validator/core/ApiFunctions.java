@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.core;
 
-import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
-import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -255,6 +254,58 @@ public class ApiFunctions {
             return true;
         }
         return !set.contains(string);
+    }
+
+    public static Set<OperationDefinition> findCallingOperations(SchemaDefinition schemaDefinition, boolean requestBodiesOnly) {
+        Set<OpenApiDefinition<?>> definitionsUnderPaths = getReversedReferencedDefinitionsUnderPath(schemaDefinition);
+
+        return definitionsUnderPaths.stream().map(def -> findOperationDefinition(def, requestBodiesOnly)).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    private static OperationDefinition findOperationDefinition(OpenApiDefinition<?> def, boolean requestBodiesOnly) {
+        List<OpenApiDefinition<?>> definitions = new ArrayList<>();
+        definitions.add(def);
+        OperationDefinition operation = null;
+        while (operation == null) {
+            OpenApiDefinition<?> definition = definitions.get(definitions.size() - 1).getParent();
+            if (definition == null) {
+                break;
+            }
+            if (definition instanceof OperationDefinition) {
+                operation = (OperationDefinition) definition;
+            } else {
+                definitions.add(definition);
+            }
+        }
+
+        if (requestBodiesOnly && definitions.stream().noneMatch(RequestBodyDefinition.class::isInstance)) {
+            return null;
+        }
+        return operation;
+    }
+
+    private static boolean isDefUnderPaths(OpenApiDefinition<?> schema) {
+        if (schema.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
+            return schema.getTopLevelParent() instanceof PathsDefinition;
+        }
+        return false;
+    }
+
+    private static Set<OpenApiDefinition<?>> getReversedReferencedDefinitionsUnderPath(OpenApiDefinition<?> schema) {
+        if (isDefUnderPaths(schema)) {
+            return Set.of(schema);
+        }
+        OpenApiDefinition<?> def;
+        if (schema.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
+            def = schema.getTopLevelParent();
+        } else {
+            def = schema;
+        }
+
+        Set<OpenApiDefinition<?>> definitions = new HashSet<>();
+        def.getReferencedBy().forEach(ref ->
+                definitions.addAll(getReversedReferencedDefinitionsUnderPath(ref)));
+        return definitions;
     }
 
 }

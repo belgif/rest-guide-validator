@@ -31,7 +31,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/SomethingWithEnum'
+                type: object
 components:
   schemas:
     SortingEnum:

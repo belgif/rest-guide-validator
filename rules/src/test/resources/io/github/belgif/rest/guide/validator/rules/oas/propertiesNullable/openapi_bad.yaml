@@ -1,0 +1,34 @@
+openapi: 3.0.1
+info:
+  title: PropertiesNullable
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myFirstPath:
+    get:
+      description: description
+      operationId: getMyFirstPath
+      responses:
+        default:
+          description: This is a description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyObject'
+components:
+  schemas:
+    MyObject:
+      description: thisObject
+      type: object
+      properties:
+        innerObject:
+          type: object
+          properties:
+            thing:
+              nullable: true
+              type: string
+            otherThing:
+              type: int
+        objectId:
+          type: int

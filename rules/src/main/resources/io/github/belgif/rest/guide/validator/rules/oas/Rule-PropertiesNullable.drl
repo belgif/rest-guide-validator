@@ -1,0 +1,49 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import java.util.Set
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition
+import org.eclipse.microprofile.openapi.models.PathItem;
+
+function void violationPropertiesNullable(ViolationReport oas, SchemaDefinition schema){
+        oas.addViolation("[jsn-null]",
+                         "nullable: true shouldn't be set on schema properties unless for schemas used in merge patch operations ([doc-patch]).",
+                         schema);
+}
+
+function boolean hasPatchOrUpdateInTopLevelComponentName(SchemaDefinition schema) {
+  if (schema.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
+    OpenApiDefinition<?> def = schema.getTopLevelParent();
+    if (def instanceof SchemaDefinition) {
+      schema = (SchemaDefinition) def;
+    } else {
+      return false;
+    }
+  }
+  return schema.getIdentifier().toLowerCase().contains("patch") || schema.getIdentifier().toLowerCase().contains("update");
+}
+
+function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
+  Set<OperationDefinition> operations = ApiFunctions.findCallingOperations(schema, true);
+  for (OperationDefinition operation : operations) {
+    if (operation.getMethod().equals(PathItem.HttpMethod.PATCH)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+rule "Rule Properties Nullable"
+   	when
+      $schema: SchemaDefinition(model.nullable == true)
+      eval( !hasPatchOrUpdateInTopLevelComponentName($schema) && !schemaUsedInPatchOperation($schema) )
+    then
+      violationPropertiesNullable(oas, $schema);
+end

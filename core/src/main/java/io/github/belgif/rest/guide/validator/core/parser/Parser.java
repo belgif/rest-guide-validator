@@ -95,7 +95,7 @@ public class Parser {
                     JsonPointer pointer = buildJsonPointerFromRef(ref);
                     return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
                                     def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
-                            .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
+                            .findFirst().orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
                 }
             }
 
@@ -103,7 +103,7 @@ public class Parser {
             if (modelDefinitionMap.containsKey(model)) {
                 return (OpenApiDefinition<T>) modelDefinitionMap.get(model);
             } else {
-                throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
+                throw new RuntimeException("[Parsing error] Could not find match of " + model.toString());
             }
         }
 
@@ -120,6 +120,14 @@ public class Parser {
             }
             Path basePath = java.nio.file.Paths.get(modelBaseFile.getParent());
             return resolveRelativeFile(fileRef, basePath);
+        }
+
+        public void populateBackReferences() {
+            for (OpenApiDefinition<?> def : allDefinitions) {
+                if (def.getModel() instanceof Reference && ((Reference) def.getModel()).getRef() != null) {
+                    resolve(def.getModel()).addBackReference(def);
+                }
+            }
         }
 
         /**
@@ -152,13 +160,15 @@ public class Parser {
             }
             verifySecurityRequirements(result);
             result.assembleAllDefinitions();
-            buildAllPathWithLineRange(result);
-            if (result.isParsingValid()) {
-                return result;
+            validateAllReferences(result);
+            if (!result.isParsingValid()) {
+                // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
+                log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+                throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
-            log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
-            throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+            result.populateBackReferences();
+            buildAllPathWithLineRange(result);
+            return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
@@ -185,6 +195,19 @@ public class Parser {
                 }
             }
         });
+    }
+
+    private void validateAllReferences(ParserResult result) {
+        for (OpenApiDefinition<?> def : result.allDefinitions) {
+            if (def.getModel() instanceof Reference && ((Reference) def.getModel()).getRef() != null) {
+                try {
+                    result.resolve(def.getModel()).addBackReference(def);
+                } catch (RuntimeException e) {
+                    log.error(e.getMessage());
+                    result.setParsingValid(false);
+                }
+            }
+        }
     }
 
     /**

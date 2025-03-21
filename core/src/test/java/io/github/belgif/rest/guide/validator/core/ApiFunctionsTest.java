@@ -1,5 +1,6 @@
 package io.github.belgif.rest.guide.validator.core;
 
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -9,9 +10,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class ApiFunctionsTest {
@@ -75,6 +76,25 @@ class ApiFunctionsTest {
         var logos = defs.stream().filter(definition -> "/logos".equals(definition.getIdentifier())).findAny();
         assertTrue(logos.isPresent());
         assertTrue(ApiFunctions.existsPathWithPathParamAfter(logos.get().getIdentifier(), result));
+    }
+
+    @Test
+    void findCallingOperationsTest() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(this.getClass().getResource("../rules/findCallingOperations.yaml")).getFile());
+        var result = new Parser(file).parse(oas);
+
+        var innerSchema = result.getSchemas().stream().filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals("MyChildObject")).findAny().get();
+        Set<OperationDefinition> operations = ApiFunctions.findCallingOperations(innerSchema, false);
+        assertEquals(3, operations.size());
+        operations = ApiFunctions.findCallingOperations(innerSchema, true);
+        assertEquals(1, operations.size());
+
+        var paramSchema = result.getSchemas().stream().filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals("MyParamObject")).findAny().get();
+        operations = ApiFunctions.findCallingOperations(paramSchema, false);
+        assertEquals(1, operations.size());
+        var operation = operations.iterator().next();
+        assertEquals("myPath", operation.getModel().getOperationId());
     }
 
 }
