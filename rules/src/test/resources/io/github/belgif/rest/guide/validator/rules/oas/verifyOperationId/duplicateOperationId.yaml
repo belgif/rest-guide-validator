@@ -9,10 +9,19 @@ paths:
     get:
       summary: A Path
       description: Nice path
-      operationId: getPath
+      operationId: thisOperation
       responses:
         '200':
           description: Very good 200
+          content:
+            application/json:
+              schema:
+                type: object
+    delete:
+      operationId: thisOperation
+      response:
+        default:
+          description: yes
           content:
             application/json:
               schema:

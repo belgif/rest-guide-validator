@@ -1,13 +1,13 @@
 openapi: 3.0.1
 info:
-  title: valuesOfRequiredShouldBeDefinedAsProperties
+  title: verifyOperationId
   version: '1.0'
 servers:
   - url: '/api/v1'
 paths:
   /myPath:
     get:
-      summary: This path is completely compliant with the guidelines
+      summary: A Path
       description: Nice path
       operationId: getPath
       responses:
@@ -17,32 +17,3 @@ paths:
             application/json:
               schema:
                 type: object
-
-components:
-  schemas:
-    MyCleanSchema:
-      type: object
-      required:
-        - secondProperty
-      properties:
-        firstProperty:
-          type: string
-          readOnly: true
-        secondProperty:
-          type: string
-
-    MySchema:
-      allOf:
-        - $ref: "#/components/schemas/MyChildSchema"
-        - oneOf:
-            - required: [ id ]
-            - required: [ secondaryId ]
-
-    MyChildSchema:
-      type: object
-      properties:
-        id:
-          type: string
-        secondaryId:
-          type: string
-          readOnly: true

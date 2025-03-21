@@ -9,7 +9,6 @@ paths:
     get:
       summary: A Path
       description: Nice path
-      operationId: getPath
       responses:
         '200':
           description: Very good 200

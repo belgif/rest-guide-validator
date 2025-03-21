@@ -14,7 +14,8 @@ import java.util.Map;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.Operation
 import java.util.HashMap
-import java.util.HashSet;
+import java.util.HashSet
+import java.util.ArrayList;
 //import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 
 function String printAllJsonPointers(List<OperationDefinition> operations) {
@@ -37,30 +38,32 @@ function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
         if (operationIds.containsKey(operationId)) {
           operationIds.get(operationId).add(def);
         } else {
-          operationIds.put(operationId, List.of(def));
+          List<OperationDefinition> list = new ArrayList<>();
+          list.add(def);
+          operationIds.put(operationId, list);
         }
       }
     }
     return new HashSet<>(operationIds.values());
 }
 
-function void violationOperatioIdNotUnique(ViolationReport oas, List<OperationDefinition> operations){
+function void violationOperationIdNotUnique(ViolationReport oas, List<OperationDefinition> operations){
     oas.addViolation("[openapi-opid]",
-           		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+           		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
            		 "OperationId not unique, present in: " + printAllJsonPointers(operations),
            		 (OperationDefinition) operations.get(0));
 }
 
 function void violationOperationIdNotSpecified(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[openapi-opid]",
-               		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
                		 "OperationId not specified.",
                		 operation);
 }
 
 function void violationOperationIdNotLowerCamelCase(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[openapi-opid]",
-               		 "MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
                		 "OperationId not lowerCamelCase: " + operation.getModel().getOperationId(),
                		 operation);
 }
@@ -81,13 +84,10 @@ rule "OperationId Not lowerCamelCase"
     violationOperationIdNotLowerCamelCase(oas, $operationDef);
 end
 
-//rule "OperationId Not Unique"
-//  when
-//    eval( $operationSet: findDuplicateOperationIds(parserResult.getOperations) )
-//    eval( !$operationSet.isEmpty() )
-//  then
-//    for( Object object : $operationSet ) {
-//      List<OperationDefinition> operationDefinitions = (List<OperationDefinition>) object;
-//      violationOperatioIdNotUnique(oas, operationDefinitions);
-//    }
-//end
+rule "OperationId Not Unique"
+  when
+    $operations: List() from findDuplicateOperationIds(parserResult.getOperations)
+    eval( $operations.size() > 1 )
+  then
+  violationOperationIdNotUnique(oas, $operations);
+end
