@@ -263,7 +263,7 @@ public class ApiFunctions {
      */
     public static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly) {
         if (definition.getTopLevelParent() instanceof PathsDefinition) {
-            var operation = findOperationDefinition(definition, searchRequestBodiesOnly);
+            var operation = findParentOperationDefinition(definition, searchRequestBodiesOnly);
             return operation != null ? Set.of(operation) : Set.of();
         }
 
@@ -272,26 +272,19 @@ public class ApiFunctions {
                 .collect(Collectors.toSet());
     }
 
-    private static OperationDefinition findOperationDefinition(OpenApiDefinition<?> def, boolean searchRequestBodiesOnly) {
-        List<OpenApiDefinition<?>> definitions = new ArrayList<>();
-        definitions.add(def);
-        OperationDefinition operation = null;
-        while (operation == null) {
-            OpenApiDefinition<?> definition = definitions.get(definitions.size() - 1).getParent();
-            if (definition == null) {
-                break;
+    private static OperationDefinition findParentOperationDefinition(OpenApiDefinition<?> def, boolean searchRequestBodiesOnly) {
+        boolean inRequestBody = false;
+        OpenApiDefinition<?> parent = def.getParent();
+        while (parent != null) {
+            if (parent instanceof RequestBodyDefinition) {
+                inRequestBody = true;
             }
-            if (definition instanceof OperationDefinition) {
-                operation = (OperationDefinition) definition;
-            } else {
-                definitions.add(definition);
+            if (parent instanceof OperationDefinition) {
+                return (searchRequestBodiesOnly && !inRequestBody) ? null : (OperationDefinition) parent;
             }
+            parent = parent.getParent();
         }
-
-        if (searchRequestBodiesOnly && definitions.stream().noneMatch(RequestBodyDefinition.class::isInstance)) {
-            return null;
-        }
-        return operation;
+        return null;
     }
 
 }
