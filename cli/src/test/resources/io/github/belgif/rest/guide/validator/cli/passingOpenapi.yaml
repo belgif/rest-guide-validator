@@ -8,6 +8,7 @@ servers:
 paths:
   /myFirstPath:
     get:
+      operationId: myOperation
       responses:
         default:
           description: my response

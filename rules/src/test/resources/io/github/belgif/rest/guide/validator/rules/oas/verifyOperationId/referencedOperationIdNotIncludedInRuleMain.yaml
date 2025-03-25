@@ -1,0 +1,19 @@
+openapi: 3.0.1
+info:
+  title: verifyOperationId
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myPath:
+    get:
+      summary: A Path
+      description: Nice path
+      operationId: getPath
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                $ref: 'referencedOperationIdNotIncludedInRuleRef.yaml#/components/schemas/MySchema'
