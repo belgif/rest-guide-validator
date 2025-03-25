@@ -118,7 +118,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         return identifier == null ? parent.getEffectiveIdentifier() : identifier;
     }
 
-    public OpenApiDefinition<?> getTopLevelParent() {
+    public OpenApiDefinition<?> getTopLevelParent() { // CR you could return 'this' if toplevel (instead of NPE)
         var indirectParent = this.parent;
         while (indirectParent.definitionType == DefinitionType.INLINE) {
             indirectParent = indirectParent.getParent();

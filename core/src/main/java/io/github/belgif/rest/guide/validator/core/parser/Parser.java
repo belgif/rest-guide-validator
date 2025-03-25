@@ -103,7 +103,7 @@ public class Parser {
             if (modelDefinitionMap.containsKey(model)) {
                 return (OpenApiDefinition<T>) modelDefinitionMap.get(model);
             } else {
-                throw new RuntimeException("[Parsing error] Could not find match of " + model.toString());
+                throw new RuntimeException("[Parsing error] Could not find match of " + model.toString()); // CR: why is this a parsing error?
             }
         }
 
@@ -124,7 +124,7 @@ public class Parser {
 
         public void populateBackReferences() {
             for (OpenApiDefinition<?> def : allDefinitions) {
-                if (def.getModel() instanceof Reference && ((Reference) def.getModel()).getRef() != null) {
+                if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
                     resolve(def.getModel()).addBackReference(def);
                 }
             }
@@ -199,10 +199,10 @@ public class Parser {
 
     private void validateAllReferences(ParserResult result) {
         for (OpenApiDefinition<?> def : result.allDefinitions) {
-            if (def.getModel() instanceof Reference && ((Reference) def.getModel()).getRef() != null) {
+            if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
                 try {
-                    result.resolve(def.getModel()).addBackReference(def);
-                } catch (RuntimeException e) {
+                    result.resolve(def.getModel()).addBackReference(def); //CR: why add back reference here? Is't this already done in other method?
+                } catch (RuntimeException e) { // CR: catch RuntimeException is too broad, to only catch specific case. Maybe extract add a findReference from resolve
                     log.error(e.getMessage());
                     result.setParsingValid(false);
                 }
