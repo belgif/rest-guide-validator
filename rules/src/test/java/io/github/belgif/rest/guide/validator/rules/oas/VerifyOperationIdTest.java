@@ -33,4 +33,14 @@ class VerifyOperationIdTest extends AbstractOasRuleTest {
         assertErrorCount(1, violationReport);
         assertTrue(violationReport.getViolations().get(0).getMessage().contains("OperationId not unique, present in: "));
     }
+
+    @Test
+    void testDuplicateOperationIdInReferencedFileShouldBeIgnored() {
+       assertNoViolations(callRules("referencedOperationIdNotIncludedInRuleMain.yaml"));
+    }
+
+    @Test
+    void testDuplicateOperationIdInReferencedFile() {
+       assertErrorCount(1, callRules("referencedOperationIdShouldBeIncludedInRule.yaml"));
+    }
 }
