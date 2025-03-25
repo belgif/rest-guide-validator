@@ -31,7 +31,7 @@ function boolean hasPatchOrUpdateInTopLevelComponentName(SchemaDefinition schema
 }
 
 function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
-  Set<OperationDefinition> operations = ApiFunctions.findCallingOperations(schema, true);
+  Set<OperationDefinition> operations = ApiFunctions.findOperationsUsingDefinition(schema, true);
   for (OperationDefinition operation : operations) {
     if (operation.getMethod().equals(PathItem.HttpMethod.PATCH)) {
       return true;

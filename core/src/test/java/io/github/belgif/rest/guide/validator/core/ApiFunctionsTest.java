@@ -85,13 +85,13 @@ class ApiFunctionsTest {
         var result = new Parser(file).parse(oas);
 
         var innerSchema = result.getSchemas().stream().filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals("MyChildObject")).findAny().get();
-        Set<OperationDefinition> operations = ApiFunctions.findCallingOperations(innerSchema, false);
+        Set<OperationDefinition> operations = ApiFunctions.findOperationsUsingDefinition(innerSchema, false);
         assertEquals(3, operations.size());
-        operations = ApiFunctions.findCallingOperations(innerSchema, true);
+        operations = ApiFunctions.findOperationsUsingDefinition(innerSchema, true);
         assertEquals(1, operations.size());
 
         var paramSchema = result.getSchemas().stream().filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals("MyParamObject")).findAny().get();
-        operations = ApiFunctions.findCallingOperations(paramSchema, false);
+        operations = ApiFunctions.findOperationsUsingDefinition(paramSchema, false);
         assertEquals(1, operations.size());
         var operation = operations.iterator().next();
         assertEquals("myPath", operation.getModel().getOperationId());

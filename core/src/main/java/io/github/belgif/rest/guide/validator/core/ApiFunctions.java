@@ -257,34 +257,22 @@ public class ApiFunctions {
     }
 
     /**
-     *
      * Find operations directly or indirectly using a schema
+     *
      * @param searchRequestBodiesOnly whether to only consider usage within a request body
      */
     public static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly) {
-        if (isDefUnderPaths(definition)) {
+        if (definition.getTopLevelParent() instanceof PathsDefinition) {
             var operation = findOperationDefinition(definition, searchRequestBodiesOnly);
             return operation != null ? Set.of(operation) : Set.of();
         }
-        OpenApiDefinition<?> topLevelParent;
-        if (definition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
-            topLevelParent = definition.getTopLevelParent();
-        } else {
-            topLevelParent = definition;
-        }
 
-        return topLevelParent.getReferencedBy().stream()
+        return definition.getTopLevelParent().getReferencedBy().stream()
                 .flatMap(usage -> findOperationsUsingDefinition(usage, searchRequestBodiesOnly).stream())
                 .collect(Collectors.toSet());
     }
 
-    public static Set<OperationDefinition> findCallingOperations(SchemaDefinition schemaDefinition, boolean requestBodiesOnly) { // CR: replace by findOperationsUsingSchema
-        Set<OpenApiDefinition<?>> definitionsUnderPaths = getReversedReferencedDefinitionsUnderPath(schemaDefinition);
-
-        return definitionsUnderPaths.stream().map(def -> findOperationDefinition(def, requestBodiesOnly)).filter(Objects::nonNull).collect(Collectors.toSet());
-    }
-
-    private static OperationDefinition findOperationDefinition(OpenApiDefinition<?> def, boolean requestBodiesOnly) {
+    private static OperationDefinition findOperationDefinition(OpenApiDefinition<?> def, boolean searchRequestBodiesOnly) {
         List<OpenApiDefinition<?>> definitions = new ArrayList<>();
         definitions.add(def);
         OperationDefinition operation = null;
@@ -300,27 +288,10 @@ public class ApiFunctions {
             }
         }
 
-        if (requestBodiesOnly && definitions.stream().noneMatch(RequestBodyDefinition.class::isInstance)) {
+        if (searchRequestBodiesOnly && definitions.stream().noneMatch(RequestBodyDefinition.class::isInstance)) {
             return null;
         }
         return operation;
-    }
-
-    private static boolean isDefUnderPaths(OpenApiDefinition<?> schema) { //CR: this method can be inlined after change of getTopLevelParent()
-        if (schema.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
-            return schema.getTopLevelParent() instanceof PathsDefinition;
-        }
-        return false;
-    }
-
-    private static Set<OpenApiDefinition<?>> getReversedReferencedDefinitionsUnderPath(OpenApiDefinition<?> schema) {
-        if (isDefUnderPaths(schema)) {
-            return Set.of(schema);
-        }
-        Set<OpenApiDefinition<?>> definitions = new HashSet<>();
-        schema.getTopLevelParent().getReferencedBy().forEach(ref ->
-                definitions.addAll(getReversedReferencedDefinitionsUnderPath(ref)));
-        return definitions;
     }
 
 }
