@@ -103,7 +103,7 @@ public class Parser {
             if (modelDefinitionMap.containsKey(model)) {
                 return (OpenApiDefinition<T>) modelDefinitionMap.get(model);
             } else {
-                throw new RuntimeException("[Parsing error] Could not find match of " + model.toString()); // CR: why is this a parsing error?
+                throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
             }
         }
 
