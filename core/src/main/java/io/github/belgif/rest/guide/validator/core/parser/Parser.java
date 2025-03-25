@@ -88,10 +88,10 @@ public class Parser {
 
         @SuppressWarnings("unchecked")
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
-            if (model instanceof Reference) {
-                var ref = ((Reference<?>) model).getRef();
+            if (model instanceof Reference<?> reference) {
+                var ref = reference.getRef();
                 if (ref != null) {
-                    return (OpenApiDefinition<T>) resolveToOptional(model).orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
+                    return (OpenApiDefinition<T>) resolveReference(reference).orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
                 }
             }
 
@@ -103,9 +103,9 @@ public class Parser {
             }
         }
 
-        private Optional<OpenApiDefinition<?>> resolveToOptional(Constructible model) {
-            var ref = ((Reference<?>) model).getRef();
-            File refOpenApiFile = findOpenApiFileForRef(ref, model);
+        private Optional<OpenApiDefinition<?>> resolveReference(Reference<?> reference) {
+            var ref = reference.getRef();
+            File refOpenApiFile = findOpenApiFileForRef(ref, reference);
             JsonPointer pointer = buildJsonPointerFromRef(ref);
             return allDefinitions.stream().filter(def ->
                             def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
@@ -117,7 +117,8 @@ public class Parser {
             return new JsonPointer(ref);
         }
 
-        private File findOpenApiFileForRef(String ref, Constructible model) {
+        private File findOpenApiFileForRef(String ref, Reference<?> refModel) {
+            Constructible model = (Constructible) refModel;
             File modelBaseFile = modelDefinitionMap.get(model).getOpenApiFile();
             String fileRef = ref.split("#")[0];
             if (fileRef.isEmpty()) {
@@ -204,10 +205,10 @@ public class Parser {
 
     private void validateAllReferences(ParserResult result) {
         for (OpenApiDefinition<?> def : result.allDefinitions) {
-            if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
-                var optional = result.resolveToOptional(def.getModel());
+            if (def.getModel() instanceof Reference<?> ref && ref.getRef() != null) {
+                var optional = result.resolveReference(ref);
                 if (optional.isEmpty()) {
-                    log.error("[Parsing error] Could not find match of {}", ((Reference<?>) def.getModel()).getRef());
+                    log.error("[Parsing error] Could not find match of {}", ref.getRef());
                 }
             }
         }
