@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.core;
 
-import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
-import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -255,6 +254,44 @@ public class ApiFunctions {
             return true;
         }
         return !set.contains(string);
+    }
+
+    /**
+     * Find operations directly or indirectly using a schema
+     *
+     * @param searchRequestBodiesOnly whether to only consider usage within a request body
+     */
+    public static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly) {
+        if (definition.getTopLevelParent() instanceof PathsDefinition) {
+            var operation = findOperationDefinition(definition, searchRequestBodiesOnly);
+            return operation != null ? Set.of(operation) : Set.of();
+        }
+
+        return definition.getTopLevelParent().getReferencedBy().stream()
+                .flatMap(usage -> findOperationsUsingDefinition(usage, searchRequestBodiesOnly).stream())
+                .collect(Collectors.toSet());
+    }
+
+    private static OperationDefinition findOperationDefinition(OpenApiDefinition<?> def, boolean searchRequestBodiesOnly) {
+        List<OpenApiDefinition<?>> definitions = new ArrayList<>();
+        definitions.add(def);
+        OperationDefinition operation = null;
+        while (operation == null) {
+            OpenApiDefinition<?> definition = definitions.get(definitions.size() - 1).getParent();
+            if (definition == null) {
+                break;
+            }
+            if (definition instanceof OperationDefinition) {
+                operation = (OperationDefinition) definition;
+            } else {
+                definitions.add(definition);
+            }
+        }
+
+        if (searchRequestBodiesOnly && definitions.stream().noneMatch(RequestBodyDefinition.class::isInstance)) {
+            return null;
+        }
+        return operation;
     }
 
 }

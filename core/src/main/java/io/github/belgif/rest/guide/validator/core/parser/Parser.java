@@ -91,11 +91,7 @@ public class Parser {
             if (model instanceof Reference) {
                 var ref = ((Reference<?>) model).getRef();
                 if (ref != null) {
-                    File refOpenApiFile = findOpenApiFileForRef(ref, model);
-                    JsonPointer pointer = buildJsonPointerFromRef(ref);
-                    return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
-                                    def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
-                            .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
+                    return (OpenApiDefinition<T>) resolveToOptional(model).orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
                 }
             }
 
@@ -105,6 +101,15 @@ public class Parser {
             } else {
                 throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
             }
+        }
+
+        private Optional<OpenApiDefinition<?>> resolveToOptional(Constructible model) {
+            var ref = ((Reference<?>) model).getRef();
+            File refOpenApiFile = findOpenApiFileForRef(ref, model);
+            JsonPointer pointer = buildJsonPointerFromRef(ref);
+            return allDefinitions.stream().filter(def ->
+                            def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                    .findFirst();
         }
 
         private JsonPointer buildJsonPointerFromRef(String ref) {
@@ -120,6 +125,14 @@ public class Parser {
             }
             Path basePath = java.nio.file.Paths.get(modelBaseFile.getParent());
             return resolveRelativeFile(fileRef, basePath);
+        }
+
+        public void populateBackReferences() {
+            for (OpenApiDefinition<?> def : allDefinitions) {
+                if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
+                    resolve(def.getModel()).addBackReference(def);
+                }
+            }
         }
 
         /**
@@ -152,13 +165,15 @@ public class Parser {
             }
             verifySecurityRequirements(result);
             result.assembleAllDefinitions();
-            buildAllPathWithLineRange(result);
-            if (result.isParsingValid()) {
-                return result;
+            validateAllReferences(result);
+            if (!result.isParsingValid()) {
+                // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
+                log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+                throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
-            log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
-            throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+            result.populateBackReferences();
+            buildAllPathWithLineRange(result);
+            return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
@@ -185,6 +200,17 @@ public class Parser {
                 }
             }
         });
+    }
+
+    private void validateAllReferences(ParserResult result) {
+        for (OpenApiDefinition<?> def : result.allDefinitions) {
+            if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
+                var optional = result.resolveToOptional(def.getModel());
+                if (optional.isEmpty()) {
+                    log.error("[Parsing error] Could not find match of {}", ((Reference<?>) def.getModel()).getRef());
+                }
+            }
+        }
     }
 
     /**

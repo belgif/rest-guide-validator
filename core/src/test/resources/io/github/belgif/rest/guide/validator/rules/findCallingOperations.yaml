@@ -1,0 +1,60 @@
+openapi: 3.0.0
+info:
+  title: Logo schemas
+  version: "1.0"
+paths:
+  /myCallingPath:
+    get:
+      operationId: myPath
+      description: myDescription
+      parameters:
+        - name: myFirstParam
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MyParamObject'
+      responses:
+        200:
+          $ref: '#/components/responses/MyFirstResponse'
+  /myOtherPath:
+    get:
+      operationId: myOtherPath
+      description: otherDescription
+      responses:
+        200:
+          $ref: '#/components/responses/MyFirstResponse'
+    post:
+      operationId: post
+      description: otherPost
+      requestBody:
+        required: true
+        description: uhuh
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyObject'
+      responses:
+        200:
+          $ref: '#/components/responses/MyFirstResponse'
+
+components:
+  responses:
+    MyFirstResponse:
+      description: this is my description
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MyObject'
+  schemas:
+    MyObject:
+      type: object
+      properties:
+        innerObject:
+          $ref: '#/components/schemas/MyChildObject'
+    MyChildObject:
+      type: object
+      properties:
+        name:
+          type: string
+    MyParamObject:
+      type: string
