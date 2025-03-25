@@ -91,11 +91,7 @@ public class Parser {
             if (model instanceof Reference) {
                 var ref = ((Reference<?>) model).getRef();
                 if (ref != null) {
-                    File refOpenApiFile = findOpenApiFileForRef(ref, model);
-                    JsonPointer pointer = buildJsonPointerFromRef(ref);
-                    return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
-                                    def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
-                            .findFirst().orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
+                    return (OpenApiDefinition<T>) resolveToOptional(model).orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
                 }
             }
 
@@ -105,6 +101,15 @@ public class Parser {
             } else {
                 throw new RuntimeException("[Internal error] Could not find match of " + model.toString());
             }
+        }
+
+        private Optional<OpenApiDefinition<?>> resolveToOptional(Constructible model) {
+            var ref = ((Reference<?>) model).getRef();
+            File refOpenApiFile = findOpenApiFileForRef(ref, model);
+            JsonPointer pointer = buildJsonPointerFromRef(ref);
+            return allDefinitions.stream().filter(def ->
+                            def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                    .findFirst();
         }
 
         private JsonPointer buildJsonPointerFromRef(String ref) {
@@ -200,11 +205,9 @@ public class Parser {
     private void validateAllReferences(ParserResult result) {
         for (OpenApiDefinition<?> def : result.allDefinitions) {
             if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
-                try {
-                    result.resolve(def.getModel()).addBackReference(def); //CR: why add back reference here? Is't this already done in other method?
-                } catch (RuntimeException e) { // CR: catch RuntimeException is too broad, to only catch specific case. Maybe extract add a findReference from resolve
-                    log.error(e.getMessage());
-                    result.setParsingValid(false);
+                var optional = result.resolveToOptional(def.getModel());
+                if (optional.isEmpty()) {
+                    log.error("[Parsing error] Could not find match of {}", ((Reference<?>) def.getModel()).getRef());
                 }
             }
         }
