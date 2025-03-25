@@ -295,15 +295,8 @@ public class ApiFunctions {
         if (isDefUnderPaths(schema)) {
             return Set.of(schema);
         }
-        OpenApiDefinition<?> def;
-        if (schema.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)) {
-            def = schema.getTopLevelParent();
-        } else {
-            def = schema;
-        }
-
         Set<OpenApiDefinition<?>> definitions = new HashSet<>();
-        def.getReferencedBy().forEach(ref ->
+        schema.getTopLevelParent().getReferencedBy().forEach(ref ->
                 definitions.addAll(getReversedReferencedDefinitionsUnderPath(ref)));
         return definitions;
     }
