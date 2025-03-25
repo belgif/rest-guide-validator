@@ -88,14 +88,10 @@ public class Parser {
 
         @SuppressWarnings("unchecked")
         public <T extends Constructible> OpenApiDefinition<T> resolve(T model) {
-            if (model instanceof Reference) {
-                var ref = ((Reference<?>) model).getRef();
+            if (model instanceof Reference<?> reference) {
+                var ref = reference.getRef();
                 if (ref != null) {
-                    File refOpenApiFile = findOpenApiFileForRef(ref, model);
-                    JsonPointer pointer = buildJsonPointerFromRef(ref);
-                    return (OpenApiDefinition<T>) allDefinitions.stream().filter(def ->
-                                    def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
-                            .findFirst().orElseThrow(() -> new RuntimeException("[Internal error] Could not find match of " + ref));
+                    return (OpenApiDefinition<T>) resolveReference(reference).orElseThrow(() -> new RuntimeException("[Parsing error] Could not find match of " + ref));
                 }
             }
 
@@ -107,12 +103,22 @@ public class Parser {
             }
         }
 
+        private Optional<OpenApiDefinition<?>> resolveReference(Reference<?> reference) {
+            var ref = reference.getRef();
+            File refOpenApiFile = findOpenApiFileForRef(ref, reference);
+            JsonPointer pointer = buildJsonPointerFromRef(ref);
+            return allDefinitions.stream().filter(def ->
+                            def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                    .findFirst();
+        }
+
         private JsonPointer buildJsonPointerFromRef(String ref) {
             ref = !ref.startsWith("#") ? ref.split("#")[1] : ref.substring(1);
             return new JsonPointer(ref);
         }
 
-        private File findOpenApiFileForRef(String ref, Constructible model) {
+        private File findOpenApiFileForRef(String ref, Reference<?> refModel) {
+            Constructible model = (Constructible) refModel;
             File modelBaseFile = modelDefinitionMap.get(model).getOpenApiFile();
             String fileRef = ref.split("#")[0];
             if (fileRef.isEmpty()) {
@@ -120,6 +126,14 @@ public class Parser {
             }
             Path basePath = java.nio.file.Paths.get(modelBaseFile.getParent());
             return resolveRelativeFile(fileRef, basePath);
+        }
+
+        public void populateBackReferences() {
+            for (OpenApiDefinition<?> def : allDefinitions) {
+                if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
+                    resolve(def.getModel()).addBackReference(def);
+                }
+            }
         }
 
         /**
@@ -152,13 +166,15 @@ public class Parser {
             }
             verifySecurityRequirements(result);
             result.assembleAllDefinitions();
-            buildAllPathWithLineRange(result);
-            if (result.isParsingValid()) {
-                return result;
+            validateAllReferences(result);
+            if (!result.isParsingValid()) {
+                // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
+                log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+                throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
-            log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
-            throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+            result.populateBackReferences();
+            buildAllPathWithLineRange(result);
+            return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
@@ -185,6 +201,17 @@ public class Parser {
                 }
             }
         });
+    }
+
+    private void validateAllReferences(ParserResult result) {
+        for (OpenApiDefinition<?> def : result.allDefinitions) {
+            if (def.getModel() instanceof Reference<?> ref && ref.getRef() != null) {
+                var optional = result.resolveReference(ref);
+                if (optional.isEmpty()) {
+                    log.error("[Parsing error] Could not find match of {}", ref.getRef());
+                }
+            }
+        }
     }
 
     /**

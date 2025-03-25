@@ -125,17 +125,7 @@ class ParserTest {
     void testValidButNonExistingRefResolve() {
         var oas = new ViolationReport();
         var file = new File(getClass().getResource("../rules/nonExistingRef.yaml").getFile());
-        var result = new Parser(file).parse(oas);
-
-        var defs = result.getPathDefinitions();
-        var def = defs.stream().filter(defenition -> "/paths/~1doesNotExist".equals(defenition.getJsonPointer().toString())).findAny();
-        assertTrue(def.isPresent());
-        var response = def.get().getModel().getGET().getResponses().getAPIResponse("200");
-        assertNotNull(response);
-
-        var ex = assertThrows(RuntimeException.class, () -> result.resolve(response));
-        var errorMessage = "[Internal error] Could not find match of #/components/responses/doesNotExist";
-        assertEquals(errorMessage, ex.getMessage());
+        assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
     }
 
     @Test

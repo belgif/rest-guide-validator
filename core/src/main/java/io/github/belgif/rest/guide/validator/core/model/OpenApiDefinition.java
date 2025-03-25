@@ -16,9 +16,7 @@ import org.eclipse.microprofile.openapi.models.Reference;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.github.belgif.rest.guide.validator.core.constant.ExpectedReferencePathConstants.OAS_3_LOCATIONS;
 
@@ -36,6 +34,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
 
     private final File openApiFile;
     private final JsonPointer jsonPointer;
+    private final Set<OpenApiDefinition<?>> referencedBy = new HashSet<>();
 
     /**
      * Key: Name of the ignored rule.
@@ -111,12 +110,19 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         }
     }
 
+    public void addBackReference(OpenApiDefinition<?> ref) {
+        this.referencedBy.add(ref);
+    }
+
     public String getEffectiveIdentifier() {
         return identifier == null ? parent.getEffectiveIdentifier() : identifier;
     }
 
     public OpenApiDefinition<?> getTopLevelParent() {
         var indirectParent = this.parent;
+        if (indirectParent == null) {
+            return this;
+        }
         while (indirectParent.definitionType == DefinitionType.INLINE) {
             indirectParent = indirectParent.getParent();
         }
