@@ -1,0 +1,84 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import org.eclipse.microprofile.openapi.models.Operation
+import java.util.HashMap
+import java.util.HashSet
+import java.util.ArrayList
+import java.util.stream.Collectors;
+
+function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
+    Map<String, List<OperationDefinition>> operationIds = new HashMap<>();
+    Set<OperationDefinition> reachableOperationsFromEntryFile = operations.stream()
+        .filter(op -> op.getParent() instanceof PathDefinition &&
+          ((PathDefinition) op.getParent()).isDirectPath() ||
+          ((PathDefinition) op.getParent()).getReferencedBy().stream().anyMatch(def -> def instanceof PathDefinition && ((PathDefinition)def).isDirectPath()))
+        .collect(Collectors.toSet());
+    for (OperationDefinition def : reachableOperationsFromEntryFile) {
+      String operationId = def.getModel().getOperationId();
+      if (operationId != null) {
+        if (operationIds.containsKey(operationId)) {
+          operationIds.get(operationId).add(def);
+        } else {
+          List<OperationDefinition> list = new ArrayList<>();
+          list.add(def);
+          operationIds.put(operationId, list);
+        }
+      }
+    }
+    return new HashSet<>(operationIds.values());
+}
+
+function void violationOperationIdNotUnique(ViolationReport oas, List<OperationDefinition> operations){
+    oas.addViolation("[openapi-opid]",
+           		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+           		 "OperationId not unique, present in: <<" + operations.stream().map(op -> op.getOpenApiFile().getName() + "#" + op.getPrintableJsonPointer()).collect(Collectors.joining(", ")) + ">>",
+           		 (OperationDefinition) operations.get(0));
+}
+
+function void violationOperationIdNotSpecified(ViolationReport oas, OperationDefinition operation) {
+    oas.addViolation("[openapi-opid]",
+               		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "OperationId not specified.",
+               		 operation);
+}
+
+function void violationOperationIdNotLowerCamelCase(ViolationReport oas, OperationDefinition operation) {
+    oas.addViolation("[openapi-opid]",
+               		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
+               		 "OperationId not lowerCamelCase: " + operation.getModel().getOperationId(),
+               		 operation);
+}
+
+rule "OperationId Not Specified"
+	when
+        $operationDef: OperationDefinition($operation: /model)
+        eval( $operation.getOperationId() == null || $operation.getOperationId().isEmpty() )
+    then
+        violationOperationIdNotSpecified(oas, $operationDef);
+end
+
+rule "OperationId Not lowerCamelCase"
+  when
+    $operationDef: OperationDefinition($operationId: /model/operationId)
+    eval( !ApiFunctions.isLowerCamelCase($operationId) )
+  then
+    violationOperationIdNotLowerCamelCase(oas, $operationDef);
+end
+
+rule "OperationId Not Unique"
+  when
+    $operations: List() from findDuplicateOperationIds(parserResult.getOperations)
+    eval( $operations.size() > 1 )
+  then
+    violationOperationIdNotUnique(oas, $operations);
+end

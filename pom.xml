@@ -59,16 +59,11 @@
             </dependency>
             <!-- test dependencies-->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
                 <version>5.12.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-launcher</artifactId>
-                <version>1.12.1</version>
-                <scope>test</scope>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -197,33 +192,6 @@
                 </executions>
             </plugin>
 
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-clean-plugin</artifactId>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-resources-plugin</artifactId>-->
-            <!--            </plugin>-->
-
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-surefire-plugin</artifactId>-->
-            <!--                <configuration>-->
-            <!--                    <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-jar-plugin</artifactId>-->
-            <!--                <version>3.4.2</version>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-install-plugin</artifactId>-->
-            <!--                <version>3.1.1</version>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <artifactId>maven-deploy-plugin</artifactId>-->
-            <!--                <version>3.1.1</version>-->
-            <!--            </plugin>-->
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
@@ -272,7 +240,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <!--                        <version>3.2.5</version>-->
                         <executions>
                             <execution>
                                 <phase>verify</phase>
@@ -288,7 +255,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <!--                        <version>3.3.1</version>-->
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
