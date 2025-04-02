@@ -12,6 +12,6 @@ class OpenApiValidatorTest {
     @Test
     void isOasValid() {
         var file = new File(Objects.requireNonNull(getClass().getResource("openapi.yaml")).getFile());
-        Assertions.assertTrue(OpenApiValidator.callRules(file, null).isOasValid());
+        Assertions.assertTrue(new OpenApiValidator().callRules(file, null).isOasValid());
     }
 }

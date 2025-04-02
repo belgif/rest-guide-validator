@@ -1,0 +1,24 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ServerDefinition;
+
+
+function void violationComponentNamesShouldBeUpperCamelCase(ViolationReport oas, OpenApiDefinition component){
+    oas.addViolation("[oas-comp]",
+    "Component names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.", component);
+}
+
+rule "Component names should io UpperCamelCase"
+    when
+        $component: OpenApiDefinition(definitionType == DefinitionType.TOP_LEVEL, $jsonPointer: jsonPointer.toPrettyString(), $componentName: identifier)
+        String( startsWith("/components") ) from $jsonPointer
+        eval( !ApiFunctions.isUpperCamelCase($componentName) )
+    then
+        violationComponentNamesShouldBeUpperCamelCase(oas, $component);
+end

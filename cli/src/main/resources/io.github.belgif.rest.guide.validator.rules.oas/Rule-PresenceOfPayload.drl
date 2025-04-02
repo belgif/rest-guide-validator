@@ -1,0 +1,65 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
+import io.github.belgif.rest.guide.validator.core.model.RequestBodyDefinition;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+
+function void violationPresenceOfPayloadResponseDefinition(ViolationReport oas, String errorMessage, ResponseDefinition response, OperationDefinition operation){
+  oas.addViolation("[presenceOfPayload]",
+    errorMessage,
+    "[Operation: " + operation.getIdentifier() + "]", response);
+}
+
+function void violationPresenceOfPayloadRequestDefinition(ViolationReport oas, String errorMessage, RequestBodyDefinition request, OperationDefinition operation){
+  oas.addViolation("[presenceOfPayload]",
+    errorMessage,
+    "[Operation: " + operation.getIdentifier() + "]", request);
+}
+
+rule "GET/HEAD/DELETE/OPTIONS should have no request payload"
+  when
+    $operation: OperationDefinition(method.equals(HttpMethod.GET)||method.equals(HttpMethod.HEAD)||method.equals(HttpMethod.DELETE)||method.equals(HttpMethod.OPTIONS))
+    OperationDefinition($request: /model/requestBody ) from $operation
+    $resolvedRequest: RequestBodyDefinition() from parserResult.resolve($request)
+    not RequestBodyDefinition( /model[content == null] ) from $resolvedRequest
+  then
+    violationPresenceOfPayloadRequestDefinition(oas, "GET/HEAD/DELETE/OPTIONS should have no request payload \t", $resolvedRequest, $operation);
+end
+
+rule "HEAD should have no response payload"
+  when
+    $operation: OperationDefinition(method.equals(HttpMethod.HEAD))
+    OperationDefinition($response: /model/responses/APIResponses/values#APIResponse) from $operation
+    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    not ResponseDefinition(/model[content == null]) from $responseDefinition
+    not ResponseDefinition(/model/content/mediaTypes[size == 0]) from $responseDefinition
+  then
+    violationPresenceOfPayloadResponseDefinition(oas, "HEAD should have no response payload \t", $responseDefinition, $operation);
+end
+
+rule "Status code 200 should have response payload"
+  when
+    $operationDefinition : OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse)
+    $responseDefinition : ResponseDefinition() from parserResult.resolve($response)
+    not(ResponseDefinition(/model/content/mediaTypes[size != 0]) from $responseDefinition)
+  then
+    violationPresenceOfPayloadResponseDefinition(oas, "Status code 200 should have response payload. Use status code 204 when no payload is provided. \t", $responseDefinition, $operationDefinition);
+end
+
+
+rule "Status code 204 should not have response payload"
+  when
+    $operation: OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "204"]/value#APIResponse)
+    $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
+    ResponseDefinition(/model/content/mediaTypes[size != 0]) from $responseDefinition
+  then
+    violationPresenceOfPayloadResponseDefinition(oas, "Status code 204 should not have response payload \t", $responseDefinition, $operation);
+end

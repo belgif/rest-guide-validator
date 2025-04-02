@@ -1,0 +1,67 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathsDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Operation;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void healthViolation(ViolationReport oas, PathsDefinition pathsDefinition){
+    oas.addViolation("[hlth-res]",
+           		 "Each REST API SHOULD expose a GET /health operation which returns the availability of the API’s functionality for its clients.",
+           		 null,
+           		 pathsDefinition,
+           		 ViolationLevel.RECOMMENDED);
+}
+
+function void healthResponseViolation(ViolationReport oas, OperationDefinition operation){
+    oas.addViolation("[hlth-res]",
+                 "Each REST API SHOULD expose a GET /health operation which returns the availability of the API’s functionality for its clients.",
+           		 "The HTTP response status of a health operation SHOULD be either 200 OK when the service is up or partially available, or 503 Service Unavailable when the service is down or out of service.",
+           		 operation,
+           		 ViolationLevel.RECOMMENDED);
+}
+
+function void healthGetOperationViolation(ViolationReport oas, PathDefinition path){
+    oas.addViolation("[hlth-res]",
+                 "Each REST API SHOULD expose a GET /health operation which returns the availability of the API’s functionality for its clients.",
+           		 "The /health path should have a GET operation",
+           		 path,
+           		 ViolationLevel.RECOMMENDED);
+}
+
+rule "Rule-PresenceOfHealthOperation"
+    when
+      $pathsDefinition: PathsDefinition(inMainFile == true, $paths: /model)
+      eval( !$paths.hasPathItem("/health") && $paths.getPathItems().size() != 0 )
+    then
+        healthViolation(oas, $pathsDefinition);
+end
+
+
+rule "Rule-ResponsesOfHealthOperation"
+    when
+        $path: PathDefinition((identifier == "/health" && directPath == true))
+        $resolvedPath: PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
+        $operationDefinition: OperationDefinition($responses: /model/responses) from parserResult.resolve($operation)
+        eval ( !$responses.hasAPIResponse("200") || !$responses.hasAPIResponse("503") )
+    then
+        healthResponseViolation(oas, $operationDefinition);
+end
+
+rule "Rule-HealthOperationWithoutGet"
+    when
+        $path: PathDefinition(identifier == "/health" && directPath == true)
+        $pathItem: PathItem() from parserResult.resolve($path.getModel()).getModel()
+        eval ( $pathItem.getGET() == null )
+    then
+        healthGetOperationViolation(oas, $path);
+end

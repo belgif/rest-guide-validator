@@ -1,0 +1,32 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationMultiValueQueryParams(ViolationReport oas, ParameterDefinition parameter){
+  oas.addViolation("[qry-multi]",
+    "When a single query parameter can have multiple values, the parameter SHOULD be repeated for each value. (explode: true for OpenAPI 3.0 or collectionFormat:multi  for OpenAPI 2.0)",
+    "[Parameter: " + parameter.getIdentifier() + "]",
+    parameter);
+}
+
+rule "Multi Value Query Params"
+  when
+    $parameterDefinition : ParameterDefinition($in: /model/in)
+    Parameter.In(this.equals(In.QUERY)) from $in
+    ParameterDefinition($schema: /model/schema) from $parameterDefinition
+    SchemaDefinition(model.getType() == SchemaType.ARRAY) from parserResult.resolve($schema)
+    Parameter(style != Style.FORM || explode == false) from $parameterDefinition.getModel()
+  then
+    violationMultiValueQueryParams(oas, $parameterDefinition);
+end

@@ -11,9 +11,6 @@
 
     <artifactId>belgif-rest-guide-validator-runner</artifactId>
 
-    <properties>
-        <jaxb.api.version>4.0.2</jaxb.api.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -21,32 +18,32 @@
             <version>${project.version}</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb.api.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>${jaxb.api.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
             <version>2.0.17</version>
+            <scope>test</scope>
         </dependency>
         
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

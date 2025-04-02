@@ -6,7 +6,7 @@ import org.kie.api.command.Command;
 import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.command.CommandFactory;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
