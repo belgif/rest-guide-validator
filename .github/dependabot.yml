@@ -11,7 +11,7 @@ updates:
       - dependency-name: "org.apache.maven:maven-model"
       - dependency-name: "org.apache.maven:maven-plugin-api"
       - dependency-name: "io.swagger.parser.v3:swagger-parser"
-        versions: ["2.1.26"]
+        versions: ["2.1.26"] # version has a regression: https://github.com/swagger-api/swagger-parser/issues/2167 also tested in ITs
     groups:
       maven:
         patterns:
