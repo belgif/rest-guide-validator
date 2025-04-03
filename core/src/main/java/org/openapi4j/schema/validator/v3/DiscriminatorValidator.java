@@ -247,10 +247,14 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         // Check if Schema Object exists
         // Modification for Belgif validator: Resolve relative refs
         String resolvedRef = resolveRelativeRef(ref);
-        return context.getContext().getReferenceRegistry().getRef(resolvedRef) != null || refExists(resolvedRef);
+        return context.getContext().getReferenceRegistry().getRef(resolvedRef) != null || (isExternalRef(resolvedRef) && externalRefExists(resolvedRef));
     }
 
-    private boolean refExists(String ref) {
+    private boolean isExternalRef(String ref) {
+        return !ref.split("#/")[0].isEmpty();
+    }
+
+    private boolean externalRefExists(String ref) {
         try {
             URL baseUrl = URI.create(ref.split("#/")[0]).toURL();
             String internalRef = ref.split("#/")[1];

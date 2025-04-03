@@ -66,6 +66,11 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testSimpleInvalidDiscriminator() {
+        assertErrorCount(1, callRules("invalidDiscriminator.yaml"));
+    }
+
+    @Test
     void testUnrelatedDiscriminator() {
         ViolationReport aggregator = callRules("unrelatedDiscriminator.yaml");
         assertErrorCount(1, aggregator);
