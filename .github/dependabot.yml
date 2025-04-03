@@ -11,7 +11,7 @@ updates:
       - dependency-name: "org.apache.maven:maven-model"
       - dependency-name: "org.apache.maven:maven-plugin-api"
       - dependency-name: "io.swagger.parser.v3:swagger-parser"
-        version: 2.1.26
+        versions: ["2.1.26"]
     groups:
       maven:
         patterns:
