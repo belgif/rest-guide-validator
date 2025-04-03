@@ -24,6 +24,8 @@ paths:
           in: header
           description: User language
           required: false
+          style: simple
+          explode: false
           schema:
             type: string
             enum:
