@@ -14,4 +14,9 @@ class MandatoryMediaTypeTest extends AbstractOasRuleTest {
     void testInvalidOpenApi() {
         assertErrorCount(10, callRules("openapi_bad.yaml"));
     }
+
+    @Test
+    void testStringTypes() {
+        assertNoViolations(callRules("stringTypes.yaml"));
+    }
 }

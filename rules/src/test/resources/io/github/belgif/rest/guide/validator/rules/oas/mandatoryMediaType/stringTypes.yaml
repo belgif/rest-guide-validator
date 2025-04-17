@@ -1,0 +1,18 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Here all the request and response bodies are of type object
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myStringResponse:
+    get:
+      responses:
+        200:
+          description: string response
+          content:
+            text/html:
+              schema:
+                type: string
+
