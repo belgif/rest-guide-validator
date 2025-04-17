@@ -1,0 +1,30 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import java.util.Set;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void pathParamViolation(ViolationReport oas, ParameterDefinition parameter){
+    oas.addViolation("[id-name]",
+           		 "When using `id` or `code` in path parameters, they should be prefixed with the resource type. This allows to disambiguate when there are multiple identifiers in a single path",
+           		 parameter);
+}
+
+function Set forbiddenPathParamNames() {
+  return Set.of("id", "code");
+}
+
+rule "Rule-IdName"
+    when
+        $param: ParameterDefinition(model.getIn() == In.PATH)
+        ParameterDefinition($name: /model/name) from $param
+        eval ( forbiddenPathParamNames().contains($name) )
+    then
+        pathParamViolation(oas, $param);
+end

@@ -301,13 +301,13 @@ paths:
         default:
           $ref: 'schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse'
 
-  /logos/{id}/image:
+  /logos/{logoId}/image:
     get:
       description: Dowload Logo Image
       operationId: downloadLogoImage
       tags: [Logos]
       parameters:
-        - name: id
+        - name: logoId
           in: path
           required: true
           schema:
@@ -328,14 +328,14 @@ paths:
                 format: binary
         default:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
-  /logos/{id}/meta:
+  /logos/{logoId}/meta:
     get:
       description: get logo metadata
       operationId: getLogoMetaData
       tags:
         - Logos
       parameters:
-        - name: id
+        - name: logoId
           in: path
           required: true
           schema:
@@ -350,14 +350,14 @@ paths:
                 $ref: 'schemas/logo.yaml#/components/schemas/LogoMetaData'
         default:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
-  /logos/{id}:
+  /logos/{logoId}:
     get:
       description: Download logo
       operationId: downloadLogo
       tags:
         - Logos
       parameters:
-        - name: id
+        - name: logoId
           in: path
           required: true
           schema:

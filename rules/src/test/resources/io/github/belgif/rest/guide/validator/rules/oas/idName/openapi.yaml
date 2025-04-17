@@ -1,0 +1,38 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  description: Test
+  version: '1.0'
+servers:
+  - url: '/api/v3'
+paths:
+  /myFirstPath/{myFirstId}:
+    get:
+      parameters:
+        - name: myFirstId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+  /mySecondPath/{pathCode}:
+    get:
+      parameters:
+        - name: pathCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: uhuh
+          content:
+            application/json:
+              schema:
+                type: object
