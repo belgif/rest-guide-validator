@@ -19,9 +19,7 @@ class VersionProviderTest {
             Matcher matcher = pattern.matcher(version);
             assertTrue(matcher.find());
             int major = Integer.parseInt(matcher.group(1));
-            int minor = Integer.parseInt(matcher.group(2));
-            assertTrue(major >= 2);
-            assertTrue(minor >= 1);
+            assertTrue(major >= 3);
         } else {
             assertEquals("latest", version);
         }
