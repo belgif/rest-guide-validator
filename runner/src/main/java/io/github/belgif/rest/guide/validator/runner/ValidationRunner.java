@@ -79,8 +79,8 @@ public class ValidationRunner {
                         }
                         outputProcessors.add(new JUnitOutputProcessor(groupBy, outputPath.toFile()));
                         break;
-                    case LOG4J:
-                        outputProcessors.add(new Log4JOutputProcessor(groupBy));
+                    case LOGGER:
+                        outputProcessors.add(new LoggerOutputProcessor(groupBy));
                         break;
                     case JSON:
                         try {

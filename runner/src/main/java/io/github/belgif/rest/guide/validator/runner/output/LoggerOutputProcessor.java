@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class Log4JOutputProcessor extends OutputProcessor {
+public class LoggerOutputProcessor extends OutputProcessor {
 
-    public Log4JOutputProcessor(OutputGroupBy outputGroupBy) {
+    public LoggerOutputProcessor(OutputGroupBy outputGroupBy) {
         super(outputGroupBy);
     }
 

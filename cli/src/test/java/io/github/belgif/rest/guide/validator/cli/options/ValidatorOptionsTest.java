@@ -37,7 +37,7 @@ class ValidatorOptionsTest {
     void testAbsoluteJsonOutputFile() {
         String userHome = System.getProperty("user.home");
         Path jsonPath = Paths.get(userHome, "myJsonFolder", "myOutput.json");
-        ValidatorOptions options = CommandLine.populateCommand(new ValidatorOptions(), "--jsonOutputFile="+jsonPath, "--outputDir=/myOutputDir");
+        ValidatorOptions options = CommandLine.populateCommand(new ValidatorOptions(), "--jsonOutputFile=" + jsonPath, "--outputDir=/myOutputDir");
         Path expectedPath = Paths.get("/myOutputDir");
         assertEquals(expectedPath, options.getOutputDir());
         assertEquals(jsonPath, options.getJsonOutputFile().toPath());
