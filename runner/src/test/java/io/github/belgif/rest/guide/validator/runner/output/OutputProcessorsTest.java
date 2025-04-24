@@ -32,9 +32,9 @@ class OutputProcessorsTest {
 
     @Test
     void processLogByRule() {
-        var log4JOutputProcessor = new LoggerOutputProcessor(OutputGroupBy.RULE);
+        var loggerOutputProcessor = new LoggerOutputProcessor(OutputGroupBy.RULE);
         try {
-            log4JOutputProcessor.process(getViolationAggregator());
+            loggerOutputProcessor.process(getViolationAggregator());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -42,9 +42,9 @@ class OutputProcessorsTest {
 
     @Test
     void processLogByFile() {
-        var log4JOutputProcessor = new LoggerOutputProcessor(OutputGroupBy.FILE);
+        var loggerOutputProcessor = new LoggerOutputProcessor(OutputGroupBy.FILE);
         try {
-            log4JOutputProcessor.process(getViolationAggregator());
+            loggerOutputProcessor.process(getViolationAggregator());
         } catch (Exception e) {
             fail(e.getMessage());
         }
