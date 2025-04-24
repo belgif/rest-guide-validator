@@ -72,4 +72,28 @@ class BelgifRestGuideCliTest {
         assertEquals(0, exitCode);
     }
 
+    @Test
+    void testInvalidOutputTypeCode0() throws URISyntaxException {
+        var resourceUrl = getClass().getResource("passingOpenapi.yaml");
+        Path path = Paths.get(resourceUrl.toURI());
+        BelgifRestGuideCli cli = new BelgifRestGuideCli();
+        CommandLine cmd = new CommandLine(cli);
+        StringWriter sw = new StringWriter();
+        cmd.setOut(new PrintWriter(sw));
+        int exitCode = cmd.execute(path.toString(), "--outputType=invalid");
+        assertEquals(0, exitCode);
+    }
+
+    @Test
+    void testLoggerOutputTypeNotSupportedInCliVersionCode0() throws URISyntaxException {
+        var resourceUrl = getClass().getResource("passingOpenapi.yaml");
+        Path path = Paths.get(resourceUrl.toURI());
+        BelgifRestGuideCli cli = new BelgifRestGuideCli();
+        CommandLine cmd = new CommandLine(cli);
+        StringWriter sw = new StringWriter();
+        cmd.setOut(new PrintWriter(sw));
+        int exitCode = cmd.execute(path.toString(), "--outputType=logger");
+        assertEquals(0, exitCode);
+    }
+
 }

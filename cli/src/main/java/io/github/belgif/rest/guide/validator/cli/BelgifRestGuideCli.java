@@ -87,7 +87,19 @@ public class BelgifRestGuideCli implements Callable<Integer> {
     private List<OutputType> initOutputTypes() {
         List<OutputType> types = new ArrayList<>();
         for (String type : options.getOutputTypes()) {
-            types.add(OutputType.valueOf(type.toUpperCase()));
+            try {
+                types.add(OutputType.valueOf(type.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.error("\"{}\" is not a valid output type.", type);
+            }
+        }
+        if (types.contains(OutputType.LOGGER)) {
+            log.error("LOGGER output type is not supported in CLI version.");
+            types.remove(OutputType.LOGGER);
+        }
+        if (types.isEmpty()) {
+            log.error("No valid output type found. Using CONSOLE.");
+            types.add(OutputType.CONSOLE);
         }
         return types;
     }
