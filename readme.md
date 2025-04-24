@@ -6,7 +6,7 @@ It is available as:
 - A [Maven Plugin](#Maven-Plugin)
 - A [standalone windows application](#standalone-belgif-rest-guide-validator)
 
-The validator supports OpenAPI 2.0 and 3.0, but some rules aren't checked for OpenAPI 2.0 documents. OpenAPI 3.1 isn't supported yet.
+The validator supports OpenAPI 3.0. OpenAPI 3.1 isn't supported yet.
 
 Only OpenAPI documents on the local file system are currently supported.
 Referenced external OpenAPI documents (from `$ref` properties) will be validated as well, unless explicitly excluded. 
@@ -90,7 +90,7 @@ Example:
   <plugin>
     <groupId>io.github.belgif.rest.guide.validator</groupId>
     <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-    <version>2.1.0</version> <!-- update this to the latest version -->
+    <version>3.0.0</version> <!-- update this to the latest version -->
     <executions>
       <execution>
         <goals>
@@ -139,9 +139,9 @@ b) Execute a validation run from command-line. This doesn't require the project 
 
 Navigate to the directory containing the OpenAPI file, and launch from command line:  
 ```
-   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:2.1.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
+   mvn io.github.belgif.rest.guide.validator:belgif-rest-guide-validator-maven-plugin:3.0.0:validate-openapi "-Drest-guide-validator.files=openapi.yaml"
 ```
-_Change 'openapi.yaml' to the name of your OpenAPI file and update '2.1.0' to the latest available version of the plugin_
+_Change 'openapi.yaml' to the name of your OpenAPI file and update '3.0.0' to the latest available version of the plugin_
 
 #### Basic example
 The following example demonstrates a basic plugin configuration for validating an OpenAPI document.
@@ -150,7 +150,7 @@ The following example demonstrates a basic plugin configuration for validating a
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.1.0</version> <!-- update this to the latest version -->
+        <version>3.0.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -179,7 +179,7 @@ You can execute the plugin to validate the api files without breaking the build 
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.1.0</version> <!-- update this to the latest version -->
+        <version>3.0.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -203,7 +203,7 @@ The `outputTypes` option determines how the validation report will be available:
 
 * CONSOLE: default option. Write to the console.
 * JUNIT: generate a junit xml file.
-* LOG4J: use log4j.
+* LOGGER: use slf4j.
 * NONE: no output.
 
 ```xml
@@ -211,7 +211,7 @@ The `outputTypes` option determines how the validation report will be available:
     <plugin>
         <groupId>io.github.belgif.rest.guide.validator</groupId>
         <artifactId>belgif-rest-guide-validator-maven-plugin</artifactId>
-        <version>2.1.0</version> <!-- update this to the latest version -->
+        <version>3.0.0</version> <!-- update this to the latest version -->
         <executions>
             <execution>
                 <goals>
@@ -241,11 +241,11 @@ The `outputTypes` option determines how the validation report will be available:
 | fileWithExclusions | Collection of FileWithExclusion |  | _obsoleted_ IGNORED a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       | DEPRECATED                         |
 | excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. | DEPRECATED                         |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                                  | rest-guide-validator.skipOnErrors  | 
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JSON, LOG4J, NONE                                                            | rest-guide-validator.outputTypes |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JSON, LOGGER, NONE                                                     | rest-guide-validator.outputTypes |
 | outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
-| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
+| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.                                                                                     | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
-| failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found | rest-guide-validator.failOnMissingOpenAPI |
+| failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found                                                        | rest-guide-validator.failOnMissingOpenAPI |
 
 ## Standalone belgif-rest-guide-validator
 From version 2.2.0 onwards, a standalone installer for Windows is included. You can download the .msi installer from the [releases page](https://github.com/belgif/rest-guide-validator/releases).
