@@ -16,13 +16,13 @@ function Set excludeHeaders() {
 
 function void violationRequestHeaderParam(ViolationReport oas, ParameterDefinition parameterDefinition, String headerName){
   oas.addViolation("[hdr-case]",
-    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ", "["+headerName+"]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ", "HTTP Header name: ["+headerName+"]",
     parameterDefinition);
 }
 
 function void violationResponseHeaderParam(ViolationReport oas, ResponseDefinition headerDefinition, String headerName){
   oas.addViolation("[hdr-case]",
-    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.", "["+headerName+"]",
+    "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.", "HTTP Header name: ["+headerName+"]",
     headerDefinition);
 }
 
