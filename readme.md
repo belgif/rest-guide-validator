@@ -203,7 +203,7 @@ The `outputTypes` option determines how the validation report will be available:
 
 * CONSOLE: default option. Write to the console.
 * JUNIT: generate a junit xml file.
-* LOG4J: use log4j.
+* LOGGER: use slf4j.
 * NONE: no output.
 
 ```xml
@@ -241,11 +241,11 @@ The `outputTypes` option determines how the validation report will be available:
 | fileWithExclusions | Collection of FileWithExclusion |  | _obsoleted_ IGNORED a file and a collection of excludesPath. `x-ignore-rules` should be used instead.                       | DEPRECATED                         |
 | excludeResources | Collection of String | | _obsoleted_ IGNORED paths in the API to exclude from the validation for all files. `x-ignore-rules` should be used instead. | DEPRECATED                         |
 | skipOnErrors | boolean | false | Parameter to avoid maven fail in case of validation error.                                                                  | rest-guide-validator.skipOnErrors  | 
-| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JSON, LOG4J, NONE                                                            | rest-guide-validator.outputTypes |
+| outputTypes | OutputType | CONSOLE | Output processors. The value can be: CONSOLE, JUNIT, JSON, LOGGER, NONE                                                     | rest-guide-validator.outputTypes |
 | outputDir | File | ${project.build.directory} | Output directory for the validation report file (when outputType writes to a file)                                          | rest-guide-validator.outputDir |
-| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.  | rest-guide-validator.jsonOutputFile | 
+| jsonOutputFile | File | ${rest-guide-validator.outputDir}/validationReport.json | Output file for JSON validation report.                                                                                     | rest-guide-validator.jsonOutputFile | 
 | groupBy   | rule / file | rule | Specify how you want to group the violation output                                                                          | rest-guide-validator.groupBy |
-| failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found | rest-guide-validator.failOnMissingOpenAPI |
+| failOnMissingOpenAPI | boolean | true | Specify if the build should fail if the openapi file cannot be found                                                        | rest-guide-validator.failOnMissingOpenAPI |
 
 ## Standalone belgif-rest-guide-validator
 From version 2.2.0 onwards, a standalone installer for Windows is included. You can download the .msi installer from the [releases page](https://github.com/belgif/rest-guide-validator/releases).
