@@ -25,7 +25,7 @@ public class ValidatorOptions {
     @CommandLine.Option(names = {"-e", "--excludedFile"}, description = "File(s) or folder(s) to exclude from validation. For multiple values, repeat -e or --excludedFile. Use of wildcards is possible.")
     private List<String> excludedFiles;
 
-    @CommandLine.Option(names = {"-t", "--outputType"}, defaultValue = "console", description = "Output processors. For multiple values, repeat -t or --outputType. Options: CONSOLE, JUNIT, JSON, LOG4J, NONE")
+    @CommandLine.Option(names = {"-t", "--outputType"}, defaultValue = "console", description = "Output processors. For multiple values, repeat -t or --outputType. Options: CONSOLE, JUNIT, JSON, NONE")
     private List<String> outputTypes;
 
     @CommandLine.Option(names = {"-o", "--outputDir"}, defaultValue = "${DEFAULT-VALUE}", description = "Output directory for the validation report file (when outputType writes to a file)")
