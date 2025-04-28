@@ -12,10 +12,6 @@
 
     <artifactId>belgif-rest-guide-validator-integrationtest</artifactId>
 
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.github.belgif.rest.guide.validator</groupId>

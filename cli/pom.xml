@@ -14,7 +14,6 @@
 
     <properties>
         <picocli.version>4.7.7</picocli.version>
-        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
