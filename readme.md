@@ -112,8 +112,8 @@ Example:
 ```
 
 ## Reusable definitions only
-The `x-reusable-definitions-only` tag can be added on the top-level in an OpenAPI document to modify validation behavior. 
-This tag indicates that the OpenAPI document only contains definitions that can be referenced from other OpenAPI documents, and doesn't specify a REST API. This affects some validation rules.
+The `x-reusable-definitions-only: true` flag can be added on the top-level in an OpenAPI document to modify validation behavior. 
+This flag indicates that the OpenAPI document only contains definitions that can be referenced from other OpenAPI documents, and doesn't specify a REST API. This affects some validation rules.
 If undefined, the OpenAPI is considered as a definitions-only document when `paths` is empty.
 
 ## Maven Plugin
