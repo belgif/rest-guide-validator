@@ -1,5 +1,5 @@
-# Maven CI build for the belgif openapi projects
-name: openapi-maven-ci
+# Maven CI build for the belgif rest-guide-validator project
+name: rest-guide-validator-maven-ci
 on:
   push:
     branches: [ main ]
