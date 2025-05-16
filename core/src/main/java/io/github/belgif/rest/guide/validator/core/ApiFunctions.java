@@ -50,20 +50,29 @@ public class ApiFunctions {
      * @param schema Schema that has to be validated
      */
     public static boolean schemaMeetsCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
+        return schemaMeetsCondition(schema, result, condition, new HashSet<>());
+    }
+
+    private static boolean schemaMeetsCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> checkedSubSchemas) {
+        if (checkedSubSchemas.contains(schema)) {
+            return false;
+        }
+
         SchemaDefinition schemaDefinition = recursiveResolve(schema, result);
         if (condition.test(schemaDefinition)) {
             return true;
         }
+        checkedSubSchemas.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition))) {
+                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition, checkedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition))) {
+                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition, checkedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, checkedSubSchemas));
         }
         return false;
     }
@@ -75,20 +84,28 @@ public class ApiFunctions {
      * @param schema Schema that has to be validated
      */
     private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
+        return schemaCanMeetCondition(schema, result, condition, new HashSet<>());
+    }
+    private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> checkedSubSchemas) {
+        if (checkedSubSchemas.contains(schema)) {
+            return false;
+        }
+
         SchemaDefinition schemaDefinition = recursiveResolve(schema, result);
         if (condition.test(schemaDefinition)) {
             return true;
         }
+        checkedSubSchemas.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition))) {
+                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition, checkedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition))) {
+                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition, checkedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition, checkedSubSchemas));
         }
         return false;
     }
@@ -109,10 +126,17 @@ public class ApiFunctions {
     }
 
     private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+        return getRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas, new HashSet<>());
+    }
+
+    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas, Set<SchemaDefinition> checkedSubSchemas) {
+        checkedSubSchemas.add(schemaDefinition);
         Set<SchemaDefinition> subSchemas = getSubSchemas(schemaDefinition, result, includeTopLevelSchemas);
         Set<SchemaDefinition> output = new HashSet<>();
         for (SchemaDefinition schema : subSchemas) {
-            output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas));
+            if (!checkedSubSchemas.contains(schema)) {
+                output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas, checkedSubSchemas));
+            }
         }
         output.addAll(subSchemas);
         return output;
