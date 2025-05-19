@@ -62,17 +62,18 @@ public class ApiFunctions {
         if (condition.test(schemaDefinition)) {
             return true;
         }
-        checkedSubSchemas.add(schema);
+        Set<Schema> branchedCheckedSubSchemas = new HashSet<>(checkedSubSchemas);
+        branchedCheckedSubSchemas.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition, checkedSubSchemas))) {
+                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition, branchedCheckedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition, checkedSubSchemas))) {
+                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition, branchedCheckedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, checkedSubSchemas));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, branchedCheckedSubSchemas));
         }
         return false;
     }
@@ -95,17 +96,18 @@ public class ApiFunctions {
         if (condition.test(schemaDefinition)) {
             return true;
         }
-        checkedSubSchemas.add(schema);
+        Set<Schema> branchedCheckedSubSchemas = new HashSet<>(checkedSubSchemas);
+        branchedCheckedSubSchemas.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition, checkedSubSchemas))) {
+                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition, branchedCheckedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition, checkedSubSchemas))) {
+                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition, branchedCheckedSubSchemas))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition, checkedSubSchemas));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition, branchedCheckedSubSchemas));
         }
         return false;
     }
