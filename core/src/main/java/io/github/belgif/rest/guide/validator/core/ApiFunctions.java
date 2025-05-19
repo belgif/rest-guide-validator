@@ -128,20 +128,18 @@ public class ApiFunctions {
     }
 
     private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
-        return getRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas, new HashSet<>());
+        Set<SchemaDefinition> subSchemas = new HashSet<>();
+        addRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas, subSchemas);
+        return subSchemas;
     }
 
-    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas, Set<SchemaDefinition> checkedSubSchemas) {
-        checkedSubSchemas.add(schemaDefinition);
-        Set<SchemaDefinition> subSchemas = getSubSchemas(schemaDefinition, result, includeTopLevelSchemas);
-        Set<SchemaDefinition> output = new HashSet<>();
-        for (SchemaDefinition schema : subSchemas) {
-            if (!checkedSubSchemas.contains(schema)) {
-                output.addAll(getRecursiveSubSchemas(schema, result, includeTopLevelSchemas, checkedSubSchemas));
+    private static void addRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas, Set<SchemaDefinition> subSchemas) {
+        for (SchemaDefinition schema : getSubSchemas(schemaDefinition, result, includeTopLevelSchemas)) {
+            if (!subSchemas.contains(schema)) {
+                subSchemas.add(schema);
+                addRecursiveSubSchemas(schema, result, includeTopLevelSchemas, subSchemas);
             }
         }
-        output.addAll(subSchemas);
-        return output;
     }
 
     /**
