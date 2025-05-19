@@ -53,8 +53,8 @@ public class ApiFunctions {
         return schemaMeetsCondition(schema, result, condition, new HashSet<>());
     }
 
-    private static boolean schemaMeetsCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> checkedSubSchemas) {
-        if (checkedSubSchemas.contains(schema)) {
+    private static boolean schemaMeetsCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> parentSchemas) {
+        if (parentSchemas.contains(schema)) {
             return false;
         }
 
@@ -62,18 +62,18 @@ public class ApiFunctions {
         if (condition.test(schemaDefinition)) {
             return true;
         }
-        Set<Schema> branchedCheckedSubSchemas = new HashSet<>(checkedSubSchemas);
-        branchedCheckedSubSchemas.add(schema);
+        Set<Schema> parentSchemasOfChildren = new HashSet<>(parentSchemas);
+        parentSchemasOfChildren.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition, branchedCheckedSubSchemas))) {
+                schemaDefinition.getModel().getOneOf().stream().allMatch(oneOfSchema -> schemaMeetsCondition(oneOfSchema, result, condition, parentSchemasOfChildren))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition, branchedCheckedSubSchemas))) {
+                schemaDefinition.getModel().getAnyOf().stream().allMatch(anyOfSchema -> schemaMeetsCondition(anyOfSchema, result, condition, parentSchemasOfChildren))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, branchedCheckedSubSchemas));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, parentSchemasOfChildren));
         }
         return false;
     }
@@ -87,8 +87,8 @@ public class ApiFunctions {
     private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
         return schemaCanMeetCondition(schema, result, condition, new HashSet<>());
     }
-    private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> checkedSubSchemas) {
-        if (checkedSubSchemas.contains(schema)) {
+    private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> parentSchemas) {
+        if (parentSchemas.contains(schema)) {
             return false;
         }
 
@@ -96,18 +96,18 @@ public class ApiFunctions {
         if (condition.test(schemaDefinition)) {
             return true;
         }
-        Set<Schema> branchedCheckedSubSchemas = new HashSet<>(checkedSubSchemas);
-        branchedCheckedSubSchemas.add(schema);
+        Set<Schema> parentSchemasOfChildren = new HashSet<>(parentSchemas);
+        parentSchemasOfChildren.add(schema);
         if (schemaDefinition.getModel().getOneOf() != null && !schemaDefinition.getModel().getOneOf().isEmpty() &&
-                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition, branchedCheckedSubSchemas))) {
+                schemaDefinition.getModel().getOneOf().stream().anyMatch(oneOfSchema -> schemaCanMeetCondition(oneOfSchema, result, condition, parentSchemasOfChildren))) {
             return true;
         }
         if (schemaDefinition.getModel().getAnyOf() != null && !schemaDefinition.getModel().getAnyOf().isEmpty() &&
-                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition, branchedCheckedSubSchemas))) {
+                schemaDefinition.getModel().getAnyOf().stream().anyMatch(anyOfSchema -> schemaCanMeetCondition(anyOfSchema, result, condition, parentSchemasOfChildren))) {
             return true;
         }
         if (schemaDefinition.getModel().getAllOf() != null && !schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition, branchedCheckedSubSchemas));
+            return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaCanMeetCondition(allOfSchema, result, condition, parentSchemasOfChildren));
         }
         return false;
     }
