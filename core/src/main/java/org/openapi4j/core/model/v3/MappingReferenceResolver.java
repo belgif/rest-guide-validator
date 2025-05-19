@@ -1,6 +1,7 @@
 package org.openapi4j.core.model.v3;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.openapi4j.core.model.AuthOption;
 import org.openapi4j.core.model.reference.AbstractReferenceResolver;
 import org.openapi4j.core.model.reference.ReferenceRegistry;
@@ -9,7 +10,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.$REF;
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.MAPPING;
@@ -32,22 +32,13 @@ class MappingReferenceResolver extends AbstractReferenceResolver {
 
         Collection<JsonNode> referencePaths = new HashSet<>();
 
-        List<JsonNode> refParents = document.findParents($REF);
-
         for (JsonNode refNode : referenceNodes) {
             for (JsonNode mappingNode : refNode) {
-                if (mappingNode.textValue().contains("#/")) {
-                    referencePaths.add(mappingNode);
-                } else {
-                    Optional<JsonNode> ref = refParents.stream().filter(parentNode ->
-                                    parentNode.get($REF).textValue().endsWith(mappingNode.textValue()))
-                            .findFirst();
-                    if (ref.isPresent()) {
-                        referencePaths.add(ref.get().get($REF));
-                    } else {
-                        referencePaths.add(mappingNode);
-                    }
+                if (!mappingNode.textValue().contains("#/") && !mappingNode.textValue().contains(".")) {
+                    // A schema name was used as reference
+                    mappingNode = new TextNode("#/components/schemas/" + mappingNode.textValue());
                 }
+                referencePaths.add(mappingNode);
             }
         }
 
