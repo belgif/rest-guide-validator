@@ -112,6 +112,21 @@ public class Parser {
                     .findFirst();
         }
 
+        private Optional<SchemaDefinition> resolveDiscriminatorMapping(SchemaDefinition schema, String mapping) {
+            if (mapping.contains("#/") || mapping.contains(".")) {
+                File refOpenApiFile = findOpenApiFileForRef(mapping, schema.getModel());
+                JsonPointer pointer = buildJsonPointerFromRef(mapping);
+                return schemas.stream().filter(def ->
+                        def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                        .findFirst();
+            }
+            return schemas.stream().filter(def ->
+                    def.getOpenApiFile().equals(schema.getOpenApiFile()) &&
+                            def.getIdentifier() != null &&
+                            def.getIdentifier().equals(mapping))
+                    .findFirst();
+        }
+
         private JsonPointer buildJsonPointerFromRef(String ref) {
             ref = !ref.startsWith("#") ? ref.split("#")[1] : ref.substring(1);
             return new JsonPointer(ref);
@@ -132,6 +147,15 @@ public class Parser {
             for (OpenApiDefinition<?> def : allDefinitions) {
                 if (def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null) {
                     resolve(def.getModel()).addBackReference(def);
+                }
+            }
+            for (SchemaDefinition schemaDefinition : schemas) {
+                if (schemaDefinition.getModel().getDiscriminator() != null &&
+                        schemaDefinition.getModel().getDiscriminator().getMapping() != null) {
+                    for (String mapping : schemaDefinition.getModel().getDiscriminator().getMapping().values()) {
+                        var optional = resolveDiscriminatorMapping(schemaDefinition, mapping);
+                        optional.ifPresent(definition -> definition.addBackReference(schemaDefinition));
+                    }
                 }
             }
         }
@@ -209,6 +233,19 @@ public class Parser {
                 var optional = result.resolveReference(ref);
                 if (optional.isEmpty()) {
                     log.error("[Parsing error] Could not find match of {}", ref.getRef());
+                    result.setParsingValid(false);
+                }
+            }
+        }
+        for (SchemaDefinition schemaDefinition : result.schemas) {
+            if (schemaDefinition.getModel().getDiscriminator() != null &&
+                    schemaDefinition.getModel().getDiscriminator().getMapping() != null) {
+                for (String mapping : schemaDefinition.getModel().getDiscriminator().getMapping().values()) {
+                    var optional = result.resolveDiscriminatorMapping(schemaDefinition, mapping);
+                    if (optional.isEmpty()) {
+                        log.error("[Parsing error] Could not find match of discriminator mapping: {} in: {}", mapping, schemaDefinition.getFullyQualifiedPointer());
+                        result.setParsingValid(false);
+                    }
                 }
             }
         }
@@ -615,6 +652,7 @@ public class Parser {
         try {
             JsonNode jsonNode = mapper.readTree(file);
             findRefFields(jsonNode, references);
+            findDiscriminatorMappings(jsonNode, references);
         } catch (JsonProcessingException e) {
             int location = e.getLocation().getLineNr();
             throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
@@ -645,6 +683,21 @@ public class Parser {
         if (node.isArray()) {
             var arrayField = (ArrayNode) node;
             arrayField.forEach(field -> findRefFields(field, refs));
+        }
+    }
+
+    private static void findDiscriminatorMappings(JsonNode node, Set<String> refs) {
+        List<JsonNode> parents = node.findParents("mapping");
+        for (JsonNode parent : parents) {
+            if (parent.has("propertyName")) {
+                //Is indeed a discriminator node
+                for (JsonNode mappingNode : parent.get("mapping")) {
+                    String ref = mappingNode.textValue();
+                    if (isExternalReference(ref) && ref.contains(".")) {
+                        refs.add(ref.split("#")[0]);
+                    }
+                }
+            }
         }
     }
 

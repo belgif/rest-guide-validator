@@ -1,0 +1,56 @@
+openapi: "3.0.3"
+info:
+  title: Test discriminator mappings based on schema names.
+  description: This tests the ability of the SchemaValidator to resolve discriminator mappings with schema names instead of $ref
+  version: 1
+servers: []
+paths: {}
+components:
+  schemas:
+    MyEvent:
+      type: object
+      properties:
+        type:
+          description: Yes
+          type: string
+          minLength: 1
+          enum:
+            - first
+            - second
+            - third
+      required: [type]
+      oneOf:
+        - $ref: "#/components/schemas/FirstEvent"
+        - $ref: "#/components/schemas/SecondEvent"
+        - $ref: "#/components/schemas/ThirdEvent"
+      discriminator:
+        propertyName: type
+        mapping:
+          first: DoesNotExist
+          second: SecondEvent
+          third: ThirdEvent
+
+    FirstEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
+    SecondEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
+    ThirdEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
