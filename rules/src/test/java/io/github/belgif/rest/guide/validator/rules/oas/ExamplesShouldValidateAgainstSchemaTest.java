@@ -1,10 +1,11 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
@@ -94,7 +95,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testFailingDiscriminatorRefs() {
-        assertErrorCount(1, callRules("discriminatorRefs/failingDiscriminator.yaml"));
+        assertThrows(RuntimeException.class, () -> callRules("discriminatorRefs/failingDiscriminator.yaml"));
     }
 
     @Test

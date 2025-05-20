@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator.core;
 
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,20 @@ class SchemaValidatorTest {
         assertEquals(1, examples.size());
         assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
         assertEquals(1, SchemaValidator.getExampleViolations(examples.get(0)).lines().count());
+    }
+
+    @Test
+    void testDiscriminatorMappingOnSchemaName() {
+        // In order to test the belgif fix for a bug in openapi4j where discriminator mapping did only work with $ref.
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/discriminatorMappingsOnSchemaName.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        for (SchemaDefinition schemaDefinition : result.getSchemas()) {
+            if (schemaDefinition.getModel().getEnumeration() != null) {
+                assertDoesNotThrow(() -> SchemaValidator.getEnumViolations(schemaDefinition));
+            }
+        }
     }
 
 }

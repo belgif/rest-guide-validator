@@ -129,6 +129,13 @@ class ParserTest {
     }
 
     @Test
+    void testValidButNonExistingDiscriminatorMappingResolve() {
+        var oas = new ViolationReport();
+        var file = new File(getClass().getResource("../rules/nonExistingDiscriminatorMapping.yaml").getFile());
+        assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+    }
+
+    @Test
     void testInValidNonExistingRef() {
         var logger = (Logger) LoggerFactory.getLogger(OpenApiDefinition.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
