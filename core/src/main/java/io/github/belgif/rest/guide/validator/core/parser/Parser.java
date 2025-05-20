@@ -3,7 +3,6 @@ package io.github.belgif.rest.guide.validator.core.parser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
@@ -117,13 +116,13 @@ public class Parser {
                 File refOpenApiFile = findOpenApiFileForRef(mapping, schema.getModel());
                 JsonPointer pointer = buildJsonPointerFromRef(mapping);
                 return schemas.stream().filter(def ->
-                        def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
+                                def.getJsonPointer().equals(pointer) && def.getOpenApiFile().equals(refOpenApiFile))
                         .findFirst();
             }
             return schemas.stream().filter(def ->
-                    def.getOpenApiFile().equals(schema.getOpenApiFile()) &&
-                            def.getIdentifier() != null &&
-                            def.getIdentifier().equals(mapping))
+                            def.getOpenApiFile().equals(schema.getOpenApiFile()) &&
+                                    def.getIdentifier() != null &&
+                                    def.getIdentifier().equals(mapping))
                     .findFirst();
         }
 
@@ -667,22 +666,12 @@ public class Parser {
     }
 
     private static void findRefFields(JsonNode node, Set<String> refs) {
-        if (node.isObject()) {
-            var fields = node.fields();
-            fields.forEachRemaining(field -> {
-                if (field.getKey().equals("$ref")) {
-                    String ref = field.getValue().textValue();
-                    if (isExternalReference(ref)) {
-                        refs.add(ref.split("#")[0]);
-                    }
-                } else {
-                    findRefFields(field.getValue(), refs);
-                }
-            });
-        }
-        if (node.isArray()) {
-            var arrayField = (ArrayNode) node;
-            arrayField.forEach(field -> findRefFields(field, refs));
+        List<JsonNode> parents = node.findParents("$ref");
+        for (JsonNode parent : parents) {
+            String ref = parent.get("$ref").textValue();
+            if (isExternalReference(ref)) {
+                refs.add(ref.split("#")[0]);
+            }
         }
     }
 
