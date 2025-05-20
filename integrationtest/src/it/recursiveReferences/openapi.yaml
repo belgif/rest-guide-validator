@@ -1,0 +1,94 @@
+openapi: "3.0.3"
+info:
+  title: Reusable components for CloudEvents
+  description: The definitions comply with the [JSON format](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/formats/json-format.md) of the [CloudEvents 1.0 specification](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
+  version: "${project.version}"
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers: []
+paths: {}
+components:
+  schemas:
+    MyEvent:
+      type: object
+      properties:
+        type:
+          description: Yes
+          type: string
+          minLength: 1
+          enum:
+            - first
+            - second
+            - third
+      required: [type]
+      oneOf:
+        - $ref: "#/components/schemas/FirstEvent"
+        - $ref: "#/components/schemas/SecondEvent"
+        - $ref: "#/components/schemas/ThirdEvent"
+      discriminator:
+        propertyName: type
+        mapping:
+          first: '#/components/schemas/FirstEvent'
+          second: '#/components/schemas/SecondEvent'
+          third: '#/components/schemas/ThirdEvent'
+
+    FirstEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
+          properties:
+            id:
+              type: string
+            theShare:
+              $ref: "#/components/schemas/SharedEvent"
+          required: [id, theShare]
+      required: [data]
+    SecondEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
+          properties:
+            id:
+              type: string
+            anotherId:
+              type: string
+          required: [id, anotherId]
+      required: [ data ]
+    ThirdEvent:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/MyEvent"
+      properties:
+        data:
+          description: This is a description
+          type: object
+          properties:
+            id:
+              type: string
+            firstShare:
+              $ref: "#/components/schemas/SharedEvent"
+            secondShare:
+              $ref: "#/components/schemas/SharedEvent"
+          required: [id, firstShare, secondShare]
+      required: [ data ]
+    SharedEvent:
+      type: object
+      properties:
+        propertyOne:
+          type: string
+        propertyTwo:
+          type: string
+        propertyThree:
+          type: string
+        something:
+          type: string
+      required: [propertyOne, something, propertyTwo]
