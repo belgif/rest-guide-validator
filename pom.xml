@@ -293,11 +293,9 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <deploymentName>belgif-rest-guide-validator</deploymentName>
-                            <!-- [TODO: once validated, enable automatic publishing]
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
                             <waitMaxTime>3600</waitMaxTime>
-                            -->
                             <excludeArtifacts>
                                 <excludeArtifact>belgif-rest-guide-validator-cli</excludeArtifact>
                                 <excludeArtifact>belgif-rest-guide-validator-integrationtest</excludeArtifact>
