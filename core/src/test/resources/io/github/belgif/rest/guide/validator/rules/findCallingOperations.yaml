@@ -37,6 +37,18 @@ paths:
         200:
           $ref: '#/components/responses/MyFirstResponse'
 
+  /pathWithAllOf:
+    get:
+      operationId: pathWithAllOf
+      description: descriptive sentence
+      responses:
+        200:
+          description: yes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FirstImplementation"
+
 components:
   responses:
     MyFirstResponse:
@@ -58,3 +70,51 @@ components:
           type: string
     MyParamObject:
       type: string
+    BaseSchema:
+      type: object
+      properties:
+        myFirstProperty:
+          type: string
+        mySecondProperty:
+          type: string
+    EncapsulatingSchema:
+      type: object
+      description: yes
+      required:
+        - type
+      allOf:
+        - $ref: "#/components/schemas/BaseSchema"
+      properties:
+        type:
+          type: string
+          enum:
+            - "first"
+            - "second"
+            - "third"
+      discriminator:
+        propertyName: type
+        mapping:
+          "first": FirstImplementation
+          "second": SecondImplementation
+          "third": ThirdImplementation
+    FirstImplementation:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/EncapsulatingSchema"
+      properties:
+        firstThing:
+          type: string
+    SecondImplementation:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/EncapsulatingSchema"
+      properties:
+        secondThing:
+          type: string
+    ThirdImplementation:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/EncapsulatingSchema"
+      properties:
+        thirdThing:
+          type: string

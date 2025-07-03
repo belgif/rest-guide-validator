@@ -95,6 +95,12 @@ class ApiFunctionsTest {
         assertEquals(1, operations.size());
         var operation = operations.iterator().next();
         assertEquals("myPath", operation.getModel().getOperationId());
+
+        var allOfSchema = result.getSchemas().stream().filter(definition -> definition.getIdentifier() != null && definition.getIdentifier().equals("FirstImplementation")).findAny().get();
+        operations = ApiFunctions.findOperationsUsingDefinition(allOfSchema, false);
+        assertEquals(1, operations.size());
+        operation = operations.iterator().next();
+        assertEquals("pathWithAllOf", operation.getModel().getOperationId());
     }
 
 }
