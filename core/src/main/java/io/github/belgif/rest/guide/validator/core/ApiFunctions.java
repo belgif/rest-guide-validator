@@ -286,13 +286,19 @@ public class ApiFunctions {
      * @param searchRequestBodiesOnly whether to only consider usage within a request body
      */
     public static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly) {
+        return findOperationsUsingDefinition(definition, searchRequestBodiesOnly, new HashSet<>());
+    }
+
+    private static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly, Set<OpenApiDefinition<?>> checkedTopLevelDefinitions) {
+        checkedTopLevelDefinitions.add(definition);
         if (definition.getTopLevelParent() instanceof PathsDefinition) {
             var operation = findParentOperationDefinition(definition, searchRequestBodiesOnly);
             return operation != null ? Set.of(operation) : Set.of();
         }
 
         return definition.getTopLevelParent().getReferencedBy().stream()
-                .flatMap(usage -> findOperationsUsingDefinition(usage, searchRequestBodiesOnly).stream())
+                .filter(usage -> !checkedTopLevelDefinitions.contains(usage))
+                .flatMap(usage -> findOperationsUsingDefinition(usage, searchRequestBodiesOnly, checkedTopLevelDefinitions).stream())
                 .collect(Collectors.toSet());
     }
 
@@ -303,8 +309,8 @@ public class ApiFunctions {
             if (parent instanceof RequestBodyDefinition) {
                 inRequestBody = true;
             }
-            if (parent instanceof OperationDefinition) {
-                return (searchRequestBodiesOnly && !inRequestBody) ? null : (OperationDefinition) parent;
+            if (parent instanceof OperationDefinition operationDefinition) {
+                return (searchRequestBodiesOnly && !inRequestBody) ? null : operationDefinition;
             }
             parent = parent.getParent();
         }
