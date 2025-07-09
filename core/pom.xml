@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>belgif-rest-guide-validator-core</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <dependencies>
         <dependency>
