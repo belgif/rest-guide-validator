@@ -289,7 +289,7 @@ public class ApiFunctions {
         return findOperationsUsingDefinition(definition, searchRequestBodiesOnly, new HashSet<>());
     }
 
-    public static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly, Set<OpenApiDefinition<?>> checkedTopLevelDefinitions) {
+    private static Set<OperationDefinition> findOperationsUsingDefinition(OpenApiDefinition<?> definition, boolean searchRequestBodiesOnly, Set<OpenApiDefinition<?>> checkedTopLevelDefinitions) {
         checkedTopLevelDefinitions.add(definition);
         if (definition.getTopLevelParent() instanceof PathsDefinition) {
             var operation = findParentOperationDefinition(definition, searchRequestBodiesOnly);
