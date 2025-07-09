@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>belgif-rest-guide-validator-runner</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
         <jaxb.api.version>4.0.2</jaxb.api.version>
