@@ -270,7 +270,7 @@ public class ApiFunctions {
     }
 
     public static boolean isUpperKebabCase(String string) {
-        return string.matches("^[A-Z0-9]([a-zA-Z0-9](-[A-Z0-9])?)*$");
+        return string.matches("^[A-Z][a-z0-9]*(?:-[A-Z][a-z0-9]*)*$");
     }
 
     public static boolean isNotInSet(String string, Set<String> set) {
