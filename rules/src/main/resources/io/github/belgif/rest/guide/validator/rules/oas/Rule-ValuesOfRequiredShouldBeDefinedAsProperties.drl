@@ -12,7 +12,7 @@ import java.util.Map
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 
 function void violationRequiredProperties(ViolationReport oas, SchemaDefinition schema, String requiredValue){
-    oas.addViolation("[propertyReq]",
+    oas.addViolation("[prop-req]",
         "Value is in the required list of a schema but is not defined as a property", "[Value: " + requiredValue +"]",
         schema);
 }
