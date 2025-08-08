@@ -57,6 +57,14 @@ class ApiFunctionsTest {
     }
 
     @Test
+    void isUpperKebabCase() {
+        assertTrue(ApiFunctions.isUpperKebabCase("This-Is-Test"));
+        assertTrue(ApiFunctions.isUpperKebabCase("This-Is-A-Test"));
+        assertTrue(ApiFunctions.isUpperKebabCase("X-Is-Test"));
+        assertFalse(ApiFunctions.isUpperKebabCase("X-IS-TEST"));
+    }
+
+    @Test
     void isCompatibleMediaType() {
         List<MediaType> mediaTypes = new ArrayList<>();
         mediaTypes.add(new MediaType("application/json"));
