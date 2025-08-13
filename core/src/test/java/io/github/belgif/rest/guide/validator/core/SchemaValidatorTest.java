@@ -62,4 +62,28 @@ class SchemaValidatorTest {
         }
     }
 
+    @Test
+    void testExampleValidationWithRefInExample() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/refsInLocations.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        var examples = result.getExamples().stream().filter(exampleDefinition -> exampleDefinition.getJsonPointer().getJsonPointer().equals("/paths/~1myFirstPath/get/responses/default/content/application~1problem+json/examples/AnExample")).collect(Collectors.toList());
+        assertEquals(1, examples.size());
+        assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+        assertEquals(2, SchemaValidator.getExampleViolations(examples.get(0)).lines().count());
+    }
+
+    @Test
+    void testExampleValidationWithRefInExampleInline() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/refsInLocations.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        var examples = result.getExamples().stream().filter(exampleDefinition -> exampleDefinition.getJsonPointer().getJsonPointer().equals("/paths/~1myFirstPath/get/responses/default/content/application~1problem+json/schema/oneOf/0/example")).collect(Collectors.toList());
+        assertEquals(1, examples.size());
+        assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+        assertNull(SchemaValidator.getExampleViolations(examples.get(0)));
+    }
+
 }

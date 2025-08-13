@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: Api With Refs as properties
+  description: description
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      operationId: myFirstGetOperation
+      responses:
+        default:
+          description: default response
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - x-ignore-rules:
+                        jsn-naming: One of the points of this test is to validate if a property with name $ref can exist (parsing wise), so no need to flag it as a violation here.
+                    type: object
+                    required:
+                      - myOtherProperty
+                    properties:
+                      $ref:
+                        type: string
+                      myOtherProperty:
+                        type: string
+                    example:
+                      {
+                        "$ref": "#/objects/my-object1",
+                        "myOtherProperty": "yes"
+                      }
+                  - type: string
+              examples:
+                AnExample:
+                  $ref: "#/components/examples/ThisIsQuiteAnExample"
+components:
+  examples:
+    ThisIsQuiteAnExample:
+      description: just an example
+      summary: with a reference
+      value:
+        {
+          "$ref": "#/objects/my-object1"
+        }
