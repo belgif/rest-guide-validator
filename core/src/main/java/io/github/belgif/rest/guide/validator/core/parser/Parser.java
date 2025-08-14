@@ -669,7 +669,7 @@ public class Parser {
         List<JsonNode> parents = node.findParents("$ref");
         for (JsonNode parent : parents) {
             String ref = parent.get("$ref").textValue();
-            if (isExternalReference(ref)) {
+            if (ref != null && ref.contains("#") && RefUtil.isRefInValidLocation(parent, node).orElseThrow(() -> new IllegalStateException("Reference " + ref + " not found in JsonNode")) && isExternalReference(ref)) {
                 refs.add(ref.split("#")[0]);
             }
         }
