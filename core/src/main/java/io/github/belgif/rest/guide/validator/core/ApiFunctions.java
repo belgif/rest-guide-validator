@@ -8,6 +8,7 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -87,6 +88,7 @@ public class ApiFunctions {
     private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition) {
         return schemaCanMeetCondition(schema, result, condition, new HashSet<>());
     }
+
     private static boolean schemaCanMeetCondition(Schema schema, Parser.ParserResult result, Predicate<SchemaDefinition> condition, Set<Schema> parentSchemas) {
         if (parentSchemas.contains(schema)) {
             return false;
@@ -277,7 +279,13 @@ public class ApiFunctions {
         if (string == null || set == null) {
             return true;
         }
-        return !set.contains(string);
+        if (set.contains(string)) {
+            return false;
+        }
+        return set.stream().filter(s -> s.contains("*"))
+                .map(s -> s.replace("*", ".*"))
+                .map(Pattern::compile)
+                .noneMatch(p -> p.matcher(string).matches());
     }
 
     /**
