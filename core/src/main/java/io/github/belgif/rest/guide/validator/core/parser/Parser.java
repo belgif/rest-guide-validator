@@ -665,11 +665,11 @@ public class Parser {
         return !ref.startsWith("#");
     }
 
-    private static void findRefFields(JsonNode node, Set<String> refs) {
-        List<JsonNode> parents = node.findParents("$ref");
+    private static void findRefFields(JsonNode openApiRootNode, Set<String> refs) {
+        List<JsonNode> parents = openApiRootNode.findParents("$ref");
         for (JsonNode parent : parents) {
             String ref = parent.get("$ref").textValue();
-            if (ref != null && ref.contains("#") && RefUtil.isRefInValidLocation(parent, node).orElseThrow(() -> new IllegalStateException("Reference " + ref + " not found in JsonNode")) && isExternalReference(ref)) {
+            if (ref != null && ref.contains("#") && RefUtil.isInReferenceObjectLocation(parent, openApiRootNode).orElseThrow(() -> new IllegalStateException("Reference " + ref + " not found in JsonNode")) && isExternalReference(ref)) {
                 refs.add(ref.split("#")[0]);
             }
         }

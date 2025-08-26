@@ -31,7 +31,7 @@ class RefUtilTest {
     @Test
     void testRefIsCorrectLocation() {
         JsonNode refNode = document.findParent("AnExample").get("AnExample");
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, document);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, document);
         assertTrue(validLocation.isPresent());
         assertTrue(validLocation.get());
     }
@@ -39,7 +39,7 @@ class RefUtilTest {
     @Test
     void testRefIsIncorrectLocationProperties() {
         JsonNode refNode = document.findParent("properties").get("properties");
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, document);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, document);
         assertTrue(validLocation.isPresent());
         assertFalse(validLocation.get());
     }
@@ -47,7 +47,7 @@ class RefUtilTest {
     @Test
     void testRefIsIncorrectLocationExampleComponent() {
         JsonNode refNode = document.findParent("ThisIsQuiteAnExample").get("ThisIsQuiteAnExample").get("value");
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, document);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, document);
         assertTrue(validLocation.isPresent());
         assertFalse(validLocation.get());
     }
@@ -55,7 +55,7 @@ class RefUtilTest {
     @Test
     void testRefIsIncorrectLocationExampleInline() {
         JsonNode refNode = document.findParent("oneOf").get("oneOf").get(0).get("example");
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, document);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, document);
         assertTrue(validLocation.isPresent());
         assertFalse(validLocation.get());
     }
@@ -63,7 +63,7 @@ class RefUtilTest {
     @Test
     void testRefNotInDocument() {
         JsonNode refNode = TextNode.valueOf("#/does/not/exist");
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, document);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, document);
         assertFalse(validLocation.isPresent());
     }
 
@@ -71,7 +71,7 @@ class RefUtilTest {
     void testRefOnRoot() {
         Map<String, String> root = Map.of("$ref", "#/does/not/matter");
         JsonNode refNode = new ObjectMapper().valueToTree(root);
-        Optional<Boolean> validLocation = RefUtil.isRefInValidLocation(refNode, refNode);
+        Optional<Boolean> validLocation = RefUtil.isInReferenceObjectLocation(refNode, refNode);
         assertTrue(validLocation.isPresent());
         assertFalse(validLocation.get());
     }

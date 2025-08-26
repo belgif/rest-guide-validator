@@ -16,16 +16,16 @@ public class RefUtil {
     /**
      * @param refNode The jsonNode containing the reference
      * @param rootNode The rootNode of the json/yaml document
-     * @return true if the referenced node is on a location in the root document where references are allowed. Optional will be emptu if the refNode was not found in rootNode.
+     * @return true if the referenced node is on a location in the root document where references are allowed. Optional will be empty if the refNode was not found in rootNode.
      */
-    public static Optional<Boolean> isRefInValidLocation(JsonNode refNode, JsonNode rootNode) {
+    public static Optional<Boolean> isInReferenceObjectLocation(JsonNode refNode, JsonNode rootNode) {
         Optional<List<String>> path = findPathToNode(refNode, rootNode, new ArrayList<>());
-        return path.map(RefUtil::isValidPath);
+        return path.map(RefUtil::isValidPathForRef);
     }
 
-    private static boolean isValidPath(List<String> path) {
+    private static boolean isValidPathForRef(List<String> path) {
         if (path.isEmpty()) return false;
-        if (path.contains(EXAMPLES)) {
+        if (path.contains(EXAMPLES)) { //TODO: advocate of the devil: when there's an object property defined with name "examples" or "properties"
             // A $ref is allowed directly in an example object under examples. In a single example a $ref is not allowed.
             return path.indexOf(EXAMPLES) == path.size() - 2;
         }
@@ -35,7 +35,8 @@ public class RefUtil {
     /**
      * @param refNode The jsonNode containing the reference
      * @param rootNode The rootNode of the json/yaml document
-     * @return list of property keys how to get from root to the node containing the reference.
+     * @param path The path of the subtree to scan
+     * @return list of property names or array index values how to get from root to the node containing the reference.
      */
     private static Optional<List<String>> findPathToNode(JsonNode refNode, JsonNode rootNode, List<String> path) {
         if (rootNode == refNode) {

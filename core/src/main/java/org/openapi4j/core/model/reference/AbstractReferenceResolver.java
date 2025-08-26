@@ -63,21 +63,27 @@ public abstract class AbstractReferenceResolver {
 
         for (JsonNode refNode : referencePaths) {
             String refValue = refNode.textValue();
-            /*
-             * Belgif modifications in order to fix a bug where refs are resolved by $ref key only. Also trying to follow non-existent references in examples.
-             * The original class file can be found here: https://github.com/openapi4j/openapi4j/blob/master/openapi-core/src/main/java/org/openapi4j/core/model/reference/AbstractReferenceResolver.java
-             */
             if (refValue == null) {
                 continue;
             }
-            // Because the modifications in MappingReferenceResolver create a new TextNode for references based on schema names in discriminators.
+
+            /*
+             * Belgif modifications to fix a bug where all properties named '$ref' are considered as reference objects.
+             * https://github.com/belgif/rest-guide-validator/issues/120
+             *
+             * Ignore '$ref' properties when e.g. used as object properties in a schema or example.
+             * The original class file can be found here: https://github.com/openapi4j/openapi4j/blob/master/openapi-core/src/main/java/org/openapi4j/core/model/reference/AbstractReferenceResolver.java
+             */
+
             // isRefInValidLocation returns an optional boolean. If it's empty, the refNode was not found in document.
-            Optional<Boolean> refInValidLocation = RefUtil.isRefInValidLocation(refNode, document);
+            Optional<Boolean> refInValidLocation = RefUtil.isInReferenceObjectLocation(refNode, document);  //TODO: in parser parent is passed while text node here?
             if (refInValidLocation.isPresent() && !refInValidLocation.get()) {
                 continue;
             }
             if (refInValidLocation.isEmpty()) {
-                //Verify if refValue is indeed used in a discriminator mapping
+                // Check if the reference originates from a schema name in a discriminator mapping, added by the modified MappingReferenceResolver
+                // If so, still kept as valid reference, else it is ignored
+
                 if (!refValue.startsWith("#/components/schemas/")) {
                     continue;
                 }
@@ -91,6 +97,7 @@ public abstract class AbstractReferenceResolver {
                     continue;
                 }
             }
+            /** END of belgif modifications **/
 
             final int hashIndex = refValue.indexOf(HASH);
             if (hashIndex == 0) {
