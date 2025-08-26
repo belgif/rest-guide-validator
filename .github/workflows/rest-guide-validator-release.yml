@@ -48,7 +48,7 @@ jobs:
     needs: [build-and-deploy-jars]
     steps:
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'adopt'
