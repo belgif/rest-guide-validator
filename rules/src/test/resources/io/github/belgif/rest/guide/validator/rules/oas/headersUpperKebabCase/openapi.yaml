@@ -62,6 +62,11 @@ paths:
           schema:
             type: string
           required: true
+        - name: baggage
+          in: header
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: Very good 200
