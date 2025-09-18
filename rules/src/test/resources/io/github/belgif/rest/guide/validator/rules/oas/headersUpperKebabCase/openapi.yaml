@@ -22,6 +22,51 @@ paths:
           schema:
             type: string
           required: true
+        - name: traceparent
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: tracestate
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: WWW-Authenticate
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: BelGov-traceId
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: Accept-CH
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: Sec-CH-Something
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: Sec-WebSocket-something
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: X-Is-Test
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: baggage
+          in: header
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: Very good 200
