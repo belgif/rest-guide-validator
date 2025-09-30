@@ -65,6 +65,16 @@ class ApiFunctionsTest {
     }
 
     @Test
+    void isNotInSetTest() {
+        assertTrue(ApiFunctions.isNotInSet("notInThere", Set.of("ETag", "BelGov-*")));
+        assertFalse(ApiFunctions.isNotInSet("In-There", Set.of("In-There", "Something Else", "BelGov-*")));
+        assertTrue(ApiFunctions.isNotInSet(null, Set.of("ETag")));
+        assertTrue(ApiFunctions.isNotInSet("null", null));
+        assertTrue(ApiFunctions.isNotInSet(null, null));
+        assertFalse(ApiFunctions.isNotInSet("BelGov-something-something", Set.of("In-There", "Something Else", "BelGov-*")));
+    }
+
+    @Test
     void isCompatibleMediaType() {
         List<MediaType> mediaTypes = new ArrayList<>();
         mediaTypes.add(new MediaType("application/json"));
