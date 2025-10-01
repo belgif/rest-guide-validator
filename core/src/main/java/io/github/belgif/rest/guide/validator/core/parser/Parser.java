@@ -1,7 +1,5 @@
 package io.github.belgif.rest.guide.validator.core.parser;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
@@ -31,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,6 +81,9 @@ public class Parser {
             allDefinitions.addAll(securitySchemes);
             allDefinitions.addAll(links);
             allDefinitions.addAll(securityRequirements);
+        }
+
+        private void populateModelDefinitionMap() {
             allDefinitions.forEach(def -> modelDefinitionMap.put(def.getModel(), def));
         }
 
@@ -111,7 +113,7 @@ public class Parser {
                     .findFirst();
         }
 
-        private Optional<SchemaDefinition> resolveDiscriminatorMapping(SchemaDefinition schema, String mapping) {
+        public Optional<SchemaDefinition> resolveDiscriminatorMapping(SchemaDefinition schema, String mapping) {
             if (mapping.contains("#/") || mapping.contains(".")) {
                 File refOpenApiFile = findOpenApiFileForRef(mapping, schema.getModel());
                 JsonPointer pointer = buildJsonPointerFromRef(mapping);
@@ -158,37 +160,39 @@ public class Parser {
                 }
             }
         }
+    }
 
-        /**
-         * @param paths
-         * @param lineNumber
-         * @return true if at least one element that {LineRangePath.path IN paths and LineRangePath.start >= lineNumber &lt; LineRangePath.end}
-         */
-        public boolean isInPathList(List<String> paths, int lineNumber) {
-            return this.getPaths().stream().anyMatch(lineRangePath -> paths.contains(lineRangePath.getPath()) && lineRangePath.inRange(lineNumber));
+    private void parseOpenApiFiles(ParserResult result) throws IOException {
+        result.src = new HashMap<>();
+        Set<File> foundReferencedFiles = new HashSet<>();
+        Set<File> filesProcessed = new HashSet<>();
+        foundReferencedFiles.add(result.openApiFile.getAbsoluteFile());
+        while (!filesProcessed.equals(foundReferencedFiles)) {
+            Set<SourceDefinition> sourcesToProcess = new HashSet<>();
+            for (File file : foundReferencedFiles.stream().filter(f -> !filesProcessed.contains(f)).collect(Collectors.toSet())) {
+                // readOpenApiFile not incorporated in the stream because it throws a checked exception that needs to be thrown further
+                sourcesToProcess.add(readOpenApiFile(file));
+            }
+            for (SourceDefinition sourceDefinition : sourcesToProcess) {
+                result.src.put(sourceDefinition.getFile().getAbsolutePath(), sourceDefinition);
+                parseDefinitions(result, sourceDefinition);
+                result.assembleAllDefinitions();
+                foundReferencedFiles.addAll(findExternalReferences(result, sourceDefinition));
+                filesProcessed.add(sourceDefinition.getFile());
+            }
         }
-
+        result.populateModelDefinitionMap();
     }
 
     public ParserResult parse(ViolationReport violationReport) {
         try {
             var result = new ParserResult();
             result.openApiFile = openApiFile;
-            result.src = readOpenApiFiles(openApiFile);
+            parseOpenApiFiles(result);
             if (!isOasVersionSupported(result.src.values(), violationReport)) {
                 return null;
             }
-            for (SourceDefinition sourceDefinition : result.src.values()) {
-                parsePaths(sourceDefinition, result);
-                parseComponents(sourceDefinition, result);
-                parseGlobalSecurityRequirements(sourceDefinition, result);
-                if (sourceDefinition.getFile() == result.openApiFile) {
-                    result.openAPI = sourceDefinition.getOpenApi();
-                    parseServers(result);
-                }
-            }
             verifySecurityRequirements(result);
-            result.assembleAllDefinitions();
             validateAllReferences(result);
             if (!result.isParsingValid()) {
                 // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
@@ -201,6 +205,16 @@ public class Parser {
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), new Line(openApiFile.getName(), 0), "#");
             return null;
+        }
+    }
+
+    private void parseDefinitions(ParserResult result, SourceDefinition sourceDefinition) {
+        parsePaths(sourceDefinition, result);
+        parseComponents(sourceDefinition, result);
+        parseGlobalSecurityRequirements(sourceDefinition, result);
+        if (sourceDefinition.getFile().equals(result.openApiFile)) {
+            result.openAPI = sourceDefinition.getOpenApi();
+            parseServers(result);
         }
     }
 
@@ -599,6 +613,28 @@ public class Parser {
         }
     }
 
+    private Set<File> findExternalReferences(ParserResult result, SourceDefinition sourceDefinition) {
+        Set<File> externalFiles = new HashSet<>();
+        externalFiles.addAll(
+                result.getAllDefinitions().stream()
+                        .filter(def -> def.getOpenApiFile().equals(sourceDefinition.getFile()))
+                        .filter(def -> def.getModel() instanceof Reference && ((Reference<?>) def.getModel()).getRef() != null)
+                        .map(def -> ((Reference<?>) def.getModel()).getRef())
+                        .filter(Parser::isExternalReference).map(ref -> ref.split("#")[0])
+                        .map(externalFile -> resolveRelativeFile(externalFile, Paths.get(sourceDefinition.getFile().getParent())))
+                        .map(File::getAbsoluteFile)
+                        .collect(Collectors.toSet()));
+        externalFiles.addAll(
+                result.getSchemas().stream().filter(def -> def.getOpenApiFile().equals(sourceDefinition.getFile()))
+                        .filter(def -> def.getModel().getDiscriminator() != null && def.getModel().getDiscriminator().getMapping() != null)
+                        .flatMap(def -> def.getModel().getDiscriminator().getMapping().values().stream())
+                        .filter(Parser::isExternalReference).filter(ref -> ref.contains(".")).map(ref -> ref.split("#")[0])
+                        .map(externalFile -> resolveRelativeFile(externalFile, Paths.get(sourceDefinition.getFile().getParent())))
+                        .map(File::getAbsoluteFile)
+                        .collect(Collectors.toSet()));
+        return externalFiles;
+    }
+
     private static List<String> getLines(File file) throws IOException {
         var lines = Files.readAllLines(file.toPath());
         if (lines.isEmpty())
@@ -612,23 +648,6 @@ public class Parser {
         return pretty.lines().toList();
     }
 
-    private Set<File> getReferencedFiles(File file) {
-        Set<File> refFiles = new HashSet<>();
-        resolveReferences(file, refFiles);
-        return refFiles;
-    }
-
-    private void resolveReferences(File file, Set<File> files) {
-        Path basePath = java.nio.file.Paths.get(file.getParent());
-        Set<String> refs = getExternalReferencesFromFile(file);
-        for (String ref : refs) {
-            File refFile = resolveRelativeFile(ref, basePath);
-            if (files.add(refFile)) {
-                resolveReferences(refFile, files);
-            }
-        }
-    }
-
     private static File resolveRelativeFile(String relativePath, Path basePath) {
         File refFile = new File(String.valueOf(basePath.resolve(relativePath).normalize()));
         if (refFile.exists() && refFile.isFile()) {
@@ -638,66 +657,8 @@ public class Parser {
         }
     }
 
-    private Set<String> getExternalReferencesFromFile(File file) {
-        Set<String> references = new HashSet<>();
-        ObjectMapper mapper;
-
-        if (SourceDefinition.checkIsYaml(file.getName())) {
-            mapper = new ObjectMapper(new YAMLFactory());
-        } else {
-            mapper = new ObjectMapper();
-        }
-
-        try {
-            JsonNode jsonNode = mapper.readTree(file);
-            findRefFields(jsonNode, references);
-            findDiscriminatorMappings(jsonNode, references);
-        } catch (JsonProcessingException e) {
-            int location = e.getLocation().getLineNr();
-            throw new RuntimeException("Error parsing external references of: " + file.getName() + "; Line: " + location, e);
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing external references of: " + file.getName(), e);
-        }
-        return references;
-    }
-
     private static boolean isExternalReference(String ref) {
         return !ref.startsWith("#");
-    }
-
-    private static void findRefFields(JsonNode node, Set<String> refs) {
-        List<JsonNode> parents = node.findParents("$ref");
-        for (JsonNode parent : parents) {
-            String ref = parent.get("$ref").textValue();
-            if (isExternalReference(ref)) {
-                refs.add(ref.split("#")[0]);
-            }
-        }
-    }
-
-    private static void findDiscriminatorMappings(JsonNode node, Set<String> refs) {
-        List<JsonNode> parents = node.findParents("mapping");
-        for (JsonNode parent : parents) {
-            if (parent.has("propertyName")) {
-                //Is indeed a discriminator node
-                for (JsonNode mappingNode : parent.get("mapping")) {
-                    String ref = mappingNode.textValue();
-                    if (isExternalReference(ref) && ref.contains(".")) {
-                        refs.add(ref.split("#")[0]);
-                    }
-                }
-            }
-        }
-    }
-
-    private Map<String, SourceDefinition> readOpenApiFiles(File file) throws IOException {
-        Map<String, SourceDefinition> openApiFiles = new HashMap<>();
-        openApiFiles.put(file.getAbsolutePath(), readOpenApiFile(file));
-        Set<File> refFiles = getReferencedFiles(file);
-        for (File refFile : refFiles) {
-            openApiFiles.put(refFile.getAbsolutePath(), readOpenApiFile(refFile));
-        }
-        return openApiFiles;
     }
 
     private SourceDefinition readOpenApiFile(File file) throws IOException {
