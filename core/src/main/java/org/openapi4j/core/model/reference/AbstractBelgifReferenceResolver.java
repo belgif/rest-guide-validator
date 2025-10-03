@@ -14,6 +14,10 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
+/*
+Custom resolver to map the Belgif context to the openapi4j world.
+In this package because scope of Reference.setContent is protected
+ */
 public abstract class AbstractBelgifReferenceResolver<T extends OpenApiDefinition<?>> {
 
     protected final Map<File, JsonNode> documents;
