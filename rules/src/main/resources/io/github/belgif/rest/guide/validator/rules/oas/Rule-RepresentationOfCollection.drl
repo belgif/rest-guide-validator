@@ -52,14 +52,10 @@ function boolean isObjectType(Schema schema, ParserResult parserResult) {
 rule "Rule-Representation Of Collection should have items property of type array"
     when
        $path: PathDefinition(directPath == true)
-       PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
-       eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
+       PathDefinition($operation: /model/GET, ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult)) from parserResult.resolve($path.getModel())
        $operationDefinition: OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse) from parserResult.resolve($operation)
-       ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response)
-       eval( ApiFunctions.isMediaTypeIncluded($contentType, Set.of("application/json")) )
-       ResponseDefinition($responseSchema: /model/content/mediaTypes/entrySet[key#String == $contentType]/value#MediaType/schema) from parserResult.resolve($response)
-       eval( isObjectType($responseSchema, parserResult) )
-       eval( !hasItemsArray($responseSchema, parserResult) )
+       ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String, ApiFunctions.isMediaTypeIncluded($contentType, Set.of("application/json"))) from parserResult.resolve($response)
+       ResponseDefinition($responseSchema: /model/content/mediaTypes/entrySet[key#String == $contentType]/value#MediaType/schema, isObjectType($responseSchema, parserResult)&&!hasItemsArray($responseSchema, parserResult)) from parserResult.resolve($response)
     then
         representationOfCollectionArrayViolation(oas, $operationDefinition);
 end
@@ -67,15 +63,10 @@ end
 rule "Rule-Representation Of Collection items in a collection should be of type object"
     when
        $path: PathDefinition(directPath == true)
-       PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
-       eval( ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult) )
+       PathDefinition($operation: /model/GET, ApiFunctions.existsPathWithPathParamAfter($path.getIdentifier(), parserResult)) from parserResult.resolve($path.getModel())
        $operationDefinition: OperationDefinition($response: /model/responses/APIResponses/entrySet[key#String == "200"]/value#APIResponse) from parserResult.resolve($operation)
-       ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response)
-       eval( ApiFunctions.isMediaTypeIncluded($contentType, Set.of("application/json")) )
-       ResponseDefinition($responseSchema: /model/content/mediaTypes/entrySet[key#String == $contentType]/value#MediaType/schema) from parserResult.resolve($response)
-       eval( isObjectType($responseSchema, parserResult) )
-       eval( hasItemsArray($responseSchema, parserResult) )
-       eval( !hasCollectionResponse($responseSchema, parserResult) )
+       ResponseDefinition($contentType: /model/content/mediaTypes/entrySet/key#String, ApiFunctions.isMediaTypeIncluded($contentType, Set.of("application/json"))) from parserResult.resolve($response)
+       ResponseDefinition($responseSchema: /model/content/mediaTypes/entrySet[key#String == $contentType]/value#MediaType/schema, isObjectType($responseSchema, parserResult)&&hasItemsArray($responseSchema, parserResult)&&!hasCollectionResponse($responseSchema, parserResult)) from parserResult.resolve($response)
     then
         representationOfCollectionViolation(oas, $operationDefinition);
 end

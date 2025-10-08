@@ -43,8 +43,7 @@ rule "Rule-ScopesAreDefinedInSecurityScheme"
     $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && model.getType()==Type.OAUTH2)
     SecuritySchemeDefinition($flows: /model/flows#OAuthFlows) from $securitySchemeDefinition
     $definedScopes: Set() from fetchScopesFromFlows($flows)
-    $scope: String() from $schemes.getValue()
-    eval ( !$definedScopes.contains($scope) )
+    $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
     violationScopes(oas, $securityRequirementDefinition, $scope, $securitySchemeDefinition.getPrintableJsonPointer());
 end

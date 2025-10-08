@@ -40,8 +40,7 @@ function void healthGetOperationViolation(ViolationReport oas, PathDefinition pa
 
 rule "Rule-PresenceOfHealthOperation"
     when
-      $pathsDefinition: PathsDefinition(inMainFile == true, $paths: /model)
-      eval( !$paths.hasPathItem("/health") && $paths.getPathItems().size() != 0 )
+      $pathsDefinition: PathsDefinition(inMainFile == true, !model.hasPathItem("/health") && model.getPathItems().size() != 0)
     then
         healthViolation(oas, $pathsDefinition);
 end
@@ -51,8 +50,7 @@ rule "Rule-ResponsesOfHealthOperation"
     when
         $path: PathDefinition((identifier == "/health" && directPath == true))
         $resolvedPath: PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
-        $operationDefinition: OperationDefinition($responses: /model/responses) from parserResult.resolve($operation)
-        eval ( !$responses.hasAPIResponse("200") || !$responses.hasAPIResponse("503") )
+        $operationDefinition: OperationDefinition($responses: /model/responses, !$responses.hasAPIResponse("200") || !$responses.hasAPIResponse("503")) from parserResult.resolve($operation)
     then
         healthResponseViolation(oas, $operationDefinition);
 end
@@ -60,8 +58,7 @@ end
 rule "Rule-HealthOperationWithoutGet"
     when
         $path: PathDefinition(identifier == "/health" && directPath == true)
-        $pathItem: PathItem() from parserResult.resolve($path.getModel()).getModel()
-        eval ( $pathItem.getGET() == null )
+        PathItem(getGET() == null) from parserResult.resolve($path.getModel()).getModel()
     then
         healthGetOperationViolation(oas, $path);
 end

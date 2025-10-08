@@ -14,11 +14,10 @@ function void violationComponentNamesShouldBeUpperCamelCase(ViolationReport oas,
     "Component names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.", component);
 }
 
-rule "Component names should io UpperCamelCase"
+rule "Component names should be UpperCamelCase"
     when
-        $component: OpenApiDefinition(definitionType == DefinitionType.TOP_LEVEL, $jsonPointer: jsonPointer.toPrettyString(), $componentName: identifier)
+        $component: OpenApiDefinition(definitionType == DefinitionType.TOP_LEVEL, $jsonPointer: jsonPointer.toPrettyString(), !ApiFunctions.isUpperCamelCase(identifier))
         String( startsWith("/components") ) from $jsonPointer
-        eval( !ApiFunctions.isUpperCamelCase($componentName) )
     then
         violationComponentNamesShouldBeUpperCamelCase(oas, $component);
 end

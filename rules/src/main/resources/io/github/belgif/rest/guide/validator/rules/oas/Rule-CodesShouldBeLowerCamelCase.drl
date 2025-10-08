@@ -18,14 +18,15 @@ function void violationCodesShouldBeLowerCamelCase(ViolationReport oas, SchemaDe
     "New code types SHOULD be represented as string values in lowerCamelCase.", schema);
 }
 
-rule "Codes should io lowerCamelCase"
+rule "Codes should be lowerCamelCase"
     when
-        $schema: SchemaDefinition($schemaType: /model/type)
+        $schema: SchemaDefinition($schemaType: /model/type, ApiFunctions.isNotInSet(identifier, excludeCodes()))
         SchemaType( equals(SchemaType.STRING) ) from $schemaType
         Schema( enumeration != null ) from $schema.getModel()
-        eval(((!$schema.getEffectiveIdentifier().contains("sort") && !$schema.getEffectiveIdentifier().contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration()))
-        || (( $schema.getEffectiveIdentifier().contains("sort") || $schema.getEffectiveIdentifier().contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration(), "-")))
-        eval( ApiFunctions.isNotInSet($schema.getIdentifier(), excludeCodes()) )
+        String(
+          ((!this.contains("sort") && !this.contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration()))
+          || (( this.contains("sort") || this.contains("Sort")) && !ApiFunctions.isLowerCamelCase($schema.getModel().getEnumeration(), "-"))
+        ) from $schema.getEffectiveIdentifier()
     then
         violationCodesShouldBeLowerCamelCase(oas, $schema);
 end

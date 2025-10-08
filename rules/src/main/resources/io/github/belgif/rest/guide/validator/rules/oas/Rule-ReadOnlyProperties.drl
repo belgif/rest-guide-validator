@@ -21,8 +21,7 @@ rule "ReadOnly Properties"
     when
         $schema: SchemaDefinition(model.getRef() == null)
         Map($property: /entrySet) from ApiFunctions.getRecursiveProperties($schema.getModel(), parserResult)
-        $propertyKey: String() from $property.getKey()
-        eval ( ApiFunctions.isPropertyRequiredAndReadOnly($schema, $propertyKey, parserResult) )
+        $propertyKey: String(ApiFunctions.isPropertyRequiredAndReadOnly($schema, this, parserResult)) from $property.getKey()
     then
         violationReadOnlyProperties(oas, $schema, $propertyKey);
 end
