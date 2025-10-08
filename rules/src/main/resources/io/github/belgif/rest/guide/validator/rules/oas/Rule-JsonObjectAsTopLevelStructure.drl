@@ -22,10 +22,8 @@ function void violationJsonObjectAsTopLevelStructure(ViolationReport oas, MediaT
 
 rule "[evo-object] JSON object as top level structure"
   when
-    $mediaTypeDefinition: MediaTypeDefinition()
-    eval(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includeContentTypes()))
-    MediaTypeDefinition($schema: /model/schema) from $mediaTypeDefinition
-    eval( ApiFunctions.isSchemaOfType($schema, SchemaType.OBJECT, parserResult) == false )
+    $mediaTypeDefinition: MediaTypeDefinition(ApiFunctions.isMediaTypeIncluded(identifier, includeContentTypes()))
+    MediaTypeDefinition($schema: /model/schema, !ApiFunctions.isSchemaOfType($schema, SchemaType.OBJECT, parserResult)) from $mediaTypeDefinition
   then
     violationJsonObjectAsTopLevelStructure(oas, $mediaTypeDefinition);
 end

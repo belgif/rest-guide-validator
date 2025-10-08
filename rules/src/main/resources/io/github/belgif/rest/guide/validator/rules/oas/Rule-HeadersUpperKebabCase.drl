@@ -30,18 +30,14 @@ rule "RequestHeader parameter should be Upper-Kebab-Case"
   when
     $parameterDefinition: ParameterDefinition($in: /model/in)
     Parameter.In(this.equals(In.HEADER)) from $in
-    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
-    eval( ApiFunctions.isNotInSet($parameterName, excludeHeaders()) )
-    eval( !ApiFunctions.isUpperKebabCase($parameterName) )
+    ParameterDefinition($parameterName: /model/name, ApiFunctions.isNotInSet($parameterName, excludeHeaders()) && !ApiFunctions.isUpperKebabCase($parameterName)) from $parameterDefinition
   then
     violationRequestHeaderParam(oas, $parameterDefinition, $parameterName);
 end
 
 rule "ResponseHeader should be Upper-Kebab-Case"
   when
-    $response: ResponseDefinition($headerName: /model/headers/keySet#String)
-    eval( ApiFunctions.isNotInSet($headerName, excludeHeaders()) )
-    eval( !ApiFunctions.isUpperKebabCase($headerName) )
+    $response: ResponseDefinition($headerName: /model/headers/keySet#String, ApiFunctions.isNotInSet($headerName, excludeHeaders()) && !ApiFunctions.isUpperKebabCase($headerName))
   then
     violationResponseHeaderParam(oas, $response, $headerName);
 end

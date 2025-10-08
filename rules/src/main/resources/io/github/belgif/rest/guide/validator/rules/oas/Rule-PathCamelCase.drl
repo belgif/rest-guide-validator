@@ -34,8 +34,7 @@ rule "Path CamelCase"
         $path: PathDefinition(directPath == true, $pathString: identifier )
         String(!this.endsWith("/doc/openapi.json") && !this.endsWith("/doc/openapi.yaml")) from $pathString
         String($pathSegmentList: this.split("/")) from $pathString
-        $pathSegment: String( !this.equals("") && !this.startsWith("{") && !this.endsWith("}")) from $pathSegmentList
-        eval( !ApiFunctions.isLowerCamelCase($pathSegment) )
+        String( !this.equals("") && !this.startsWith("{") && !this.endsWith("}") && !ApiFunctions.isLowerCamelCase(this)) from $pathSegmentList
     then
         violationPath(oas, $path);
 end
@@ -44,8 +43,7 @@ rule "Path Parameter CamelCase"
   when
     $parameterDefinition: ParameterDefinition($in: /model/in)
     Parameter.In(this.equals(In.PATH)) from $in
-    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
-    eval( !ApiFunctions.isLowerCamelCase($parameterName) )
+    ParameterDefinition($parameterName: /model/name, !ApiFunctions.isLowerCamelCase($parameterName)) from $parameterDefinition
   then
     violationPathParam(oas, $parameterDefinition);
 end
@@ -54,8 +52,7 @@ rule "Query Parameter lowerCamelCase with extra characters"
   when
     $parameterDefinition: ParameterDefinition($in: /model/in)
     Parameter.In(this.equals(In.QUERY)) from $in
-    ParameterDefinition($parameterName: /model/name) from $parameterDefinition
-    eval( !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_")) )
+    ParameterDefinition($parameterName: /model/name, !ApiFunctions.isLowerCamelCase($parameterName, List.of(".", "_"))) from $parameterDefinition
   then
     violationQueryParam(oas, $parameterDefinition);
 end

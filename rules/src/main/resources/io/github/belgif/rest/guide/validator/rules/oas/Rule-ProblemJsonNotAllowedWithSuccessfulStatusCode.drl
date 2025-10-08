@@ -23,8 +23,7 @@ rule "application/problem+json not allowed in 1xx, 2xx and 3xx responses"
   when
     $response: ResponseDefinition( definitionType == DefinitionType.INLINE )
     String( startsWith("1") || startsWith("2") || startsWith("3") ) from $response.statusCode
-    ResponseDefinition($mediaType: /model/content/mediaTypes/entrySet/key#String) from parserResult.resolve($response.getModel())
-    eval( ApiFunctions.isMediaTypeIncluded($mediaType, Set.of("application/problem+json")) )
+    ResponseDefinition($mediaType: /model/content/mediaTypes/entrySet/key#String, ApiFunctions.isMediaTypeIncluded($mediaType, Set.of("application/problem+json"))) from parserResult.resolve($response.getModel())
   then
     violationProblemJson(oas, $response);
 end
