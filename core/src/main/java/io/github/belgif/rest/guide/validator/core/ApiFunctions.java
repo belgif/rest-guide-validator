@@ -144,6 +144,27 @@ public class ApiFunctions {
         }
     }
 
+    public static Map<String, List<String>> getDoubleProperties(Schema schema, Parser.ParserResult result) {
+        Map<String, List<String>> doubleProperties = new HashMap<>();
+        for (Schema subSchema : schema.getAllOf()) {
+            getRecursiveProperties(subSchema, result).forEach((key, value) -> {
+                StringBuilder pointerBuilder = new StringBuilder();
+                pointerBuilder.append(result.resolve(subSchema).getPrintableJsonPointer());
+                if (subSchema != value) {
+                    pointerBuilder.append(" (via <<").append(result.resolve(value).getPrintableJsonPointer()).append(">>)");
+                }
+                if (doubleProperties.containsKey(key)) {
+                    doubleProperties.get(key).add(pointerBuilder.toString());
+                } else {
+                    doubleProperties.put(key, new ArrayList<>(Collections.singletonList(pointerBuilder.toString())));
+                }
+            });
+        }
+        return doubleProperties.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     /**
      * Returns all the properties (schemas) in a complex schema
      *

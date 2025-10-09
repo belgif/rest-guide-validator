@@ -5,11 +5,39 @@ global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import java.util.List;
+import java.util.Map;
 
 function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
     oas.addViolation("[sch-allof]",
     "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
 }
+
+function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(ViolationReport oas, SchemaDefinition schema, String specificErrors) {
+    oas.addViolation("[sch-allof]",
+    "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
+}
+
+function String parseErrorStringForDoubleProperties(Map<String, List<String>> doubleProperties) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (Map.Entry<String, List<String>> doubleProperty : doubleProperties.entrySet()) {
+      stringBuilder.append("Property <<").append(doubleProperty.getKey()).append(">> used in:\n");
+      for (String pointer : doubleProperty.getValue()) {
+        stringBuilder.append("\t").append(pointer).append("\n");
+      }
+    }
+    return stringBuilder.toString();
+}
+
+rule "SubSchemas in an allOf should not declare the same properties"
+    when
+        $schema: SchemaDefinition(model.getAllOf() != null)
+        $errors: Map(!isEmpty()) from ApiFunctions.getDoubleProperties($schema.getModel(), parserResult)
+    then
+        violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, parseErrorStringForDoubleProperties($errors));
+end
 
 rule "Discriminator Should Contain Explicit Mapping"
     when

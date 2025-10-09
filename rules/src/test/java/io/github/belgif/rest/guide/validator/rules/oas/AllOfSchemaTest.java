@@ -6,12 +6,17 @@ import org.junit.jupiter.api.Test;
 class AllOfSchemaTest extends AbstractOasRuleTest {
    @Test
     void testValidOpenApi() {
-       assertNoViolations(callRules("discriminatorWithMapping.yaml"));
+       assertNoViolations(callRules("openapi.yaml"));
    }
 
    @Test
-    void testInvalidOpenApi() {
+    void testDiscriminatorWithoutMapping() {
        assertErrorCount(1, callRules("discriminatorWithoutMapping.yaml"));
+   }
+
+   @Test
+    void testAllOfWithDoubleProperties() {
+       assertErrorCount(10, callRules("allOfWithDoubleProperties.yaml"));
    }
 
 }

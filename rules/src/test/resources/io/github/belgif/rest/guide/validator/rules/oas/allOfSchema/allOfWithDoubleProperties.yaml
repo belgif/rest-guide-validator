@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    MyParentSchema:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - first
+            - second
+      discriminator:
+        propertyName: type
+        mapping:
+          first: "#/components/schemas/First"
+          second: "#/components/schemas/Second"
+    First:
+      allOf:
+        - $ref: "#/components/schemas/MyParentSchema"
+        - type: object
+          properties:
+            fancyProperty:
+              type: string
+    Second:
+      allOf:
+        - $ref: "#/components/schemas/MyParentSchema"
+        - type: object
+          properties:
+            secondProperty:
+              type: string
+    Third:
+      allOf:
+        - $ref: "#/components/schemas/First"
+        - $ref: "#/components/schemas/Second"
