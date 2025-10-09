@@ -45,7 +45,7 @@ class SchemaValidatorTest {
 
         assertEquals(1, examples.size());
         assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
-        assertEquals(1, SchemaValidator.getExampleViolations(examples.get(0)).lines().count());
+        assertEquals(1, SchemaValidator.getExampleViolations(examples.get(0)).get().lines().count());
     }
 
     @Test

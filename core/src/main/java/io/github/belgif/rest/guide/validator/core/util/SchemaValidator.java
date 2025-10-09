@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class SchemaValidator {
     private SchemaValidator() {
     }
 
-    public static String getExampleViolations(ExampleDefinition exampleDefinition) {
+    public static Optional<String> getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
             SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
             JsonNode schemaNode = getSchemaNode(schemaDefinition);
@@ -59,18 +60,30 @@ public class SchemaValidator {
             var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
             Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
             for (JsonNode nodeToValidate : enumNodes) {
-                String violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
-                if (violation != null) {
-                    violations.add(Map.entry(nodeToValidate.toString(), violation));
-                }
+                Optional<String> violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
+                violation.ifPresent(s -> violations.add(Map.entry(nodeToValidate.toString(), s)));
             }
         } catch (ResolutionException ex) {
             throw new RuntimeException(schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer().toPrettyString() + ": Unable to validate enums", ex);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-
         return violations;
+    }
+
+    public static Optional<String> getDefaultValueViolations(SchemaDefinition schemaDefinition) {
+        try {
+            JsonNode schemaNode = getSchemaNode(schemaDefinition);
+            if (schemaNode.has("default")) {
+                JsonNode defaultNode = schemaNode.get("default");
+
+                var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+                return buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition));
+            }
+        } catch (MalformedURLException | ResolutionException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
     }
 
     // Internal methods
@@ -179,14 +192,14 @@ public class SchemaValidator {
         return openApiNode.at(com.fasterxml.jackson.core.JsonPointer.compile(jsonPointer.getJsonPointer()));
     }
 
-    private static String buildViolationString(Set<String> violations) {
+    private static Optional<String> buildViolationString(Set<String> violations) {
         if (violations.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         StringBuilder sb = new StringBuilder();
         for (String violation : violations) {
             sb.append(violation).append("\n");
         }
-        return sb.toString().strip();
+        return Optional.of(sb.toString().strip());
     }
 }
