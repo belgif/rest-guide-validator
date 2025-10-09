@@ -40,3 +40,20 @@ components:
       allOf:
         - $ref: "#/components/schemas/First"
         - $ref: "#/components/schemas/Second"
+    AnotherSchema:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/First"
+        - type: object
+          properties:
+            myProperty:
+              type: string
+    YetAnotherSchema:
+      type: object
+      oneOf:
+        - $ref: "#/components/schemas/Second"
+        - $ref: "#/components/schemas/First"
+    SchemaUnderTest:
+      allOf:
+        - $ref: "#/components/schemas/AnotherSchema"
+        - $ref: "#/components/schemas/YetAnotherSchema"
