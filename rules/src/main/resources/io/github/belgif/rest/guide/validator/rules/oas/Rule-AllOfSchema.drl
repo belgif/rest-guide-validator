@@ -1,0 +1,20 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import org.eclipse.microprofile.openapi.models.media.Discriminator;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+
+function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
+    oas.addViolation("[sch-allof]",
+    "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
+}
+
+rule "Discriminator Should Contain Explicit Mapping"
+    when
+        $schema: SchemaDefinition($discriminator: /model/discriminator)
+        Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
+    then
+        violationDiscriminatorShouldContainMapping(oas, $schema);
+end
