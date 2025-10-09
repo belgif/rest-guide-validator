@@ -6,9 +6,15 @@ import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import java.util.List;
-import java.util.Map;
+import java.util.Map
+import org.eclipse.microprofile.openapi.models.media.Schema
+import java.util.HashMap
+import java.util.Collections
+import java.util.ArrayList
+import java.util.stream.Collectors;
 
 function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
     oas.addViolation("[sch-allof]",
@@ -31,10 +37,31 @@ function String parseErrorStringForDoubleProperties(Map<String, List<String>> do
     return stringBuilder.toString();
 }
 
+function Map getDoubleProperties(Schema schema, ParserResult parserResult) {
+  Map<String, List<String>> doubleProperties = new HashMap<>();
+  for (Schema subSchema : schema.getAllOf()) {
+    ApiFunctions.getRecursiveProperties(subSchema, parserResult).forEach((key, value) -> {
+      StringBuilder pointerBuilder = new StringBuilder();
+      pointerBuilder.append(parserResult.resolve(subSchema).getPrintableJsonPointer());
+      if (subSchema != value) {
+        pointerBuilder.append(" (via <<").append(parserResult.resolve(value).getPrintableJsonPointer()).append(">>)");
+      }
+      if (doubleProperties.containsKey(key)) {
+        doubleProperties.get(key).add(pointerBuilder.toString());
+      } else {
+        doubleProperties.put(key, new ArrayList<>(Collections.singletonList(pointerBuilder.toString())));
+      }
+    });
+  }
+  return doubleProperties.entrySet().stream()
+    .filter(e -> e.getValue().size() > 1)
+    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+}
+
 rule "SubSchemas in an allOf should not declare the same properties"
     when
-        $schema: SchemaDefinition(model.getAllOf() != null)
-        $errors: Map(!isEmpty()) from ApiFunctions.getDoubleProperties($schema.getModel(), parserResult)
+        $schema: SchemaDefinition($model: /model, model.allOf != null)
+        $errors: Map(!isEmpty()) from getDoubleProperties($model, parserResult)
     then
         violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, parseErrorStringForDoubleProperties($errors));
 end
