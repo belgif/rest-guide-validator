@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -69,8 +70,22 @@ public class SchemaValidator {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-
         return violations;
+    }
+
+    public static Optional<String> getDefaultValueViolations(SchemaDefinition schemaDefinition) {
+        try {
+            JsonNode schemaNode = getSchemaNode(schemaDefinition);
+            if (schemaNode.has("default")) {
+                JsonNode defaultNode = schemaNode.get("default");
+
+                var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+                return Optional.ofNullable(buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition)));
+            }
+        } catch (MalformedURLException | ResolutionException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
     }
 
     // Internal methods

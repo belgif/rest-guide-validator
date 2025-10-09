@@ -1,0 +1,23 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import java.util.Optional
+
+function void violationDefaultValuesShouldValidateAgainstSchema(ViolationReport oas, SchemaDefinition schema, String violation){
+    oas.addViolation("[oas-defaul]",
+    "Default value is not valid against the schema in which it is defined.", violation, schema);
+}
+
+//All schemas should be checked by the SchemaValidator because the OpenApi schema model tries to cast the default value to the type of the schema.
+//So we cannot trust a filter on $schema.getModel().getDefaultValue() == null
+rule "Default values should validate against schema"
+    when
+        $schema: SchemaDefinition()
+        $optional: Optional(isPresent()) from SchemaValidator.getDefaultValueViolations($schema)
+        $violation: String() from $optional.get()
+    then
+        violationDefaultValuesShouldValidateAgainstSchema(oas, $schema, $violation);
+end
