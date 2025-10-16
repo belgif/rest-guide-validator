@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+tags:
+  - name: ReferenceData
+  - name: Organization
+  - name: Employer
+  - name: Logos
+  - name: Documentation
+  - name: Monitoring
+servers:
+  - url: /demo/v1
+paths:
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Check health of this REST API
+      description: This resource is only available to supervision users
+      operationId: healthCheck
+      responses:
+        "200":
+          description: The service is UP or DEGRADED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                response:
+                  value:
+                    status: UP
+        "503":
+          description: The service is DOWN
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                response:
+                  value:
+                    status: DOWN
+        default:
+          description: default
+          content:
+            application/problem+json:
+              schema:
+                type: object
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: "Level indicating the health status of the service: UP (functioning
+            as expected), DOWN (suffering unexpected failures), DEGRADED (partly
+            unavailable but service can be continued with reduced
+            functionality), or a custom status value"
+        details:
+          type: string
+        $ref:
+          type: string
+      description: Response message for the API health
+      example:
+        status: "All good"
+        details: "uhuh"
+        $ref: "www.google.com"
