@@ -171,7 +171,7 @@ public class Parser {
             Set<SourceDefinition> sourcesToProcess = new HashSet<>();
             for (File file : foundReferencedFiles.stream().filter(f -> !filesProcessed.contains(f)).collect(Collectors.toSet())) {
                 // readOpenApiFile not incorporated in the stream because it throws a checked exception that needs to be thrown further
-                sourcesToProcess.add(readOpenApiFile(file));
+                sourcesToProcess.add(new SourceDefinition(file, buildOpenApiSpecification(file)));
             }
             for (SourceDefinition sourceDefinition : sourcesToProcess) {
                 result.src.put(sourceDefinition.getFile().getAbsolutePath(), sourceDefinition);
@@ -659,10 +659,6 @@ public class Parser {
 
     private static boolean isExternalReference(String ref) {
         return !ref.startsWith("#");
-    }
-
-    private SourceDefinition readOpenApiFile(File file) throws IOException {
-        return new SourceDefinition(file, buildOpenApiSpecification(file));
     }
 
 }
