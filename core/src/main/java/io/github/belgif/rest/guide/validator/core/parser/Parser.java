@@ -168,12 +168,9 @@ public class Parser {
         Set<File> filesProcessed = new HashSet<>();
         foundReferencedFiles.add(result.openApiFile.getAbsoluteFile());
         while (!filesProcessed.equals(foundReferencedFiles)) {
-            Set<SourceDefinition> sourcesToProcess = new HashSet<>();
             for (File file : foundReferencedFiles.stream().filter(f -> !filesProcessed.contains(f)).collect(Collectors.toSet())) {
-                // readOpenApiFile not incorporated in the stream because it throws a checked exception that needs to be thrown further
-                sourcesToProcess.add(new SourceDefinition(file, buildOpenApiSpecification(file)));
-            }
-            for (SourceDefinition sourceDefinition : sourcesToProcess) {
+                // buildOpenApiSpecification not incorporated in the stream because it throws a checked exception that needs to be thrown further
+                SourceDefinition sourceDefinition = new SourceDefinition(file, buildOpenApiSpecification(file));
                 result.src.put(sourceDefinition.getFile().getAbsolutePath(), sourceDefinition);
                 parseDefinitions(result, sourceDefinition);
                 result.assembleAllDefinitions();
