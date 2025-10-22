@@ -72,10 +72,10 @@ public class SchemaValidator {
             if (schemaNode.has("default")) {
                 JsonNode defaultNode = schemaNode.get("default");
 
-                var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+                var apiContext = new BelgifOAI3Context(schemaDefinition);
                 return buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition));
             }
-        } catch (MalformedURLException | ResolutionException e) {
+        } catch (ResolutionException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
