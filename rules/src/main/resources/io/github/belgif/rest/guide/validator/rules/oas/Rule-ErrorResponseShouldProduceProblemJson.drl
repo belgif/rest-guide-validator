@@ -27,12 +27,11 @@ rule "Error Response with problem+json media type is missing"
   when
     $operationDefinition: OperationDefinition(method != HttpMethod.HEAD && method != HttpMethod.OPTIONS)
     OperationDefinition($statusCode: /model/responses/APIResponses/keySet#String) from $operationDefinition
-    String( this.startsWith("4") || this.startsWith("5") || this == "default" ) from $statusCode
+    String( (this.startsWith("4") || this.startsWith("5") || this == "default") && !($operationDefinition.identifier == "GET /health" && this == "503") ) from $statusCode
     $response: APIResponse() from $operationDefinition.getModel().getResponses().getAPIResponse($statusCode)
     not(APIResponse(/content/mediaTypes[keySet contains "application/problem+json"]) from $response)
     $responseDefinition: ResponseDefinition() from parserResult.resolve($response)
     not(ResponseDefinition(/model/content/mediaTypes[keySet contains "application/problem+json"]) from $responseDefinition)
-    eval( !("GET /health".equals($operationDefinition.getIdentifier()) && "503".equals($statusCode)) )
   then
     violationErrorResponseWrongMediaType(oas, $operationDefinition, $responseDefinition);
 end

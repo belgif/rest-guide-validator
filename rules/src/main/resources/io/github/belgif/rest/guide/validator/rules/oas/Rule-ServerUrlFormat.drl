@@ -26,8 +26,7 @@ function boolean hasEntryFilePathsConfigured(ParserResult parserResult) {
 
 rule "Server Url or basePath Format"
     when
-        $server: ServerDefinition($url: /model/url)
-        eval( !parserResult.getSrc().get($server.getOpenApiFile().getAbsolutePath()).hasReusableDefinitionsOnly() && hasEntryFilePathsConfigured(parserResult) )
+        $server: ServerDefinition($url: /model/url, !parserResult.getSrc().get(openApiFile.getAbsolutePath()).hasReusableDefinitionsOnly() && hasEntryFilePathsConfigured(parserResult))
         not String( this matches(urlPattern()) ) from $url
     then
         violationServerUrlFormat(oas, $server);

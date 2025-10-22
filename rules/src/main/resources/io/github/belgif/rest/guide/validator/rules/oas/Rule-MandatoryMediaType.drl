@@ -24,11 +24,9 @@ function void violationMandatoryMediaType(ViolationReport oas, MediaTypeDefiniti
 rule "Mandatory Mediatype"
   when
     $mediaTypeDefinition: MediaTypeDefinition($schema: /model/schema)
-    eval( $schema != null )
     $schemaDefinition: SchemaDefinition(model.getType() != SchemaType.STRING || (model.getFormat() != "binary" && model.getFormat != "byte" && model.getFormat != "base64")) from parserResult.resolve($schema)
-    eval( !ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), includedMediaTypes()) )
+    MediaTypeDefinition(!ApiFunctions.isMediaTypeIncluded(identifier, includedMediaTypes()) && !(ApiFunctions.isMediaTypeIncluded(identifier, Set.of("text/*")) && $schemaDefinition.getModel().getType().equals(SchemaType.STRING))) from $mediaTypeDefinition
     // text/* should only be allowed for type string, not for objects
-    eval( !(ApiFunctions.isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), Set.of("text/*")) && $schemaDefinition.getModel().getType().equals(SchemaType.STRING)) )
   then
     violationMandatoryMediaType(oas, $mediaTypeDefinition);
 end

@@ -23,8 +23,7 @@ function Set forbiddenPathParamNames() {
 rule "Rule-IdName"
     when
         $param: ParameterDefinition(model.getIn() == In.PATH)
-        ParameterDefinition($name: /model/name) from $param
-        eval ( forbiddenPathParamNames().contains($name) )
+        ParameterDefinition($name: /model/name, forbiddenPathParamNames().contains($name)) from $param
     then
         pathParamViolation(oas, $param);
 end

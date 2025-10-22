@@ -61,24 +61,21 @@ function void violationOperationIdNotLowerCamelCase(ViolationReport oas, Operati
 
 rule "OperationId Not Specified"
 	when
-        $operationDef: OperationDefinition($operation: /model)
-        eval( $operation.getOperationId() == null || $operation.getOperationId().isEmpty() )
+        $operationDef: OperationDefinition($operation: /model, $operation.getOperationId() == null || $operation.getOperationId().isEmpty())
     then
         violationOperationIdNotSpecified(oas, $operationDef);
 end
 
 rule "OperationId Not lowerCamelCase"
   when
-    $operationDef: OperationDefinition($operationId: /model/operationId)
-    eval( !ApiFunctions.isLowerCamelCase($operationId) )
+    $operationDef: OperationDefinition($operationId: /model/operationId, !ApiFunctions.isLowerCamelCase($operationId))
   then
     violationOperationIdNotLowerCamelCase(oas, $operationDef);
 end
 
 rule "OperationId Not Unique"
   when
-    $operations: List() from findDuplicateOperationIds(parserResult.getOperations)
-    eval( $operations.size() > 1 )
+    $operations: List(this.size() > 1) from findDuplicateOperationIds(parserResult.getOperations)
   then
     violationOperationIdNotUnique(oas, $operations);
 end

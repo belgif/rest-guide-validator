@@ -42,8 +42,7 @@ function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
 
 rule "Rule Properties Nullable"
    	when
-      $schema: SchemaDefinition(model.nullable == true)
-      eval( !hasPatchOrUpdateInTopLevelComponentName($schema) && !schemaUsedInPatchOperation($schema) )
+      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this))
     then
       violationPropertiesNullable(oas, $schema);
 end

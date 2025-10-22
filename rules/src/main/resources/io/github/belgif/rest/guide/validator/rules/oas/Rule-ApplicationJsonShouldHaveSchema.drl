@@ -29,8 +29,7 @@ function void violationJsonRequestOrResponseHasNoSchema(ViolationReport oas, Med
 
 rule "Application/Json should always have a schema (OAS3)"
   when
-    $mediaTypeDefinition : MediaTypeDefinition(/model[schema == null])
-    eval(isMediaTypeIncluded($mediaTypeDefinition.getIdentifier(), Set.of("application/json")))
+    $mediaTypeDefinition : MediaTypeDefinition(/model[schema == null], isMediaTypeIncluded(identifier, Set.of("application/json")))
   then
     violationJsonRequestOrResponseHasNoSchema(oas, $mediaTypeDefinition);
 end

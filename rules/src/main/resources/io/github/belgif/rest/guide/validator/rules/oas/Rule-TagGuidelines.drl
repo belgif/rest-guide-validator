@@ -55,8 +55,7 @@ end
 rule "Rule-Tag Guidelines each tag should be declared in the top level tags list"
     when
         $path: PathDefinition(directPath == true, $operation: /model/operations/entrySet/value#Operation)
-        $operationDefinition: OperationDefinition($tag: /model/tags#String) from parserResult.resolve($operation)
-        eval( !isTagDeclaredInTopLevelTagsList($tag, parserResult) )
+        $operationDefinition: OperationDefinition($tag: /model/tags#String, !isTagDeclaredInTopLevelTagsList($tag, parserResult)) from parserResult.resolve($operation)
     then
         eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(oas, $operationDefinition, $tag);
 end
@@ -64,8 +63,7 @@ end
 rule "Rule-Tag Guidelines name of tag should start with a capital letter"
     when
         $operationDefinition: OperationDefinition($tag: /model/tags)
-        String(!this.isEmpty()) from $tag
-        eval( !Character.isUpperCase($tag.charAt(0)) )
+        String(!this.isEmpty() && !Character.isUpperCase(this.charAt(0))) from $tag
     then
         nameOfTagShouldStartWithCapitalLetterViolation(oas, $operationDefinition, $tag);
 end
