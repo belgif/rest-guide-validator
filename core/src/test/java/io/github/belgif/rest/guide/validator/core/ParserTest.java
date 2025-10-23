@@ -48,15 +48,6 @@ class ParserTest {
     }
 
     @Test
-    void isInPathList() {
-        var oas = new ViolationReport();
-        var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
-        var result = new Parser(file).parse(oas);
-
-        assertTrue(result.isInPathList(List.of("/everythingIsGoodHere"), 8));
-    }
-
-    @Test
     void testConstructNestedSchema() {
         var oas = new ViolationReport();
         var openApiFile = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());

@@ -4,22 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.model.*;
+import io.github.belgif.rest.guide.validator.core.model.helper.BelgifOAI3Context;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.openapi4j.core.exception.ResolutionException;
+import org.openapi4j.core.model.OAIContext;
 import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.model.v3.OAI3Context;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -36,19 +36,17 @@ public class SchemaValidator {
     private SchemaValidator() {
     }
 
-    public static String getExampleViolations(ExampleDefinition exampleDefinition) {
+    public static Optional<String> getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
             SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
             JsonNode schemaNode = getSchemaNode(schemaDefinition);
             ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
             JsonNode exampleNode = getExampleNode(example);
 
-            var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
             return buildViolationString(validateSchema(schemaNode, exampleNode, apiContext, schemaDefinition));
         } catch (ResolutionException ex) {
             throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getJsonPointer().toPrettyString() + ": Unable to validate example", ex);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -56,21 +54,31 @@ public class SchemaValidator {
         Set<Map.Entry<String, String>> violations = new HashSet<>();
         JsonNode schemaNode = getSchemaNode(schemaDefinition.getHighLevelSchema());
         try {
-            var apiContext = new OAI3Context(new URL(schemaDefinition.getOpenApiFile().toURI().toString()));
+            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
             Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
             for (JsonNode nodeToValidate : enumNodes) {
-                String violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
-                if (violation != null) {
-                    violations.add(Map.entry(nodeToValidate.toString(), violation));
-                }
+                Optional<String> violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
+                violation.ifPresent(s -> violations.add(Map.entry(nodeToValidate.toString(), s)));
             }
         } catch (ResolutionException ex) {
             throw new RuntimeException(schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer().toPrettyString() + ": Unable to validate enums", ex);
-        } catch (MalformedURLException e) {
+        }
+        return violations;
+    }
+
+    public static Optional<String> getDefaultValueViolations(SchemaDefinition schemaDefinition) {
+        try {
+            JsonNode schemaNode = getSchemaNode(schemaDefinition);
+            if (schemaNode.has("default")) {
+                JsonNode defaultNode = schemaNode.get("default");
+
+                var apiContext = new BelgifOAI3Context(schemaDefinition);
+                return buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition));
+            }
+        } catch (ResolutionException e) {
             throw new RuntimeException(e);
         }
-
-        return violations;
+        return Optional.empty();
     }
 
     // Internal methods
@@ -118,7 +126,7 @@ public class SchemaValidator {
      * @param exampleNode JsonNode object - contains the 'value' of the example object.
      * @return Set<String> with all violations in exampleNode
      */
-    private static Set<String> validateSchema(JsonNode schemaNode, JsonNode exampleNode, OAI3Context apiContext, SchemaDefinition schemaDefinition) {
+    private static Set<String> validateSchema(JsonNode schemaNode, JsonNode exampleNode, OAIContext apiContext, SchemaDefinition schemaDefinition) {
         var validationContext = new ValidationContext<OAI3>(apiContext);
         org.openapi4j.schema.validator.v3.SchemaValidator validator = new org.openapi4j.schema.validator.v3.SchemaValidator(validationContext, null, schemaNode);
 
@@ -150,14 +158,14 @@ public class SchemaValidator {
     private static SchemaDefinition getSchemaDefinition(ExampleDefinition exampleDefinition) {
         OpenApiDefinition<?> parentDef = exampleDefinition.getParent();
         Schema schema;
-        if (parentDef instanceof SchemaDefinition) {
-            schema = ((SchemaDefinition) parentDef).getModel();
-        } else if (parentDef instanceof MediaTypeDefinition) {
-            schema = ((MediaTypeDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ParameterDefinition) {
-            schema = ((ParameterDefinition) parentDef).getModel().getSchema();
-        } else if (parentDef instanceof ResponseHeaderDefinition) {
-            schema = ((ResponseHeaderDefinition) parentDef).getModel().getSchema();
+        if (parentDef instanceof SchemaDefinition schemaDefinition) {
+            schema = schemaDefinition.getModel();
+        } else if (parentDef instanceof MediaTypeDefinition mediaTypeDefinition) {
+            schema = mediaTypeDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ParameterDefinition parameterDefinition) {
+            schema = parameterDefinition.getModel().getSchema();
+        } else if (parentDef instanceof ResponseHeaderDefinition responseHeaderDefinition) {
+            schema = responseHeaderDefinition.getModel().getSchema();
         } else {
             throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getJsonPointer());
         }
@@ -179,14 +187,14 @@ public class SchemaValidator {
         return openApiNode.at(com.fasterxml.jackson.core.JsonPointer.compile(jsonPointer.getJsonPointer()));
     }
 
-    private static String buildViolationString(Set<String> violations) {
+    private static Optional<String> buildViolationString(Set<String> violations) {
         if (violations.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         StringBuilder sb = new StringBuilder();
         for (String violation : violations) {
             sb.append(violation).append("\n");
         }
-        return sb.toString().strip();
+        return Optional.of(sb.toString().strip());
     }
 }

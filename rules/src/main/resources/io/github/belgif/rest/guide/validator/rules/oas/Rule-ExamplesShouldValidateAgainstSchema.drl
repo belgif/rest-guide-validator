@@ -10,6 +10,7 @@ import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import java.util.Optional;
 
 function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, ExampleDefinition example, String violation){
     oas.addViolation("[oas-exampl]",
@@ -19,7 +20,8 @@ function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, 
 rule "Example should be valid against schema"
     when
         $example: ExampleDefinition(definitionType.equals(DefinitionType.INLINE))
-        $violation: String() from SchemaValidator.getExampleViolations($example)
+        $optional: Optional(isPresent()) from SchemaValidator.getExampleViolations($example)
+        $violation: String() from $optional.get()
     then
         violationExamplesShouldValidateAgainstSchema(oas, $example, $violation);
 end
