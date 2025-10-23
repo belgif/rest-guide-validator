@@ -1,11 +1,6 @@
 package org.openapi4j.schema.validator.v3;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.MissingNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.openapi4j.core.model.reference.Reference;
 import org.openapi4j.core.model.reference.ReferenceRegistry;
 import org.openapi4j.core.model.v3.OAI3;
@@ -16,16 +11,7 @@ import org.openapi4j.schema.validator.BaseJsonValidator;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 
@@ -154,9 +140,11 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         JsonNode allOfNode = getParentSchemaNode().get(ALLOF);
         ReferenceRegistry refRegistry = context.getContext().getReferenceRegistry();
 
+        // Belgif modification starts
         for (JsonNode allOfNodeItem : allOfNode) {
             JsonNode refNode = getReference(allOfNodeItem);
             if (refNode != null) {
+                // Belgif modification ends
                 Reference reference = refRegistry.getRef(refNode.textValue());
                 discriminatorNode = reference.getContent().get(DISCRIMINATOR);
                 if (discriminatorNode != null) {
@@ -245,124 +233,8 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         }
 
         // Check if Schema Object exists
-        // Modification for Belgif validator: Resolve relative refs
-        String resolvedRef = resolveRelativeRef(ref);
-        return context.getContext().getReferenceRegistry().getRef(resolvedRef) != null || (isExternalRef(resolvedRef) && externalRefExists(resolvedRef));
+        return context.getContext().getReferenceRegistry().getRef(ref) != null;
     }
-
-    private boolean isExternalRef(String ref) {
-        return !ref.split("#/")[0].isEmpty();
-    }
-
-    private boolean externalRefExists(String ref) {
-        try {
-            URL baseUrl = URI.create(ref.split("#/")[0]).toURL();
-            String internalRef = ref.split("#/")[1];
-            File file = new File(baseUrl.getFile());
-            JsonFactory factory;
-            if (file.exists()) {
-                if (file.getName().endsWith(".yaml") || file.getName().endsWith(".yml")) {
-                    factory = new YAMLFactory();
-                } else {
-                    factory = new JsonFactory();
-                }
-                try {
-                    ObjectMapper mapper = new ObjectMapper(factory);
-                    JsonNode referencedFile = mapper.readTree(file);
-                    JsonPointer jsonPointer = JsonPointer.compile("/"+internalRef);
-                    JsonNode resolvedNode = referencedFile.at(jsonPointer);
-                    return resolvedNode != null && !(resolvedNode instanceof MissingNode);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        return false;
-    }
-
-    /**
-     * Custom method for Belgif Validator
-     * Resolves the reference within the discriminatorMapping
-     */
-    private String resolveRelativeRef(String ref) {
-        // create list of files traversed through references to the discriminator
-        List<String> fileCrumbs = new ArrayList<>();
-        addFirstFileCrumb(fileCrumbs, ref);
-        SchemaValidator schemaValidator = this.getParentSchema();
-        while (schemaValidator != null) {
-            addExternalFileCrumb(schemaValidator.getCrumbInfo(), fileCrumbs);
-            schemaValidator = schemaValidator.getParentSchema();
-        }
-        Collections.reverse(fileCrumbs); // So refs are in order starting from the 'entry' file.
-
-        try {
-            Path initialOpenApiPath = Paths.get(context.getContext().getBaseUrl().toURI()); // absolute file name of the initial OpenAPI file
-            return buildRef(fileCrumbs, getComponentRef(ref), initialOpenApiPath);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void addFirstFileCrumb(List<String> fileCrumbs, String ref) {
-        if (!ref.startsWith("#/")) { // There is a file in the ref of the Discriminator Mapping
-            fileCrumbs.add(ref.split("#/")[0]);
-        }
-        if (this.getSchemaNode().has(DISCRIMINATOR)) { //The discriminator is directly in the AllOf schema
-            addExternalFileCrumb(this.crumbInfo, fileCrumbs);
-        } else {
-            for (SchemaValidator childValidator : validators) { // The discriminator is in one of the referenced schemas
-                if (childValidator.getSchemaNode().has(DISCRIMINATOR)) {
-                    addExternalFileCrumb(childValidator.getCrumbInfo(), fileCrumbs);
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns only the reference without file name
-     */
-    private static String getComponentRef(String ref) {
-        String[] refSplit = ref.split("#/");
-        return "#/" + refSplit[refSplit.length - 1];
-    }
-
-    /**
-     * Returns a reference with absolute file path to the given ref
-     * based on the files traversed to the discriminator
-     */
-    private static String buildRef(List<String> fileCrumbs, String ref, Path initialOpenApiPath) {
-        if (fileCrumbs.isEmpty()) {
-            return ref;
-        }
-
-        // build path to the ref, combining all paths traversed to it
-        StringBuilder sb = new StringBuilder();
-        for (String crumb : fileCrumbs) {
-            String fileName = getFileNameFromPath(crumb);
-            String pathInCrumb = crumb.replace(fileName, ""); //Ditch filename so only folder hopping in refs is taken into account.
-            if (!pathInCrumb.isEmpty()) {
-                sb.append(pathInCrumb);
-            }
-        }
-        sb.append(getFileNameFromPath(fileCrumbs.get(fileCrumbs.size() - 1))); // append file containing the ref, i.e. with the discriminator
-        return initialOpenApiPath.getParent().resolve(sb.toString()).normalize().toFile().toURI() + ref;
-    }
-
-    private static String getFileNameFromPath(String filePath) {
-        String[] splits = filePath.split("/");
-        return splits[splits.length - 1];
-    }
-
-    private static void addExternalFileCrumb(ValidationResults.CrumbInfo crumbInfo, List<String> refCrumbs) {
-        if (crumbInfo != null && crumbInfo.crumb() != null && crumbInfo.crumb().contains("#/") && !crumbInfo.crumb().startsWith("#/")) { // Crumb contains an external ref
-            refCrumbs.add(crumbInfo.crumb().split("#/")[0]); // Add file reference to refCrumbs
-        }
-    }
-
-    // End of customizations for Belgif Validator
 
     private SchemaValidator getOneAnyOfValidator(final String discriminatorValue) {
         // Explicit case with mapping
@@ -385,7 +257,10 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
                                                  final BiPredicate<String, String> checker) {
 
         for (SchemaValidator validator : validators) {
-            JsonNode refNode = validator.getSchemaNode().get($REF);
+            JsonNode refNode = validator.getSchemaNode().get(ABS_REF_FIELD);
+            if (refNode == null) {
+                refNode = validator.getSchemaNode().get($REF);
+            }
             if (refNode != null && checker.test(refNode.textValue(), value)) {
                 return validator;
             }
@@ -394,4 +269,3 @@ abstract class DiscriminatorValidator extends BaseJsonValidator<OAI3> {
         return null;
     }
 }
-
