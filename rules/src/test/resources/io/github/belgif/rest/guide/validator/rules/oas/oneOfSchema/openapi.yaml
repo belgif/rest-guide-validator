@@ -9,6 +9,9 @@ components:
   schemas:
     First:
       type: object
+      allOf:
+        - type: object
+          description: yes
     Second:
       type: object
     SchemaUnderTest:

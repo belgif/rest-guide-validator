@@ -11,6 +11,9 @@ components:
       type: string
     Second:
       type: object
+      allOf:
+        - type: string
+          description: yes
     SchemaUnderTest:
       oneOf:
         - $ref: "#/components/schemas/First"
