@@ -7,6 +7,7 @@ import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,6 +61,28 @@ class SchemaValidatorTest {
                 assertDoesNotThrow(() -> SchemaValidator.getEnumViolations(schemaDefinition));
             }
         }
+    }
+
+    @Test
+    void testRefAsPropertyName() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/refAsPropertyName.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().filter(def -> def.getPrintableJsonPointer().equals("/components/schemas/HealthStatus/example")).toList();
+
+        assertEquals(1, examples.size());
+        assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+    }
+
+    @Test
+    void testRefAsPropertyNameOfDiscriminator() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/refAsPropertyNameInDiscriminator.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().toList();
+
+        assertEquals(1, examples.size());
+        assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
     }
 
 }

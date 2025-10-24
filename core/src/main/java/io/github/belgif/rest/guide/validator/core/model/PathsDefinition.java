@@ -14,7 +14,7 @@ public class PathsDefinition extends OpenApiDefinition<Paths> {
 
     public PathsDefinition(Paths model, File openApiFile, Parser.ParserResult result) {
         super(model, "paths", openApiFile, new JsonPointer("/paths"), result);
-        this.inMainFile = openApiFile == result.getOpenApiFile();
+        this.inMainFile = openApiFile.equals(result.getOpenApiFile());
     }
 
     @Override

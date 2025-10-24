@@ -1,0 +1,70 @@
+openapi: 3.0.0
+info:
+  title: Title
+  description: description
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  {}
+components:
+  schemas:
+    MyFirstSchema:
+      type: object
+      description: first
+      allOf:
+        - type: object
+        - type: object
+          properties:
+            myFirstProperty:
+              type: string
+            schemaUnderTest:
+              allOf:
+                - $ref: "#/components/schemas/FirstChild"
+                - description: nope
+      example:
+        myFirstProperty: 'yes'
+        schemaUnderTest:
+          $ref: 'ref1'
+          firstChildValue:
+            $ref: 'absolutely'
+    FirstChild:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/TopLevel"
+        - type: object
+          properties:
+            firstChildValue:
+              type: object
+              properties:
+                $ref:
+                  type: string
+    SecondChild:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/TopLevel"
+        - type: object
+          properties:
+            SecondChildValue:
+              type: object
+              properties:
+                $ref:
+                  type: string
+    TopLevel:
+      type: object
+      required:
+        - $ref
+      properties:
+        $ref:
+          type: string
+          enum:
+            - ref1
+            - ref2
+        example:
+          type: string
+          description: give your example here
+      discriminator:
+        propertyName: $ref
+        mapping:
+          ref1: "#/components/schemas/FirstChild"
+          ref2: "#/components/schemas/SecondChild"
