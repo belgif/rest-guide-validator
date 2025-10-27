@@ -44,6 +44,43 @@ public class ApiFunctions {
         return false;
     }
 
+    public static Set<Schema.SchemaType> findPossibleSchemaTypes(Schema schema, Parser.ParserResult result) {
+        return findPossibleSchemaTypes(schema, result, new HashSet<>());
+    }
+
+    private static Set<Schema.SchemaType> findPossibleSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
+        SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
+        if (visitedSchemas.contains(schemaDefinition)) {
+            return new HashSet<>();
+        }
+        if (schema.getType() != null) {
+            return Set.of(schema.getType());
+        }
+        Set<Schema.SchemaType> possibleTypes = new HashSet<>();
+        if (schema.getAllOf() != null) {
+            schema.getAllOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
+                visitedSchemas.add(def);
+            });
+        }
+        if (schema.getOneOf() != null) {
+            schema.getOneOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
+                visitedSchemas.add(def);
+            });
+        }
+        if (schema.getAnyOf() != null) {
+            schema.getAnyOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
+                visitedSchemas.add(def);
+            });
+        }
+        return possibleTypes;
+    }
+
     /**
      * Verify if schema meets the predicate. anyOf and oneOf schemas all have to match
      *

@@ -19,4 +19,9 @@ class AllOfSchemaTest extends AbstractOasRuleTest {
        assertErrorCount(2, callRules("allOfWithDoubleProperties.yaml"));
    }
 
+   @Test
+    void testAllOfWithConflictingTypes() {
+       assertErrorCount(1, callRules("allOfWithConflictingTypes.yaml"));
+   }
+
 }

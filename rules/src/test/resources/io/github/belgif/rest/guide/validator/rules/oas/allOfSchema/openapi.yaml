@@ -29,6 +29,12 @@ components:
           properties:
             fancyProperty:
               type: string
+        - oneOf:
+            - type: object
+            - type: string
+        - properties:
+            myFirstProperty:
+              type: integer
     Second:
       allOf:
         - $ref: "#/components/schemas/MyParentSchema"
