@@ -31,7 +31,7 @@ jobs:
         MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
     - id: upload-cli-folder
       name: Upload CLI Folder
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         path: |
           ./cli/package/
@@ -69,7 +69,7 @@ jobs:
           ren target\belgif-validator-rest-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ./target/belgif-rest-guide-validator-${{ env.RELEASED_VERSION }}.msi
           name: windows-installer
