@@ -7,7 +7,17 @@ class SchemasShouldNotHaveConflictingTypesTest extends AbstractOasRuleTest {
 
     @Test
     void testAllOfWithConflictingTypes() {
-        assertErrorCount(1, callRules("allOfWithConflictingTypes.yaml"));
+        assertErrorCount(2, callRules("allOfWithConflictingTypes.yaml"));
+    }
+
+    @Test
+    void testOneOfWithConflictingTypes() {
+        assertErrorCount(1, callRules("oneOfWithConflictingTypes.yaml"));
+    }
+
+    @Test
+    void testAnyOfWithConflictingTypes() {
+        assertErrorCount(1, callRules("anyOfWithConflictingTypes.yaml"));
     }
 
 }

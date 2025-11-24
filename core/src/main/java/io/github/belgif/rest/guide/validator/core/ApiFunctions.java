@@ -53,10 +53,11 @@ public class ApiFunctions {
         if (visitedSchemas.contains(schemaDefinition)) {
             return new HashSet<>();
         }
-        if (schema.getType() != null) {
-            return Set.of(schema.getType());
-        }
         Set<Schema.SchemaType> possibleTypes = new HashSet<>();
+        if (schema.getType() != null) {
+            possibleTypes.add(schema.getType());
+            visitedSchemas.add(schemaDefinition);
+        }
         if (schema.getAllOf() != null) {
             schema.getAllOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
