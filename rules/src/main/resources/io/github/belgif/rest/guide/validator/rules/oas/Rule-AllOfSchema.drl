@@ -40,7 +40,7 @@ function void violationAllOfSubSchemasShouldNotHaveMultipleTypes(ViolationReport
     "Subschemas in an allOf MUST be of the same schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
 }
 
-function String parseErrorStringForDoubleProperties(Map<String, List<String>> doubleProperties) {
+function String createViolationMessageForDoubleProperties(Map<String, List<String>> doubleProperties) {
     StringBuilder stringBuilder = new StringBuilder();
     for (Map.Entry<String, List<String>> doubleProperty : doubleProperties.entrySet()) {
       stringBuilder.append("Property <<").append(doubleProperty.getKey()).append(">> used in:\n");
@@ -109,7 +109,7 @@ rule "SubSchemas in an allOf should not declare the same properties"
         $schema: SchemaDefinition($model: /model, model.allOf != null)
         $errors: Map(!isEmpty()) from getDoubleProperties($model, parserResult)
     then
-        violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, parseErrorStringForDoubleProperties($errors));
+        violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, createViolationMessageForDoubleProperties($errors));
 end
 
 rule "Discriminator Should Contain Explicit Mapping"
