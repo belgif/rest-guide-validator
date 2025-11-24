@@ -24,38 +24,6 @@ function void violationAllOfSubSchemasShouldNotHaveMultipleTypes(ViolationReport
     "Subschemas in an allOf/oneOf/anyOf MUST be of the same schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
 }
 
-//function SubTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
-//  boolean first = true;
-//  boolean allWildcards = true;
-//  Set<SchemaType> intersection = new HashSet<>();
-//  Set<SchemaType> union = new HashSet<>();
-//
-//  for (Schema subSchema : def.getModel().getAllOf()) {
-//    Set<SchemaType> schemaTypes = ApiFunctions.findPossibleSchemaTypes(subSchema,  parserResult);
-//    union.addAll(schemaTypes);
-//
-//    if (schemaTypes.isEmpty()) {
-//      // No type is found, wildcard
-//      continue;
-//    }
-//
-//    allWildcards = false;
-//
-//    if (first) {
-//      intersection.addAll(schemaTypes);
-//      first = false;
-//    } else {
-//      intersection.retainAll(schemaTypes);
-//    }
-//
-//    if (intersection.isEmpty()) {
-//      break;
-//    }
-//  }
-//  boolean valid = allWildcards || !intersection.isEmpty();
-//  return new SubTypes(valid, union);
-//}
-
 function SubTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
   Set<SchemaType> schemaTypes = ApiFunctions.findPossibleSchemaTypes(def.getModel(), parserResult);
   boolean valid = schemaTypes.isEmpty() || schemaTypes.size() == 1;
