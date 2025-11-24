@@ -52,22 +52,22 @@ function String parseErrorStringForDoubleProperties(Map<String, List<String>> do
 }
 
 function Map getDoubleProperties(Schema schema, ParserResult parserResult) {
-  Map<String, List<String>> doubleProperties = new HashMap<>();
+  Map<String, List<String>> properties = new HashMap<>();
   for (Schema subSchema : schema.getAllOf()) {
-    ApiFunctions.getRecursiveProperties(subSchema, parserResult).forEach((key, value) -> {
+    ApiFunctions.getRecursiveProperties(subSchema, parserResult).forEach((propertyName, propertyValue) -> {
       StringBuilder pointerBuilder = new StringBuilder();
       pointerBuilder.append(parserResult.resolve(subSchema).getPrintableJsonPointer());
-      if (subSchema != value) {
-        pointerBuilder.append(" (via <<").append(parserResult.resolve(value).getPrintableJsonPointer()).append(">>)");
+      if (subSchema != propertyValue) {
+        pointerBuilder.append(" (via <<").append(parserResult.resolve(propertyValue).getPrintableJsonPointer()).append(">>)");
       }
-      if (doubleProperties.containsKey(key)) {
-        doubleProperties.get(key).add(pointerBuilder.toString());
+      if (properties.containsKey(propertyName)) {
+        properties.get(propertyName).add(pointerBuilder.toString());
       } else {
-        doubleProperties.put(key, new ArrayList<>(Collections.singletonList(pointerBuilder.toString())));
+        properties.put(propertyName, new ArrayList<>(Collections.singletonList(pointerBuilder.toString())));
       }
     });
   }
-  return doubleProperties.entrySet().stream()
+  return properties.entrySet().stream()
     .filter(e -> e.getValue().size() > 1)
     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 }
