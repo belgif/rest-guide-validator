@@ -4,24 +4,19 @@ import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 class AllOfSchemaTest extends AbstractOasRuleTest {
-   @Test
+    @Test
     void testValidOpenApi() {
-       assertNoViolations(callRules("openapi.yaml"));
-   }
+        assertNoViolations(callRules("openapi.yaml"));
+    }
 
-   @Test
+    @Test
     void testDiscriminatorWithoutMapping() {
-       assertErrorCount(1, callRules("discriminatorWithoutMapping.yaml"));
-   }
+        assertErrorCount(1, callRules("discriminatorWithoutMapping.yaml"));
+    }
 
-   @Test
+    @Test
     void testAllOfWithDoubleProperties() {
-       assertErrorCount(2, callRules("allOfWithDoubleProperties.yaml"));
-   }
-
-   @Test
-    void testAllOfWithConflictingTypes() {
-       assertErrorCount(1, callRules("allOfWithConflictingTypes.yaml"));
-   }
+        assertErrorCount(2, callRules("allOfWithDoubleProperties.yaml"));
+    }
 
 }

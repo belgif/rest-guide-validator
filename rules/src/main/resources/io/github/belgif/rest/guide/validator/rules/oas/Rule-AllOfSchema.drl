@@ -19,11 +19,6 @@ import java.util.Set;
 import java.util.stream.Collectors
 import java.util.HashSet;
 
-declare AllOfTypes
-    valid : boolean
-    types : Set<SchemaType>
-end
-
 function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
     oas.addViolation("[sch-allof]",
     "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
@@ -32,12 +27,6 @@ function void violationDiscriminatorShouldContainMapping(ViolationReport oas, Sc
 function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(ViolationReport oas, SchemaDefinition schema, String specificErrors) {
     oas.addViolation("[sch-allof]",
     "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
-}
-
-function void violationAllOfSubSchemasShouldNotHaveMultipleTypes(ViolationReport oas, SchemaDefinition schema, Set<SchemaType> types) {
-    String typeOutput = types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
-    oas.addViolation("[sch-allof]",
-    "Subschemas in an allOf MUST be of the same schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
 }
 
 function String createViolationMessageForDoubleProperties(Map<String, List<String>> doubleProperties) {
@@ -72,38 +61,6 @@ function Map getDoubleProperties(Schema schema, ParserResult parserResult) {
     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 }
 
-function AllOfTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
-  boolean first = true;
-  boolean allWildcards = true;
-  Set<SchemaType> intersection = new HashSet<>();
-  Set<SchemaType> union = new HashSet<>();
-
-  for (Schema subSchema : def.getModel().getAllOf()) {
-    Set<SchemaType> schemaTypes = ApiFunctions.findPossibleSchemaTypes(subSchema,  parserResult);
-    union.addAll(schemaTypes);
-
-    if (schemaTypes.isEmpty()) {
-      // No type is found, wildcard
-      continue;
-    }
-
-    allWildcards = false;
-
-    if (first) {
-      intersection.addAll(schemaTypes);
-      first = false;
-    } else {
-      intersection.retainAll(schemaTypes);
-    }
-
-    if (intersection.isEmpty()) {
-      break;
-    }
-  }
-  boolean valid = allWildcards || !intersection.isEmpty();
-  return new AllOfTypes(valid, union);
-}
-
 rule "SubSchemas in an allOf should not declare the same properties"
     when
         $schema: SchemaDefinition($model: /model, model.allOf != null)
@@ -118,12 +75,4 @@ rule "Discriminator Should Contain Explicit Mapping"
         Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
     then
         violationDiscriminatorShouldContainMapping(oas, $schema);
-end
-
-rule "allOf should not have conflicting types in subschemas"
-    when
-      $schemaDefinition: SchemaDefinition($schema: /model, model.allOf != null)
-      $allOfTypes: AllOfTypes(valid == false) from findSchemaTypeIntersection($schemaDefinition, parserResult)
-    then
-      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $allOfTypes.getTypes());
 end
