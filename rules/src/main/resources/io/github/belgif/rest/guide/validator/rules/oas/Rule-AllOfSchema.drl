@@ -74,7 +74,7 @@ function Map getDoubleProperties(Schema schema, ParserResult parserResult) {
 
 function AllOfTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
   boolean first = true;
-  boolean allWilcards = true;
+  boolean allWildcards = true;
   Set<SchemaType> intersection = new HashSet<>();
   Set<SchemaType> union = new HashSet<>();
 
@@ -87,7 +87,7 @@ function AllOfTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResul
       continue;
     }
 
-    allWilcards = false;
+    allWildcards = false;
 
     if (first) {
       intersection.addAll(schemaTypes);
@@ -100,7 +100,7 @@ function AllOfTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResul
       break;
     }
   }
-  boolean valid = allWilcards || !intersection.isEmpty();
+  boolean valid = allWildcards || !intersection.isEmpty();
   return new AllOfTypes(valid, union);
 }
 
