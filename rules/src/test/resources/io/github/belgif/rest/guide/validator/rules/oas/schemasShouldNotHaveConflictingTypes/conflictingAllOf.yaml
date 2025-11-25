@@ -7,7 +7,7 @@ servers:
 paths: {}
 components:
   schemas:
-    First:
-      anyOf:
-        - type: integer
-        - type: array
+    ConflictingAllOf:
+      allOf:
+        - type: string
+        - type: object

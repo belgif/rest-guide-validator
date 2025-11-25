@@ -6,18 +6,33 @@ import org.junit.jupiter.api.Test;
 class SchemasShouldNotHaveConflictingTypesTest extends AbstractOasRuleTest {
 
     @Test
-    void testAllOfWithConflictingTypes() {
-        assertErrorCount(2, callRules("allOfWithConflictingTypes.yaml"));
+    void testConflictingAllOf() {
+        assertErrorCount(1, callRules("conflictingAllOf.yaml"));
     }
 
     @Test
-    void testOneOfWithConflictingTypes() {
-        assertErrorCount(1, callRules("oneOfWithConflictingTypes.yaml"));
+    void testValidOneOf() {
+        assertNoViolations(callRules("validOneOf.yaml"));
     }
 
     @Test
-    void testAnyOfWithConflictingTypes() {
-        assertErrorCount(1, callRules("anyOfWithConflictingTypes.yaml"));
+    void testValidAllOf() {
+        assertNoViolations(callRules("validAllOf.yaml"));
+    }
+
+    @Test
+    void testConflictingOneOfWithMainType() {
+        assertErrorCount(1, callRules("conflictingOneOfWithMainType.yaml"));
+    }
+
+    @Test
+    void testConflictingAnyOfWithMainType() {
+        assertErrorCount(1, callRules("conflictingAnyOfWithMainType.yaml"));
+    }
+
+    @Test
+    void testAllOfComplicated() {
+        assertNoViolations(callRules("allOfComplicated.yaml"));
     }
 
 }

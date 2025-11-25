@@ -7,8 +7,10 @@ servers:
 paths: {}
 components:
   schemas:
-    First:
-      type: string
+    ValidOneOf:
       oneOf:
-        - type: integer
-        - type: array
+        - required: [ a ]
+        - required: [ b ]
+      allOf:
+        - properties:
+            c: { }
