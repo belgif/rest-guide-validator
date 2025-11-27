@@ -1,6 +1,8 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -11,6 +13,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 declare SubTypes
@@ -21,13 +24,60 @@ end
 function void violationAllOfSubSchemasShouldNotHaveMultipleTypes(ViolationReport oas, SchemaDefinition schema, Set<SchemaType> types) {
     String typeOutput = types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
     oas.addViolation("[sch-allof]",
-    "Subschemas in an allOf/oneOf/anyOf MUST be of the same schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
+    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
 }
 
 function SubTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
-  Set<SchemaType> schemaTypes = ApiFunctions.findPossibleSchemaTypes(def.getModel(), parserResult);
-  boolean valid = schemaTypes.isEmpty() || schemaTypes.size() == 1;
-  return new SubTypes(valid, schemaTypes);
+  AtomicBoolean first = new AtomicBoolean(true);
+  AtomicBoolean allWildcards = new AtomicBoolean(true);
+  Set<SchemaType> intersection = new HashSet<>();
+  Set<SchemaType> union = new HashSet<>();
+
+  if (def.getModel().getType() != null) {
+    union.add(def.getModel().getType());
+    intersection.add(def.getModel().getType());
+    first.set(false);
+  }
+
+  if (def.getModel().getAllOf() != null) {
+    for (Schema schema : def.getModel().getAllOf()) {
+      fillUnionAndIntersection(List.of(schema), union, intersection, allWildcards, first, parserResult);
+      if (intersection.isEmpty()) {
+        break;
+      }
+    }
+  }
+  if (def.getModel().getOneOf() != null) {
+    fillUnionAndIntersection(def.getModel().getOneOf(), union, intersection, allWildcards, first, parserResult);
+  }
+  if (def.getModel().getAnyOf() != null) {
+    for (Schema schema : def.getModel().getAnyOf()) {
+          fillUnionAndIntersection(List.of(schema), union, intersection, allWildcards, first, parserResult);
+          if (intersection.isEmpty()) {
+            break;
+          }
+    }
+  }
+  boolean valid = allWildcards.get() || !intersection.isEmpty();
+  return new SubTypes(valid, union);
+}
+
+function void fillUnionAndIntersection(List<Schema> schemaSubSet, Set<SchemaType> union, Set<SchemaType> intersection, AtomicBoolean allWildcards, AtomicBoolean first, ParserResult parserResult) {
+  Set<SchemaType> schemaTypes = schemaSubSet.stream().flatMap(s -> ApiFunctions.findPossibleSchemaTypes(s, parserResult).stream()).collect(Collectors.toSet());
+  union.addAll(schemaTypes);
+
+  if (schemaTypes.isEmpty()) {
+    // No type is found, wildcard
+    return;
+  }
+  allWildcards.set(false);
+
+  if (first.get()) {
+    intersection.addAll(union);
+    first.set(false);
+  } else {
+    intersection.retainAll(schemaTypes);
+  }
 }
 
 rule "allOf should not have conflicting types in subschemas"

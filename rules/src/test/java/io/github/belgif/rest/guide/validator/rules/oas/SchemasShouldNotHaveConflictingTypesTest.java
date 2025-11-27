@@ -35,4 +35,14 @@ class SchemasShouldNotHaveConflictingTypesTest extends AbstractOasRuleTest {
         assertNoViolations(callRules("allOfComplicated.yaml"));
     }
 
+    @Test
+    void testConflictingAnyOf() {
+        assertErrorCount(1, callRules("conflictingAnyOf.yaml"));
+    }
+
+    @Test
+    void testValidOneOfWithTypeDeclarations() {
+        assertNoViolations(callRules("validOneOfWithTypeDeclarations.yaml"));
+    }
+
 }
