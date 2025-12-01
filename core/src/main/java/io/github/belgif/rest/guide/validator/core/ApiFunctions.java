@@ -123,7 +123,6 @@ public class ApiFunctions {
         List<String> nonNullProperties = new ArrayList<>();
         try {
             for (Method method : schema.getClass().getDeclaredMethods()) {
-                method.setAccessible(true);
                 if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
                     Object value = method.invoke(schema);
                     if (value != null) {
@@ -131,9 +130,7 @@ public class ApiFunctions {
                     }
                 }
             }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
         nonNullProperties.remove("sw");
