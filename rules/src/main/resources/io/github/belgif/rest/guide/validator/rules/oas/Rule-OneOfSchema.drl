@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
@@ -11,25 +11,60 @@ import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
-import java.util.List
-import java.util.ArrayList
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.lang.Boolean;
+import java.util.ArrayList;
+import java.util.Collections
+import java.util.stream.Collectors;
 
-function void violationOneOfSubSchemaOfOtherTypeThanObject(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema){
+function void violationOneOfSubSchemaOfOtherTypeThanObject(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
     oas.addViolation("[cod-design]",
-    "oneOf SHOULD NOT be used for schemas with a type other than object", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, but is of type <<" + oneOfSubSchema.getModel().getType() + ">>", schema, ViolationLevel.RECOMMENDED);
+    "oneOf SHOULD NOT be used to enforce other constraints than 'required' or 'enum' if the schema is a 'simple type'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
 }
 
-function boolean oneOfNestedTypesIsOtherThanObject(Schema schema, ParserResult parserResult) {
-  Predicate<SchemaDefinition> condition = (schemaDefinition) -> schemaDefinition.getModel().getType() != null
-    && !schemaDefinition.getModel().getType().equals(SchemaType.OBJECT);
-  return ApiFunctions.schemaMeetsCondition(schema, parserResult, condition);
+function Set allowedProperties() {
+  // Does not include enum because that needs an extra check
+  return Set.of("required", "description");
 }
 
-rule "OneOf Should Not Be Of Type Other Than Object"
+function List getInvalidPropertiesInOneOfSchema(Schema schema) {
+    List<String> props = new ArrayList<>(ApiFunctions.findNonNullProperties(schema));
+    props.removeAll(allowedProperties());
+    if (props.isEmpty()) {
+      return new ArrayList<>(props);
+    }
+    if (props.size() == 1 && props.get(0).equals("enum")) {
+      if (schema.getType() != null) {
+        boolean valid;
+        switch (schema.getType()) {
+        case INTEGER : valid = true; break;
+        case STRING : valid = true; break;
+        case NUMBER : valid = true; break;
+        case BOOLEAN: valid = true; break;
+        default : valid = false;
+        }
+        if (valid) {
+          return new ArrayList<String>();
+        }
+      }
+    }
+    return new ArrayList<>(props);
+}
+
+function String mapToString(List<String> invalidProperties) {
+  if (invalidProperties.isEmpty()) {
+    return null;
+  }
+  return invalidProperties.stream().collect(Collectors.joining(", ")).toString();
+}
+
+rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
     when
         $schemaDefinition: SchemaDefinition($oneOf: /model/oneOf#List, $oneOf != null)
-        $subSchemaDef: SchemaDefinition(oneOfNestedTypesIsOtherThanObject(model, parserResult)) from parserResult.resolve($oneOf)
+        $subSchemaDef: SchemaDefinition($model: /model) from parserResult.resolve($oneOf)
+        $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model))
     then
-        violationOneOfSubSchemaOfOtherTypeThanObject(oas, $schemaDefinition, $subSchemaDef);
+        violationOneOfSubSchemaOfOtherTypeThanObject(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
 end

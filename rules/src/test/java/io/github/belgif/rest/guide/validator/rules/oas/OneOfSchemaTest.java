@@ -4,14 +4,19 @@ import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 class OneOfSchemaTest extends AbstractOasRuleTest {
+
    @Test
-    void testValidOpenApi() {
-       assertNoViolations(callRules("openapi.yaml"));
+    void testOneOfWithRequiredConstraint() {
+       assertNoViolations(callRules("oneOfWithRequiredConstraint.yaml"));
    }
 
    @Test
-    void testInvalidOpenApi() {
-       assertErrorCount(2, callRules("openapi_bad.yaml"));
+    void testOneOfWithFullObjectConstraint() {
+       assertErrorCount(2, callRules("oneOfWithFullObjectConstraint.yaml"));
    }
 
+   @Test
+    void testOneOfWithEnumConstraint() {
+       assertNoViolations(callRules("oneOfWithEnumConstraint.yaml"));
+   }
 }
