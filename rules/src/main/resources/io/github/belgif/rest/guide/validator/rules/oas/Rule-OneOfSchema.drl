@@ -30,27 +30,27 @@ function Set allowedProperties() {
 }
 
 function List getInvalidPropertiesInOneOfSchema(Schema schema) {
-    List<String> props = new ArrayList<>(ApiFunctions.findNonNullProperties(schema));
+    List<String> props = ApiFunctions.findNonNullProperties(schema);
     props.removeAll(allowedProperties());
     if (props.isEmpty()) {
-      return new ArrayList<>(props);
+      return props;
     }
     if (props.size() == 1 && props.get(0).equals("enum")) {
       if (schema.getType() != null) {
         boolean valid;
         switch (schema.getType()) {
-        case INTEGER : valid = true; break;
-        case STRING : valid = true; break;
-        case NUMBER : valid = true; break;
-        case BOOLEAN: valid = true; break;
-        default : valid = false;
+          case INTEGER : valid = true; break;
+          case STRING : valid = true; break;
+          case NUMBER : valid = true; break;
+          case BOOLEAN: valid = true; break;
+          default : valid = false;
         }
         if (valid) {
-          return new ArrayList<String>();
+          return Collections.EMPTY_LIST;
         }
       }
     }
-    return new ArrayList<>(props);
+    return props;
 }
 
 function String mapToString(List<String> invalidProperties) {
@@ -64,6 +64,7 @@ rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
     when
         $schemaDefinition: SchemaDefinition($oneOf: /model/oneOf#List, $oneOf != null)
         $subSchemaDef: SchemaDefinition($model: /model) from parserResult.resolve($oneOf)
+        // Needs the mapToString because the rule has issues with the generics of a List<String>
         $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model))
     then
         violationOneOfSubSchemaOfOtherTypeThanObject(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
