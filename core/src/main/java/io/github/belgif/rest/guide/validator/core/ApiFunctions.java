@@ -126,7 +126,7 @@ public class ApiFunctions {
                 if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
                     Object value = method.invoke(schema);
                     if (value != null) {
-                        nonNullProperties.add(method.getName().replace("get", "").replace("is", "").toLowerCase());
+                        nonNullProperties.add(cleanPropertyName(method.getName()));
                     }
                 }
             }
@@ -135,6 +135,17 @@ public class ApiFunctions {
         }
         nonNullProperties.remove("sw");
         return nonNullProperties;
+    }
+
+    private static String cleanPropertyName(String propertyName) {
+        String output = propertyName;
+        if (propertyName.startsWith("get")) {
+            output = output.substring(3);
+        }
+        if (propertyName.startsWith("is")) {
+            output = output.substring(2);
+        }
+        return  output.toLowerCase();
     }
 
     /**
