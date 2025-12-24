@@ -31,7 +31,7 @@ jobs:
         MAVEN_CENTRAL_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
     - id: upload-cli-folder
       name: Upload CLI Folder
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         path: |
           ./cli/package/
@@ -53,7 +53,7 @@ jobs:
           java-version: 17
           distribution: 'adopt'
       - name: Download CLI Folder
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: cli-folder
       - name: Display structure of downloaded files
@@ -69,7 +69,7 @@ jobs:
           ren target\belgif-validator-rest-$env:RELEASED_VERSION.msi belgif-rest-guide-validator-$env:RELEASED_VERSION.msi
       - id: upload-windows-installer
         name: Upload Windows Installer
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           path: ./target/belgif-rest-guide-validator-${{ env.RELEASED_VERSION }}.msi
           name: windows-installer
@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download Windows Installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: windows-installer
       - name: Create GitHub release
