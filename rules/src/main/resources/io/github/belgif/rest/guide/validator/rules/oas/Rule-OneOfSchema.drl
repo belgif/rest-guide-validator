@@ -19,9 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections
 import java.util.stream.Collectors;
 
-function void violationOneOfSubSchemaOfOtherTypeThanObject(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
+function void violationOneOfSubSchemaEnforcesIllegalConstraints(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
     oas.addViolation("[cod-design]",
     "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
+}
+
+function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas, SchemaDefinition schema, String conflictingTypes) {
+    oas.addViolation("[cod-design]",
+        "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function Set allowedProperties() {
@@ -45,6 +50,15 @@ function List getInvalidPropertiesInOneOfSchema(Schema schema) {
     return props;
 }
 
+function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, ParserResult parserResult) {
+  // Check is done here and not in the rule because otherwise it would trigger a double violation.
+  if (schemaDefinition.getModel().getOneOf() == null) {
+    return null;
+  }
+  Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findPossibleSchemaTypes(s, parserResult).stream()).collect(Collectors.toSet());
+  return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
+}
+
 function String mapToString(List<String> invalidProperties) {
   if (invalidProperties.isEmpty()) {
     return null;
@@ -59,5 +73,13 @@ rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
         // Needs the mapToString because the rule has issues with the generics of a List<String>
         $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model))
     then
-        violationOneOfSubSchemaOfOtherTypeThanObject(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
+        violationOneOfSubSchemaEnforcesIllegalConstraints(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
+end
+
+rule "OneOf with enum constraint should be of the same simple type"
+  when
+      $schemaDefinition: SchemaDefinition()
+      $conflictingTypes: String() from getConflictingTypesInEnum($schemaDefinition, parserResult)
+  then
+      violationOneOfSubSchemaWithEnumOfDifferentType(oas, $schemaDefinition, $conflictingTypes);
 end

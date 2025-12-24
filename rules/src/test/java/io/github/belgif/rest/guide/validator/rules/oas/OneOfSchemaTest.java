@@ -19,4 +19,9 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     void testOneOfWithEnumConstraint() {
        assertNoViolations(callRules("oneOfWithEnumConstraint.yaml"));
    }
+
+    @Test
+    void testOneOfWithEnumAndDifferentTypeConstraint() {
+        assertErrorCount(1, callRules("oneOfWithEnumAndDifferentTypeConstraint.yaml"));
+    }
 }
