@@ -80,7 +80,7 @@ function void fillUnionAndIntersection(List<Schema> schemaSubSet, Set<SchemaType
   }
 }
 
-rule "allOf should not have conflicting types in subschemas"
+rule "schemas should not have conflicting types in subschemas"
     when
       $schemaDefinition: SchemaDefinition($schema: /model)
       $subTypes: SubTypes(valid == false) from findSchemaTypeIntersection($schemaDefinition, parserResult)
