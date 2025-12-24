@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 function void violationOneOfSubSchemaOfOtherTypeThanObject(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
     oas.addViolation("[cod-design]",
-    "oneOf SHOULD NOT be used to enforce other constraints than 'required' or 'enum' if the schema is a 'simple type'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
+    "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function Set allowedProperties() {
