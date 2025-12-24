@@ -26,7 +26,8 @@ function void violationOneOfSubSchemaOfOtherTypeThanObject(ViolationReport oas, 
 
 function Set allowedProperties() {
   // Does not include enum because that needs an extra check
-  return Set.of("required", "description");
+  // swagger-parser puts "x-*" properties under the extensions property
+  return Set.of("required", "description", "example", "title", "extensions");
 }
 
 function List getInvalidPropertiesInOneOfSchema(Schema schema) {

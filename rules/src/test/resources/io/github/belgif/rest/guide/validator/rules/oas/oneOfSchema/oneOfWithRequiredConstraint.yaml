@@ -18,6 +18,17 @@ components:
         - required:
             - myFirstProp
           description: myFirstProp is required
+          title: Could be this schema
+          example:
+            {
+              "myFirstProp": "yes"
+            }
         - required:
             - mySecondProp
           description: mySecondProp is required
+          title: Could also be this schema
+          x-my-custom-property: should be valid
+          example:
+            {
+              "mySecondProp": "yes"
+            }
