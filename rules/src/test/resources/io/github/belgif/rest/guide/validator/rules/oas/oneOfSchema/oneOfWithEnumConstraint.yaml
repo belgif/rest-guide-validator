@@ -8,11 +8,12 @@ paths:
 components:
   schemas:
     SchemaUnderTest:
-      type: string
       oneOf:
-        - required:
-            - myFirstProp
-          description: myFirstProp is required
-        - required:
-            - mySecondProp
-          description: mySecondProp is required
+        - type: string
+          enum:
+            - firstOption
+            - secondOption
+        - type: string
+          enum:
+            - thirdOption
+            - fourthOption

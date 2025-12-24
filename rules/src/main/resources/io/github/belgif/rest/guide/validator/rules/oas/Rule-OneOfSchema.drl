@@ -36,7 +36,7 @@ function List getInvalidPropertiesInOneOfSchema(Schema schema) {
     if (props.isEmpty()) {
       return props;
     }
-    if (props.size() == 1 && props.get(0).equals("enum")) {
+    if (props.contains("enumeration") && (props.size() == 1 || (props.size() == 2 && props.contains("type")))) {
     Set<SchemaType> allowedSimpleTypes = Set.of(SchemaType.INTEGER, SchemaType.STRING, SchemaType.NUMBER, SchemaType.BOOLEAN);
       if (schema.getType() != null && allowedSimpleTypes.contains(schema.getType())) {
         return Collections.EMPTY_LIST;
