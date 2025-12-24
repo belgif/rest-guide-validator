@@ -37,18 +37,9 @@ function List getInvalidPropertiesInOneOfSchema(Schema schema) {
       return props;
     }
     if (props.size() == 1 && props.get(0).equals("enum")) {
-      if (schema.getType() != null) {
-        boolean valid;
-        switch (schema.getType()) {
-          case INTEGER : valid = true; break;
-          case STRING : valid = true; break;
-          case NUMBER : valid = true; break;
-          case BOOLEAN: valid = true; break;
-          default : valid = false;
-        }
-        if (valid) {
-          return Collections.EMPTY_LIST;
-        }
+    Set<SchemaType> allowedSimpleTypes = Set.of(SchemaType.INTEGER, SchemaType.STRING, SchemaType.NUMBER, SchemaType.BOOLEAN);
+      if (schema.getType() != null && allowedSimpleTypes.contains(schema.getType())) {
+        return Collections.EMPTY_LIST;
       }
     }
     return props;
