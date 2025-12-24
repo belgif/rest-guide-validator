@@ -47,7 +47,7 @@ class SchemasShouldNotHaveConflictingTypesTest extends AbstractOasRuleTest {
 
     @Test
     void testRecursiveConflictingType() {
-        assertErrorCount(10, callRules("recursiveConflictingTypes.yaml"));
+        assertErrorCount(1, callRules("recursiveConflictingTypes.yaml"));
     }
 
 }

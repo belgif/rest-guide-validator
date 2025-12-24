@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,6 +43,80 @@ public class ApiFunctions {
             }
         }
         return false;
+    }
+
+    public record AllowedSchemaTypes(boolean valid, Set<Schema.SchemaType> possibleTypes,
+                                     Set<Schema.SchemaType> declaredTypes) {
+    }
+
+    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result) {
+        return findSchemaTypes(schema, result, new HashMap<>());
+    }
+
+    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Map<SchemaDefinition, AllowedSchemaTypes> visitedSchemas) {
+        SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
+        if (visitedSchemas.containsKey(schemaDefinition)) {
+            // TODO or return null, to evaluate
+            return visitedSchemas.get(schemaDefinition);
+        }
+        AtomicBoolean first = new AtomicBoolean(true);
+        AtomicBoolean allWildcards = new AtomicBoolean(true);
+        Set<Schema.SchemaType> intersection = new HashSet<>();
+        Set<Schema.SchemaType> union = new HashSet<>();
+
+        if (schema.getType() != null) {
+            union.add(schema.getType());
+            intersection.add(schema.getType());
+            first.set(false);
+        }
+        if (schema.getAllOf() != null) {
+            schema.getAllOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
+                visitedSchemas.put(def, types);
+                fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
+            });
+        }
+        List<AllowedSchemaTypes> oneOfAllowedSchemaTypes = new ArrayList<>();
+        if (schema.getOneOf() != null) {
+            schema.getOneOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
+                visitedSchemas.put(def, types);
+                oneOfAllowedSchemaTypes.add(types);
+            });
+            fillUnionAndIntersection(oneOfAllowedSchemaTypes, union, intersection, allWildcards, first);
+        }
+        if (schema.getAnyOf() != null) {
+            schema.getAnyOf().forEach(subSchema -> {
+                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
+                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
+                visitedSchemas.put(def, types);
+                fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
+            });
+        }
+        boolean valid = allWildcards.get() || !intersection.isEmpty();
+        AllowedSchemaTypes allowedSchemaTypes = new AllowedSchemaTypes(valid, intersection, union);
+        visitedSchemas.put(schemaDefinition, allowedSchemaTypes);
+        return allowedSchemaTypes;
+    }
+
+    private static void fillUnionAndIntersection(List<AllowedSchemaTypes> allowedSchemaTypes, Set<Schema.SchemaType> union, Set<Schema.SchemaType> intersection, AtomicBoolean allWildcards, AtomicBoolean first) {
+        Set<Schema.SchemaType> schemaTypes = allowedSchemaTypes.stream().flatMap(allowedSchemaType -> allowedSchemaType.possibleTypes.stream()).collect(Collectors.toSet());
+        union.addAll(schemaTypes);
+
+        if (schemaTypes.isEmpty()) {
+            // No type is found, wildcard or sub schema is already invalid
+            return;
+        }
+        allWildcards.set(false);
+
+        if (first.get()) {
+            intersection.addAll(union);
+            first.set(false);
+        } else {
+            intersection.retainAll(schemaTypes);
+        }
     }
 
     public static Set<Schema.SchemaType> findPossibleSchemaTypes(Schema schema, Parser.ParserResult result) {

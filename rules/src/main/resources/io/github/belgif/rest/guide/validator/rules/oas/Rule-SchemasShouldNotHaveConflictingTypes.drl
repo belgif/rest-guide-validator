@@ -12,6 +12,7 @@ global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult par
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions.AllowedSchemaTypes;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,7 +84,9 @@ function void fillUnionAndIntersection(List<Schema> schemaSubSet, Set<SchemaType
 rule "schemas should not have conflicting types in subschemas"
     when
       $schemaDefinition: SchemaDefinition($schema: /model)
-      $subTypes: SubTypes(valid == false) from findSchemaTypeIntersection($schemaDefinition, parserResult)
+//      $subTypes: SubTypes(valid == false) from findSchemaTypeIntersection($schemaDefinition, parserResult)
+      $allowedTypes: AllowedSchemaTypes(valid == false) from ApiFunctions.findSchemaTypes($schema, parserResult)
     then
-      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $subTypes.getTypes());
+//      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $subTypes.getTypes());
+      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $allowedTypes.declaredTypes());
 end
