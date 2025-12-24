@@ -24,7 +24,7 @@ end
 function void violationAllOfSubSchemasShouldNotHaveMultipleTypes(ViolationReport oas, SchemaDefinition schema, Set<SchemaType> types) {
     String typeOutput = types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
     oas.addViolation("[sch-allof]",
-    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting schemaType.", "Multiple schemaTypes were found: <<" + typeOutput + ">>", schema);
+    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting type.", "Multiple types were found: <<" + typeOutput + ">>", schema);
 }
 
 function SubTypes findSchemaTypeIntersection(SchemaDefinition def, ParserResult parserResult) {
