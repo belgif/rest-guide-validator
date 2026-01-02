@@ -56,7 +56,7 @@ public class ApiFunctions {
     public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
         if (visitedSchemas.contains(schemaDefinition)) {
-            // TODO or return null, to evaluate
+            //In case there is a recursive reference, it should not fail and not give any restrictions
             return new AllowedSchemaTypes(true, new HashSet<>(), new HashSet<>());
         }
         visitedSchemas.add(schemaDefinition);
@@ -74,7 +74,6 @@ public class ApiFunctions {
             schema.getAllOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-//                visitedSchemas.put(def, types);
                 fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
             });
         }
@@ -83,7 +82,6 @@ public class ApiFunctions {
             schema.getOneOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-//                visitedSchemas.put(def, types);
                 oneOfAllowedSchemaTypes.add(types);
             });
             fillUnionAndIntersection(oneOfAllowedSchemaTypes, union, intersection, allWildcards, first);
@@ -92,14 +90,11 @@ public class ApiFunctions {
             schema.getAnyOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-//                visitedSchemas.put(def, types);
                 fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
             });
         }
         boolean valid = allWildcards.get() || !intersection.isEmpty();
-        AllowedSchemaTypes allowedSchemaTypes = new AllowedSchemaTypes(valid, intersection, union);
-//        visitedSchemas.put(schemaDefinition, allowedSchemaTypes);
-        return allowedSchemaTypes;
+        return new AllowedSchemaTypes(valid, intersection, union);
     }
 
     private static void fillUnionAndIntersection(List<AllowedSchemaTypes> allowedSchemaTypes, Set<Schema.SchemaType> union, Set<Schema.SchemaType> intersection, AtomicBoolean allWildcards, AtomicBoolean first) {
