@@ -50,15 +50,16 @@ public class ApiFunctions {
     }
 
     public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result) {
-        return findSchemaTypes(schema, result, new HashMap<>());
+        return findSchemaTypes(schema, result, new HashSet<>());
     }
 
-    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Map<SchemaDefinition, AllowedSchemaTypes> visitedSchemas) {
+    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
-        if (visitedSchemas.containsKey(schemaDefinition)) {
+        if (visitedSchemas.contains(schemaDefinition)) {
             // TODO or return null, to evaluate
-            return visitedSchemas.get(schemaDefinition);
+            return new AllowedSchemaTypes(true, new HashSet<>(), new HashSet<>());
         }
+        visitedSchemas.add(schemaDefinition);
         AtomicBoolean first = new AtomicBoolean(true);
         AtomicBoolean allWildcards = new AtomicBoolean(true);
         Set<Schema.SchemaType> intersection = new HashSet<>();
@@ -73,7 +74,7 @@ public class ApiFunctions {
             schema.getAllOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                visitedSchemas.put(def, types);
+//                visitedSchemas.put(def, types);
                 fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
             });
         }
@@ -82,7 +83,7 @@ public class ApiFunctions {
             schema.getOneOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                visitedSchemas.put(def, types);
+//                visitedSchemas.put(def, types);
                 oneOfAllowedSchemaTypes.add(types);
             });
             fillUnionAndIntersection(oneOfAllowedSchemaTypes, union, intersection, allWildcards, first);
@@ -91,13 +92,13 @@ public class ApiFunctions {
             schema.getAnyOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                visitedSchemas.put(def, types);
+//                visitedSchemas.put(def, types);
                 fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
             });
         }
         boolean valid = allWildcards.get() || !intersection.isEmpty();
         AllowedSchemaTypes allowedSchemaTypes = new AllowedSchemaTypes(valid, intersection, union);
-        visitedSchemas.put(schemaDefinition, allowedSchemaTypes);
+//        visitedSchemas.put(schemaDefinition, allowedSchemaTypes);
         return allowedSchemaTypes;
     }
 
