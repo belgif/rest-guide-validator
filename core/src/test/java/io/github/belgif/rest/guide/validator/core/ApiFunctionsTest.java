@@ -121,4 +121,36 @@ class ApiFunctionsTest {
         assertEquals("pathWithAllOf", operation.getModel().getOperationId());
     }
 
+    @Test
+    void testFindSchemaTypes() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(this.getClass().getResource("../rules/findSchemaTypes.yaml")).getFile());
+        var result = new Parser(file).parse(oas);
+
+        var rootSchema = result.getSchemas().stream().filter(def -> def.getIdentifier() != null && def.getIdentifier().equals("RootSchema")).findAny().get();
+        ApiFunctions.AllowedSchemaTypes allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
+        assertFalse(allowedSchemaTypes.valid());
+        assertEquals(0, allowedSchemaTypes.possibleTypes().size());
+
+        var schemaA = result.getSchemas().stream().filter(def -> def.getIdentifier() != null && def.getIdentifier().equals("SchemaA")).findAny().get();
+        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaA.getModel(), result));
+        assertTrue(allowedSchemaTypes.valid());
+        assertEquals(1, allowedSchemaTypes.possibleTypes().size());
+
+        var schemaB = result.getSchemas().stream().filter(def -> def.getIdentifier() != null && def.getIdentifier().equals("SchemaB")).findAny().get();
+        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaB.getModel(), result));
+        assertFalse(allowedSchemaTypes.valid());
+        assertEquals(0, allowedSchemaTypes.possibleTypes().size());
+
+        var schemaC = result.getSchemas().stream().filter(def -> def.getIdentifier() != null && def.getIdentifier().equals("SchemaC")).findAny().get();
+        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaC.getModel(), result));
+        assertTrue(allowedSchemaTypes.valid());
+        assertEquals(1, allowedSchemaTypes.possibleTypes().size());
+
+        var schemaD = result.getSchemas().stream().filter(def -> def.getIdentifier() != null && def.getIdentifier().equals("SchemaD")).findAny().get();
+        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaD.getModel(), result));
+        assertTrue(allowedSchemaTypes.valid());
+        assertEquals(1, allowedSchemaTypes.possibleTypes().size());
+    }
+
 }
