@@ -23,5 +23,5 @@ rule "schemas should not have conflicting types in subschemas"
       $schemaDefinition: SchemaDefinition($schema: /model)
       $allowedTypes: AllowedSchemaTypes(valid == false) from ApiFunctions.findSchemaTypes($schema, parserResult)
     then
-      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $allowedTypes.declaredTypes());
+      violationAllOfSubSchemasShouldNotHaveMultipleTypes(oas, $schemaDefinition, $allowedTypes.allDeclaredTypes());
 end

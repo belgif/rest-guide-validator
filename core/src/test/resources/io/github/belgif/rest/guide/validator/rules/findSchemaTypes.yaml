@@ -34,3 +34,36 @@ components:
       type: object
       allOf:
         - $ref: "#/components/schemas/SchemaC"
+
+
+# te onderzoeken - werkt circulaire dependency check overijverig voor gevallen zoals:
+
+    SchemaWithSharedSubschema: # should be invalid
+      allOf:
+        - oneOf: # this part allows only string or object
+          - $ref: "#/components/schemas/FirstChild"
+          - $ref: "#/components/schemas/SecondChild"
+        - type: integer
+
+    Parent:
+      type: object
+
+    FirstChild:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+
+    SecondChild:
+      oneOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: string
+
+    SchemaOneOfAnyTypeAllowed:
+      oneOf:
+        - type: object
+        - {}
+
+    SchemaValidCombination:
+      allOf:
+       - $ref: "#/components/schemas/SchemaOneOfAnyTypeAllowed"
+       - type: integer

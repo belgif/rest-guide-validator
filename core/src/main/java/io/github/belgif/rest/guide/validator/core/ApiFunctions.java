@@ -45,73 +45,91 @@ public class ApiFunctions {
         return false;
     }
 
-    public record AllowedSchemaTypes(boolean valid, Set<Schema.SchemaType> possibleTypes,
-                                     Set<Schema.SchemaType> declaredTypes) {
+    public record AllowedSchemaTypes(boolean valid,  // valid with allowedTypes = empty list means any type allowed?
+                                     Set<Schema.SchemaType> allowedTypes, // actual allowed types after calculation taking all declared types in the schema and subschemas into account. Null value means no type restriction
+                                     Set<Schema.SchemaType> allDeclaredTypes) {
     }
 
     public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result) {
         return findSchemaTypes(schema, result, new HashSet<>());
     }
 
-    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
+    private static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
-        if (visitedSchemas.contains(schemaDefinition)) {
+        if (visitedSchemas.contains(schemaDefinition)) { //TODO: doesn't this match too much? i.e. when same schema is referenced from distinct subschema branches
             //In case there is a recursive reference, it should not fail and not give any restrictions
             return new AllowedSchemaTypes(true, new HashSet<>(), new HashSet<>());
         }
         visitedSchemas.add(schemaDefinition);
+
+        // TODO: try use AllowedSchemaTypes record structure instead, now there are two different representations possibel
         AtomicBoolean first = new AtomicBoolean(true);
-        AtomicBoolean allWildcards = new AtomicBoolean(true);
-        Set<Schema.SchemaType> intersection = new HashSet<>();
-        Set<Schema.SchemaType> union = new HashSet<>();
+        AtomicBoolean anyTypeAllowed = new AtomicBoolean(true);
+        Set<Schema.SchemaType> allowedTypes = new HashSet<>();
+        Set<Schema.SchemaType> declaredTypes = new HashSet<>();
 
         if (schema.getType() != null) {
-            union.add(schema.getType());
-            intersection.add(schema.getType());
+            declaredTypes.add(schema.getType());
+            allowedTypes.add(schema.getType());
             first.set(false);
         }
         if (schema.getAllOf() != null) {
             schema.getAllOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
+                updateAllowedAndDeclaredTypes(types.allowedTypes(), declaredTypes, allowedTypes, anyTypeAllowed, first);
             });
         }
-        List<AllowedSchemaTypes> oneOfAllowedSchemaTypes = new ArrayList<>();
         if (schema.getOneOf() != null) {
+            Set<Schema.SchemaType> oneOfTypes = new HashSet<>();
             schema.getOneOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                oneOfAllowedSchemaTypes.add(types);
+                oneOfTypes.addAll(findSchemaTypes(def.getModel(), result, visitedSchemas).allowedTypes());
             });
-            fillUnionAndIntersection(oneOfAllowedSchemaTypes, union, intersection, allWildcards, first);
+            updateAllowedAndDeclaredTypes(oneOfTypes, declaredTypes, allowedTypes, anyTypeAllowed, first);
         }
         if (schema.getAnyOf() != null) {
             schema.getAnyOf().forEach(subSchema -> {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
                 AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                fillUnionAndIntersection(List.of(types), union, intersection, allWildcards, first);
+                //TODO: shouldn't this be same behavior as oneOf? anyOf = at least one subschema must be valid - create test case
+                updateAllowedAndDeclaredTypes(types.allowedTypes(), declaredTypes, allowedTypes, anyTypeAllowed, first);
             });
         }
-        boolean valid = allWildcards.get() || !intersection.isEmpty();
-        return new AllowedSchemaTypes(valid, intersection, union);
+        boolean valid = anyTypeAllowed.get() || !allowedTypes.isEmpty();
+        return new AllowedSchemaTypes(valid, allowedTypes, declaredTypes);
     }
 
-    private static void fillUnionAndIntersection(List<AllowedSchemaTypes> allowedSchemaTypes, Set<Schema.SchemaType> union, Set<Schema.SchemaType> intersection, AtomicBoolean allWildcards, AtomicBoolean first) {
-        Set<Schema.SchemaType> schemaTypes = allowedSchemaTypes.stream().flatMap(allowedSchemaType -> allowedSchemaType.possibleTypes.stream()).collect(Collectors.toSet());
-        union.addAll(schemaTypes);
+    /**
+     * Intersect set of type constraints with a new set of allowed types
+     *
+     * @param newAllowedTypes
+     *
+     * Current type constraints in other params:
+     *
+     * @param allDeclaredTypes
+     * @param allowedSchemaTypes
+     * @param anyTypeAllowed
+     * @param first
+     */
+    private static void updateAllowedAndDeclaredTypes(Set<Schema.SchemaType> newAllowedTypes,
+                                                      Set<Schema.SchemaType> allDeclaredTypes,
+                                                      Set<Schema.SchemaType> allowedSchemaTypes,
+                                                      AtomicBoolean anyTypeAllowed,
+                                                      AtomicBoolean first) {
 
-        if (schemaTypes.isEmpty()) {
-            // No type is found, wildcard or sub schema is already invalid
+        if (newAllowedTypes.isEmpty()) {
+            // No type is found, anyTypeAllowed or sub schema is already invalid
             return;
         }
-        allWildcards.set(false);
+        anyTypeAllowed.set(false);
+        allDeclaredTypes.addAll(newAllowedTypes);
 
         if (first.get()) {
-            intersection.addAll(union);
+            allowedSchemaTypes.addAll(allDeclaredTypes);
             first.set(false);
         } else {
-            intersection.retainAll(schemaTypes);
+            allowedSchemaTypes.retainAll(newAllowedTypes);
         }
     }
 
