@@ -7,35 +7,6 @@ servers:
 paths: {}
 components:
   schemas:
-    RootSchema:
-      allOf:
-        - $ref: "#/components/schemas/SchemaA"
-        - $ref: "#/components/schemas/SchemaB"
-
-    SchemaA:
-      allOf:
-        - $ref: "#/components/schemas/SchemaC"
-        - type: object
-
-    SchemaB:
-      allOf:
-        - type: string
-        - $ref: "#/components/schemas/SchemaC"
-
-    SchemaC:
-      allOf:
-        - type: object
-        - $ref: "#/components/schemas/SchemaD"
-      oneOf:
-        - type: object
-        - type: string
-
-    SchemaD:
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/SchemaC"
-
-
 # te onderzoeken - werkt circulaire dependency check overijverig voor gevallen zoals:
 
     SchemaWithSharedSubschema: # should be invalid

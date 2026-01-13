@@ -3,6 +3,7 @@ package io.github.belgif.rest.guide.validator.core;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
@@ -45,94 +46,113 @@ public class ApiFunctions {
         return false;
     }
 
-    public record AllowedSchemaTypes(boolean valid,  // valid with allowedTypes = empty list means any type allowed?
-                                     Set<Schema.SchemaType> allowedTypes, // actual allowed types after calculation taking all declared types in the schema and subschemas into account. Null value means no type restriction
-                                     Set<Schema.SchemaType> allDeclaredTypes) {
+    public record ConflictingSchemaValidation(
+            /** actual allowed types after calculation combining all declared types in the schema and subschemas, using allOf/oneOf/anyOf logic
+             *  A null value means there's no type restriction.
+             *
+             *
+             */
+            Set<Schema.SchemaType> allowedTypes,
+            /**
+             * List of declared typesets by the schema that were combined.
+             * Useful for error message.
+             * Subschemas that aren't valid (have conflicting types) are ignored because they don't pass validation anyway.
+             */
+            List<Set<Schema.SchemaType>> declaredTypeSets) {
+
+        public boolean hasConflict() {
+            return this.allowedTypes != null && this.allowedTypes.isEmpty();
+        }
+
+        public String getDeclaredTypesString() {
+            List<String> typeSetsAsString =
+                    declaredTypeSets.stream()
+                    .filter(set -> set != null && !set.isEmpty())
+                    .map(set -> typeSetToString(set))
+                    .collect(Collectors.toList());
+            return String.join(",", typeSetsAsString);
+
+        }
+
+        private static String typeSetToString(Set<Schema.SchemaType> typeSet) {
+            Set<String> types = typeSet.stream().map(type -> type.name()).collect(Collectors.toSet());
+            return "(" + String.join(",", types) + ")";
+        }
     }
 
-    public static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result) {
+    public static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result) {
         return findSchemaTypes(schema, result, new HashSet<>());
     }
 
-    private static AllowedSchemaTypes findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
+    private static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemasByParent) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
-        if (visitedSchemas.contains(schemaDefinition)) { //TODO: doesn't this match too much? i.e. when same schema is referenced from distinct subschema branches
-            //In case there is a recursive reference, it should not fail and not give any restrictions
-            return new AllowedSchemaTypes(true, new HashSet<>(), new HashSet<>());
+        if (visitedSchemasByParent.contains(schemaDefinition)) {
+            //TODO: what to do in case there is a recursive reference? Is it already tested?
+            throw new IllegalStateException("Schema has self-reference");
         }
+        Set<SchemaDefinition> visitedSchemas = new HashSet<>(visitedSchemasByParent);
         visitedSchemas.add(schemaDefinition);
 
-        // TODO: try use AllowedSchemaTypes record structure instead, now there are two different representations possibel
-        AtomicBoolean first = new AtomicBoolean(true);
-        AtomicBoolean anyTypeAllowed = new AtomicBoolean(true);
-        Set<Schema.SchemaType> allowedTypes = new HashSet<>();
-        Set<Schema.SchemaType> declaredTypes = new HashSet<>();
+        var typeSetsToCombine = new ArrayList<Set<Schema.SchemaType>>();
 
-        if (schema.getType() != null) {
-            declaredTypes.add(schema.getType());
-            allowedTypes.add(schema.getType());
-            first.set(false);
+        if(schema.getType() != null) {
+            typeSetsToCombine.add(Set.of(schema.getType()));
         }
+
         if (schema.getAllOf() != null) {
-            schema.getAllOf().forEach(subSchema -> {
+            for (var subSchema : schema.getAllOf()) {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                updateAllowedAndDeclaredTypes(types.allowedTypes(), declaredTypes, allowedTypes, anyTypeAllowed, first);
-            });
+                var nestedSchemaResult = findSchemaTypes(def.getModel(), result, visitedSchemas);
+                if (!nestedSchemaResult.hasConflict()) { // ignoring subschemas with conflicts, they'll already get an error
+                    typeSetsToCombine.add(nestedSchemaResult.allowedTypes());
+                }
+            }
         }
+
         if (schema.getOneOf() != null) {
-            Set<Schema.SchemaType> oneOfTypes = new HashSet<>();
-            schema.getOneOf().forEach(subSchema -> {
-                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                oneOfTypes.addAll(findSchemaTypes(def.getModel(), result, visitedSchemas).allowedTypes());
-            });
-            updateAllowedAndDeclaredTypes(oneOfTypes, declaredTypes, allowedTypes, anyTypeAllowed, first);
+            var subSchemaValidations = schema.getOneOf().stream()
+                    .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
+                    .collect(Collectors.toList());
+            typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
+
         if (schema.getAnyOf() != null) {
-            schema.getAnyOf().forEach(subSchema -> {
-                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                AllowedSchemaTypes types = findSchemaTypes(def.getModel(), result, visitedSchemas);
-                //TODO: shouldn't this be same behavior as oneOf? anyOf = at least one subschema must be valid - create test case
-                updateAllowedAndDeclaredTypes(types.allowedTypes(), declaredTypes, allowedTypes, anyTypeAllowed, first);
-            });
+            var subSchemaValidations = schema.getAnyOf().stream()
+                    .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
+                    .collect(Collectors.toList());
+            typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
-        boolean valid = anyTypeAllowed.get() || !allowedTypes.isEmpty();
-        return new AllowedSchemaTypes(valid, allowedTypes, declaredTypes);
+
+        var allowedTypes = intersectTypeSets(typeSetsToCombine);
+        return new ConflictingSchemaValidation(allowedTypes, typeSetsToCombine);
     }
 
-    /**
-     * Intersect set of type constraints with a new set of allowed types
-     *
-     * @param newAllowedTypes
-     *
-     * Current type constraints in other params:
-     *
-     * @param allDeclaredTypes
-     * @param allowedSchemaTypes
-     * @param anyTypeAllowed
-     * @param first
-     */
-    private static void updateAllowedAndDeclaredTypes(Set<Schema.SchemaType> newAllowedTypes,
-                                                      Set<Schema.SchemaType> allDeclaredTypes,
-                                                      Set<Schema.SchemaType> allowedSchemaTypes,
-                                                      AtomicBoolean anyTypeAllowed,
-                                                      AtomicBoolean first) {
-
-        if (newAllowedTypes.isEmpty()) {
-            // No type is found, anyTypeAllowed or sub schema is already invalid
-            return;
+    private static Set<Schema.SchemaType> intersectTypeSets(List<Set<Schema.SchemaType>> typeSets) {
+        var nonNullTypeSets = typeSets.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        if(nonNullTypeSets.isEmpty()) {
+            return null;
         }
-        anyTypeAllowed.set(false);
-        allDeclaredTypes.addAll(newAllowedTypes);
 
-        if (first.get()) {
-            allowedSchemaTypes.addAll(allDeclaredTypes);
-            first.set(false);
-        } else {
-            allowedSchemaTypes.retainAll(newAllowedTypes);
+        var intersection = new HashSet<>(nonNullTypeSets.get(0));
+        for (Set<Schema.SchemaType> typeSet : nonNullTypeSets.subList(1, nonNullTypeSets.size())) {
+            intersection.retainAll(typeSet);
         }
+        return intersection;
     }
 
+    private static Set<Schema.SchemaType> unionOfTypeSets(List<ConflictingSchemaValidation> subSchemaValidations) {
+        Set<Schema.SchemaType> union = new HashSet<>();
+        for (var subSchemaValidation : subSchemaValidations) {
+            if (!subSchemaValidation.hasConflict()) {
+                if (union == null || subSchemaValidation.allowedTypes() == null) { //null means any type allowed
+                    union = null;
+                } else {
+                    union.addAll(subSchemaValidation.allowedTypes());
+                }
+            }
+        }
+        return union;
+    }
 
     /**
      * Verify if schema meets the predicate. anyOf and oneOf schemas all have to match

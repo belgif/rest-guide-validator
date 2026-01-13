@@ -5,9 +5,15 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class ApiFunctionsTest {
+
+    @TempDir
+    Path tempDir;
+
     @Test
     void testUrl() {
         var pattern = "^((https://)|/?)[-a-zA-Z0-9@:%._+~#=]{1,256}[a-zA-Z0-9()]{1,6}/[A-Za-z0-9]*(/[a-z0-9]+([A-Z]?[a-z0-9]+)*)*/v[0-9]+$";
@@ -118,44 +128,174 @@ class ApiFunctionsTest {
     }
 
     @Test
-    void testFindSchemaTypes() { //split in test cases, with meaningful name describing the case being tested
+    void testFindSchemaTypesCombinedAllOfOneOf() {
+        var openapi = parseOpenApiFromString("""
+                CombinedSchemaAllOfOneOf:
+                  type: object
+                  allOf:
+                    - type: object
+                    - properties:
+                        a:
+                          type: string
+                  oneOf:
+                    - type: object
+                    - type: string
+            """
+        );
+        var schema =  getSchemaDefinition("CombinedSchemaAllOfOneOf", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertFalse(validationResult.hasConflict());
+        assertEquals(1, validationResult.allowedTypes().size());
+        assertTrue(validationResult.allowedTypes().contains(Schema.SchemaType.OBJECT));
+    }
 
-        var result = parseOpenApi("findSchemaTypes.yaml");
+    @Test
+    void testFindSchemaTypesCombinedSchemaAllOfAnyOf() {
+        var openapi = parseOpenApiFromString("""
+                CombinedSchemaAllOfAnyOf:
+                  type: object
+                  allOf:
+                    - type: object
+                  anyOf:
+                    - type: object
+                    - type: string
+            """
+        );
+        var schema =  getSchemaDefinition("CombinedSchemaAllOfAnyOf", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertFalse(validationResult.hasConflict());
+        assertEquals(1, validationResult.allowedTypes().size());
+        assertTrue(validationResult.allowedTypes().contains(Schema.SchemaType.OBJECT));
+    }
+
+    @Test
+    void testFindSchemaTypesWithRefValid() { //split in test cases, with meaningful name describing the case being tested
+        var openapi = parseOpenApiFromString("""
+                    SchemaA:
+                      allOf:
+                        - $ref: "#/components/schemas/StringOrObject"
+                        - type: object
+                    StringOrObject:
+                      oneOf:
+                        - type: string
+                        - type: object
+                """);
+
+        var schema = getSchemaDefinition("SchemaA", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertFalse(validationResult.hasConflict());
+        assertEquals(1, validationResult.allowedTypes().size());
+    }
+
+    @Test
+    void testFindSchemaTypesWithRefInvalid() { //split in test cases, with meaningful name describing the case being tested
+        var openapi = parseOpenApiFromString("""
+                    SchemaIntegerAndRef:
+                      allOf:
+                        - type: integer
+                        - $ref: "#/components/schemas/StringOrObject"
+                    StringOrObject:
+                      oneOf:
+                        - type: string
+                        - type: object
+                """);
+        var schema = getSchemaDefinition("SchemaIntegerAndRef", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertTrue(validationResult.hasConflict());
+        assertEquals(0, validationResult.allowedTypes().size());
+    }
+
+    @Test
+    void testFindSchemaTypesInvalidReference() {
+        var openapi = parseOpenApiFromString("""
+                    InvalidReferencedSchema:
+                        type: object
+                        allOf:
+                            $ref: "#/components/schemas/SchemaIntegerAndRef"
+                    SchemaIntegerAndRef:
+                      allOf:
+                        - type: integer
+                        - $ref: "#/components/schemas/StringOrObject"
+                    StringOrObject:
+                      oneOf:
+                        - type: string
+                        - type: object
+        """);
+        var schema = getSchemaDefinition("InvalidReferencedSchema", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertFalse(validationResult.hasConflict());
+        assertEquals(1, validationResult.allowedTypes().size());
+    }
+
+
+    @Test
+    void testFindSchemaTypesInvalid() { //split in test cases, with meaningful name describing the case being testedZ
+        var result = parseOpenApiFromString("""
+                    RootSchema:
+                      allOf:
+                        - $ref: "#/components/schemas/SchemaA"
+                        - $ref: "#/components/schemas/SchemaB"
+                
+                    SchemaA:
+                      allOf:
+                        - $ref: "#/components/schemas/SchemaC"
+                        - type: object
+                
+                    SchemaB:
+                      allOf:
+                        - type: string
+                        - $ref: "#/components/schemas/SchemaC"
+                
+                    SchemaC:
+                      oneOf:
+                        - type: string
+                        - type: object
+                """);
 
         var rootSchema = getSchemaDefinition("RootSchema", result);
-        ApiFunctions.AllowedSchemaTypes allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
-        assertFalse(allowedSchemaTypes.valid());
+        ApiFunctions.ConflictingSchemaValidation allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
+        assertTrue(allowedSchemaTypes.hasConflict());
         assertEquals(0, allowedSchemaTypes.allowedTypes().size());
+    }
 
-        var schemaA = getSchemaDefinition("SchemaA", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaA.getModel(), result));
-        assertTrue(allowedSchemaTypes.valid());
-        assertEquals(1, allowedSchemaTypes.allowedTypes().size());
+    @Test
+    void testFindSchemaTypesWithCircularReference() {
+        var result = parseOpenApiFromString("""
+                    RootSchema:
+                      allOf:
+                        - $ref: "#/components/schemas/SchemaA"
+                        - $ref: "#/components/schemas/SchemaB"
+                
+                    SchemaA:
+                       type: object
+                
+                    SchemaB:
+                      allOf:
+                        - type: string
+                        - $ref: "#/components/schemas/RootSchema"
+                """);
 
-        var schemaB = getSchemaDefinition("SchemaB", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaB.getModel(), result));
-        assertFalse(allowedSchemaTypes.valid());
-        assertEquals(0, allowedSchemaTypes.allowedTypes().size());
+        var rootSchema = getSchemaDefinition("RootSchema", result);
+        assertThrows(IllegalStateException.class, () -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
+    }
 
-        var schemaC = getSchemaDefinition("SchemaC", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaC.getModel(), result));
-        assertTrue(allowedSchemaTypes.valid());
-        assertEquals(1, allowedSchemaTypes.allowedTypes().size());
+    @Test
+    void testFindSchemaTypesWithComplicatedAllOf() {
+        var openapi = parseOpenApiFromString("""
+                    AllOfComplicated: # this is valid
+                       allOf:
+                         - allOf:
+                             - type: string
+                         - oneOf:
+                             - type: string  # violates sch-oneOf, but not this rule
+                             - type: object
+                             - description: "..." # any type
+                """);
 
-        var schemaD = getSchemaDefinition("SchemaD", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaD.getModel(), result));
-        assertTrue(allowedSchemaTypes.valid());
-        assertEquals(1, allowedSchemaTypes.allowedTypes().size());
-
-        var schemaWithSharedSubschema = getSchemaDefinition("SchemaWithSharedSubschema", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaWithSharedSubschema.getModel(), result));
-        assertFalse(allowedSchemaTypes.valid());
-        assertEquals(0, allowedSchemaTypes.allowedTypes().size());
-
-        var schemaOneOfAnyTypeAllowed = getSchemaDefinition("SchemaOneOfAnyTypeAllowed", result);
-        allowedSchemaTypes = assertDoesNotThrow(() -> ApiFunctions.findSchemaTypes(schemaOneOfAnyTypeAllowed.getModel(), result));
-        assertTrue(allowedSchemaTypes.valid());
-        assertEquals(0, allowedSchemaTypes.allowedTypes().size());
+        var schema = getSchemaDefinition("AllOfComplicated", openapi);
+        var validationResult = ApiFunctions.findSchemaTypes(schema.getModel(), openapi);
+        assertFalse(validationResult.hasConflict());
+        assertEquals(1, validationResult.allowedTypes().size());
     }
 
     private SchemaDefinition getSchemaDefinition(String schemaIdentifier, Parser.ParserResult parserResult) {
@@ -168,5 +308,28 @@ class ApiFunctionsTest {
         var oas = new ViolationReport();
         var file = new File(Objects.requireNonNull(this.getClass().getResource("../rules/" + fileName)).getFile());
         return new Parser(file).parse(oas);
+    }
+
+    private Parser.ParserResult parseOpenApiFromString(String schemasString) { //via temp file
+        var openApiContents = """
+                openapi: 3.0.1
+                info:
+                  title: TestCase
+                  version: '1.0'
+                servers:
+                  - url: '/api/v1'
+                paths: {}
+                components:
+                  schemas:
+                """
+                + schemasString;
+        var oas = new ViolationReport();
+        Path tempOpenApiFile = tempDir.resolve("tempOpenApiFile.yaml");
+        try {
+            Files.write(tempOpenApiFile, openApiContents.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new Parser(tempOpenApiFile.toFile()).parse(oas);
     }
 }

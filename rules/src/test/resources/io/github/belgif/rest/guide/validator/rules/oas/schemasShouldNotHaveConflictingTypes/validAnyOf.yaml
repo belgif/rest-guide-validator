@@ -7,7 +7,7 @@ servers:
 paths: {}
 components:
   schemas:
-    ConflictingAnyOfWithoutMainType:
+    ValidAnyOfWithoutMainType:
       anyOf:
         - type: integer
         - type: array
