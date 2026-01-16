@@ -276,7 +276,7 @@ class ApiFunctionsTest {
                 """);
 
         var rootSchema = getSchemaDefinition("RootSchema", result);
-        assertThrows(IllegalStateException.class, () -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
+        assertThrows(ApiFunctions.CircularReferenceException.class, () -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
     }
 
     @Test

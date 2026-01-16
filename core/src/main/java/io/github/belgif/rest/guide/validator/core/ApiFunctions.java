@@ -75,8 +75,14 @@ public class ApiFunctions {
         }
 
         private static String typeSetToString(Set<Schema.SchemaType> typeSet) {
-            Set<String> types = typeSet.stream().map(type -> type.name()).collect(Collectors.toSet());
+            Set<String> types = typeSet.stream().map(type -> type.toString()).collect(Collectors.toSet());
             return "(" + String.join(",", types) + ")";
+        }
+    }
+
+    public static class CircularReferenceException extends RuntimeException {
+        public CircularReferenceException(String message) {
+            super(message);
         }
     }
 
@@ -87,8 +93,11 @@ public class ApiFunctions {
     private static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemasByParent) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
         if (visitedSchemasByParent.contains(schemaDefinition)) {
-            //TODO: create specific exception class, handle it in the rule as a violation with specific message
-            throw new IllegalStateException("Schema has self-reference");
+            String message = "Circular reference in schema not allowed";
+            if (schemaDefinition.getIdentifier() != null) { //should in practice always be non-null, because $ref should point to a named schema component
+                message = message + ": " + schemaDefinition.getIdentifier();
+            }
+            throw new CircularReferenceException(message);
         }
         Set<SchemaDefinition> visitedSchemas = new HashSet<>(visitedSchemasByParent);
         visitedSchemas.add(schemaDefinition);
