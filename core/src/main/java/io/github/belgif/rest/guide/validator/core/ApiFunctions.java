@@ -87,7 +87,7 @@ public class ApiFunctions {
     private static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemasByParent) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
         if (visitedSchemasByParent.contains(schemaDefinition)) {
-            //TODO: what to do in case there is a recursive reference? Is it already tested?
+            //TODO: create specific exception class, handle it in the rule as a violation with specific message
             throw new IllegalStateException("Schema has self-reference");
         }
         Set<SchemaDefinition> visitedSchemas = new HashSet<>(visitedSchemasByParent);
@@ -141,11 +141,21 @@ public class ApiFunctions {
     }
 
     private static Set<Schema.SchemaType> unionOfTypeSets(List<ConflictingSchemaValidation> subSchemaValidations) {
+        /** ex.
+        oneOf:
+           - description: anything allowed in this subschema # missing type -> any allowed
+           - type: object
+           - oneOf:
+              - type: object
+              - type: string
+
+        // results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
+         **/
         Set<Schema.SchemaType> union = new HashSet<>();
         for (var subSchemaValidation : subSchemaValidations) {
             if (!subSchemaValidation.hasConflict()) {
-                if (union == null || subSchemaValidation.allowedTypes() == null) { //null means any type allowed
-                    union = null;
+                if (subSchemaValidation.allowedTypes() == null) { //null means any type allowed
+                    return null;
                 } else {
                     union.addAll(subSchemaValidation.allowedTypes());
                 }
