@@ -1,0 +1,19 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+components:
+  schemas:
+    SchemaUnderTest:
+      oneOf:
+        - type: string
+          enum:
+            - firstOption
+            - secondOption
+        - type: string
+          enum:
+            - thirdOption
+            - fourthOption
