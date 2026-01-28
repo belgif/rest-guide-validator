@@ -1,0 +1,14 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    MyFirstOneOf: # this is valid
+      - oneOf:
+        - type: string  # violates sch-oneOf, but not this rule
+        - type: object
+        - description: "..." # any type
