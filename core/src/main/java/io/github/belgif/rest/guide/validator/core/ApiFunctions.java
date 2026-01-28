@@ -3,12 +3,10 @@ package io.github.belgif.rest.guide.validator.core;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.model.helper.MediaType;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -67,22 +65,16 @@ public class ApiFunctions {
         public String getDeclaredTypesString() {
             List<String> typeSetsAsString =
                     declaredTypeSets.stream()
-                    .filter(set -> set != null && !set.isEmpty())
-                    .map(set -> typeSetToString(set))
-                    .collect(Collectors.toList());
+                            .filter(set -> set != null && !set.isEmpty())
+                            .map(ConflictingSchemaValidation::typeSetToString)
+                            .toList();
             return String.join(",", typeSetsAsString);
 
         }
 
         private static String typeSetToString(Set<Schema.SchemaType> typeSet) {
-            Set<String> types = typeSet.stream().map(type -> type.toString()).collect(Collectors.toSet());
+            Set<String> types = typeSet.stream().map(Schema.SchemaType::toString).collect(Collectors.toSet());
             return "(" + String.join(",", types) + ")";
-        }
-    }
-
-    public static class CircularReferenceException extends RuntimeException {
-        public CircularReferenceException(String message) {
-            super(message);
         }
     }
 
@@ -93,18 +85,18 @@ public class ApiFunctions {
     private static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemasByParent) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
         if (visitedSchemasByParent.contains(schemaDefinition)) {
-            String message = "Circular reference in schema not allowed";
-            if (schemaDefinition.getIdentifier() != null) { //should in practice always be non-null, because $ref should point to a named schema component
-                message = message + ": " + schemaDefinition.getIdentifier();
-            }
-            throw new CircularReferenceException(message);
+            /*
+            If there is a circular dependency, don't follow the reference again, just return a conflict.
+            This will be ignored later on, because a 'real' subschema with a conflict will have its own error.
+             */
+            return new ConflictingSchemaValidation(new HashSet<>(), new ArrayList<>());
         }
         Set<SchemaDefinition> visitedSchemas = new HashSet<>(visitedSchemasByParent);
         visitedSchemas.add(schemaDefinition);
 
         var typeSetsToCombine = new ArrayList<Set<Schema.SchemaType>>();
 
-        if(schema.getType() != null) {
+        if (schema.getType() != null) {
             typeSetsToCombine.add(Set.of(schema.getType()));
         }
 
@@ -121,14 +113,14 @@ public class ApiFunctions {
         if (schema.getOneOf() != null) {
             var subSchemaValidations = schema.getOneOf().stream()
                     .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
-                    .collect(Collectors.toList());
+                    .toList();
             typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
 
         if (schema.getAnyOf() != null) {
             var subSchemaValidations = schema.getAnyOf().stream()
                     .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
-                    .collect(Collectors.toList());
+                    .toList();
             typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
 
@@ -137,8 +129,8 @@ public class ApiFunctions {
     }
 
     private static Set<Schema.SchemaType> intersectTypeSets(List<Set<Schema.SchemaType>> typeSets) {
-        var nonNullTypeSets = typeSets.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        if(nonNullTypeSets.isEmpty()) {
+        var nonNullTypeSets = typeSets.stream().filter(Objects::nonNull).toList();
+        if (nonNullTypeSets.isEmpty()) {
             return null;
         }
 
@@ -151,14 +143,14 @@ public class ApiFunctions {
 
     private static Set<Schema.SchemaType> unionOfTypeSets(List<ConflictingSchemaValidation> subSchemaValidations) {
         /** ex.
-        oneOf:
-           - description: anything allowed in this subschema # missing type -> any allowed
-           - type: object
-           - oneOf:
-              - type: object
-              - type: string
+         oneOf:
+         - description: anything allowed in this subschema # missing type -> any allowed
+         - type: object
+         - oneOf:
+         - type: object
+         - type: string
 
-        // results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
+         // results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
          **/
         Set<Schema.SchemaType> union = new HashSet<>();
         for (var subSchemaValidation : subSchemaValidations) {

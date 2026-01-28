@@ -276,7 +276,28 @@ class ApiFunctionsTest {
                 """);
 
         var rootSchema = getSchemaDefinition("RootSchema", result);
-        assertThrows(ApiFunctions.CircularReferenceException.class, () -> ApiFunctions.findSchemaTypes(rootSchema.getModel(), result));
+        assertTrue(ApiFunctions.findSchemaTypes(rootSchema.getModel(), result).hasConflict());
+    }
+
+    @Test
+    void testFindValidSchemaTypesWithCircularReference() {
+        var result = parseOpenApiFromString("""
+                    RootSchema:
+                      allOf:
+                        - $ref: "#/components/schemas/SchemaA"
+                        - $ref: "#/components/schemas/SchemaB"
+                
+                    SchemaA:
+                       type: object
+                
+                    SchemaB:
+                      allOf:
+                        - type: Object
+                        - $ref: "#/components/schemas/RootSchema"
+                """);
+
+        var rootSchema = getSchemaDefinition("RootSchema", result);
+        assertFalse(ApiFunctions.findSchemaTypes(rootSchema.getModel(), result).hasConflict());
     }
 
     @Test
