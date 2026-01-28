@@ -86,7 +86,7 @@ public class ApiFunctions {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
         if (visitedSchemasByParent.contains(schemaDefinition)) {
             /*
-            If there is a circular dependency, don't follow the reference again, just return a conflict.
+            If there is a circular reference, don't follow the reference again, just return a conflict.
             This will be ignored later on, because a 'real' subschema with a conflict will have its own error.
              */
             return new ConflictingSchemaValidation(new HashSet<>(), new ArrayList<>());
