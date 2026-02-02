@@ -44,42 +44,130 @@ public class ApiFunctions {
         return false;
     }
 
-    public static Set<Schema.SchemaType> findPossibleSchemaTypes(Schema schema, Parser.ParserResult result) {
-        return findPossibleSchemaTypes(schema, result, new HashSet<>());
+    public record ConflictingSchemaValidation(
+            /** actual allowed types after calculation combining all declared types in the schema and subschemas, using allOf/oneOf/anyOf logic
+             *  A null value means there's no type restriction.
+             *
+             *
+             */
+            Set<Schema.SchemaType> allowedTypes,
+            /**
+             * List of declared typesets by the schema that were combined.
+             * Useful for error message.
+             * Subschemas that aren't valid (have conflicting types) are ignored because they don't pass validation anyway.
+             */
+            List<Set<Schema.SchemaType>> declaredTypeSets) {
+
+        public boolean hasConflict() {
+            return this.allowedTypes != null && this.allowedTypes.isEmpty();
+        }
+
+        public String getDeclaredTypesString() {
+            List<String> typeSetsAsString =
+                    declaredTypeSets.stream()
+                            .filter(set -> set != null && !set.isEmpty())
+                            .map(ConflictingSchemaValidation::typeSetToString)
+                            .toList();
+            return String.join(",", typeSetsAsString);
+
+        }
+
+        private static String typeSetToString(Set<Schema.SchemaType> typeSet) {
+            Set<String> types = typeSet.stream().map(Schema.SchemaType::toString).collect(Collectors.toSet());
+            return "(" + String.join(",", types) + ")";
+        }
     }
 
-    private static Set<Schema.SchemaType> findPossibleSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemas) {
+    public static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result) {
+        return findSchemaTypes(schema, result, new HashSet<>());
+    }
+
+    private static ConflictingSchemaValidation findSchemaTypes(Schema schema, Parser.ParserResult result, Set<SchemaDefinition> visitedSchemasByParent) {
         SchemaDefinition schemaDefinition = (SchemaDefinition) result.resolve(schema);
-        if (visitedSchemas.contains(schemaDefinition)) {
-            return new HashSet<>();
+        if (visitedSchemasByParent.contains(schemaDefinition)) {
+            /*
+            If there is a circular reference, don't follow the reference again, just return a conflict.
+            This will be ignored later on, because only conflicts of the entry schema are kept.
+             */
+            return new ConflictingSchemaValidation(new HashSet<>(), new ArrayList<>());
         }
-        Set<Schema.SchemaType> possibleTypes = new HashSet<>();
+        Set<SchemaDefinition> visitedSchemas = new HashSet<>(visitedSchemasByParent);
+        visitedSchemas.add(schemaDefinition);
+
+        var typeSetsToCombine = new ArrayList<Set<Schema.SchemaType>>();
+
         if (schema.getType() != null) {
-            possibleTypes.add(schema.getType());
-            visitedSchemas.add(schemaDefinition);
+            typeSetsToCombine.add(Set.of(schema.getType()));
         }
+
         if (schema.getAllOf() != null) {
-            schema.getAllOf().forEach(subSchema -> {
+            for (var subSchema : schema.getAllOf()) {
                 SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
-                visitedSchemas.add(def);
-            });
+                var nestedSchemaResult = findSchemaTypes(def.getModel(), result, visitedSchemas);
+                if (!nestedSchemaResult.hasConflict()) { // ignoring subschemas with conflicts, they'll already get an error
+                    typeSetsToCombine.add(nestedSchemaResult.allowedTypes());
+                }
+            }
         }
+
         if (schema.getOneOf() != null) {
-            schema.getOneOf().forEach(subSchema -> {
-                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
-                visitedSchemas.add(def);
-            });
+            var subSchemaValidations = schema.getOneOf().stream()
+                    .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
+                    .toList();
+            typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
+
         if (schema.getAnyOf() != null) {
-            schema.getAnyOf().forEach(subSchema -> {
-                SchemaDefinition def = (SchemaDefinition) result.resolve(subSchema);
-                possibleTypes.addAll(findPossibleSchemaTypes(def.getModel(), result, visitedSchemas));
-                visitedSchemas.add(def);
-            });
+            var subSchemaValidations = schema.getAnyOf().stream()
+                    .map(subSchema -> findSchemaTypes(result.resolve(subSchema).getModel(), result, visitedSchemas))
+                    .toList();
+            typeSetsToCombine.add(unionOfTypeSets(subSchemaValidations));
         }
-        return possibleTypes;
+
+        var allowedTypes = intersectTypeSets(typeSetsToCombine);
+        return new ConflictingSchemaValidation(allowedTypes, typeSetsToCombine);
+    }
+
+    private static Set<Schema.SchemaType> intersectTypeSets(List<Set<Schema.SchemaType>> typeSets) {
+        var nonNullTypeSets = typeSets.stream().filter(Objects::nonNull).toList();
+        if (nonNullTypeSets.isEmpty()) {
+            return null;
+        }
+
+        var intersection = new HashSet<>(nonNullTypeSets.get(0));
+        for (Set<Schema.SchemaType> typeSet : nonNullTypeSets.subList(1, nonNullTypeSets.size())) {
+            intersection.retainAll(typeSet);
+        }
+        return intersection;
+    }
+
+    private static Set<Schema.SchemaType> unionOfTypeSets(List<ConflictingSchemaValidation> subSchemaValidations) {
+        /**
+         * @formatter:off
+         * ex.
+         {@snippet lang=yaml:
+         oneOf:
+         - description: anything allowed in this subschema # missing type -> any allowed
+         - type: object
+         - oneOf:
+             - type: object
+             - type: string
+         }
+
+        results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
+         @formatter:on
+         **/
+        Set<Schema.SchemaType> union = new HashSet<>();
+        for (var subSchemaValidation : subSchemaValidations) {
+            if (!subSchemaValidation.hasConflict()) {
+                if (subSchemaValidation.allowedTypes() == null) { //null means any type allowed
+                    return null;
+                } else {
+                    union.addAll(subSchemaValidation.allowedTypes());
+                }
+            }
+        }
+        return union;
     }
 
     /**

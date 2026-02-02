@@ -1,0 +1,20 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    RootSchema:
+      allOf:
+        - $ref: "#/components/schemas/SchemaA"
+        - type: string
+
+    SchemaA:
+      allOf:
+        - type: object
+      oneOf:
+        - type: object
+        - type: string
