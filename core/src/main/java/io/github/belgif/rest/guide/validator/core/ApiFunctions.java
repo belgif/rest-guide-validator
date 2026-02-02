@@ -87,7 +87,7 @@ public class ApiFunctions {
         if (visitedSchemasByParent.contains(schemaDefinition)) {
             /*
             If there is a circular reference, don't follow the reference again, just return a conflict.
-            This will be ignored later on, because a 'real' subschema with a conflict will have its own error.
+            This will be ignored later on, because only conflicts of the entry schema are kept.
              */
             return new ConflictingSchemaValidation(new HashSet<>(), new ArrayList<>());
         }
@@ -142,15 +142,20 @@ public class ApiFunctions {
     }
 
     private static Set<Schema.SchemaType> unionOfTypeSets(List<ConflictingSchemaValidation> subSchemaValidations) {
-        /** ex.
+        /**
+         * @formatter:off
+         * ex.
+         {@snippet lang=yaml:
          oneOf:
          - description: anything allowed in this subschema # missing type -> any allowed
          - type: object
          - oneOf:
-         - type: object
-         - type: string
+             - type: object
+             - type: string
+         }
 
-         // results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
+        results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
+         @formatter:on
          **/
         Set<Schema.SchemaType> union = new HashSet<>();
         for (var subSchemaValidation : subSchemaValidations) {
