@@ -1,0 +1,13 @@
+openapi: 3.0.0
+info:
+  title: exampleShouldBeValid
+  version: 1
+components:
+  schemas:
+    UriReference:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri-reference
+          example: "./documents/123"
