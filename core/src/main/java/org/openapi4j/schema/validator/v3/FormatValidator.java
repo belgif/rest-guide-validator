@@ -1,5 +1,10 @@
 package org.openapi4j.schema.validator.v3;
 
+/**
+ * This class overrides <a href="https://github.com/openapi4j/openapi4j/blob/e298b5f0599c00888369cb53d0987c99f8933a2c/openapi-schema-validator/src/main/java/org/openapi4j/schema/validator/v3/FormatValidator.java">this class of the OpenApi4j SchemaValidator</a>
+ * It now allows relative references for strings of format uri-reference.
+ */
+
 import com.fasterxml.jackson.databind.JsonNode;
 import org.openapi4j.core.model.v3.OAI3;
 import org.openapi4j.core.validation.ValidationResult;
@@ -95,6 +100,10 @@ class FormatValidator extends BaseJsonValidator<OAI3> {
             case FORMAT_UUID:
                 validated = !valueNode.isTextual() || UUID_PATTERN.matcher(valueNode.textValue()).matches();
                 break;
+
+                /*
+                Start of Belgif modifications
+                 */
             case FORMAT_URI:
                 try {
                     URI uri = URI.create(valueNode.textValue());
@@ -120,6 +129,9 @@ class FormatValidator extends BaseJsonValidator<OAI3> {
                 }
                 validated = !valueNode.isTextual() || uriResult;
                 break;
+                /*
+                End of Belgif modifications
+                 */
             default:
                 validation.add(CRUMB_INFO, UNKNOWN_WARN, format);
                 validated = true;
