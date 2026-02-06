@@ -4,10 +4,10 @@ info:
   version: 1
 components:
   schemas:
-    Uri:
+    UriReference:
       type: object
       properties:
         href:
           type: string
-          format: uri
+          format: uri-reference
           example: "./documents/123"

@@ -89,18 +89,24 @@ class SchemaValidatorTest {
     @Test
     void testUriReference() {
         var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriReference.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().toList();
+
+        assertEquals(1, examples.size());
+        Optional<String> uriReferenceViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+        assertTrue(uriReferenceViolation.isEmpty());
+    }
+
+    @Test
+    void testUri() {
+        var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uri.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
-        assertEquals(2, examples.size());
-        var uriReference = examples.stream().filter(e -> e.getJsonPointer().getJsonPointer().equals("/components/schemas/UriReference/properties/href/example")).findFirst().get();
-        assertNotNull(uriReference);
-        var uri = examples.stream().filter(e -> e.getJsonPointer().getJsonPointer().equals("/components/schemas/Uri/properties/href/example")).findFirst().get();
-        assertNotNull(uri);
-        Optional<String> uriReferenceViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(uriReference));
-        assertTrue(uriReferenceViolation.isEmpty());
-        Optional<String> uriViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(uri));
+        assertEquals(1, examples.size());
+        Optional<String> uriViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
         assertTrue(uriViolation.isPresent());
     }
 
