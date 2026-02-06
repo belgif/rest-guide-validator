@@ -11,3 +11,10 @@ components:
           type: string
           format: uri-reference
           example: "./documents/123"
+    Uri:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri
+          example: "./documents/123"
