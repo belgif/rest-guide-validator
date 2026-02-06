@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,6 +84,30 @@ class SchemaValidatorTest {
 
         assertEquals(1, examples.size());
         assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+    }
+
+    @Test
+    void testUriReference() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriReference.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().toList();
+
+        assertEquals(1, examples.size());
+        Optional<String> uriReferenceViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+        assertTrue(uriReferenceViolation.isEmpty());
+    }
+
+    @Test
+    void testUri() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uri.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().toList();
+
+        assertEquals(1, examples.size());
+        Optional<String> uriViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
+        assertTrue(uriViolation.isPresent());
     }
 
 }
