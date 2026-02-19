@@ -2,6 +2,7 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions.ConflictingSchemaValidation;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
@@ -55,7 +56,7 @@ function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, Par
   if (schemaDefinition.getModel().getOneOf() == null) {
     return null;
   }
-  Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findPossibleSchemaTypes(s, parserResult).stream()).collect(Collectors.toSet());
+  Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findSchemaTypes(s, parserResult).declaredTypeSets().stream().flatMap(Set::stream)).collect(Collectors.toSet());
   return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
 }
 
