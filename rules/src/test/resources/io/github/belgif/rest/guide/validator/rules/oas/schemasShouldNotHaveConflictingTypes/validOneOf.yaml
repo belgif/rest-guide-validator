@@ -1,0 +1,16 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    ValidOneOf:
+      oneOf:
+        - required: [ a ]
+        - required: [ b ]
+      allOf:
+        - properties:
+            c: { }
