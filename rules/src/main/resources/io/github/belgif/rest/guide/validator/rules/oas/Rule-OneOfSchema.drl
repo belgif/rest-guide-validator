@@ -1,0 +1,86 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
+import io.github.belgif.rest.guide.validator.core.ApiFunctions.ConflictingSchemaValidation;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.lang.Boolean;
+import java.util.ArrayList;
+import java.util.Collections
+import java.util.stream.Collectors;
+
+function void violationOneOfSubSchemaEnforcesIllegalConstraints(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
+    oas.addViolation("[cod-design]",
+    "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
+}
+
+function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas, SchemaDefinition schema, String conflictingTypes) {
+    oas.addViolation("[cod-design]",
+        "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
+}
+
+function Set allowedProperties() {
+  // Does not include enum because that needs an extra check
+  // swagger-parser puts "x-*" properties under the extensions property
+  return Set.of("required", "description", "example", "title", "extensions");
+}
+
+function List getInvalidPropertiesInOneOfSchema(Schema schema) {
+    List<String> props = ApiFunctions.findNonNullProperties(schema);
+    props.removeAll(allowedProperties());
+    if (props.isEmpty()) {
+      return props;
+    }
+    if (props.contains("enumeration") && (props.size() == 1 || (props.size() == 2 && props.contains("type")))) {
+    Set<SchemaType> allowedSimpleTypes = Set.of(SchemaType.INTEGER, SchemaType.STRING, SchemaType.NUMBER, SchemaType.BOOLEAN);
+      if (schema.getType() != null && allowedSimpleTypes.contains(schema.getType())) {
+        return Collections.EMPTY_LIST;
+      }
+    }
+    return props;
+}
+
+function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, ParserResult parserResult) {
+  // Check is done here and not in the rule because otherwise it would trigger a double violation.
+  if (schemaDefinition.getModel().getOneOf() == null) {
+    return null;
+  }
+  Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findSchemaTypes(s, parserResult).declaredTypeSets().stream().flatMap(Set::stream)).collect(Collectors.toSet());
+  return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
+}
+
+function String mapToString(List<String> invalidProperties) {
+  if (invalidProperties.isEmpty()) {
+    return null;
+  }
+  return invalidProperties.stream().collect(Collectors.joining(", ")).toString();
+}
+
+rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
+    when
+        $schemaDefinition: SchemaDefinition($oneOf: /model/oneOf#List, $oneOf != null)
+        $subSchemaDef: SchemaDefinition($model: /model) from parserResult.resolve($oneOf)
+        // Needs the mapToString because the rule has issues with the generics of a List<String>
+        $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model))
+    then
+        violationOneOfSubSchemaEnforcesIllegalConstraints(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
+end
+
+rule "OneOf with enum constraint should be of the same simple type"
+  when
+      $schemaDefinition: SchemaDefinition()
+      $conflictingTypes: String() from getConflictingTypesInEnum($schemaDefinition, parserResult)
+  then
+      violationOneOfSubSchemaWithEnumOfDifferentType(oas, $schemaDefinition, $conflictingTypes);
+end

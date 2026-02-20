@@ -6,6 +6,8 @@ import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -203,6 +205,35 @@ public class ApiFunctions {
             return schemaDefinition.getModel().getAllOf().stream().anyMatch(allOfSchema -> schemaMeetsCondition(allOfSchema, result, condition, parentSchemasOfChildren));
         }
         return false;
+    }
+
+    public static List<String> findNonNullProperties(Schema schema) {
+        List<String> nonNullProperties = new ArrayList<>();
+        try {
+            for (Method method : schema.getClass().getDeclaredMethods()) {
+                if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+                    Object value = method.invoke(schema);
+                    if (value != null) {
+                        nonNullProperties.add(cleanPropertyName(method.getName()));
+                    }
+                }
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        nonNullProperties.remove("sw");
+        return nonNullProperties;
+    }
+
+    private static String cleanPropertyName(String propertyName) {
+        String output = propertyName;
+        if (propertyName.startsWith("get")) {
+            output = output.substring(3);
+        }
+        if (propertyName.startsWith("is")) {
+            output = output.substring(2);
+        }
+        return  output.toLowerCase();
     }
 
     /**
