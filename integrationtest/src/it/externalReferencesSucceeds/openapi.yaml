@@ -552,3 +552,5 @@ components:
         details:
           type: string
       description: Response message for the API health
+security:
+  - {}

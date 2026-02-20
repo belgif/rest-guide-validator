@@ -16,8 +16,7 @@ function void violationComponentNamesShouldBeUpperCamelCase(ViolationReport oas,
 
 rule "Component names should be UpperCamelCase"
     when
-        $component: OpenApiDefinition(definitionType == DefinitionType.TOP_LEVEL, $jsonPointer: jsonPointer.toPrettyString(), !ApiFunctions.isUpperCamelCase(identifier))
-        String( startsWith("/components") ) from $jsonPointer
+        $component: OpenApiDefinition(definitionType == DefinitionType.TOP_LEVEL, jsonPointer.toPrettyString().startsWith("/components"), !ApiFunctions.isUpperCamelCase(identifier))
     then
         violationComponentNamesShouldBeUpperCamelCase(oas, $component);
 end
