@@ -56,6 +56,9 @@ function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, Par
   if (schemaDefinition.getModel().getOneOf() == null) {
     return null;
   }
+  if (schemaDefinition.getModel().getOneOf().stream().allMatch(s -> s.getEnumeration() == null || s.getEnumeration().isEmpty())) {
+    return null;
+  }
   Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findSchemaTypes(s, parserResult).declaredTypeSets().stream().flatMap(Set::stream)).collect(Collectors.toSet());
   return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
 }
