@@ -12,7 +12,7 @@ import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 
 function Set includedMediaTypes() {
-  return Set.of("application/json", "multipart/*", "text/xml", "application/xml");
+  return Set.of("application/json", "multipart/*", "text/xml", "application/xml", "application/x-www-form-urlencoded");
 }
 
 function void violationMandatoryMediaType(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
