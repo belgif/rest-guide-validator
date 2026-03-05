@@ -20,15 +20,6 @@ paths:
                     secondThingsSecond: '#/components/schemas/Second'
 components:
   schemas:
-    Sorting:
-      oneOf:
-        - $ref: '#/components/schemas/First'
-        - $ref: '#/components/schemas/Second'
-      discriminator:
-        propertyName: sortType
-        mapping:
-          thing: '#/components/schemas/First'
-          -thing: '#/components/schemas/Second'
     First:
       type: object
       properties:

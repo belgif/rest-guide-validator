@@ -31,6 +31,6 @@ import org.junit.jupiter.api.Test;
 
     @Test
      void testInvalidDiscriminatorMapping() {
-        assertErrorCount(2, callRules("invalidDiscriminators.yaml"));
+        assertErrorCount(1, callRules("invalidDiscriminators.yaml"));
     }
 }

@@ -39,8 +39,7 @@ rule "Discriminator mappings should be lowerCamelCase"
     when
         $schema: SchemaDefinition(/model/discriminator/mapping != null)
         String(
-                  ((!this.contains("sort") && !this.contains("Sort")) && !ApiFunctions.isLowerCamelCase(new ArrayList($schema.getModel().getDiscriminator().getMapping().keySet())))
-                  || (( this.contains("sort") || this.contains("Sort")) && !ApiFunctions.isLowerCamelCase(new ArrayList($schema.getModel().getDiscriminator().getMapping().keySet()), "-"))
+                  !ApiFunctions.isLowerCamelCase(new ArrayList($schema.getModel().getDiscriminator().getMapping().keySet()))
                 ) from $schema.getModel().getDiscriminator().getPropertyName()
     then
         violationCodesShouldBeLowerCamelCase(oas, new ArrayList<Object>($schema.getModel().getDiscriminator().getMapping().keySet()), $schema);
