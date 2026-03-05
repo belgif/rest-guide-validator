@@ -29,4 +29,14 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     void testOneOfWithMultipleObjectTypes() {
        assertErrorCount(2, callRules("oneOfWithMultipleObjectTypes.yaml"));
     }
+
+    @Test
+    void testSubSchemasWithTypeObjectAndDiscriminator() {
+       assertNoViolations(callRules("subSchemasWithTypeObject.yaml"));
+    }
+
+    @Test
+    void testSubSchemasWithTypeObjectButWithoutDiscriminatorAndExtraProperties() {
+       assertErrorCount(6, callRules("invalidSubSchemasWithTypeObject.yaml"));
+    }
 }

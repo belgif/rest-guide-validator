@@ -22,12 +22,12 @@ import java.util.stream.Collectors;
 
 function void violationOneOfSubSchemaEnforcesIllegalConstraints(ViolationReport oas, SchemaDefinition schema, OpenApiDefinition<Schema> oneOfSubSchema, String nonNullProperties){
     oas.addViolation("[cod-design]",
-    "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
+    "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", "references <<" + oneOfSubSchema.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + nonNullProperties + " >>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas, SchemaDefinition schema, String conflictingTypes) {
     oas.addViolation("[cod-design]",
-        "oneOf SHOULD NOT be used to enforce other constraints than 'required' or, for subschemas of the same simple type, 'enum'", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
+        "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function Set allowedProperties() {
@@ -36,7 +36,7 @@ function Set allowedProperties() {
   return Set.of("required", "description", "example", "title", "extensions");
 }
 
-function List getInvalidPropertiesInOneOfSchema(Schema schema) {
+function List getInvalidPropertiesInOneOfSchema(Schema schema, SchemaDefinition schemaWithOneOf, ParserResult parserResult) {
     List<String> props = ApiFunctions.findNonNullProperties(schema);
     props.removeAll(allowedProperties());
     if (props.isEmpty()) {
@@ -47,6 +47,14 @@ function List getInvalidPropertiesInOneOfSchema(Schema schema) {
       if (schema.getType() != null && allowedSimpleTypes.contains(schema.getType())) {
         return Collections.EMPTY_LIST;
       }
+    }
+    if (props.contains("type") && ApiFunctions.findDiscriminator(schema, schemaWithOneOf, parserResult).isPresent() && schema.getType().equals(SchemaType.OBJECT)) {
+      List<String> parentProps = ApiFunctions.findNonNullProperties(schemaWithOneOf.getModel());
+      if (parentProps.contains("properties")) {
+        // schema with oneOf should not declare properties itself.
+        return props;
+      }
+      return Collections.EMPTY_LIST;
     }
     return props;
 }
@@ -75,7 +83,7 @@ rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
         $schemaDefinition: SchemaDefinition($oneOf: /model/oneOf#List, $oneOf != null)
         $subSchemaDef: SchemaDefinition($model: /model) from parserResult.resolve($oneOf)
         // Needs the mapToString because the rule has issues with the generics of a List<String>
-        $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model))
+        $invalidProperties: String() from mapToString(getInvalidPropertiesInOneOfSchema($model, $schemaDefinition, parserResult))
     then
         violationOneOfSubSchemaEnforcesIllegalConstraints(oas, $schemaDefinition, $subSchemaDef, $invalidProperties);
 end
