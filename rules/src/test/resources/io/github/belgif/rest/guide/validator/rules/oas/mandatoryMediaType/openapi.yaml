@@ -23,6 +23,19 @@ paths:
           application/json:
             schema:
               type: object
+  /formUrlEncoded:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
   /properRef:
     get:
       operationId: getRef

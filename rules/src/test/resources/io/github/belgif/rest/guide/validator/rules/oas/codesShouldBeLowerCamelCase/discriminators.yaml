@@ -1,0 +1,40 @@
+openapi: 3.0.0
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/First'
+                  - $ref: '#/components/schemas/Second'
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    firstThingsFirst: '#/components/schemas/First'
+                    secondThingsSecond: '#/components/schemas/Second'
+components:
+  schemas:
+    First:
+      type: object
+      properties:
+        type:
+          type: string
+        somethingElse:
+          type: integer
+        sortType:
+          type: string
+    Second:
+      type: object
+      properties:
+        type:
+          type: string
+        somethingDifferent:
+          type: string
+        sortType:
+          type: string
