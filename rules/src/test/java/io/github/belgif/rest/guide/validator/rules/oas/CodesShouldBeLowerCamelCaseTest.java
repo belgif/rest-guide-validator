@@ -23,4 +23,14 @@ import org.junit.jupiter.api.Test;
      void invalidEnumShouldBeIgnored() {
         assertErrorCount(1, callRules("invalidEnum.yaml"));
     }
+
+    @Test
+     void testValidDiscriminatorMapping() {
+        assertNoViolations(callRules("discriminators.yaml"));
+    }
+
+    @Test
+     void testInvalidDiscriminatorMapping() {
+        assertErrorCount(1, callRules("invalidDiscriminators.yaml"));
+    }
 }
