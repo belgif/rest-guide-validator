@@ -236,6 +236,10 @@ public class ApiFunctions {
         return visitedRefs;
     }
 
+    /**
+     * @param schema: Parsed version of an openapi schema component
+     * @return a list with property names of the java object that are not null (Based on java reflection)
+     */
     public static List<String> findNonNullProperties(Schema schema) {
         List<String> nonNullProperties = new ArrayList<>();
         try {
