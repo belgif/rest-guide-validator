@@ -1,0 +1,103 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+components:
+  schemas:
+    SchemaUnderTest:
+      oneOf:
+        - $ref: '#/components/schemas/SchemaOne'
+        - $ref: '#/components/schemas/SchemaTwo'
+        - $ref: '#/components/schemas/SchemaThree'
+      properties:
+        extra:
+          type string
+
+    Parent:
+      properties:
+        type:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          first: "#/components/schemas/SchemaOne"
+          second: "#/components/schemas/SchemaTwo"
+          third: "#/components/schemas/SchemaThree"
+
+    SchemaOne:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+      properties:
+        firstProperty:
+          type: String
+
+    SchemaTwo:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+      properties:
+        secondProperty:
+          type: String
+
+    SchemaThree:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+      properties:
+        thirdProperty:
+          type: String
+
+    OtherSchemaUnderTest:
+      oneOf:
+        - $ref: '#/components/schemas/SchemaFour'
+        - $ref: '#/components/schemas/SchemaFive'
+        - $ref: '#/components/schemas/SchemaSix'
+      discriminator:
+        propertyName: type
+        mapping:
+          four: "#/components/schemas/SchemaFour"
+          five: "#/components/schemas/SchemaFive"
+          six: "#/components/schemas/SchemaSix"
+
+    YetAnotherSchemaUnderTest:
+      type: object
+      properties:
+        myOneOfProp:
+          oneOf:
+            - $ref: '#/components/schemas/SchemaFour'
+            - $ref: '#/components/schemas/SchemaFive'
+            - $ref: '#/components/schemas/SchemaSix'
+
+    OtherParent:
+      properties:
+        type:
+          type: string
+          enum:
+            - four
+            - five
+            - six
+    SchemaFour:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/OtherParent'
+      properties:
+        fourth:
+          type: string
+    SchemaFive:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/OtherParent'
+      properties:
+        fifth:
+          type: string
+    SchemaSix:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/OtherParent'
+      properties:
+        sixth:
+          type: string
