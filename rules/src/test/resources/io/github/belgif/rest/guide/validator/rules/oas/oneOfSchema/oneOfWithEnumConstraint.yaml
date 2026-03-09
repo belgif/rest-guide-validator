@@ -17,3 +17,17 @@ components:
           enum:
             - thirdOption
             - fourthOption
+    OtherSchemaUnderTest:
+      oneOf:
+        - $ref: '#/components/schemas/FirstEnum'
+        - $ref: '#/components/schemas/SecondEnum'
+    FirstEnum:
+      type: string
+      enum:
+        - firstOption
+        - secondOption
+    SecondEnum:
+      type: string
+      enum:
+        - thirdOption
+        - fourthOption

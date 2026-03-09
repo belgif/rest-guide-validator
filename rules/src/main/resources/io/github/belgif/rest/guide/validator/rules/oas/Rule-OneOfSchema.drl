@@ -61,10 +61,10 @@ function List getInvalidPropertiesInOneOfSchema(Schema schema, SchemaDefinition 
 }
 
 function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, ParserResult parserResult) {
-  if (schemaDefinition.getModel().getOneOf().stream().allMatch(s -> s.getEnumeration() == null || s.getEnumeration().isEmpty())) {
+  if (schemaDefinition.getModel().getOneOf().stream().map(s -> parserResult.resolve(s).getModel()).allMatch(s -> s.getEnumeration() == null || s.getEnumeration().isEmpty())) {
     return null;
   }
-  Set<SchemaType> types = schemaDefinition.getModel().getOneOf().stream().flatMap(s -> ApiFunctions.findSchemaTypes(s, parserResult).declaredTypeSets().stream().flatMap(Set::stream)).collect(Collectors.toSet());
+  Set<SchemaType> types = ApiFunctions.findSchemaTypes(schemaDefinition.getModel(), parserResult).declaredTypeSets().stream().flatMap(Set::stream).collect(Collectors.toSet());
   return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
 }
 

@@ -22,7 +22,7 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testOneOfWithEnumAndDifferentTypeConstraint() {
-        assertErrorCount(1, callRules("oneOfWithEnumAndDifferentTypeConstraint.yaml"));
+        assertErrorCount(2, callRules("oneOfWithEnumAndDifferentTypeConstraint.yaml"));
     }
 
     @Test
