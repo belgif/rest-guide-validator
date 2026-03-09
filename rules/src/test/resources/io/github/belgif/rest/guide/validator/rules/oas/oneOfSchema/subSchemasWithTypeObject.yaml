@@ -12,95 +12,54 @@ components:
         - $ref: '#/components/schemas/SchemaOne'
         - $ref: '#/components/schemas/SchemaTwo'
         - $ref: '#/components/schemas/SchemaThree'
+      discriminator:
+          propertyName: type
+          mapping:
+            one: "#/components/schemas/SchemaOne"
+            two: "#/components/schemas/SchemaTwo"
+            three: "#/components/schemas/SchemaThree"
+
+    OtherSchemaUnderTest:
+      type: object
+      properties:
+        myOneOfProp:
+          oneOf:
+            - $ref: '#/components/schemas/SchemaOne'
+            - $ref: '#/components/schemas/SchemaTwo'
+            - $ref: '#/components/schemas/SchemaThree'
+          discriminator:
+            propertyName: type
+            mapping:
+              one: "#/components/schemas/SchemaOne"
+              two: "#/components/schemas/SchemaTwo"
+              three: "#/components/schemas/SchemaThree"
 
     Parent:
       properties:
         type:
           type: string
-      discriminator:
-        propertyName: type
-        mapping:
-          first: "#/components/schemas/SchemaOne"
-          second: "#/components/schemas/SchemaTwo"
-          third: "#/components/schemas/SchemaThree"
-
+          enum:
+            - one
+            - two
+            - three
     SchemaOne:
       type: object
       allOf:
-        - $ref: "#/components/schemas/Parent"
-      properties:
-        firstProperty:
-          type: String
-
-    SchemaTwo:
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/Parent"
-      properties:
-        secondProperty:
-          type: String
-
-    SchemaThree:
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/Parent"
-      properties:
-        thirdProperty:
-          type: String
-
-    OtherSchemaUnderTest:
-      oneOf:
-        - $ref: '#/components/schemas/SchemaFour'
-        - $ref: '#/components/schemas/SchemaFive'
-        - $ref: '#/components/schemas/SchemaSix'
-      discriminator:
-          propertyName: type
-          mapping:
-            four: "#/components/schemas/SchemaFour"
-            five: "#/components/schemas/SchemaFive"
-            six: "#/components/schemas/SchemaSix"
-
-    YetAnotherSchemaUnderTest:
-      type: object
-      properties:
-        myOneOfProp:
-          oneOf:
-            - $ref: '#/components/schemas/SchemaFour'
-            - $ref: '#/components/schemas/SchemaFive'
-            - $ref: '#/components/schemas/SchemaSix'
-          discriminator:
-            propertyName: type
-            mapping:
-              four: "#/components/schemas/SchemaFour"
-              five: "#/components/schemas/SchemaFive"
-              six: "#/components/schemas/SchemaSix"
-
-    OtherParent:
-      properties:
-        type:
-          type: string
-          enum:
-            - four
-            - five
-            - six
-    SchemaFour:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/OtherParent'
+        - $ref: '#/components/schemas/Parent'
       properties:
         fourth:
           type: string
-    SchemaFive:
+    SchemaTwo:
       type: object
       allOf:
-        - $ref: '#/components/schemas/OtherParent'
+        - $ref: '#/components/schemas/Parent'
       properties:
         fifth:
           type: string
-    SchemaSix:
+    SchemaThree:
       type: object
       allOf:
-        - $ref: '#/components/schemas/OtherParent'
+        - $ref: '#/components/schemas/Parent'
       properties:
         sixth:
           type: string

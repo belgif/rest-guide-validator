@@ -207,35 +207,6 @@ public class ApiFunctions {
         return false;
     }
 
-    public static Optional<String> findDiscriminator(Schema schema, SchemaDefinition schemaWithOneOf, Parser.ParserResult result) {
-        SchemaDefinition definition = (SchemaDefinition) result.resolve(schema);
-        Map<String, Schema> props = getRecursiveProperties(definition.getModel(), result);
-        if (schemaWithOneOf.getModel().getDiscriminator() != null && props.containsKey(schemaWithOneOf.getModel().getDiscriminator().getPropertyName())) {
-            return Optional.of(schemaWithOneOf.getModel().getDiscriminator().getPropertyName());
-        }
-        Set<SchemaDefinition> linkedDiscriminatorSchemas = result.getSchemas().stream()
-                .filter(s -> s.getModel().getDiscriminator() != null)
-                .filter(s -> getAllSchemaBackReferences(s, new HashSet<>()).contains(definition))
-                .collect(Collectors.toSet());
-        return linkedDiscriminatorSchemas.stream()
-                .filter(s -> getRecursiveProperties(definition.getModel(), result).containsKey(s.getModel().getDiscriminator().getPropertyName())).map(s -> s.getModel().getDiscriminator().getPropertyName()).findFirst();
-    }
-
-    private static Set<SchemaDefinition> getAllSchemaBackReferences(SchemaDefinition schemaDefinition, Set<SchemaDefinition> visitedRefs) {
-        Set<SchemaDefinition> referencedSchemas = schemaDefinition.getReferencedBy().stream()
-                .filter(SchemaDefinition.class::isInstance)
-                .map(s -> (SchemaDefinition) s)
-                .map(SchemaDefinition::getHighLevelSchema)
-                .collect(Collectors.toSet());
-        for (SchemaDefinition ref : referencedSchemas) {
-            if (!visitedRefs.contains(ref)) {
-                visitedRefs.add(ref);
-                visitedRefs.addAll(getAllSchemaBackReferences(ref, visitedRefs));
-            }
-        }
-        return visitedRefs;
-    }
-
     /**
      * @param schema: Parsed version of an openapi schema component
      * @return a list with property names of the java object that are not null (Based on java reflection)

@@ -1,7 +1,10 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OneOfSchemaTest extends AbstractOasRuleTest {
 
@@ -36,7 +39,19 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testSubSchemasWithDiscriminatorInParent() {
+       assertErrorCount(3, callRules("subSchemasWithDiscriminatorInParent.yaml"));
+    }
+
+    @Test
     void testSubSchemasWithTypeObjectButWithoutDiscriminatorAndExtraProperties() {
        assertErrorCount(6, callRules("invalidSubSchemasWithTypeObject.yaml"));
+    }
+
+    @Test
+    void testNonCombinableSubSchemas() {
+        ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
+       assertErrorCount(1, report);
+       assertEquals("All subschemas should comply with the same type of allowed use for a oneOf schema.", report.getViolations().get(0).getMessage());
     }
 }
