@@ -353,4 +353,18 @@ class ApiFunctionsTest {
         }
         return new Parser(tempOpenApiFile.toFile()).parse(oas);
     }
+    @Test
+    void findNonNullPropertiesTest() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(this.getClass().getResource("../rules/findCallingOperations.yaml")).getFile());
+        var result = new Parser(file).parse(oas);
+
+        var schema = result.getSchemas().stream().filter(d -> d.getPrintableJsonPointer().equals("/components/schemas/EncapsulatingSchema")).findFirst().get().getModel();
+        List<String> nonNullProperties = assertDoesNotThrow(() -> ApiFunctions.findNonNullProperties(schema));
+        assertNotNull(nonNullProperties);
+        assertFalse(nonNullProperties.isEmpty());
+        assertFalse(nonNullProperties.contains("sw"));
+        assertFalse(nonNullProperties.stream().anyMatch(s -> s.startsWith("get")|| s.startsWith("is")));
+    }
+
 }

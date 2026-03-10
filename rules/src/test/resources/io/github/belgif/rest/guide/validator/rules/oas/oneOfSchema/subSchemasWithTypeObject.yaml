@@ -1,0 +1,65 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+components:
+  schemas:
+    SchemaUnderTest:
+      oneOf:
+        - $ref: '#/components/schemas/SchemaOne'
+        - $ref: '#/components/schemas/SchemaTwo'
+        - $ref: '#/components/schemas/SchemaThree'
+      discriminator:
+          propertyName: type
+          mapping:
+            one: "#/components/schemas/SchemaOne"
+            two: "#/components/schemas/SchemaTwo"
+            three: "#/components/schemas/SchemaThree"
+
+    OtherSchemaUnderTest:
+      type: object
+      properties:
+        myOneOfProp:
+          oneOf:
+            - $ref: '#/components/schemas/SchemaOne'
+            - $ref: '#/components/schemas/SchemaTwo'
+            - $ref: '#/components/schemas/SchemaThree'
+          discriminator:
+            propertyName: type
+            mapping:
+              one: "#/components/schemas/SchemaOne"
+              two: "#/components/schemas/SchemaTwo"
+              three: "#/components/schemas/SchemaThree"
+
+    Parent:
+      properties:
+        type:
+          type: string
+          enum:
+            - one
+            - two
+            - three
+    SchemaOne:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Parent'
+      properties:
+        fourth:
+          type: string
+    SchemaTwo:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Parent'
+      properties:
+        fifth:
+          type: string
+    SchemaThree:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Parent'
+      properties:
+        sixth:
+          type: string
