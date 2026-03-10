@@ -15,7 +15,7 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
    @Test
     void testOneOfWithFullObjectConstraint() {
-       assertErrorCount(2, callRules("oneOfWithFullObjectConstraint.yaml"));
+       assertErrorCount(1, callRules("oneOfWithFullObjectConstraint.yaml"));
    }
 
    @Test
@@ -30,7 +30,7 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testOneOfWithMultipleObjectTypes() {
-       assertErrorCount(2, callRules("oneOfWithMultipleObjectTypes.yaml"));
+       assertErrorCount(1, callRules("oneOfWithMultipleObjectTypes.yaml"));
     }
 
     @Test
@@ -40,18 +40,18 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testSubSchemasWithDiscriminatorInParent() {
-       assertErrorCount(3, callRules("subSchemasWithDiscriminatorInParent.yaml"));
+       assertErrorCount(1, callRules("subSchemasWithDiscriminatorInParent.yaml"));
     }
 
     @Test
-    void testSubSchemasWithTypeObjectButWithoutDiscriminatorAndExtraProperties() {
-       assertErrorCount(6, callRules("invalidSubSchemasWithTypeObject.yaml"));
+    void testSubSchemasWithTypeObjectButWithoutDiscriminatorAndExtraProperties() { //TODO: split in separate tests
+       assertErrorCount(2, callRules("invalidSubSchemasWithTypeObject.yaml"));
     }
 
     @Test
     void testNonCombinableSubSchemas() {
-        ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
+       ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
        assertErrorCount(1, report);
-       assertEquals("All subschemas should comply with the same type of allowed use for a oneOf schema.", report.getViolations().get(0).getMessage());
+       assertEquals("All subschemas should comply with one of the allowed uses for a oneOf schema.", report.getViolations().get(0).getMessage());
     }
 }

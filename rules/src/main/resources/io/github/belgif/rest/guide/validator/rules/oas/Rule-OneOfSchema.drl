@@ -23,17 +23,17 @@ import java.util.Map
 import java.util.stream.Stream;
 
 function void violationOneOfSubSchemaEnforcesIllegalConstraints(ViolationReport oas, SchemaDefinition schema, String errorMessage){
-    oas.addViolation("[cod-design]",
+    oas.addViolation("[sch-oneof]",
     "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", errorMessage, schema, ViolationLevel.RECOMMENDED);
 }
 
 function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas, SchemaDefinition schema, String conflictingTypes) {
-    oas.addViolation("[cod-design]",
+    oas.addViolation("[sch-oneof]",
         "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function String createErrorMessage(SchemaDefinition oneOfSchemaDef, List<String> props) {
-  return "references <<" + oneOfSchemaDef.getPrintableJsonPointer() + ">> in a oneOf schema, and tried to enforce << " + props.stream().collect(Collectors.joining(", ")).toString() + " >>";
+  return "In oneOf subschema <<" + oneOfSchemaDef.getPrintableJsonPointer() + ">>, only `required`constraint expected but encountered << " + props.stream().collect(Collectors.joining(", ")).toString() + " >>";
 }
 
 function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult parserResult) {
@@ -42,23 +42,28 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
             .map(s -> (SchemaDefinition) parserResult.resolve(s)).toList();
     List<String> errors = new ArrayList<>();
 
-    // swagger-parser puts "x-*" properties under the extensions property
-    Set<String> allowedProperties = Set.of("required", "description", "example", "title", "extensions");
-    Map<SchemaDefinition, List<String>> schemaNonNullPropertiesMap = subSchemas.stream()
-          .map(s -> {
-               List<String> props = ApiFunctions.findNonNullProperties(s.getModel());
-               props.removeAll(allowedProperties);
-               return Map.entry(s, props);
-             })
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    List<SchemaDefinition> onlyAllowedPropertiesSchemas = schemaNonNullPropertiesMap.entrySet().stream()
-        .filter(entry -> entry.getValue().isEmpty())
-        .map(Map.Entry::getKey)
+    // case 1. subschemas with only a `required` constraint, without a `type` or other constraint
+    List<SchemaDefinition> subSchemasWithoutType = subSchemas.stream()
+        .filter(subSchema -> ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes() == null)
         .toList();
-    if (onlyAllowedPropertiesSchemas.containsAll(subSchemas)) {
-      return Collections.EMPTY_LIST;
+    if (subSchemasWithoutType.containsAll(subSchemas)) {
+        // if no subschema has a type constraint, we assume the intention is to have a oneOf construction with only 'required' constraints
+
+        // swagger-parser puts "x-*" properties under the extensions property
+        Set<String> allowedProperties = Set.of("required", "description", "example", "title", "extensions", "not");
+        List<String> forbiddenPropertiesErrors = subSchemas.stream()
+             .map(s -> {
+                   List<String> props = ApiFunctions.findNonNullProperties(s.getModel());
+                   props.removeAll(allowedProperties);
+                   return Map.entry(s, props);
+                 })
+            .filter(entry -> !entry.getValue().isEmpty())
+            .map(entry -> createErrorMessage(entry.getKey(), entry.getValue()))
+            .toList();
+        return forbiddenPropertiesErrors;
     }
 
+    // case 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`)
     Set<SchemaType> allowedSimpleTypes = Set.of(SchemaType.INTEGER, SchemaType.STRING, SchemaType.NUMBER, SchemaType.BOOLEAN);
     List<SchemaDefinition> enumAllowedSchemas = subSchemas.stream()
             .filter(subSchema -> subSchema.getModel().getEnumeration() != null
@@ -71,6 +76,7 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
       return Collections.EMPTY_LIST;
     }
 
+    // case 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.
     List<SchemaDefinition> discriminatorAllowedSchemas = Collections.EMPTY_LIST;
     if (schemaWithOneOf.getModel().getDiscriminator() != null) {
         String discriminatorPropertyName = schemaWithOneOf.getModel().getDiscriminator().getPropertyName();
@@ -78,25 +84,20 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
             .filter(subSchema -> subSchema.getModel().getType() != null
                && subSchema.getModel().getType().equals(SchemaType.OBJECT) //TODO maybe use getAllowedTypes
                && ApiFunctions.getRecursiveProperties(subSchema.getModel(), parserResult)
-                  .containsKey(discriminatorPropertyName)) //TODO: maybe split to separate rule, and also check the discriminator property is required
+                  .containsKey(discriminatorPropertyName)) //TODO: maybe split to separate rule, and also check the discriminator property is declared as required
             .toList();
         if (discriminatorAllowedSchemas.containsAll(subSchemas)) {
           List<String> parentProps = ApiFunctions.findNonNullProperties(schemaWithOneOf.getModel());
           if (parentProps.contains("properties")) {
               errors.add("oneOf schemas that declare a discriminator should only declare properties in the oneOf subschemas");
+              return errors;
           } else {
             return Collections.EMPTY_LIST;
           }
         }
      }
 
-    if (Stream.of(onlyAllowedPropertiesSchemas, enumAllowedSchemas, discriminatorAllowedSchemas).filter(list -> !list.isEmpty()).count() > 1) {
-       errors.add("All subschemas should comply with the same type of allowed use for a oneOf schema.");
-     } else {
-       errors.addAll(schemaNonNullPropertiesMap.entrySet().stream()
-                  .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
-                  .map(entry -> createErrorMessage(entry.getKey(), entry.getValue())).toList());
-     }
+     errors.add("All subschemas should comply with one of the allowed uses for a oneOf schema.");
      return errors;
 }
 
