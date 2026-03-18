@@ -8,20 +8,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OneOfSchemaTest extends AbstractOasRuleTest {
 
-   @Test
+    @Test
     void testOneOfWithRequiredConstraint() {
-       assertNoViolations(callRules("oneOfWithRequiredConstraint.yaml"));
-   }
+        assertNoViolations(callRules("oneOfWithRequiredConstraint.yaml"));
+    }
 
-   @Test
+    @Test
     void testOneOfWithFullObjectConstraint() {
-       assertErrorCount(1, callRules("oneOfWithFullObjectConstraint.yaml"));
-   }
+        assertErrorCount(1, callRules("oneOfWithFullObjectConstraint.yaml"));
+    }
 
-   @Test
+    @Test
     void testOneOfWithEnumConstraint() {
-       assertNoViolations(callRules("oneOfWithEnumConstraint.yaml"));
-   }
+        assertNoViolations(callRules("oneOfWithEnumConstraint.yaml"));
+    }
 
     @Test
     void testOneOfWithEnumAndDifferentTypeConstraint() {
@@ -30,22 +30,22 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testOneOfWithMultipleObjectTypes() {
-       assertErrorCount(1, callRules("oneOfWithMultipleObjectTypes.yaml"));
+        assertErrorCount(1, callRules("oneOfWithMultipleObjectTypes.yaml"));
     }
 
     @Test
     void testSubSchemasWithTypeObjectAndDiscriminator() {
-       assertNoViolations(callRules("subSchemasWithTypeObject.yaml"));
+        assertNoViolations(callRules("subSchemasWithTypeObject.yaml"));
     }
 
     @Test
     void testSubSchemasWithDiscriminatorInParent() {
-       assertErrorCount(1, callRules("subSchemasWithDiscriminatorInParent.yaml"));
+        assertErrorCount(1, callRules("subSchemasWithDiscriminatorInParent.yaml"));
     }
 
     @Test
     void testOneOfWithExtraProperty() {
-       assertErrorCount(1, callRules("oneOfWithExtraProperty.yaml"));
+        assertErrorCount(1, callRules("oneOfWithExtraProperty.yaml"));
     }
 
     @Test
@@ -55,8 +55,8 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testNonCombinableSubSchemas() {
-       ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
-       assertErrorCount(1, report);
-       assertEquals("All subschemas should comply with one of the allowed uses for a oneOf schema.", report.getViolations().get(0).getMessage());
+        ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
+        assertErrorCount(1, report);
+        assertEquals("All subschemas should comply with one of the allowed uses for a oneOf schema.", report.getViolations().get(0).getMessage());
     }
 }
