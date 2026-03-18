@@ -78,12 +78,9 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
     // case 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.
     List<SchemaDefinition> discriminatorAllowedSchemas = Collections.EMPTY_LIST;
     if (schemaWithOneOf.getModel().getDiscriminator() != null) {
-        String discriminatorPropertyName = schemaWithOneOf.getModel().getDiscriminator().getPropertyName();
         discriminatorAllowedSchemas = subSchemas.stream()
             .filter(subSchema -> subSchema.getModel().getType() != null
-               && ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes().contains(SchemaType.OBJECT)
-               && ApiFunctions.getRecursiveProperties(subSchema.getModel(), parserResult)
-                  .containsKey(discriminatorPropertyName)) //TODO: maybe split to separate rule, and also check the discriminator property is declared as required
+               && ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes().contains(SchemaType.OBJECT))
             .toList();
         if (discriminatorAllowedSchemas.containsAll(subSchemas)) {
           List<String> parentProps = ApiFunctions.findNonNullProperties(schemaWithOneOf.getModel());
