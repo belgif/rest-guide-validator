@@ -81,7 +81,7 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
         String discriminatorPropertyName = schemaWithOneOf.getModel().getDiscriminator().getPropertyName();
         discriminatorAllowedSchemas = subSchemas.stream()
             .filter(subSchema -> subSchema.getModel().getType() != null
-               && subSchema.getModel().getType().equals(SchemaType.OBJECT) //TODO maybe use getAllowedTypes
+               && ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes().contains(SchemaType.OBJECT)
                && ApiFunctions.getRecursiveProperties(subSchema.getModel(), parserResult)
                   .containsKey(discriminatorPropertyName)) //TODO: maybe split to separate rule, and also check the discriminator property is declared as required
             .toList();
