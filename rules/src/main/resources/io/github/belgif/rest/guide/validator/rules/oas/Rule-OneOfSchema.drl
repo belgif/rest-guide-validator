@@ -37,7 +37,6 @@ function String createErrorMessage(SchemaDefinition oneOfSchemaDef, List<String>
 }
 
 function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult parserResult) {
-    // Does not include enum because that needs an extra check
     List<SchemaDefinition> subSchemas = schemaWithOneOf.getModel().getOneOf().stream()
             .map(s -> (SchemaDefinition) parserResult.resolve(s)).toList();
     List<String> errors = new ArrayList<>();
@@ -48,8 +47,8 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
         .toList();
     if (subSchemasWithoutType.containsAll(subSchemas)) {
         // if no subschema has a type constraint, we assume the intention is to have a oneOf construction with only 'required' constraints
-
         // swagger-parser puts "x-*" properties under the extensions property
+        // Does not include enum because that needs an extra check
         Set<String> allowedProperties = Set.of("required", "description", "example", "title", "extensions", "not");
         List<String> forbiddenPropertiesErrors = subSchemas.stream()
              .map(s -> {
