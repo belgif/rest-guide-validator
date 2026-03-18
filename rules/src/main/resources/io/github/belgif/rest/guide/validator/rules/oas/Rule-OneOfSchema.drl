@@ -22,7 +22,7 @@ import java.util.stream.Collectors
 import java.util.Map
 import java.util.stream.Stream;
 
-function void violationOneOfSubSchemaEnforcesIllegalConstraints(ViolationReport oas, SchemaDefinition schema, String errorMessage){
+function void violationOneOfSubSchemaAllowedUsage(ViolationReport oas, SchemaDefinition schema, String errorMessage){
     oas.addViolation("[sch-oneof]",
     "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", errorMessage, schema, ViolationLevel.RECOMMENDED);
 }
@@ -105,12 +105,12 @@ function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, Par
   return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
 }
 
-rule "OneOf Should Not Enforce Other Properties Than Required or Enum"
+rule "OneOf use should be limited"
     when
         $schemaDefinition: SchemaDefinition(model.getOneOf() != null)
         $errorMessage: String() from validateOneOfSchema($schemaDefinition, parserResult)
     then
-        violationOneOfSubSchemaEnforcesIllegalConstraints(oas, $schemaDefinition, $errorMessage);
+        violationOneOfSubSchemaAllowedUsage(oas, $schemaDefinition, $errorMessage);
 end
 
 rule "OneOf with enum constraint should be of the same simple type"
