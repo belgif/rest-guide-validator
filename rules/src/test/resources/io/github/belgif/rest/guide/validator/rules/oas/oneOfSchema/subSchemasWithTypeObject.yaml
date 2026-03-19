@@ -42,6 +42,8 @@ components:
             - one
             - two
             - three
+      required:
+        - type
     SchemaOne:
       type: object
       allOf:
