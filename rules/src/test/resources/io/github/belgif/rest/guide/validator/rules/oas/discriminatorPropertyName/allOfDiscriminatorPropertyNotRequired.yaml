@@ -1,0 +1,24 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Validator Test
+servers:
+  - url: http://myserver.com
+paths: {}
+components:
+  schemas:
+    SchemaUnderTest:
+      type: object
+      properties:
+        type:
+          type: string
+      discriminator:
+        propertyName: type
+
+    MyChildSchema:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/SchemaUnderTest'
+      properties:
+        extraProp:
+          type: number

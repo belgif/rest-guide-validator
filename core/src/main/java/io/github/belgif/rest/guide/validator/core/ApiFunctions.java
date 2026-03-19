@@ -291,11 +291,15 @@ public class ApiFunctions {
     }
 
     public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        return getRequiredValues(schemaDefinition, result, false);
+    }
+
+    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
         Set<String> requiredValues = new HashSet<>();
         if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
             requiredValues.addAll(schemaDefinition.getModel().getRequired());
         }
-        getRecursiveSubSchemas(schemaDefinition, result, false).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
+        getRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
         return requiredValues;
     }
 

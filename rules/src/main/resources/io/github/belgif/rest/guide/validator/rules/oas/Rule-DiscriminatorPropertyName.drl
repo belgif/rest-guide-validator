@@ -24,11 +24,28 @@ function void violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas
     "Property name defined in the discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
 }
 
+function void violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName) {
+    oas.addViolation("[sch-allof]",
+        "Property name defined in the discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema);
+}
+
+function boolean schemaIsReferencedByAllOf(SchemaDefinition schema, ParserResult parserResult) {
+    return schema.getReferencedBy().stream().anyMatch(s -> s.getJsonPointer().splitSegments().contains("allOf"));
+}
+
 rule "Property with discriminator.propertyName as name should be defined in each subschema"
     when
         $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
         SchemaDefinition($oneOf: /model/oneOf) from $schema
-        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
+        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult, true).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
     then
         violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas(oas, $subSchema, $discriminatorPropertyName);
+end
+
+rule "Property with discriminator.propertyName as name should be defined on the same schema that has the discriminator and is referenced by the allOf"
+    when
+        $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
+        SchemaDefinition(schemaIsReferencedByAllOf($schema, parserResult) && (!ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult, true).contains($discriminatorPropertyName))) from $schema
+    then
+        violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(oas, $schema, $discriminatorPropertyName);
 end

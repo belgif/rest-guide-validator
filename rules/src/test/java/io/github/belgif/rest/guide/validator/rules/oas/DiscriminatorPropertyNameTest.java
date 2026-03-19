@@ -11,6 +11,11 @@ class DiscriminatorPropertyNameTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testComplexOneOfDiscriminatorPropertyPresent() {
+        assertNoViolations(callRules("complexOneOfDiscriminatorPropertyPresent.yaml"));
+    }
+
+    @Test
     void testOneOfDiscriminatorPropertyAbsent() {
         assertErrorCount(2, callRules("oneOfDiscriminatorPropertyAbsent.yaml"));
     }
@@ -18,6 +23,21 @@ class DiscriminatorPropertyNameTest extends AbstractOasRuleTest {
     @Test
     void testOneOfDiscriminatorPropertyNotRequired() {
         assertErrorCount(1, callRules("oneOfDiscriminatorPropertyNotRequired.yaml"));
+    }
+
+    @Test
+    void testAllOfDiscriminatorPropertyPresent() {
+        assertNoViolations(callRules("allOfDiscriminatorPropertyPresent.yaml"));
+    }
+
+    @Test
+    void testAllOfDiscriminatorPropertyAbsent() {
+        assertErrorCount(1, callRules("allOfDiscriminatorPropertyAbsent.yaml"));
+    }
+
+    @Test
+    void testAllOfDiscriminatorPropertyNotRequired() {
+        assertErrorCount(1, callRules("allOfDiscriminatorPropertyNotRequired.yaml"));
     }
 
 }
