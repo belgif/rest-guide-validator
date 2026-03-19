@@ -91,5 +91,5 @@ rule "Property with discriminator.propertyName as name should be defined on the 
         $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
         SchemaDefinition(schemaIsReferencedByAllOf($schema, parserResult) && (!ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredProperties(this, parserResult, true).contains($discriminatorPropertyName))) from $schema
     then
-        violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(oas, $schema, $discriminatorPropertyName);
+        violationDiscriminatorPropertyWithAllOf(oas, $schema, $discriminatorPropertyName);
 end
