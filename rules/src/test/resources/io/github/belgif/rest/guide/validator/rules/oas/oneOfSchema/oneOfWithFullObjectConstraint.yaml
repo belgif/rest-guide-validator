@@ -1,0 +1,30 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+components:
+  schemas:
+    BigSchema:
+      type: object
+      properties:
+        myFirstProp:
+          type: string
+        mySecondProp:
+          type: string
+    FirstRequired:
+      allOf:
+        - $ref: '#/components/schemas/BigSchema'
+      required:
+        - myFirstProp
+    SecondRequired:
+      allOf:
+        - $ref: '#/components/schemas/BigSchema'
+      required:
+        - mySecondProp
+    SchemaUnderTest:
+      oneOf:
+        - $ref: '#/components/schemas/FirstRequired'
+        - $ref: '#/components/schemas/SecondRequired'
