@@ -275,9 +275,15 @@ public class ApiFunctions {
         return false;
     }
 
-    private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    /**
+     * Get the subschemas of given schema
+     * @param includeReferencedSchemas  Whether to also include schemas resolved from references (alongside the $ref subschema itself)
+     */
+    private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeReferencedSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
-        Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) -> includeTopLevelSchemas || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
+        Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) ->
+                includeReferencedSchemas
+                || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
         if (schemaDefinition.getModel().getAllOf() != null) {
             subSchemas.addAll(schemaDefinition.getModel().getAllOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
         }
@@ -290,12 +296,13 @@ public class ApiFunctions {
         return subSchemas;
     }
 
-    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    private static Set<SchemaDefinition> getRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeReferencedSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
-        addRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas, subSchemas);
+        addRecursiveSubSchemas(schemaDefinition, result, includeReferencedSchemas, subSchemas);
         return subSchemas;
     }
 
+    // helper function for getRecursiveSubSchemas
     private static void addRecursiveSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas, Set<SchemaDefinition> subSchemas) {
         for (SchemaDefinition schema : getSubSchemas(schemaDefinition, result, includeTopLevelSchemas)) {
             if (!subSchemas.contains(schema)) {
@@ -329,12 +336,16 @@ public class ApiFunctions {
         return getRequiredValues(schemaDefinition, result, false);
     }
 
-    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeTopLevelSchemas) {
+    /**
+     *
+     * @param followReferences Whether properties declared as required in referenced ($ref) subschemas are also included
+     */
+    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean followReferences) {
         Set<String> requiredValues = new HashSet<>();
         if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
             requiredValues.addAll(schemaDefinition.getModel().getRequired());
         }
-        getRecursiveSubSchemas(schemaDefinition, result, includeTopLevelSchemas).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
+        getRecursiveSubSchemas(schemaDefinition, result, followReferences).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
         return requiredValues;
     }
 
