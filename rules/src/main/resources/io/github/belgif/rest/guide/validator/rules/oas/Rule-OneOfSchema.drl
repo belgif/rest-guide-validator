@@ -130,7 +130,7 @@ rule "Property with discriminator.propertyName as name should be defined in each
     when
         $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
         SchemaDefinition($oneOf: /model/oneOf) from $schema
-        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult, true).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
+        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredProperties(this, parserResult, true).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
     then
         violationDiscriminatorPropertyWithOneOf(oas, $subSchema, $discriminatorPropertyName);
 end
