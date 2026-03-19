@@ -12,10 +12,10 @@ components:
       properties:
         type:
           type: string
-      required:
-        - type
       discriminator:
         propertyName: type
+        mapping:
+          child: '#/components/schemas/MyChildSchema'
 
     MyChildSchema:
       type: object

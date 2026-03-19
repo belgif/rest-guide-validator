@@ -7,20 +7,17 @@ servers:
 paths: {}
 components:
   schemas:
-    Parent:
+    SchemaUnderTest:
       type: object
       properties:
         type:
           type: string
       required:
         - type
-
-    SchemaUnderTest:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Parent'
       discriminator:
         propertyName: type
+        mapping:
+          child: '#/components/schemas/MyChildSchema'
 
     MyChildSchema:
       type: object

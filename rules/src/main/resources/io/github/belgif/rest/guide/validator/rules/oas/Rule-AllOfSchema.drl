@@ -29,6 +29,15 @@ function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(Violatio
     "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
 }
 
+function void violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName) {
+    oas.addViolation("[sch-allof]",
+        "Property name defined in the discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema);
+}
+
+function boolean schemaIsReferencedByAllOf(SchemaDefinition schema, ParserResult parserResult) {
+    return schema.getReferencedBy().stream().anyMatch(s -> s.getJsonPointer().splitSegments().contains("allOf"));
+}
+
 function String createViolationMessageForDoubleProperties(Map<String, List<String>> doubleProperties) {
     StringBuilder stringBuilder = new StringBuilder();
     for (Map.Entry<String, List<String>> doubleProperty : doubleProperties.entrySet()) {
@@ -75,4 +84,12 @@ rule "Discriminator Should Contain Explicit Mapping"
         Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
     then
         violationDiscriminatorShouldContainMapping(oas, $schema);
+end
+
+rule "Property with discriminator.propertyName as name should be defined on the same schema that has the discriminator and is referenced by the allOf"
+    when
+        $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
+        SchemaDefinition(schemaIsReferencedByAllOf($schema, parserResult) && (!ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult, true).contains($discriminatorPropertyName))) from $schema
+    then
+        violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(oas, $schema, $discriminatorPropertyName);
 end

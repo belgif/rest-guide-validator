@@ -9,11 +9,10 @@ components:
   schemas:
     SchemaUnderTest:
       type: object
-      properties:
-        type:
-          type: string
       discriminator:
         propertyName: type
+        mapping:
+          child: '#/components/schemas/MyChildSchema'
 
     MyChildSchema:
       type: object
@@ -22,3 +21,7 @@ components:
       properties:
         extraProp:
           type: number
+        type:
+          type: string
+      required:
+        - type
