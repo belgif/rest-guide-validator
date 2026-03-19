@@ -22,9 +22,9 @@ import java.util.stream.Collectors
 import java.util.Map
 import java.util.stream.Stream;
 
-function void violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
+function void violationDiscriminatorPropertyWithOneOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
     oas.addViolation("[sch-oneof]",
-    "Property name defined in the discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
+    "Property used as discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
 }
 
 function void violationOneOfSubSchemaAllowedUsage(ViolationReport oas, SchemaDefinition schema, String errorMessage){
@@ -126,11 +126,11 @@ rule "OneOf with enum constraint should be of the same simple type"
       violationOneOfSubSchemaWithEnumOfDifferentType(oas, $schemaDefinition, $conflictingTypes);
 end
 
-rule "Property with discriminator.propertyName as name should be defined in each subschema"
+rule "Property with discriminator.propertyName as name should be defined in each oneof subschema"
     when
         $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
         SchemaDefinition($oneOf: /model/oneOf) from $schema
         $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult, true).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
     then
-        violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas(oas, $subSchema, $discriminatorPropertyName);
+        violationDiscriminatorPropertyWithOneOf(oas, $subSchema, $discriminatorPropertyName);
 end

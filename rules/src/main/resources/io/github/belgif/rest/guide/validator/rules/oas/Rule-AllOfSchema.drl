@@ -29,9 +29,9 @@ function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(Violatio
     "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
 }
 
-function void violationDiscriminatorPropertyNameShouldBeDefinedOnTheSameSchemaThatHasTheAllOfAndIsReferencedByTheAllOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName) {
+function void violationDiscriminatorPropertyWithAllOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName) {
     oas.addViolation("[sch-allof]",
-        "Property name defined in the discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema);
+        "Property used as discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema);
 }
 
 function boolean schemaIsReferencedByAllOf(SchemaDefinition schema, ParserResult parserResult) {
