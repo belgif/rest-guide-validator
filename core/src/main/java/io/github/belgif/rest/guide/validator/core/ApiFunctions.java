@@ -332,20 +332,20 @@ public class ApiFunctions {
         return properties;
     }
 
-    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
-        return getRequiredValues(schemaDefinition, result, false);
+    public static Set<String> getRequiredProperties(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        return getRequiredProperties(schemaDefinition, result, false);
     }
 
     /**
      *
      * @param followReferences Whether properties declared as required in referenced ($ref) subschemas are also included
      */
-    public static Set<String> getRequiredValues(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean followReferences) {
+    public static Set<String> getRequiredProperties(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean followReferences) {
         Set<String> requiredValues = new HashSet<>();
         if (schemaDefinition.getModel() != null && schemaDefinition.getModel().getRequired() != null) {
             requiredValues.addAll(schemaDefinition.getModel().getRequired());
         }
-        getRecursiveSubSchemas(schemaDefinition, result, followReferences).forEach(schema -> requiredValues.addAll(getRequiredValues(schema, result)));
+        getRecursiveSubSchemas(schemaDefinition, result, followReferences).forEach(schema -> requiredValues.addAll(getRequiredProperties(schema, result)));
         return requiredValues;
     }
 
