@@ -14,7 +14,7 @@ components:
           first: "#/components/schemas/SchemaOne"
       oneOf:
         - $ref: '#/components/schemas/SchemaOne'
-        - required: [ someProperty ]
+        - required: [ someProperty, type ]
     SchemaOne:
       type: object
       properties:
@@ -22,3 +22,5 @@ components:
           type: string
         type:
           type: string
+      required:
+        - type
