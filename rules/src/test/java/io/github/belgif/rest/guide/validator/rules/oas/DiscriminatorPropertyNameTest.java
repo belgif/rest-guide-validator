@@ -15,4 +15,9 @@ class DiscriminatorPropertyNameTest extends AbstractOasRuleTest {
         assertErrorCount(2, callRules("oneOfDiscriminatorPropertyAbsent.yaml"));
     }
 
+    @Test
+    void testOneOfDiscriminatorPropertyNotRequired() {
+        assertErrorCount(1, callRules("oneOfDiscriminatorPropertyNotRequired.yaml"));
+    }
+
 }

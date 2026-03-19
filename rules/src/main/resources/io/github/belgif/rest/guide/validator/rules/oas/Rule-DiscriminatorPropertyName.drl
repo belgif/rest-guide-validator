@@ -21,14 +21,14 @@ import java.util.HashSet;
 
 function void violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
     oas.addViolation("[sch-oneof]",
-    "Property name defined in the discriminator is not present in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
+    "Property name defined in the discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
 }
 
 rule "Property with discriminator.propertyName as name should be defined in each subschema"
     when
         $schema: SchemaDefinition($discriminatorPropertyName: /model/discriminator/propertyName#String)
         SchemaDefinition($oneOf: /model/oneOf) from $schema
-        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
+        $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredValues(this, parserResult).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
     then
         violationDiscriminatorPropertyNameShouldBeDefinedInOneOfSubSchemas(oas, $subSchema, $discriminatorPropertyName);
 end

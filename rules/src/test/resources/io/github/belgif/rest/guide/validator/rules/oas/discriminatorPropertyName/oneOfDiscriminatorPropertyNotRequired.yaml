@@ -16,8 +16,6 @@ components:
         propertyName: type
     SubSchemaOne:
       type: object
-      required:
-        - type
       properties:
         type:
           type: string
