@@ -6,6 +6,7 @@ paths:
   /myFirstPath:
     get:
       operationId: operationId
+      summary: operation summary
       responses:
         default:
           content:
@@ -13,13 +14,9 @@ paths:
               schema:
                 type: object
                 description: my description, no title
-                properties:
-                  items:
-                    type: array
-                    items:
-                      type: string
 components:
   schemas:
     myFirstSchema:
       description: my first description
+      title: this should not be here
       type: string

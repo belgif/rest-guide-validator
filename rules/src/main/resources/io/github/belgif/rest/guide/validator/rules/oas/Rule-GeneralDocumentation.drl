@@ -1,0 +1,88 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.media.Schema
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
+import java.util.List
+import java.lang.String
+
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+
+function void violationSummaryShouldBePresentForEachOperation(ViolationReport oas, OperationDefinition operation){
+    oas.addViolation("[oas-descr]",
+    "The summary property of an operation SHOULD BE present for each operation.",
+    "Summary property not present.",
+    operation);
+}
+
+function void violationTitleShouldBePresentForInlineObjectSchemas(ViolationReport oas, SchemaDefinition schema){
+    oas.addViolation("[oas-descr]",
+    "A title property of an inline object schema SHOULD BE present (not required in an AllOf / Not composition)",
+    "Title property not present.",
+    schema);
+}
+
+
+function Boolean isInlineSchemaInAllOf(SchemaDefinition parent, SchemaDefinition schemaDefinition) {
+    if (parent == null || parent.getModel() == null) return false;
+
+    List<Schema> allOfSchemas = parent.getModel().getAllOf();
+    if (allOfSchemas == null) return false;
+
+    Schema schema = schemaDefinition.getModel();
+    return allOfSchemas.contains(schema);
+}
+
+function void violationTitleShouldNotBePresentOrMatchSchemaName(ViolationReport oas, SchemaDefinition schema){
+    oas.addViolation("[oas-descr]",
+    "The title property of a component schema MUST NOT be used or MUST MATCH schema name.",
+    "Title present in component schema and doesn't match schema name.",
+     schema);
+}
+
+function void violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(ViolationReport oas, SchemaDefinition schema){
+    oas.addViolation("[oas-descr]",
+    "The title property of a an inline schema MUST NOT be used for non-object types.",
+    "Title present in inline schema with a non-object type.",
+     schema);
+}
+
+rule "A summary should be present for each operation"
+  when
+    $operation: OperationDefinition(/model[summary == null])
+  then
+    violationSummaryShouldBePresentForEachOperation(oas, $operation);
+end
+
+rule "A title should be present for inline object schemas (not required in an AllOf / Not composition)"
+  when
+    $schema: SchemaDefinition(definitionType == DefinitionType.INLINE,
+    /model[type == SchemaType.OBJECT && title == null],
+    $parent: parent#SchemaDefinition,
+    !isInlineSchemaInAllOf($parent, this))
+  then
+    violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
+end
+
+rule "A title should either be absent or match the component schema name"
+    when
+        $schema: SchemaDefinition(definitionType == DefinitionType.TOP_LEVEL,
+        $identifier: identifier#String,
+        /model[title != null && !$identifier.equals(title)]
+        )
+    then
+        violationTitleShouldNotBePresentOrMatchSchemaName(oas, $schema);
+end
+
+rule "A title property in an inline schema must not be present for non-object types"
+    when
+        $schema: SchemaDefinition(definitionType == DefinitionType.INLINE,
+        /model[title != null && type != SchemaType.OBJECT])
+    then
+        violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(oas, $schema);
+end
+

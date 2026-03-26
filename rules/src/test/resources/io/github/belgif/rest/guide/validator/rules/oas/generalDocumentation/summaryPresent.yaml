@@ -1,0 +1,15 @@
+openapi: 3.0.0
+info:
+  title: generalDocumentation
+  version: 1
+paths:
+  /myFirstPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
