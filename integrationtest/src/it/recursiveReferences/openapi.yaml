@@ -41,6 +41,7 @@ components:
         data:
           description: This is a description
           type: object
+          title: data
           properties:
             id:
               type: string
@@ -56,6 +57,7 @@ components:
         data:
           description: This is a description
           type: object
+          title: data
           properties:
             id:
               type: string
@@ -71,6 +73,7 @@ components:
         data:
           description: This is a description
           type: object
+          title: data
           properties:
             id:
               type: string

@@ -270,6 +270,7 @@ paths:
 #      Note! This method is not implemented and will always return status 201!
       description: Upload a new logo
       operationId: uploadLogo
+      summary: Upload a new logo
       tags:
         - Logos
       requestBody:
@@ -289,6 +290,7 @@ paths:
     get:
       description: See list of image metadata
       operationId: getLogos
+      summary: See list of image metadata
       tags:
         - Logos
       responses:
@@ -305,6 +307,7 @@ paths:
     get:
       description: Dowload Logo Image
       operationId: downloadLogoImage
+      summary: Dowload Logo Image
       tags: [Logos]
       parameters:
         - name: logoId
@@ -332,6 +335,7 @@ paths:
     get:
       description: get logo metadata
       operationId: getLogoMetaData
+      summary: get logo metadata
       tags:
         - Logos
       parameters:
@@ -354,6 +358,7 @@ paths:
     get:
       description: Download logo
       operationId: downloadLogo
+      summary: Download logo
       tags:
         - Logos
       parameters:
