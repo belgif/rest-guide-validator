@@ -36,6 +36,6 @@ import org.junit.jupiter.api.Test;
 
     @Test
      void testExceptionsForCloudEvents() {
-        assertNoViolations(callRules("cloudEvents.yaml"));
+        assertNoViolations(callRules("cloudevents.yaml"));
     }
 }
