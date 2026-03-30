@@ -18,11 +18,6 @@ components:
         third:
           type: string
           nullable: true
-        type:
-          type: string
-          enum:
-            - something.like.this
-            - or.something.completely.different
     CorrectSchema:
       allOf:
         - $ref: '#/components/schemas/ExtraSchema'
@@ -48,11 +43,25 @@ components:
         mapping:
           something.like.this: '#/components/schemas/SchemaOne'
           or.something.completely.different: '#/components/schemas/SchemaTwo'
-    WrongSchema:
+    ParentSchema:
       allOf:
-        - $ref: '#/components/schemas/ExtraSchema'
+        - $ref: '#/components/schemas/CorrectSchema'
+      discriminator:
+        propertyName: type
+        mapping:
+          something.like.this: '#/components/schemas/SubSchemaOne'
+          or.something.completely.different: '#/components/schemas/SubSchemaTwo'
+    SubSchemaOne:
+      allOf:
+        - $ref: '#/components/schemas/ParentSchema'
       properties:
-        somethingExtra:
-          type: number
+        myFirstProp:
+          type: string
+    SubSchemaTwo:
+      allOf:
+        - $ref: '#/components/schemas/ParentSchema'
+      properties:
+        mySecondProp:
+          type: string
 security:
   - {}

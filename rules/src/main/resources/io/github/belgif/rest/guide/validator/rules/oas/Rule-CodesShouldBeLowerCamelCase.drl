@@ -26,7 +26,7 @@ function void violationCodesShouldBeLowerCamelCase(ViolationReport oas, List<Obj
 
 rule "Codes should be lowerCamelCase"
     when
-        $schema: SchemaDefinition($schemaType: /model/type, ApiFunctions.isNotInSet(identifier, excludeCodes()), (!ApiFunctions.isSchemaDerivedFromSchemaWithName(this, "AsynchronousMessageBase", parserResult) && !getEffectiveIdentifier().equals("type")))
+        $schema: SchemaDefinition($schemaType: /model/type, ApiFunctions.isNotInSet(identifier, excludeCodes()))
         SchemaType( equals(SchemaType.STRING) ) from $schemaType
         Schema( enumeration != null ) from $schema.getModel()
         String(
@@ -37,21 +37,20 @@ rule "Codes should be lowerCamelCase"
         violationCodesShouldBeLowerCamelCase(oas, $schema.getModel().getEnumeration(), $schema);
 end
 
-function boolean oneOfDerivedFromAsynchronousMessageBaseException(SchemaDefinition schema, ParserResult parserResult) {
-    if (schema.getModel().getOneOf() == null || schema.getModel().getDiscriminator() == null) {
-      return false;
+function boolean asynchronousMessageBaseException(SchemaDefinition schema, ParserResult parserResult) {
+    String baseSchemaName = "AsynchronousMessageBase";
+    if (schema.getModel().getOneOf() != null && schema.getModel().getDiscriminator() != null) {
+      return schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.isSchemaDerivedFromSchemaWithName(s, baseSchemaName, parserResult)) && schema.getModel().getDiscriminator().getPropertyName().equals("type");
     }
-    if (schema.getPrintableJsonPointer().equals("/components/schemas/OneOfSchema"))  {
-      boolean matchForDerived = schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.isSchemaDerivedFromSchemaWithName(s, "AsynchronousMessageBase", parserResult));
-      String property = schema.getModel().getDiscriminator().getPropertyName();
-      System.out.println("Boolean: " + matchForDerived + " and property: " + property);
+    if (schema.getModel().getDiscriminator() != null) {
+      return ApiFunctions.isSchemaDerivedFromSchemaWithName(schema, baseSchemaName, parserResult) && schema.getModel().getDiscriminator().getPropertyName().equals("type");
     }
-    return schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.isSchemaDerivedFromSchemaWithName(s, "AsynchronousMessageBase", parserResult)) && schema.getModel().getDiscriminator().getPropertyName().equals("type");
+    return false;
 }
 
 rule "Discriminator mappings should be lowerCamelCase"
     when
-        $schema: SchemaDefinition(/model/discriminator/mapping != null, !oneOfDerivedFromAsynchronousMessageBaseException(this, parserResult))
+        $schema: SchemaDefinition(/model/discriminator/mapping != null, !asynchronousMessageBaseException(this, parserResult))
         String(
                   !ApiFunctions.isLowerCamelCase(new ArrayList($schema.getModel().getDiscriminator().getMapping().keySet()))
                 ) from $schema.getModel().getDiscriminator().getPropertyName()

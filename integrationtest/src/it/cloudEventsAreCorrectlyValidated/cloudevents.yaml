@@ -18,24 +18,19 @@ components:
         third:
           type: string
           nullable: true
-        type:
-          type: string
-          enum:
-            - something.like.this
-            - or.something.completely.different
     CorrectSchema:
       allOf:
         - $ref: '#/components/schemas/ExtraSchema'
         - $ref: './schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
     SchemaOne:
       allOf:
-        - $ref: '#/components/schemas/ExtraSchema'
+        - $ref: '#/components/schemas/CorrectSchema'
       properties:
         extra:
           type: string
     SchemaTwo:
       allOf:
-        - $ref: '#/components/schemas/ExtraSchema'
+        - $ref: '#/components/schemas/CorrectSchema'
       properties:
         extraTwo:
           type: string
@@ -48,11 +43,5 @@ components:
         mapping:
           something.like.this: '#/components/schemas/SchemaOne'
           or.something.completely.different: '#/components/schemas/SchemaTwo'
-    WrongSchema:
-      allOf:
-        - $ref: '#/components/schemas/ExtraSchema'
-      properties:
-        somethingExtra:
-          type: number
 security:
   - {}
