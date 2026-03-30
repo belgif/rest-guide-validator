@@ -277,13 +277,14 @@ public class ApiFunctions {
 
     /**
      * Get the subschemas of given schema
-     * @param includeReferencedSchemas  Whether to also include schemas resolved from references (alongside the $ref subschema itself)
+     *
+     * @param includeReferencedSchemas Whether to also include schemas resolved from references (alongside the $ref subschema itself)
      */
     private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeReferencedSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
         Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) ->
                 includeReferencedSchemas
-                || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
+                        || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
         if (schemaDefinition.getModel().getAllOf() != null) {
             subSchemas.addAll(schemaDefinition.getModel().getAllOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
         }
@@ -412,21 +413,14 @@ public class ApiFunctions {
         }
         SchemaDefinition linkedSchema = linkedSchemaOption.get();
         Set<SchemaDefinition> linkedSchemas = findAllOfLinks(linkedSchema, new HashSet<>(), result);
-//        SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
-        Set<SchemaDefinition> schemaDefinitions = findParentSchemas(schemaDefinition, result);
-//        return linkedSchemas.contains(resolvedSchemaDefinition);
-        return !Collections.disjoint(linkedSchemas, schemaDefinitions);
-    }
-
-    private static Set<SchemaDefinition> findParentSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
         Set<SchemaDefinition> schemaDefinitions = new HashSet<>();
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
         schemaDefinitions.add(resolvedSchemaDefinition);
-        while (resolvedSchemaDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE) && resolvedSchemaDefinition.getParent() instanceof SchemaDefinition) {
-            resolvedSchemaDefinition = (SchemaDefinition) resolvedSchemaDefinition.getParent();
+        while (resolvedSchemaDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE) && resolvedSchemaDefinition.getParent() instanceof SchemaDefinition parent) {
+            resolvedSchemaDefinition = parent;
             schemaDefinitions.add(resolvedSchemaDefinition);
         }
-        return schemaDefinitions;
+        return !Collections.disjoint(linkedSchemas, schemaDefinitions);
     }
 
     private static Set<SchemaDefinition> findAllOfLinks(SchemaDefinition schemaDefinition, Set<SchemaDefinition> visitedSchemas, Parser.ParserResult result) {
