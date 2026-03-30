@@ -412,8 +412,21 @@ public class ApiFunctions {
         }
         SchemaDefinition linkedSchema = linkedSchemaOption.get();
         Set<SchemaDefinition> linkedSchemas = findAllOfLinks(linkedSchema, new HashSet<>(), result);
+//        SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
+        Set<SchemaDefinition> schemaDefinitions = findParentSchemas(schemaDefinition, result);
+//        return linkedSchemas.contains(resolvedSchemaDefinition);
+        return !Collections.disjoint(linkedSchemas, schemaDefinitions);
+    }
+
+    private static Set<SchemaDefinition> findParentSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result) {
+        Set<SchemaDefinition> schemaDefinitions = new HashSet<>();
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
-        return linkedSchemas.contains(resolvedSchemaDefinition);
+        schemaDefinitions.add(resolvedSchemaDefinition);
+        while (resolvedSchemaDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE) && resolvedSchemaDefinition.getParent() instanceof SchemaDefinition) {
+            resolvedSchemaDefinition = (SchemaDefinition) resolvedSchemaDefinition.getParent();
+            schemaDefinitions.add(resolvedSchemaDefinition);
+        }
+        return schemaDefinitions;
     }
 
     private static Set<SchemaDefinition> findAllOfLinks(SchemaDefinition schemaDefinition, Set<SchemaDefinition> visitedSchemas, Parser.ParserResult result) {

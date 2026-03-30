@@ -42,7 +42,7 @@ function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
 
 rule "Rule Properties Nullable"
    	when
-      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this))
+      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !ApiFunctions.isSchemaDerivedFromSchemaWithName(this, "AsynchronousMessageBase", parserResult))
     then
       violationPropertiesNullable(oas, $schema);
 end

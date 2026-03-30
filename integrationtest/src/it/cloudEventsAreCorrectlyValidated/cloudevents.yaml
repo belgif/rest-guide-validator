@@ -17,7 +17,6 @@ components:
           type: string
         third:
           type: string
-          nullable: true
     CorrectSchema:
       allOf:
         - $ref: '#/components/schemas/ExtraSchema'
@@ -28,6 +27,7 @@ components:
       properties:
         extra:
           type: string
+          nullable: true
     SchemaTwo:
       allOf:
         - $ref: '#/components/schemas/CorrectSchema'
