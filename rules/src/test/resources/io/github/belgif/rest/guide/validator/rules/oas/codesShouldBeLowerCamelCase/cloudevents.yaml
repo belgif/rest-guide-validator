@@ -21,7 +21,7 @@ components:
     CorrectSchema:
       allOf:
         - $ref: '#/components/schemas/ExtraSchema'
-        - $ref: './schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
+        - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
     SchemaOne:
       allOf:
         - $ref: '#/components/schemas/CorrectSchema'

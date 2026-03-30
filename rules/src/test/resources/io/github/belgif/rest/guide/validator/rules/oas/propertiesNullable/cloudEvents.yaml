@@ -21,7 +21,7 @@ components:
     MyObject:
       type: object
       allOf:
-        - $ref: './schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
+        - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
       properties:
         innerObject:
           type: object
