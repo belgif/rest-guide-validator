@@ -12,11 +12,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                description: my description, no title
+                $ref: "#/components/schemas/myFirstSchema"
 components:
   schemas:
     myFirstSchema:
       description: my first description
-      title: this should not be here
+      title: ThisShouldNotBeHere
       type: string

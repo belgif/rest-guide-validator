@@ -13,3 +13,4 @@ paths:
             application/json:
               schema:
                 type: object
+                title: Title

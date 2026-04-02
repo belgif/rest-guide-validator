@@ -13,9 +13,5 @@ paths:
             application/json:
               schema:
                 type: object
+                title: InlineSchema
                 description: my description
-                properties:
-                  inlineSchema:
-                    type: object
-                    title: inlineSchema
-                    description: my description

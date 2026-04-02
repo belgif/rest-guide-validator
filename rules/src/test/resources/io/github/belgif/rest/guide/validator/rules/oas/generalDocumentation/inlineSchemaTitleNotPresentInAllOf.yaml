@@ -13,6 +13,7 @@ paths:
             application/json:
               schema:
                 type: object
+                title: Response
 components:
   schemas:
     MyFirstSchema:
@@ -23,7 +24,7 @@ components:
           properties:
             childName:
               type: object
-              title: child name
+              title: ChildName
     Parent:
       type: object
       description: description, no title required

@@ -13,15 +13,11 @@ paths:
             application/json:
               schema:
                 type: object
+                title: MySchema
                 description: my description, no title
                 properties:
                   items:
                     type: array
-                    title: this should not be here
+                    title: ThisShouldNotBeHere
                     items:
                       type: string
-components:
-  schemas:
-    myFirstSchema:
-      description: my first description
-      type: string

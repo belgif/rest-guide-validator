@@ -38,3 +38,4 @@ paths:
             application/problem+json:
               schema:
                 type: object
+                title: Response

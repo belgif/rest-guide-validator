@@ -14,7 +14,27 @@ paths:
               schema:
                 type: object
                 description: my description
-                properties:
-                  inlineSchema:
-                    type: object
-                    description: my description
+  /mySecondPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: ""
+                description: empty title
+  /myThirdPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: " "
+                description: empty title with space
