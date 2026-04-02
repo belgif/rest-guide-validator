@@ -407,12 +407,6 @@ public class ApiFunctions {
     }
 
     public static boolean isSchemaDerivedFromSchemaWithName(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
-        Optional<SchemaDefinition> linkedSchemaOption = result.getSchemas().stream().filter(s -> s.getIdentifier() != null && s.getIdentifier().equals(schemaName)).findFirst();
-        if (linkedSchemaOption.isEmpty()) {
-            return false;
-        }
-        SchemaDefinition linkedSchema = linkedSchemaOption.get();
-        Set<SchemaDefinition> linkedSchemas = findAllOfLinks(linkedSchema, new HashSet<>(), result);
         Set<SchemaDefinition> schemaDefinitions = new HashSet<>();
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
         schemaDefinitions.add(resolvedSchemaDefinition);
@@ -420,21 +414,19 @@ public class ApiFunctions {
             resolvedSchemaDefinition = parent;
             schemaDefinitions.add(resolvedSchemaDefinition);
         }
-        return !Collections.disjoint(linkedSchemas, schemaDefinitions);
+        return schemaDefinitions.stream().anyMatch(s -> inheritsFromSchema(s, schemaName, result));
     }
 
-    private static Set<SchemaDefinition> findAllOfLinks(SchemaDefinition schemaDefinition, Set<SchemaDefinition> visitedSchemas, Parser.ParserResult result) {
+    private static boolean inheritsFromSchema(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
-        Set<SchemaDefinition> referencedByViaAllOf = resolvedSchemaDefinition.getReferencedBy().stream()
-                .filter(SchemaDefinition.class::isInstance)
-                .map(s -> ((SchemaDefinition) s).getHighLevelSchema())
-                .filter(s -> s.getModel().getAllOf() != null && s.getModel().getAllOf().stream().anyMatch(allOfSchema -> result.resolve(allOfSchema).equals(resolvedSchemaDefinition)))
-                .filter(s -> !visitedSchemas.contains(s))
-                .collect(Collectors.toSet());
-        Set<SchemaDefinition> defs = new HashSet<>(referencedByViaAllOf);
-        visitedSchemas.addAll(referencedByViaAllOf);
-        referencedByViaAllOf.forEach(s -> defs.addAll(findAllOfLinks(s, visitedSchemas, result)));
-        return defs;
+        if (resolvedSchemaDefinition.getModel().getAllOf() == null) {
+            return false;
+        }
+        Set<SchemaDefinition> allOfChildSchemas = resolvedSchemaDefinition.getModel().getAllOf().stream()
+                .map(s -> (SchemaDefinition) result.resolve(s)).collect(Collectors.toSet());
+        boolean directMatch = allOfChildSchemas.stream()
+                .anyMatch(s -> s.getIdentifier() != null && s.getIdentifier().equals(schemaName));
+        return directMatch || allOfChildSchemas.stream().anyMatch(s -> inheritsFromSchema(s, schemaName, result));
     }
 
     public static boolean isLowerCamelCase(List<Object> objects) {
