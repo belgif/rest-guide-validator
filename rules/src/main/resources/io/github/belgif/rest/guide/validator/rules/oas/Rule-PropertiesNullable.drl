@@ -40,9 +40,16 @@ function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
   return false;
 }
 
+function boolean parentSchemaInheritsFromCloudEventsSchema(SchemaDefinition schemaDefinition, ParserResult parserResult) {
+  if (schemaDefinition.getParent() == null || !(schemaDefinition instanceof SchemaDefinition)) {
+    return false;
+  }
+  return ApiFunctions.inheritsFromSchema((SchemaDefinition) schemaDefinition.getParent(), "AsynchronousMessageBase", parserResult);
+}
+
 rule "Rule Properties Nullable"
    	when
-      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !ApiFunctions.isSchemaDerivedFromSchemaWithName(this, "AsynchronousMessageBase", parserResult))
+      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !parentSchemaInheritsFromCloudEventsSchema(this, parserResult))
     then
       violationPropertiesNullable(oas, $schema);
 end

@@ -41,9 +41,9 @@ function boolean asynchronousMessageBaseException(SchemaDefinition schema, Parse
     String baseSchemaName = "AsynchronousMessageBase";
     if (schema.getModel().getDiscriminator() != null && schema.getModel().getDiscriminator().getPropertyName().equals("type")) {
       if (schema.getModel().getOneOf() != null) {
-        return schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.isSchemaDerivedFromSchemaWithName(s, baseSchemaName, parserResult));
+        return schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.inheritsFromSchema(s, baseSchemaName, parserResult));
       }
-      return ApiFunctions.isSchemaDerivedFromSchemaWithName(schema, baseSchemaName, parserResult);
+      return ApiFunctions.inheritsFromSchema(schema, baseSchemaName, parserResult);
     }
     return false;
 }

@@ -15,26 +15,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MyObject'
+                $ref: '#/components/schemas/SomeSchema'
 components:
   schemas:
-    MyObject:
+    SomeSchema:
       type: object
-      allOf:
-        - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
       properties:
-        innerObject:
-          type: object
+        propertyA:
+          type: object # only this inline schema is considered 'derived' from AsynchronousMessageBase, not SomeSchema
+          allOf:
+            - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
           properties:
-            thing:
-              nullable: true
+            additionalProperty:
               type: string
-            otherThing:
-              type: int
-        objectId:
-          type: int
-    PatchObject:
-      type: object
-      properties:
-        thing:
-          nullable: true
+              nullable: true #nullable exception ALLOWED here
+            data:
+              type: object
+              properties:
+                propertyInData:
+                  type: string
+                  nullable: true  #nullable exception NOT allowed here bc only direct simple 'context' properties are constrained by CloudEvent spec to allow nullable
+          required: [ data ]
+        propertyB:
+          nullable: true #nullable exception NOT allowed here bc outside the CloudEvent

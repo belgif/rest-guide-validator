@@ -406,18 +406,7 @@ public class ApiFunctions {
         return false;
     }
 
-    public static boolean isSchemaDerivedFromSchemaWithName(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
-        Set<SchemaDefinition> schemaDefinitions = new HashSet<>();
-        SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
-        schemaDefinitions.add(resolvedSchemaDefinition);
-        while (resolvedSchemaDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE) && resolvedSchemaDefinition.getParent() instanceof SchemaDefinition parent) {
-            resolvedSchemaDefinition = parent;
-            schemaDefinitions.add(resolvedSchemaDefinition);
-        }
-        return schemaDefinitions.stream().anyMatch(s -> inheritsFromSchema(s, schemaName, result));
-    }
-
-    private static boolean inheritsFromSchema(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
+    public static boolean inheritsFromSchema(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
         if (resolvedSchemaDefinition.getModel().getAllOf() == null) {
             return false;

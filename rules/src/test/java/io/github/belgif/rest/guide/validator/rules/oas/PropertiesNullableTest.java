@@ -16,6 +16,6 @@ class PropertiesNullableTest extends AbstractOasRuleTest {
 
    @Test
     void testCloudEventsExclusion() {
-       assertNoViolations(callRules("cloudEvents.yaml"));
+       assertErrorCount(2, callRules("cloudEvents.yaml"));
    }
 }
