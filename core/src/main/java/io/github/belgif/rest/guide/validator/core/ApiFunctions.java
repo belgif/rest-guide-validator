@@ -406,16 +406,20 @@ public class ApiFunctions {
         return false;
     }
 
+    /**
+     * @return true if schemaDefinition is or inherits from a schemaDefinition with identifier schemaName
+     */
     public static boolean inheritsFromSchema(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
         SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
+        if (resolvedSchemaDefinition.getIdentifier() != null && resolvedSchemaDefinition.getIdentifier().equals(schemaName)) {
+            return true;
+        }
         if (resolvedSchemaDefinition.getModel().getAllOf() == null) {
             return false;
         }
-        Set<SchemaDefinition> allOfChildSchemas = resolvedSchemaDefinition.getModel().getAllOf().stream()
-                .map(s -> (SchemaDefinition) result.resolve(s)).collect(Collectors.toSet());
-        boolean directMatch = allOfChildSchemas.stream()
-                .anyMatch(s -> s.getIdentifier() != null && s.getIdentifier().equals(schemaName));
-        return directMatch || allOfChildSchemas.stream().anyMatch(s -> inheritsFromSchema(s, schemaName, result));
+        return resolvedSchemaDefinition.getModel().getAllOf().stream()
+                .map(s -> (SchemaDefinition) result.resolve(s))
+                .anyMatch(s -> inheritsFromSchema(s, schemaName, result));
     }
 
     public static boolean isLowerCamelCase(List<Object> objects) {

@@ -66,30 +66,22 @@ components:
             MUST adhere to the format specified in RFC 2046.
           default: "application/json"
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
         subject:
           type: string
           minLength: 1
           description: Subject of the message (optional, may also be only present in payload)
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
         time:
           type: string
           format: date-time
           description: Timestamp of when the occurrence happened. If the time of the occurrence cannot be determined then this attribute MAY be set to some other time (such as the current time) by the CloudEvents producer, however all producers for the same source MUST be consistent in this respect. In other words, either they all use the actual time of the occurrence or they all use the same algorithm to determine the value used.
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
         dataschema:
           description: Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be reflected by a different URI.
           type: string
           minLength: 1
           nullable: true
           format: uri
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
       required: [ id, type, service, specversion, source ]
       example:
         {
@@ -113,30 +105,22 @@ components:
         data:
           description: The message payload in JSON format
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
         data_base64:
           description: Base64 encoded message payload. Must adhere to RFC4648. This property is mutually exclusive with `data`.
           type: string
           format: byte
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
           example: "Zm9vYg=="
         relatedto:
           description: The id of the request message for which this message is a reply. Must be present for reply or problemReply messages
           type: string
           minLength: 1
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
         relatedtosource:
           description: The `source` of the message for which this message is a reply. This attribute MUST be present when `relatedTo` is present.
           type: string
           minLength: 1
           nullable: true
-          x-ignore-rules:
-            jsn-null: allow null to comply with CloudEvents 1.0 spec
       additionalProperties: true
         # restrictions on additional properties are commented out because they don't work well for code generation
         # additional context attributes:
