@@ -1,35 +1,42 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.media.Schema
+import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
-import io.github.belgif.rest.guide.validator.core.ApiFunctions
+import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
-import java.util.List
-import java.lang.String
+import java.util.List;
+import java.lang.String;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void violationSummaryShouldBePresentForEachOperation(ViolationReport oas, OperationDefinition operation){
     oas.addViolation("[oas-descr]",
-    "The summary property of an operation SHOULD BE present for each operation.",
-    operation);
+    "The summary property SHOULD be present for each operation.",
+    null,
+    operation,
+    ViolationLevel.RECOMMENDED);
 }
 
-function void violationTitleNamesShouldBeUpperCamelCase(ViolationReport oas, String title){
+function void violationTitleNamesShouldBeUpperCamelCase(ViolationReport oas, SchemaDefinition schema){
    oas.addViolation("[oas-descr]",
       "Title names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.",
-      title);
+      null,
+      schema,
+      ViolationLevel.RECOMMENDED);
 }
 
 function void violationTitleShouldBePresentForInlineObjectSchemas(ViolationReport oas, SchemaDefinition schema){
     oas.addViolation("[oas-descr]",
-    "For inline schemas of type 'object' a title MUST BE present.",
-    schema);
+    "For inline schemas of type 'object', a title SHOULD be present.",
+    null,
+    schema,
+    ViolationLevel.RECOMMENDED);
 }
 
 function Boolean isSchemaInAllOrAnyOf(SchemaDefinition schemaDefinition) {
@@ -38,14 +45,18 @@ function Boolean isSchemaInAllOrAnyOf(SchemaDefinition schemaDefinition) {
 
 function void violationTitleShouldNotBePresentOrMatchSchemaName(ViolationReport oas, SchemaDefinition schema,String title){
     oas.addViolation("[oas-descr]",
-    "The title property of a component schema MUST NOT be used or MUST MATCH schema name.",
-    "'Title << "+ title + " >> found, but schema name was << "+ schema.getIdentifier() +" >>'");
+    "The title property of a component schema SHOULD NOT be used or SHOULD MATCH schema name.",
+    "'Title << "+ title + " >> found, but schema name is < "+ schema.getIdentifier() +" >>'",
+    schema,
+    ViolationLevel.RECOMMENDED);
 }
 
 function void violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(ViolationReport oas, SchemaDefinition schema){
     oas.addViolation("[oas-descr]",
-    "The title property of a an inline schema MUST NOT be used for non-object types.",
-     schema);
+    "The title property MUST NOT be used for non-object inline schemas.",
+    null,
+    schema,
+    ViolationLevel.RECOMMENDED);
 }
 
 rule "A summary should be present for each operation"
@@ -60,18 +71,17 @@ rule "A title should be present for inline object schemas (not required in an Al
     $schema: SchemaDefinition(
       definitionType == DefinitionType.INLINE,
       /model[type == SchemaType.OBJECT && (title == null || title.trim.empty)],
-      !isSchemaInAllOrAnyOf(this)
-      )
+      !isSchemaInAllOrAnyOf(this))
   then
     violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
 end
 
-rule "A title names should be UpperCamelCase"
+// This rule only fires when a title is present; null checks are handled by other rules.
+rule "Title names should be UpperCamelCase"
   when
-    $schema: SchemaDefinition($title: /model/title#String)
-    $title: String(this != null && !this.trim.empty && !ApiFunctions.isUpperCamelCase(this))
+    $schema: SchemaDefinition(/model[title != null && !title.trim.empty && !ApiFunctions.isUpperCamelCase(title)])
   then
-    violationTitleNamesShouldBeUpperCamelCase(oas, $title);
+    violationTitleNamesShouldBeUpperCamelCase(oas, $schema);
 end
 
 rule "A title should either be absent or match the component schema name"
@@ -84,11 +94,10 @@ rule "A title should either be absent or match the component schema name"
         violationTitleShouldNotBePresentOrMatchSchemaName(oas, $schema, $title);
 end
 
-rule "A title property in an inline schema must not be present for non-object types"
+rule "A title property in an inline schema should not be present for non-object types"
     when
         $schema: SchemaDefinition(definitionType == DefinitionType.INLINE,
         /model[title != null && type != SchemaType.OBJECT])
     then
         violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(oas, $schema);
 end
-

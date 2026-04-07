@@ -1,6 +1,5 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +13,7 @@ class GeneralDocumentationTest extends AbstractOasRuleTest {
 
     @Test
     void testOperationSummaryNotPresent() {
-        ViolationReport violationReport = callRules("summaryNotPresent.yaml");
-        assertErrorCount(3, violationReport);
+        assertErrorCount(3, callRules("summaryNotPresent.yaml"));
     }
 
     @Test
@@ -24,9 +22,13 @@ class GeneralDocumentationTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testInlineSchemaTitleNotUpperCamelCase() {
+        assertErrorCount(1, callRules("inlineSchemaTitleNotUpperCamelCase.yaml"));
+    }
+
+    @Test
     void testInlineSchemaTitleNotPresent() {
-        ViolationReport violationReport = callRules("inlineSchemaTitleNotPresent.yaml");
-        assertErrorCount(3, violationReport);
+        assertErrorCount(3, callRules("inlineSchemaTitleNotPresent.yaml"));
     }
 
     @Test
@@ -45,15 +47,13 @@ class GeneralDocumentationTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testComponentSchemaTitlePresent() {
-        ViolationReport violationReport = callRules("titlePresentInCompentSchema.yaml");
-        assertErrorCount(1, violationReport);
+    void testComponentSchemaTitleDoesNotMatchesSchemaName() {
+        assertErrorCount(1, callRules("titleDoesNotMatchesSchemaName.yaml"));
     }
 
     @Test
-    void testComponentSchemaTitlePresentInInlineArraySchema() {
-        ViolationReport violationReport = callRules("titlePresentInInlineArraySchema.yaml");
-        assertErrorCount(1, violationReport);
+    void testComponentSchemaTitlePresentInNonObjectInlineSchema() {
+        assertErrorCount(5, callRules("titlePresentInNonObjectInlineSchema.yaml"));
     }
 }
 

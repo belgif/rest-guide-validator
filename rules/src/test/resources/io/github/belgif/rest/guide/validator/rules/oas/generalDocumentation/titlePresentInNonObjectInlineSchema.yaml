@@ -13,9 +13,21 @@ paths:
             application/json:
               schema:
                 type: object
-                title: MySchema
+                title: Schema
                 description: my description, no title
                 properties:
+                  string:
+                    type: string
+                    title: ThisShouldNotBeHere
+                  number:
+                    type: number
+                    title: ThisShouldNotBeHere
+                  boolean:
+                    type: boolean
+                    title: ThisShouldNotBeHere
+                  integer:
+                    type: integer
+                    title: ThisShouldNotBeHere
                   items:
                     type: array
                     title: ThisShouldNotBeHere
