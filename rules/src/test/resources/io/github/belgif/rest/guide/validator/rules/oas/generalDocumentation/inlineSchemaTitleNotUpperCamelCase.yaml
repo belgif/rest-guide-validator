@@ -15,3 +15,27 @@ paths:
                 type: object
                 title: inline schema
                 description: my description
+  /mySecondPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: ""
+                description: empty title
+  /myThirdPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: " "
+                description: empty title with space

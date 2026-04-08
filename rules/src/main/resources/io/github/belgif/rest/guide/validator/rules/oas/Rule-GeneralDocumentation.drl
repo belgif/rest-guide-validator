@@ -70,16 +70,16 @@ rule "A title should be present for inline object schemas (not required in an Al
   when
     $schema: SchemaDefinition(
       definitionType == DefinitionType.INLINE,
-      /model[type == SchemaType.OBJECT && (title == null || title.trim.empty)],
+      /model[type == SchemaType.OBJECT && (title == null)],
       !isSchemaInAllOrAnyOf(this))
   then
     violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
 end
 
-// This rule only fires when a title is present; null checks are handled by other rules.
+// This rule only fires when a title is present;
 rule "Title names should be UpperCamelCase"
   when
-    $schema: SchemaDefinition(/model[title != null && !title.trim.empty && !ApiFunctions.isUpperCamelCase(title)])
+    $schema: SchemaDefinition(/model[title != null && (!ApiFunctions.isUpperCamelCase(title) || title.trim.empty) ])
   then
     violationTitleNamesShouldBeUpperCamelCase(oas, $schema);
 end

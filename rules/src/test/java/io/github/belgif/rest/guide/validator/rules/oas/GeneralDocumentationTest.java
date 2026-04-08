@@ -23,12 +23,12 @@ class GeneralDocumentationTest extends AbstractOasRuleTest {
 
     @Test
     void testInlineSchemaTitleNotUpperCamelCase() {
-        assertErrorCount(1, callRules("inlineSchemaTitleNotUpperCamelCase.yaml"));
+        assertErrorCount(3, callRules("inlineSchemaTitleNotUpperCamelCase.yaml"));
     }
 
     @Test
     void testInlineSchemaTitleNotPresent() {
-        assertErrorCount(3, callRules("inlineSchemaTitleNotPresent.yaml"));
+        assertErrorCount(1, callRules("inlineSchemaTitleNotPresent.yaml"));
     }
 
     @Test
