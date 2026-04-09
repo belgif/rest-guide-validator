@@ -25,7 +25,7 @@ function void violationSummaryShouldBePresentForEachOperation(ViolationReport oa
 
 function void violationTitleNamesShouldBeUpperCamelCase(ViolationReport oas, SchemaDefinition schema){
    oas.addViolation("[oas-descr]",
-      "Title names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.",
+      "The title property of a schema SHOULD use UpperCamelCase notation.. For abbreviations as well, all letters except the first one should be lowercased.",
       null,
       schema,
       ViolationLevel.RECOMMENDED);
@@ -47,14 +47,6 @@ function void violationTitleShouldNotBePresentOrMatchSchemaName(ViolationReport 
     oas.addViolation("[oas-descr]",
     "The title property of a component schema SHOULD NOT be used or SHOULD MATCH schema name.",
     "'Title << "+ title + " >> found, but schema name is < "+ schema.getIdentifier() +" >>'",
-    schema,
-    ViolationLevel.RECOMMENDED);
-}
-
-function void violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(ViolationReport oas, SchemaDefinition schema){
-    oas.addViolation("[oas-descr]",
-    "The title property MUST NOT be used for non-object inline schemas.",
-    null,
     schema,
     ViolationLevel.RECOMMENDED);
 }
@@ -92,12 +84,4 @@ rule "A title should either be absent or match the component schema name"
         identifier != $title)
     then
         violationTitleShouldNotBePresentOrMatchSchemaName(oas, $schema, $title);
-end
-
-rule "A title property in an inline schema should not be present for non-object types"
-    when
-        $schema: SchemaDefinition(definitionType == DefinitionType.INLINE,
-        /model[title != null && type != SchemaType.OBJECT])
-    then
-        violationTitleShouldNotBePresentForNonObjectTypesInInlineSchemas(oas, $schema);
 end

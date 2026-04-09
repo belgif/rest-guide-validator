@@ -50,11 +50,6 @@ class FreeTextDocumentationTest extends AbstractOasRuleTest {
     void testComponentSchemaTitleDoesNotMatchesSchemaName() {
         assertErrorCount(1, callRules("titleDoesNotMatchesSchemaName.yaml"));
     }
-
-    @Test
-    void testComponentSchemaTitlePresentInNonObjectInlineSchema() {
-        assertErrorCount(5, callRules("titlePresentInNonObjectInlineSchema.yaml"));
-    }
 }
 
 

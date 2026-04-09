@@ -268,9 +268,8 @@ paths:
   /logos:
     post:
 #      Note! This method is not implemented and will always return status 201!
-      description: Upload a new logo
-      operationId: uploadLogo
       summary: Upload a new logo
+      operationId: uploadLogo
       tags:
         - Logos
       requestBody:
@@ -288,9 +287,8 @@ paths:
         default:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
     get:
-      description: See list of image metadata
-      operationId: getLogos
       summary: See list of image metadata
+      operationId: getLogos
       tags:
         - Logos
       responses:
@@ -305,9 +303,8 @@ paths:
 
   /logos/{logoId}/image:
     get:
-      description: Dowload Logo Image
-      operationId: downloadLogoImage
       summary: Dowload Logo Image
+      operationId: downloadLogoImage
       tags: [Logos]
       parameters:
         - name: logoId
