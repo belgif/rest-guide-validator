@@ -330,9 +330,8 @@ paths:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
   /logos/{logoId}/meta:
     get:
-      description: get logo metadata
-      operationId: getLogoMetaData
       summary: get logo metadata
+      operationId: getLogoMetaData
       tags:
         - Logos
       parameters:
@@ -353,9 +352,8 @@ paths:
           "$ref": "schemas/belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
   /logos/{logoId}:
     get:
-      description: Download logo
-      operationId: downloadLogo
       summary: Download logo
+      operationId: downloadLogo
       tags:
         - Logos
       parameters:
