@@ -25,7 +25,7 @@ function void violationSummaryShouldBePresentForEachOperation(ViolationReport oa
 
 function void violationTitleNamesShouldBeUpperCamelCase(ViolationReport oas, SchemaDefinition schema){
    oas.addViolation("[oas-descr]",
-      "The title property of a schema SHOULD use UpperCamelCase notation.. For abbreviations as well, all letters except the first one should be lowercased.",
+      "The title property of a schema SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.",
       null,
       schema,
       ViolationLevel.RECOMMENDED);
