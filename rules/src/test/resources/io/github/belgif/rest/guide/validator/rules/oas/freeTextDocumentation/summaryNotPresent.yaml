@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: generalDocumentation
+  version: 1
+paths:
+  /myFirstPath:
+    get:
+      description: no summary
+      operationId: operationId
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: NoSummary
+  /mySecondPath:
+    get:
+      description: empty summary
+      operationId: operationId
+      summary: ""
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: EmptySummary
+  /myThirdPath:
+    get:
+      description: empty summary with space
+      operationId: operationId
+      summary: " "
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+                title: EmptySummaryWithSpace
+
