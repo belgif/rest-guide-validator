@@ -38,7 +38,11 @@ public class SchemaValidator {
 
     public static Optional<String> getExampleViolations(ExampleDefinition exampleDefinition) {
         try {
-            SchemaDefinition schemaDefinition = getSchemaDefinition(exampleDefinition);
+            Optional<SchemaDefinition> def = getSchemaDefinition(exampleDefinition);
+            if (def.isEmpty()) {
+                return Optional.empty();
+            }
+            SchemaDefinition schemaDefinition = def.get();
             JsonNode schemaNode = getSchemaNode(schemaDefinition);
             ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
             JsonNode exampleNode = getExampleNode(example);
@@ -155,7 +159,7 @@ public class SchemaValidator {
         });
     }
 
-    private static SchemaDefinition getSchemaDefinition(ExampleDefinition exampleDefinition) {
+    private static Optional<SchemaDefinition> getSchemaDefinition(ExampleDefinition exampleDefinition) {
         OpenApiDefinition<?> parentDef = exampleDefinition.getParent();
         Schema schema;
         if (parentDef instanceof SchemaDefinition schemaDefinition) {
@@ -169,7 +173,7 @@ public class SchemaValidator {
         } else {
             throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getJsonPointer());
         }
-        return (SchemaDefinition) exampleDefinition.getResult().resolve(schema);
+        return schema != null ? Optional.of((SchemaDefinition) exampleDefinition.getResult().resolve(schema)) : Optional.empty();
     }
 
     private static JsonNode getOpenApiNode(OpenApiDefinition<?> parent) {

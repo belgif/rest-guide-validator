@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: Null Coverage API
+  version: 1.0.0
+
+servers:
+  - url: https://example.com
+    description: server with optional variables omitted
+
+paths:
+
+  /case1:
+    get:
+      summary: Operation with almost nothing optional
+      responses:
+        "200":
+          description: response without content
+
+  /case2:
+    post:
+      summary: Optional objects present but empty internally
+      requestBody:
+        description: body without content
+      responses:
+        "200":
+          description: response with empty content
+          content: { }
+
+  /case3:
+    get:
+      summary: Content present but schema missing
+      responses:
+        "200":
+          description: content without schema
+          content:
+            application/json: { }
+
+  /case4:
+    get:
+      summary: Schema present but empty
+      responses:
+        "200":
+          description: empty schema
+          content:
+            application/json:
+              schema: { }
+
+  /case5:
+    get:
+      summary: Parameters without schema
+      parameters:
+        - name: testParam
+          in: query
+          required: false
+      responses:
+        "200":
+          description: OK
+
+  /case6:
+    get:
+      summary: Parameter with empty schema
+      parameters:
+        - name: testParam
+          in: query
+          required: false
+          schema: { }
+      responses:
+        "200":
+          description: OK
+
+  /case7:
+    post:
+      summary: Request body with media type but no schema
+      requestBody:
+        content:
+          application/json: { }
+      responses:
+        "200":
+          description: OK
+
+  /case8:
+    post:
+      summary: Nested schema objects partially missing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                child1: { }
+                child2:
+                  type: object
+      responses:
+        "200":
+          description: OK
+
+  /case9:
+    get:
+      summary: Headers present but schema missing
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Test:
+              description: header without schema
+
+  /case10:
+    get:
+      summary: Links object present but empty
+      responses:
+        "200":
+          description: OK
+          links: { }
+
+components:
+
+  schemas:
+
+    EmptySchema: { }
+
+    PartialSchema:
+      type: object
+      properties:
+        field1:
+          type: string
+        field2: { }
+
+    DeepPartialSchema:
+      type: object
+      properties:
+        nested:
+          type: object
+          properties:
+            child: { }
+
+  responses:
+    PartialResponse:
+      description: response with optional fields missing
+
+  parameters:
+    PartialParameter:
+      name: partial
+      in: query
+
+  requestBodies:
+    PartialRequest:
+      description: request body without content
+
+  headers:
+    PartialHeader:
+      description: header without schema
+
+  examples:
+    EmptyExample: { }
+
+  links:
+    EmptyLink: { }
+
+  callbacks:
+    EmptyCallback: { }
+
+security: [ ]
