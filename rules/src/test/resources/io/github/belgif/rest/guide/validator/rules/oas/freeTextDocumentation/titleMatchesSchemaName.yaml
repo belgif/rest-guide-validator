@@ -6,20 +6,16 @@ paths:
   /myFirstPath:
     get:
       operationId: operationId
+      summary: operation summary
       responses:
         default:
           content:
             application/json:
               schema:
-                type: object
-                description: my description, no title
-                properties:
-                  items:
-                    type: array
-                    items:
-                      type: string
+                $ref: "#/components/schemas/MyFirstSchema"
 components:
   schemas:
-    myFirstSchema:
+    MyFirstSchema:
       description: my first description
+      title: MyFirstSchema
       type: string

@@ -38,6 +38,7 @@ paths:
             application/json:
               schema:
                 type: object
+                title: Response
         default:
           description: unexpected error
           content:
@@ -51,6 +52,7 @@ components:
         application/json:
           schema:
             type: object
+            title: RequestBodyWithSchema
   schemas:
     Pet:
       type: "object"

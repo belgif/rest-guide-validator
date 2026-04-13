@@ -9,6 +9,7 @@ paths:
   /myFirstPath:
     get:
       operationId: myOperation
+      summary: my operation summary
       responses:
         default:
           description: my response
@@ -16,3 +17,4 @@ paths:
             application/problem+json:
               schema:
                 type: object
+                title: Response
