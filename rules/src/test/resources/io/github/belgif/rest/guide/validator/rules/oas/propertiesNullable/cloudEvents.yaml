@@ -25,6 +25,10 @@ components:
           type: object # only this inline schema is considered 'derived' from AsynchronousMessageBase, not SomeSchema
           allOf:
             - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
+            - properties:
+                anotherProperty:
+                  type: string
+                  nullable: true
           properties:
             additionalProperty:
               type: string
