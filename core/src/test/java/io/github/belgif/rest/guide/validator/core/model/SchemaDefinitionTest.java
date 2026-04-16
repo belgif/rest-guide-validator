@@ -37,13 +37,13 @@ class SchemaDefinitionTest {
     }
 
     @Test
-    void testIsInlineProperty() {
+    void testIsInlineSchemaOfProperty() {
         var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../../rules/inlineProperty.yaml").getFile());
         var result = new Parser(file).parse(oas);
         Set<SchemaDefinition> defs = result.getSchemas();
         assertEquals(5, defs.size());
-        assertEquals(1, defs.stream().filter(SchemaDefinition::isInlineProperty).collect(Collectors.toSet()).size());
+        assertEquals(1, defs.stream().filter(SchemaDefinition::isInlineSchemaOfProperty).collect(Collectors.toSet()).size());
     }
 
 }
