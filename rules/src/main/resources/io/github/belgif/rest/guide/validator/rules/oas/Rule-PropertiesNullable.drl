@@ -40,9 +40,16 @@ function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
   return false;
 }
 
+function boolean isCloudEventsProperty(SchemaDefinition schemaDefinition, ParserResult parserResult) {
+  if (schemaDefinition.getParent() == null || !(schemaDefinition.getParent() instanceof SchemaDefinition) || !schemaDefinition.isInlineSchemaOfProperty()) {
+    return false;
+  }
+  return ApiFunctions.inheritsFromSchema(((SchemaDefinition) schemaDefinition.getParent()).getHighLevelSchema(), "AsynchronousMessageBase", parserResult);
+}
+
 rule "Rule Properties Nullable"
    	when
-      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this))
+      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !isCloudEventsProperty(this, parserResult))
     then
       violationPropertiesNullable(oas, $schema);
 end

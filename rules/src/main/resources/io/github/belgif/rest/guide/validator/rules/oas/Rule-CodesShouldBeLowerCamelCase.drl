@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
@@ -35,9 +37,20 @@ rule "Codes should be lowerCamelCase"
         violationCodesShouldBeLowerCamelCase(oas, $schema.getModel().getEnumeration(), $schema);
 end
 
+function boolean asynchronousMessageBaseException(SchemaDefinition schema, ParserResult parserResult) {
+    String baseSchemaName = "AsynchronousMessageBase";
+    if (schema.getModel().getDiscriminator() != null && schema.getModel().getDiscriminator().getPropertyName().equals("type")) {
+      if (schema.getModel().getOneOf() != null) {
+        return schema.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).allMatch(s -> ApiFunctions.inheritsFromSchema(s, baseSchemaName, parserResult));
+      }
+      return ApiFunctions.inheritsFromSchema(schema, baseSchemaName, parserResult);
+    }
+    return false;
+}
+
 rule "Discriminator mappings should be lowerCamelCase"
     when
-        $schema: SchemaDefinition(/model/discriminator/mapping != null)
+        $schema: SchemaDefinition(/model/discriminator/mapping != null, !asynchronousMessageBaseException(this, parserResult))
         String(
                   !ApiFunctions.isLowerCamelCase(new ArrayList($schema.getModel().getDiscriminator().getMapping().keySet()))
                 ) from $schema.getModel().getDiscriminator().getPropertyName()

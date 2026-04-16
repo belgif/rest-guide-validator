@@ -33,4 +33,9 @@ import org.junit.jupiter.api.Test;
      void testInvalidDiscriminatorMapping() {
         assertErrorCount(1, callRules("invalidDiscriminators.yaml"));
     }
+
+    @Test
+     void testExceptionsForCloudEvents() {
+        assertNoViolations(callRules("cloudevents.yaml"));
+    }
 }

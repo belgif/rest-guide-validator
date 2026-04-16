@@ -1,0 +1,67 @@
+openapi: 3.0.0
+info:
+  title: cloud events testcase
+  description: description
+  version: v1
+servers:
+  - url: /demo/v1
+paths: {}
+components:
+  schemas:
+    ExtraSchema:
+      type: object
+      properties:
+        first:
+          type: string
+        second:
+          type: string
+        third:
+          type: string
+          nullable: true
+    CorrectSchema:
+      allOf:
+        - $ref: '#/components/schemas/ExtraSchema'
+        - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
+    SchemaOne:
+      allOf:
+        - $ref: '#/components/schemas/CorrectSchema'
+      properties:
+        extra:
+          type: string
+    SchemaTwo:
+      allOf:
+        - $ref: '#/components/schemas/CorrectSchema'
+      properties:
+        extraTwo:
+          type: string
+    OneOfSchema:
+      oneOf:
+        - $ref: '#/components/schemas/SchemaOne'
+        - $ref: '#/components/schemas/SchemaTwo'
+      discriminator:
+        propertyName: type
+        mapping:
+          something.like.this: '#/components/schemas/SchemaOne'
+          or.something.completely.different: '#/components/schemas/SchemaTwo'
+    ParentSchema:
+      allOf:
+        - $ref: '#/components/schemas/CorrectSchema'
+      discriminator:
+        propertyName: type
+        mapping:
+          something.like.this: '#/components/schemas/SubSchemaOne'
+          or.something.completely.different: '#/components/schemas/SubSchemaTwo'
+    SubSchemaOne:
+      allOf:
+        - $ref: '#/components/schemas/ParentSchema'
+      properties:
+        myFirstProp:
+          type: string
+    SubSchemaTwo:
+      allOf:
+        - $ref: '#/components/schemas/ParentSchema'
+      properties:
+        mySecondProp:
+          type: string
+security:
+  - {}

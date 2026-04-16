@@ -1,0 +1,49 @@
+openapi: 3.0.1
+info:
+  title: PropertiesNullable
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths:
+  /myFirstPath:
+    get:
+      description: description
+      operationId: getMyFirstPath
+      responses:
+        default:
+          description: This is a description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SomeSchema'
+components:
+  schemas:
+    SomeSchema:
+      type: object
+      properties:
+        propertyA:
+          type: object # only this inline schema is considered 'derived' from AsynchronousMessageBase, not SomeSchema
+          allOf:
+            - $ref: 'schemas/cloudevents/v1/cloudevents-v1.yaml#/components/schemas/AsynchronousMessageBase'
+            - properties:
+                anotherProperty:
+                  type: string
+                  nullable: true
+            - type: object
+              nullable: true # Should be violation #1
+          properties:
+            additionalProperty:
+              type: string
+              nullable: true #nullable exception ALLOWED here
+            data:
+              type: object
+              properties:
+                propertyInData:
+                  type: string
+                  nullable: true  #nullable exception NOT allowed here bc only direct simple 'context' properties are constrained by CloudEvent spec to allow nullable
+                  #Should be violation #2
+          required: [ data ]
+          nullable: true # violation #4
+        propertyB:
+          nullable: true #nullable exception NOT allowed here bc outside the CloudEvent
+          # Should be violation #3

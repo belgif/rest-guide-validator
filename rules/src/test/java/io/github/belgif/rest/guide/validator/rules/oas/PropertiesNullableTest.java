@@ -13,4 +13,9 @@ class PropertiesNullableTest extends AbstractOasRuleTest {
     void testInvalidOpenApi() {
        assertErrorCount(1, callRules("openapi_bad.yaml"));
    }
+
+   @Test
+    void testCloudEventsExclusion() {
+       assertErrorCount(4, callRules("cloudEvents.yaml"));
+   }
 }

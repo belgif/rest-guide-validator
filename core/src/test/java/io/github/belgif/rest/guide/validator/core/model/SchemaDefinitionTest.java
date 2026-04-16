@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SchemaDefinitionTest {
 
@@ -34,6 +34,16 @@ class SchemaDefinitionTest {
         var def = defs.stream().filter(definition -> "/components/schemas/Colors/allOf/1".equals(definition.getJsonPointer().toPrettyString())).findAny();
         assertTrue(def.isPresent());
         assertFalse(def.get().isHighLevelSchema());
+    }
+
+    @Test
+    void testIsInlineSchemaOfProperty() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../../rules/inlineProperty.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        Set<SchemaDefinition> defs = result.getSchemas();
+        assertEquals(5, defs.size());
+        assertEquals(1, defs.stream().filter(SchemaDefinition::isInlineSchemaOfProperty).collect(Collectors.toSet()).size());
     }
 
 }

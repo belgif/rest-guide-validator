@@ -277,13 +277,14 @@ public class ApiFunctions {
 
     /**
      * Get the subschemas of given schema
-     * @param includeReferencedSchemas  Whether to also include schemas resolved from references (alongside the $ref subschema itself)
+     *
+     * @param includeReferencedSchemas Whether to also include schemas resolved from references (alongside the $ref subschema itself)
      */
     private static Set<SchemaDefinition> getSubSchemas(SchemaDefinition schemaDefinition, Parser.ParserResult result, boolean includeReferencedSchemas) {
         Set<SchemaDefinition> subSchemas = new HashSet<>();
         Predicate<SchemaDefinition> filterSchemaDefinitions = (schemaDef) ->
                 includeReferencedSchemas
-                || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
+                        || schemaDef.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE);
         if (schemaDefinition.getModel().getAllOf() != null) {
             subSchemas.addAll(schemaDefinition.getModel().getAllOf().stream().map(schema -> recursiveResolve(schema, result)).filter(filterSchemaDefinitions).collect(Collectors.toSet()));
         }
@@ -403,6 +404,22 @@ public class ApiFunctions {
             }
         }
         return false;
+    }
+
+    /**
+     * @return true if schemaDefinition is or inherits from a schemaDefinition with identifier schemaName
+     */
+    public static boolean inheritsFromSchema(SchemaDefinition schemaDefinition, String schemaName, Parser.ParserResult result) {
+        SchemaDefinition resolvedSchemaDefinition = (SchemaDefinition) result.resolve(schemaDefinition.getModel());
+        if (resolvedSchemaDefinition.getIdentifier() != null && resolvedSchemaDefinition.getIdentifier().equals(schemaName)) {
+            return true;
+        }
+        if (resolvedSchemaDefinition.getModel().getAllOf() == null) {
+            return false;
+        }
+        return resolvedSchemaDefinition.getModel().getAllOf().stream()
+                .map(s -> (SchemaDefinition) result.resolve(s))
+                .anyMatch(s -> inheritsFromSchema(s, schemaName, result));
     }
 
     public static boolean isLowerCamelCase(List<Object> objects) {
