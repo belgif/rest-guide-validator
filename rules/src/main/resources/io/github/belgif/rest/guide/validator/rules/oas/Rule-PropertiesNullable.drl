@@ -41,7 +41,7 @@ function boolean schemaUsedInPatchOperation(SchemaDefinition schema) {
 }
 
 function boolean isCloudEventsProperty(SchemaDefinition schemaDefinition, ParserResult parserResult) {
-  if (schemaDefinition.getParent() == null || !(schemaDefinition.getParent() instanceof SchemaDefinition)) {
+  if (schemaDefinition.getParent() == null || !(schemaDefinition.getParent() instanceof SchemaDefinition) || !schemaDefinition.isInlineProperty()) {
     return false;
   }
   return ApiFunctions.inheritsFromSchema(((SchemaDefinition) schemaDefinition.getParent()).getHighLevelSchema(), "AsynchronousMessageBase", parserResult);

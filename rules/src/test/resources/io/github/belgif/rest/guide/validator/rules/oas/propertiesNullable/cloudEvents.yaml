@@ -29,6 +29,8 @@ components:
                 anotherProperty:
                   type: string
                   nullable: true
+            - type: object
+              nullable: true # Should be violation #1
           properties:
             additionalProperty:
               type: string
@@ -39,6 +41,9 @@ components:
                 propertyInData:
                   type: string
                   nullable: true  #nullable exception NOT allowed here bc only direct simple 'context' properties are constrained by CloudEvent spec to allow nullable
+                  #Should be violation #2
           required: [ data ]
+          nullable: true # violation #4
         propertyB:
           nullable: true #nullable exception NOT allowed here bc outside the CloudEvent
+          # Should be violation #3

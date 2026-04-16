@@ -61,6 +61,13 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
         }
     }
 
+    public boolean isInlineProperty() {
+        if (getDefinitionType() == DefinitionType.TOP_LEVEL || !(getParent() instanceof SchemaDefinition parent) || parent.getModel().getProperties() == null) {
+            return false;
+        }
+        return parent.getModel().getProperties().containsValue(getModel());
+    }
+
     @Override
     public Schema getModel() {
         return super.getModel();
