@@ -38,9 +38,9 @@ function Set fetchScopesFromFlows(OAuthFlows flows) {
 
 rule "Rule-ScopesAreDefinedInSecurityScheme"
   when
-    $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet)
+    $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, $openapiFile: openApiFile)
     $securitySchemeName: String() from $schemes.getKey()
-    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && model.getType()==Type.OAUTH2)
+    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && model.getType()==Type.OAUTH2 && openApiFile == $openapiFile)
     SecuritySchemeDefinition($flows: /model/flows#OAuthFlows) from $securitySchemeDefinition
     $definedScopes: Set() from fetchScopesFromFlows($flows)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
