@@ -38,6 +38,7 @@ function void nameOfTagShouldStartWithCapitalLetterViolation(ViolationReport oas
 
 function boolean isTagDeclaredInTopLevelTagsList(String tag, ParserResult parserResult) {
         return parserResult.getSrc().values().stream()
+                        .filter(s -> s.getFile().equals(parserResult.getOpenApiFile()))
                         .map(SourceDefinition::getOpenApi)
                         .filter(openAPI -> openAPI.getTags() != null)
                         .flatMap(openAPI -> openAPI.getTags().stream().map(Tag::getName))
