@@ -1,5 +1,6 @@
 package io.github.belgif.rest.guide.validator.core;
 
+import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
@@ -7,7 +8,6 @@ import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -108,6 +108,20 @@ class SchemaValidatorTest {
         assertEquals(1, examples.size());
         Optional<String> uriViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
         assertTrue(uriViolation.isPresent());
+    }
+
+    @Test
+    void testUriWithTrialingForwardSlash (){
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriWithTrialingForwardSlash.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+        var examples = result.getExamples().stream().toList();
+
+        assertEquals(2, examples.size());
+
+        for (ExampleDefinition example : examples) {
+            assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(example));
+        }
     }
 
 }
