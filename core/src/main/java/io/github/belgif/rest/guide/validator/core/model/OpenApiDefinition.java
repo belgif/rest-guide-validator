@@ -72,7 +72,16 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     public boolean isReferencedInEntryFile() {
-        return this.openApiFile.equals(this.result.getOpenApiFile()) || this.getReferencedBy().stream().anyMatch(OpenApiDefinition::isReferencedInEntryFile);
+        return isReferencedInEntryFile(new HashSet<>());
+    }
+
+    private boolean isReferencedInEntryFile(Set<OpenApiDefinition> visitedRefs) {
+        return this.openApiFile.equals(this.result.getOpenApiFile())
+                || this.getReferencedBy().stream().filter(def -> !visitedRefs.contains(def)).anyMatch(def -> {
+                    visitedRefs.add(def);
+                    return def.isReferencedInEntryFile(visitedRefs);
+        })
+                || (this.getParent() != null && this.getParent().isReferencedInEntryFile(visitedRefs));
     }
 
     private void checkRef() {

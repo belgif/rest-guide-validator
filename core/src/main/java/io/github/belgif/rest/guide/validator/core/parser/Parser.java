@@ -181,6 +181,30 @@ public class Parser {
         result.populateModelDefinitionMap();
     }
 
+    private void removeOrphanDefinitions(ParserResult result) {
+        result.allDefinitions = result.allDefinitions.stream().filter(OpenApiDefinition::isReferencedInEntryFile).collect(Collectors.toSet());
+        result.pathsDefinitions = result.pathsDefinitions.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.pathDefinitions = result.pathDefinitions.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.requestBodies = result.requestBodies.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.responses = result.responses.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.operations = result.operations.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.mediaTypes = result.mediaTypes.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.schemas = result.schemas.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.parameters = result.parameters.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.headers = result.headers.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.servers = result.servers.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.examples = result.examples.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.securitySchemes = result.securitySchemes.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.links = result.links.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+        result.securityRequirements = result.securityRequirements.stream().filter(d -> result.allDefinitions.contains(d)).collect(Collectors.toSet());
+
+        Set<Constructible> remainingModels = result.allDefinitions.stream().map(OpenApiDefinition::getModel).collect(Collectors.toSet());
+
+        Set<Constructible> toDelete = result.modelDefinitionMap.keySet().stream().filter(s -> !remainingModels.contains(s)).collect(Collectors.toSet());
+
+        toDelete.forEach(result.modelDefinitionMap::remove);
+    }
+
     public ParserResult parse(ViolationReport violationReport) {
         try {
             var result = new ParserResult();
@@ -197,6 +221,7 @@ public class Parser {
                 throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
             result.populateBackReferences();
+            removeOrphanDefinitions(result);
             buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
