@@ -111,9 +111,9 @@ class SchemaValidatorTest {
     }
 
     @Test
-    void testUriWithTrialingForwardSlash (){
+    void testUriWithTrailingForwardSlash (){
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriWithTrialingForwardSlash.yaml").getFile());
+        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriWithTrailingForwardSlash.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
