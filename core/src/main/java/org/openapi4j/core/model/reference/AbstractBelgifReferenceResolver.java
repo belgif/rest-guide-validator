@@ -44,6 +44,13 @@ public abstract class AbstractBelgifReferenceResolver<T extends OpenApiDefinitio
 
         URL url = hashIndex == 0 ? openApiDefinition.getOpenApiFile().toURI().toURL() : resolvedDefinition.getOpenApiFile().toURI().toURL();
 
+        /*
+        Add trailing forward slash to registry entry, when present in reference URI.
+         */
+        if (hashIndex != 0 && refValue.charAt(hashIndex - 1) == '/') {
+            url = new URL(url + "/");
+        }
+
         org.openapi4j.core.model.reference.Reference openApi4jRef = registry.addRef(url, registryInputValue);
 
         /*
