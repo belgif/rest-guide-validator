@@ -71,6 +71,10 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         checkRef();
     }
 
+    public boolean isReferencedInEntryFile() {
+        return this.openApiFile.equals(this.result.getOpenApiFile()) || this.getReferencedBy().stream().anyMatch(OpenApiDefinition::isReferencedInEntryFile);
+    }
+
     private void checkRef() {
         if (this.getModel() instanceof Reference) {
             String ref = ((Reference<?>) model).getRef();
