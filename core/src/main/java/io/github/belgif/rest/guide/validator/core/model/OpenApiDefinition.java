@@ -71,17 +71,17 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         checkRef();
     }
 
-    public boolean isReferencedInEntryFile() {
-        return isReferencedInEntryFile(new HashSet<>());
+    public boolean isReachableFromEntryDocument() {
+        return isReachableFromEntryDocument(new HashSet<>());
     }
 
-    private boolean isReferencedInEntryFile(Set<OpenApiDefinition> visitedRefs) {
+    private boolean isReachableFromEntryDocument(Set<OpenApiDefinition<?>> visitedRefs) {
         return this.openApiFile.equals(this.result.getOpenApiFile())
                 || this.getReferencedBy().stream().filter(def -> !visitedRefs.contains(def)).anyMatch(def -> {
                     visitedRefs.add(def);
-                    return def.isReferencedInEntryFile(visitedRefs);
+                    return def.isReachableFromEntryDocument(visitedRefs);
         })
-                || (this.getParent() != null && this.getParent().isReferencedInEntryFile(visitedRefs));
+                || (this.getParent() != null && this.getParent().isReachableFromEntryDocument(visitedRefs));
     }
 
     private void checkRef() {
