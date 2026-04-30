@@ -473,7 +473,7 @@ public class Parser {
             });
         }
         var securitySchemes = components.getSecuritySchemes();
-        if (securitySchemes != null) {
+        if (securitySchemes != null && openApi.equals(openApiFile)) {
             securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApi, result)));
         }
         var links = components.getLinks();

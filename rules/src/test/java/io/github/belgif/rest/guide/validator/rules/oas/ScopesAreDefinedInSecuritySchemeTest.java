@@ -21,4 +21,9 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     void testInvalidGlobalOpenApi() {
         assertErrorCount(1, callRules("invalidGlobalOpenapi.yaml"));
     }
+
+    @Test
+    void testValidOpenApiWithRedundantSecuritySchemesInExternalFiles() {
+        assertNoViolations(callRules("externalNamingConflicts.yaml"));
+    }
 }
