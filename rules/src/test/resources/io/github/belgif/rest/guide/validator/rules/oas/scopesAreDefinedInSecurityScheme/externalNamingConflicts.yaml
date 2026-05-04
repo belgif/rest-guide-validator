@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: Scopes
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      security:
+        - Oauth:
+            - "my:main:scope"
+      responses:
+        default:
+          description: default
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas.yaml#/components/schemas/MyResponseSchema'
+components:
+  securitySchemes:
+    Oauth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://myAuthorization.com'
+          scopes:
+            'my:main:scope' : This is my first scope
+            'my:second:scope': This is my second scope
+        clientCredentials:
+          tokenUrl: 'https://myTokenUrl.com'
+          scopes:
+            'my:third:scope' : This is my third scope
+        authorizationCode:
+          authorizationUrl: 'https://myAuthorization.com'
+          tokenUrl: 'https://myTokenUrl.com'
+          scopes:
+            'my:fourth:scope' : This is my fourth scope

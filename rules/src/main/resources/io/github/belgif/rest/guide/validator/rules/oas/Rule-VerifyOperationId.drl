@@ -19,9 +19,7 @@ import java.util.stream.Collectors;
 function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
     Map<String, List<OperationDefinition>> operationIds = new HashMap<>();
     Set<OperationDefinition> reachableOperationsFromEntryFile = operations.stream()
-        .filter(op -> op.getParent() instanceof PathDefinition &&
-          ((PathDefinition) op.getParent()).isDirectPath() ||
-          ((PathDefinition) op.getParent()).getReferencedBy().stream().anyMatch(def -> def instanceof PathDefinition && ((PathDefinition)def).isDirectPath()))
+        .filter(op -> op.isReachableFromEntryDocument())
         .collect(Collectors.toSet());
     for (OperationDefinition def : reachableOperationsFromEntryFile) {
       String operationId = def.getModel().getOperationId();
