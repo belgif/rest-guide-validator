@@ -76,12 +76,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     }
 
     private boolean isReachableFromEntryDocument(Set<OpenApiDefinition<?>> visitedRefs) {
+        Set<OpenApiDefinition<?>> updatedVisitedRefs = new HashSet<>(visitedRefs);
+        updatedVisitedRefs.add(this);
         return this.openApiFile.equals(this.result.getOpenApiFile())
-                || this.getReferencedBy().stream().filter(def -> !visitedRefs.contains(def)).anyMatch(def -> {
-                    visitedRefs.add(def);
-                    return def.isReachableFromEntryDocument(visitedRefs);
-        })
-                || (this.getParent() != null && this.getParent().isReachableFromEntryDocument(visitedRefs));
+                || this.getReferencedBy().stream().filter(def -> !visitedRefs.contains(def)).anyMatch(def ->
+                def.isReachableFromEntryDocument(updatedVisitedRefs)
+        )
+                || (this.getParent() != null && this.getParent().isReachableFromEntryDocument(updatedVisitedRefs));
     }
 
     private void checkRef() {
