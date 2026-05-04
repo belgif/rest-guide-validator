@@ -79,9 +79,9 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         Set<OpenApiDefinition<?>> updatedVisitedRefs = new HashSet<>(visitedRefs);
         updatedVisitedRefs.add(this);
         return this.openApiFile.equals(this.result.getOpenApiFile())
-                || this.getReferencedBy().stream().filter(def -> !visitedRefs.contains(def)).anyMatch(def ->
-                def.isReachableFromEntryDocument(updatedVisitedRefs)
-        )
+                || this.getReferencedBy().stream()
+                .filter(def -> !visitedRefs.contains(def))
+                .anyMatch(def -> def.isReachableFromEntryDocument(updatedVisitedRefs))
                 || (this.getParent() != null && this.getParent().isReachableFromEntryDocument(updatedVisitedRefs));
     }
 
