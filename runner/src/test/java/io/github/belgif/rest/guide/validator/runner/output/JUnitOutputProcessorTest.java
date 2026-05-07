@@ -35,9 +35,9 @@ class JUnitOutputProcessorTest {
 
     private ViolationReport getViolationAggregator() {
         var openApiViolationAggregator = new ViolationReport();
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 155), ViolationLevel.MANDATORY, "/MyPointer");
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 170), ViolationLevel.MANDATORY, "/MyPointer");
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 180), ViolationLevel.MANDATORY, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 155), ViolationLevel.REQUIRED, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 170), ViolationLevel.REQUIRED, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 180), ViolationLevel.REQUIRED, "/MyPointer");
 
         return openApiViolationAggregator;
     }

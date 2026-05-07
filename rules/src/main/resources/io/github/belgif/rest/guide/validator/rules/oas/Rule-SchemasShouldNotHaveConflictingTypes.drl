@@ -16,7 +16,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function void violationAllOfSubSchemasShouldNotHaveConflictingTypes(ViolationReport oas, SchemaDefinition schema, ConflictingSchemaValidation confictingSchemaValidation) {
     oas.addViolation("[sch-allof]",
-    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting type.", "These types are incompatible: <<" + confictingSchemaValidation.getDeclaredTypesString() + ">>", schema, ViolationLevel.MANDATORY);
+    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting type.", "These types are incompatible: <<" + confictingSchemaValidation.getDeclaredTypesString() + ">>", schema, ViolationLevel.REQUIRED);
 }
 
 rule "schemas should not have conflicting types in subschemas"

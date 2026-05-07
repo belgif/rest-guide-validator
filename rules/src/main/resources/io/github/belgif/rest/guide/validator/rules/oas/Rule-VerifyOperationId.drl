@@ -41,14 +41,14 @@ function void violationOperationIdNotUnique(ViolationReport oas, List<OperationD
     oas.addViolation("[openapi-opid]",
            		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
            		 "OperationId not unique, present in: <<" + operations.stream().map(op -> op.getOpenApiFile().getName() + "#" + op.getPrintableJsonPointer()).collect(Collectors.joining(", ")) + ">>",
-           		 (OperationDefinition) operations.get(0), ViolationLevel.MANDATORY);
+           		 (OperationDefinition) operations.get(0), ViolationLevel.REQUIRED);
 }
 
 function void violationOperationIdNotSpecified(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[openapi-opid]",
                		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
                		 "OperationId not specified.",
-               		 operation, ViolationLevel.MANDATORY);
+               		 operation, ViolationLevel.REQUIRED);
 }
 
 function void violationOperationIdNotLowerCamelCase(ViolationReport oas, OperationDefinition operation) {

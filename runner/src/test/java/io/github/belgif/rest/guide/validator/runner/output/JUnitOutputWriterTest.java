@@ -74,7 +74,7 @@ class JUnitOutputWriterTest {
 
     private ViolationReport getViolationAggregator() throws IOException {
         var openApiViolationAggregator = new ViolationReport();
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", null, new Line("", 155), ViolationLevel.MANDATORY, "/myPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", null, new Line("", 155), ViolationLevel.REQUIRED, "/myPointer");
 
         return openApiViolationAggregator;
     }

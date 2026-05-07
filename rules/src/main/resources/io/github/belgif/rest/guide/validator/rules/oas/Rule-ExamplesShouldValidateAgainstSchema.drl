@@ -15,7 +15,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, ExampleDefinition example, String violation){
     oas.addViolation("[oas-exampl]",
-    "Example does not validate against schema", violation, example, ViolationLevel.MANDATORY);
+    "Example does not validate against schema", violation, example, ViolationLevel.REQUIRED);
 }
 
 rule "Example should be valid against schema"

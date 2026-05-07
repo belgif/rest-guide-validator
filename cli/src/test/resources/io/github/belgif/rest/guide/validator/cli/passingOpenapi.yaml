@@ -6,6 +6,32 @@ info:
 servers:
   - url: /demo/v1
 paths:
+  /health:
+    get:
+      operationId: health
+      summary: health
+      responses:
+        200:
+          description: All good
+          content:
+            application/json:
+              schema:
+                title: AllGood
+                type: object
+        503:
+          description: Not good
+          content:
+            application/problem+json:
+              schema:
+                title: NotAllGood
+                type: object
+        default:
+          description: default
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
   /myFirstPath:
     get:
       operationId: myOperation
@@ -16,5 +42,8 @@ paths:
           content:
             application/problem+json:
               schema:
-                type: object
-                title: Response
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object

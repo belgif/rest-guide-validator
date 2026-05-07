@@ -15,7 +15,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 function void violationRequiredProperties(ViolationReport oas, SchemaDefinition schema, String requiredValue){
     oas.addViolation("[prop-req]",
         "Value is in the required list of a schema but is not defined as a property", "[Value: " + requiredValue +"]",
-        schema, ViolationLevel.MANDATORY);
+        schema, ViolationLevel.REQUIRED);
 }
 
 rule "Values of required should io defined as properties"

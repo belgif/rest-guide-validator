@@ -26,7 +26,7 @@ public class LoggerOutputProcessor extends OutputProcessor {
             var groupViolation = violationList.get(0);
             var groupLine = group + " " + getOccurrences(violationList);
             switch (groupViolation.getLevel()) {
-                case MANDATORY:
+                case REQUIRED:
                     log.error(groupLine);
                     break;
                 case RECOMMENDED:
@@ -40,7 +40,7 @@ public class LoggerOutputProcessor extends OutputProcessor {
             }
             violationList.forEach(v -> {
                 switch (v.getLevel()) {
-                    case MANDATORY:
+                    case REQUIRED:
                         log.error(v.getReportMessage());
                         break;
                     case RECOMMENDED:

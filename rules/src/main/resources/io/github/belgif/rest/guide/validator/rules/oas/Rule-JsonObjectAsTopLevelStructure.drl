@@ -18,7 +18,7 @@ function Set includeContentTypes() {
 function void violationJsonObjectAsTopLevelStructure(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
   oas.addViolation("[evo-object]",
     "In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility. ",
-    mediaTypeDefinition, ViolationLevel.MANDATORY);
+    mediaTypeDefinition, ViolationLevel.REQUIRED);
 }
 
 rule "[evo-object] JSON object as top level structure"

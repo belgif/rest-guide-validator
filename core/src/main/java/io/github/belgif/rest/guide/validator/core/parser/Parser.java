@@ -201,7 +201,7 @@ public class Parser {
             buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
-            violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), null, new Line(openApiFile.getName(), 0), ViolationLevel.MANDATORY, "#");
+            violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), null, new Line(openApiFile.getName(), 0), ViolationLevel.REQUIRED, "#");
             return null;
         }
     }
@@ -221,7 +221,7 @@ public class Parser {
         if (invalidSources.isEmpty()) {
             return true;
         } else {
-            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2.0 / Swagger 2.0 are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.MANDATORY, "#"));
+            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2.0 / Swagger 2.0 are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.REQUIRED, "#"));
         }
         return false;
     }

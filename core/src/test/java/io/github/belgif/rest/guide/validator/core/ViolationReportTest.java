@@ -27,8 +27,8 @@ class ViolationReportTest {
         var defIncluded = parserResult.getSchemas().stream().filter(schema -> schema.getJsonPointer().toString().equals("/components/schemas/Problem")).findAny();
         assertTrue(defIncluded.isPresent());
 
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", defIgnored.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be included", "reason", defIncluded.get(), ViolationLevel.MANDATORY);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", defIgnored.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be included", "reason", defIncluded.get(), ViolationLevel.REQUIRED);
 
         var ignoredViolations = oas.getIgnoredViolations();
         var includedViolations = oas.getActionableViolations();
@@ -55,8 +55,8 @@ class ViolationReportTest {
         var problemSchema = parserResult.getSchemas().stream().filter(schema -> schema.getJsonPointer().toString().equals("/components/schemas/Problem")).findAny();
         assertTrue(problemSchema.isPresent());
 
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", employerSchema.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason",problemSchema.get(), ViolationLevel.MANDATORY);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", employerSchema.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason",problemSchema.get(), ViolationLevel.REQUIRED);
 
         var ignoredViolations = oas.getIgnoredViolations();
         var includedViolations = oas.getActionableViolations();
@@ -85,9 +85,9 @@ class ViolationReportTest {
         var logoPath = parserResult.getPathDefinitions().stream().filter(path -> path.getJsonPointer().toString().equals("/paths/~1logos")).findAny();
         assertTrue(logoPath.isPresent());
 
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", employerSchema.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoPath.get(), ViolationLevel.MANDATORY);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", employerSchema.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoPath.get(), ViolationLevel.REQUIRED);
 
         var ignoredViolations = oas.getIgnoredViolations();
         var includedViolations = oas.getActionableViolations();
@@ -117,8 +117,8 @@ class ViolationReportTest {
         var problemSchema = parserResult.getSchemas().stream().filter(schema -> schema.getJsonPointer().toString().equals("/components/schemas/Problem")).findAny();
         assertTrue(problemSchema.isPresent());
 
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", problemSchema.get(), ViolationLevel.MANDATORY);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", problemSchema.get(), ViolationLevel.REQUIRED);
 
         var ignoredViolations = oas.getIgnoredViolations();
         var includedViolations = oas.getActionableViolations();
@@ -145,8 +145,8 @@ class ViolationReportTest {
         var logoSchema = parserResult.getSchemas().stream().filter(schema -> schema.getJsonPointer().toString().equals("/components/schemas/LogoMetaData")).findAny();
         assertTrue(logoSchema.isPresent());
 
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoMetaSchema.get(), ViolationLevel.MANDATORY);
-        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.MANDATORY);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoMetaSchema.get(), ViolationLevel.REQUIRED);
+        oas.addViolation("[rule-name]", "This violation should be ignored", "reason", logoSchema.get(), ViolationLevel.REQUIRED);
 
         assertEquals(0, oas.getActionableViolations().size());
         assertEquals(1, oas.getIgnoredViolations().size());

@@ -23,7 +23,7 @@ public class ConsoleOutputProcessor extends OutputProcessor {
 
         groupedViolations.forEach((group, violationList) -> {
             var groupLine = group + " " + getOccurrences(violationList);
-            if (violationList.get(0).getLevel() == ViolationLevel.MANDATORY) {
+            if (violationList.get(0).getLevel() == ViolationLevel.REQUIRED) {
                 System.err.println(groupLine);
                 System.err.flush();
             } else {
@@ -31,7 +31,7 @@ public class ConsoleOutputProcessor extends OutputProcessor {
                 System.out.flush();
             }
             violationList.forEach(v -> {
-                if (v.getLevel() == ViolationLevel.MANDATORY) {
+                if (v.getLevel() == ViolationLevel.REQUIRED) {
                     System.err.println(v.getReportMessage());
                     System.err.flush();
                 } else {

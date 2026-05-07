@@ -35,7 +35,7 @@ public class ViolationReport {
     }
 
     public boolean isOasValid() {
-        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
+        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.REQUIRED || violation.getLevel() == ViolationLevel.RECOMMENDED);
     }
 
     public void addViolation(Violation violation) {

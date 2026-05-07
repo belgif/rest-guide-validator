@@ -23,13 +23,13 @@ import java.util.Set;
 function void representationOfCollectionViolation(ViolationReport oas, OperationDefinition operation){
     oas.addViolation("[col-repres]",
            		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection.", "Schema (or subschema for allOf/oneOf/anyOf) of the values in the items array should be of type object",
-           		 operation, ViolationLevel.MANDATORY);
+           		 operation, ViolationLevel.REQUIRED);
 }
 
 function void representationOfCollectionArrayViolation(ViolationReport oas, OperationDefinition operation){
     oas.addViolation("[col-repres]",
            		 "A query on a collection MUST contain an items property with an array of objects, each one representing an item in the collection.", "Response does not contain a property 'items' of type array.",
-           		 operation, ViolationLevel.MANDATORY);
+           		 operation, ViolationLevel.REQUIRED);
 }
 
 function boolean hasItemsArray(Schema schema, ParserResult parserResult) {
