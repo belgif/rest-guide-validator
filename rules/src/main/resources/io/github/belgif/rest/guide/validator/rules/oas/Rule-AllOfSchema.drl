@@ -24,6 +24,11 @@ function void violationDiscriminatorShouldContainMapping(ViolationReport oas, Sc
     "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
 }
 
+function void violationDiscriminatorMappingURISyntax(ViolationReport oas, SchemaDefinition schema, String mappingFound) {
+    oas.addViolation("[sch-allof]",
+    "Discriminator uses a non URI-reference syntax mapping (e.g. '#/components/schemas/Child')", "Found: <<" + mappingFound + ">>", schema, ViolationLevel.RECOMMENDED);
+}
+
 function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(ViolationReport oas, SchemaDefinition schema, String specificErrors) {
     oas.addViolation("[sch-allof]",
     "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
@@ -84,6 +89,14 @@ rule "Discriminator Should Contain Explicit Mapping"
         Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
     then
         violationDiscriminatorShouldContainMapping(oas, $schema);
+end
+
+rule "Discriminator mapping should be in URI-reference syntax"
+    when
+        $schema: SchemaDefinition($mappings: /model/discriminator/mapping/values#String)
+        String(this matches("^[a-zA-Z0-9\\.\\-_]+$")) from $mappings
+    then
+        violationDiscriminatorMappingURISyntax(oas, $schema, $mappings);
 end
 
 rule "Property with discriminator.propertyName as name should be defined on the same schema that has the discriminator and is referenced by the allOf"

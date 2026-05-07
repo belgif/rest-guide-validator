@@ -39,4 +39,9 @@ class AllOfSchemaTest extends AbstractOasRuleTest {
         assertErrorCount(1, callRules("allOfDiscriminatorPropertyNotRequired.yaml"));
     }
 
+    @Test
+    void testDiscriminatorWithImplicitMapping() {
+        assertErrorCount(2, callRules("discriminatorWithImplicitMapping.yaml"));
+    }
+
 }
