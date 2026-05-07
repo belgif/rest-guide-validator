@@ -9,7 +9,8 @@ global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult par
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
 import io.github.belgif.rest.guide.validator.core.model.MediaTypeDefinition;
 import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
-import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function Set includedMediaTypes() {
   return Set.of("application/json", "multipart/*", "text/xml", "application/xml", "application/x-www-form-urlencoded");
@@ -18,7 +19,7 @@ function Set includedMediaTypes() {
 function void violationMandatoryMediaType(ViolationReport oas, MediaTypeDefinition mediaTypeDefinition){
   oas.addViolation("[rep-struct]",
     "Payload has a schema of non-binary type, but doesn't specify a structured media type (one compatible with application/json, application/xml, multipart/*, text/xml)",
-    mediaTypeDefinition);
+    mediaTypeDefinition, ViolationLevel.MANDATORY);
 }
 
 rule "Mandatory Mediatype"

@@ -14,7 +14,8 @@ import org.eclipse.microprofile.openapi.models.Operation
 import java.util.HashMap
 import java.util.HashSet
 import java.util.ArrayList
-import java.util.stream.Collectors;
+import java.util.stream.Collectors
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function Set findDuplicateOperationIds(Set<OperationDefinition> operations) {
     Map<String, List<OperationDefinition>> operationIds = new HashMap<>();
@@ -40,21 +41,21 @@ function void violationOperationIdNotUnique(ViolationReport oas, List<OperationD
     oas.addViolation("[openapi-opid]",
            		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
            		 "OperationId not unique, present in: <<" + operations.stream().map(op -> op.getOpenApiFile().getName() + "#" + op.getPrintableJsonPointer()).collect(Collectors.joining(", ")) + ">>",
-           		 (OperationDefinition) operations.get(0));
+           		 (OperationDefinition) operations.get(0), ViolationLevel.MANDATORY);
 }
 
 function void violationOperationIdNotSpecified(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[openapi-opid]",
                		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
                		 "OperationId not specified.",
-               		 operation);
+               		 operation, ViolationLevel.MANDATORY);
 }
 
 function void violationOperationIdNotLowerCamelCase(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[openapi-opid]",
                		 "A unique operationId MUST be specified on each operation. It SHOULD have a lowerCamelCase value following common programming naming conventions for method (function) names.",
                		 "OperationId not lowerCamelCase: " + operation.getModel().getOperationId(),
-               		 operation);
+               		 operation, ViolationLevel.RECOMMENDED);
 }
 
 rule "OperationId Not Specified"

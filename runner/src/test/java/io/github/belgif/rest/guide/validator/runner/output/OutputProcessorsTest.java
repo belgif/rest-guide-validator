@@ -52,9 +52,9 @@ class OutputProcessorsTest {
 
     private ViolationReport getViolationAggregator() {
         var openApiViolationAggregator = new ViolationReport();
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file1", 155), "/MyPointer");
-        openApiViolationAggregator.addViolation("Rule-test", "The rume message", new Line("file2", 150), "/MyPointer2");
-        openApiViolationAggregator.addViolation("Second-Rule", "My message", new Line("file1", 155), "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", null, new Line("file1", 155), ViolationLevel.MANDATORY, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rume message", null, new Line("file2", 150), ViolationLevel.MANDATORY, "/MyPointer2");
+        openApiViolationAggregator.addViolation("Second-Rule", "My message", null, new Line("file1", 155), ViolationLevel.MANDATORY, "/MyPointer");
         var ignoredViolation = new Violation("Rule-test", "This message is IGNORED", ViolationLevel.IGNORED, new Line("file1", 120), "myOtherPointer");
         openApiViolationAggregator.addViolation(ignoredViolation);
 

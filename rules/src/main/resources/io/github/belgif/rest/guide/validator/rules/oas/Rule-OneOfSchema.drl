@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 function void violationDiscriminatorPropertyWithOneOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
     oas.addViolation("[sch-oneof]",
-    "Property used as discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema);
+    "Property used as discriminator is not present or not required in oneOf subschema", "<<" + discriminatorPropertyName + ">>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function void violationOneOfSubSchemaAllowedUsage(ViolationReport oas, SchemaDefinition schema, String errorMessage){

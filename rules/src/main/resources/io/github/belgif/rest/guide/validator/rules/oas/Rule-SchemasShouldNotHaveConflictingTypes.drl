@@ -11,11 +11,12 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions.ConflictingSchemaValidation;
-import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function void violationAllOfSubSchemasShouldNotHaveConflictingTypes(ViolationReport oas, SchemaDefinition schema, ConflictingSchemaValidation confictingSchemaValidation) {
     oas.addViolation("[sch-allof]",
-    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting type.", "These types are incompatible: <<" + confictingSchemaValidation.getDeclaredTypesString() + ">>", schema);
+    "Subschemas in an allOf/oneOf/anyOf cannot be of a conflicting type.", "These types are incompatible: <<" + confictingSchemaValidation.getDeclaredTypesString() + ">>", schema, ViolationLevel.MANDATORY);
 }
 
 rule "schemas should not have conflicting types in subschemas"
