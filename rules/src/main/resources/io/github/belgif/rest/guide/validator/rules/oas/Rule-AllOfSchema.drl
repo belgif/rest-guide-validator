@@ -94,7 +94,7 @@ end
 rule "Discriminator mapping should be in URI-reference syntax"
     when
         $schema: SchemaDefinition($mappings: /model/discriminator/mapping/values#String)
-        String(!this.contains("#")) from $mappings
+        String(this matches("^[a-zA-Z0-9\\.\\-_]+$")) from $mappings
     then
         violationDiscriminatorMappingURISyntax(oas, $schema, $mappings);
 end
