@@ -56,7 +56,7 @@ public class Violation implements Comparable<Violation> {
     @Override
     /*
      * Will order violations based on:
-     * Type (MANDATORY, RECOMMENDED, STYLE, IGNORED)
+     * Type (REQUIRED, RECOMMENDED, STYLE, IGNORED)
      * Filename
      * Line number
      */

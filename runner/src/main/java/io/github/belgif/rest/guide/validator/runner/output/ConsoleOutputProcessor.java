@@ -1,8 +1,7 @@
 package io.github.belgif.rest.guide.validator.runner.output;
 
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 
 import java.util.List;
 import java.util.Map;
@@ -23,22 +22,17 @@ public class ConsoleOutputProcessor extends OutputProcessor {
 
         groupedViolations.forEach((group, violationList) -> {
             var groupLine = group + " " + getOccurrences(violationList);
-            if (violationList.get(0).getLevel() == ViolationLevel.REQUIRED) {
-                System.err.println(groupLine);
-                System.err.flush();
-            } else {
-                System.out.println(groupLine);
-                System.out.flush();
-            }
+            System.err.println(groupLine);
+            System.err.flush();
             violationList.forEach(v -> {
-                if (v.getLevel() == ViolationLevel.REQUIRED) {
-                    System.err.println(v.getReportMessage());
-                    System.err.flush();
-                } else {
-                    System.out.println(v.getReportMessage());
-                    System.out.flush();
-                }
+                System.err.println(v.getReportMessage());
+                System.err.flush();
             });
         });
+
+        if (!violationReport.isOasValid()) {
+            System.err.println(VIOLATION_INFO_MESSAGE);
+            System.err.flush();
+        }
     }
 }
