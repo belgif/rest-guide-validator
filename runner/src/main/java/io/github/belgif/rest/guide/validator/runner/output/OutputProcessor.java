@@ -11,7 +11,6 @@ public abstract class OutputProcessor {
 
     protected static final String VIOLATION_INFO_MESSAGE = """
             
-            https://www.rfc-editor.org/rfc/rfc2119#section-1
             "REQUIRED" means that the definition is an absolute requirement of the Belgif REST guide specification.
             
             "RECOMMENDED" means that there may exist valid reasons in particular circumstances to ignore a particular rule, but the full implications must be understood and carefully weighed before choosing a different course.
