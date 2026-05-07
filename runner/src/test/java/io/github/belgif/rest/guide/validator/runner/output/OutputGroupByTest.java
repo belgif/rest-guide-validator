@@ -19,7 +19,7 @@ class OutputGroupByTest {
         Map<String, List<Violation>> groupedViolations = outputGroupBy.groupViolations(getViolationCollection());
 
         // Assert all rules are in separate groups
-        assertEquals(6, groupedViolations.keySet().size());
+        assertEquals(8, groupedViolations.size());
 
         List<String> keyList = new ArrayList<>(groupedViolations.keySet());
         // Assert correct order
@@ -27,9 +27,11 @@ class OutputGroupByTest {
         assertTrue(keyList.get(1).contains("rule1"));
         assertTrue(keyList.get(2).contains("rule2"));
         assertTrue(keyList.get(3).contains("rule3"));
-        assertTrue(keyList.get(4).contains("rule4"));
-        assertTrue(keyList.get(5).contains("rule1"));
-        assertTrue(keyList.get(5).contains("ignored"));
+        assertTrue(keyList.get(4).contains("rule5"));
+        assertTrue(keyList.get(5).contains("rule4"));
+        assertTrue(keyList.get(6).contains("rule5"));
+        assertTrue(keyList.get(7).contains("rule1"));
+        assertTrue(keyList.get(7).contains("ignored"));
     }
 
     @Test
@@ -79,7 +81,7 @@ class OutputGroupByTest {
         // Assert correct amount of violations in each group
         List<Violation> file1 = groupedViolations.get(keyList.get(0));
         List<Violation> file2 = groupedViolations.get(keyList.get(1));
-        assertEquals(4, file1.size());
+        assertEquals(6, file1.size());
         assertEquals(4, file2.size());
     }
 
@@ -110,6 +112,9 @@ class OutputGroupByTest {
         Violation fileTwoMandatoryOneDifferentMessage = new Violation("rule1", "nope", ViolationLevel.MANDATORY, new Line("file2", 12), "pointer/to");
         Violation fileTwoRecommended = new Violation("rule4", "recommended description", ViolationLevel.RECOMMENDED, new Line("file2", 19), "pointer/to");
 
+        Violation fileOneMandatoryFive = new Violation("rule5", "description of rule5", "This MUST be fixed", ViolationLevel.MANDATORY, new Line("file1", 20), "pointer/to/mandatory");
+        Violation fileOneRecommendedFive = new Violation("rule5", "description of rule5", "This SHOULD be fixed", ViolationLevel.RECOMMENDED, new Line("file1", 26), "pointer/to/recommended");
+
         violations.add(fileTwoRecommended);
         violations.add(fileTwoMandatoryOne);
         violations.add(fileOneMandatoryOne);
@@ -118,6 +123,9 @@ class OutputGroupByTest {
         violations.add(fileTwoMandatoryTwo);
         violations.add(fileOneMandatoryThree);
         violations.add(fileTwoMandatoryOneDifferentMessage);
+
+        violations.add(fileOneMandatoryFive);
+        violations.add(fileOneRecommendedFive);
 
         return violations;
     }
