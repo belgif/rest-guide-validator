@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator.runner.output;
 
 import io.github.belgif.rest.guide.validator.core.Line;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ class JsonOutputProcessorTest {
 
     private ViolationReport getViolationAggregator() {
         var openApiViolationAggregator = new ViolationReport();
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 155), "/MyPointer");
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 170), "/MyPointer");
-        openApiViolationAggregator.addViolation("Rule-test", "The rule message", new Line("", 180), "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 155), ViolationLevel.REQUIRED, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 170), ViolationLevel.REQUIRED, "/MyPointer");
+        openApiViolationAggregator.addViolation("Rule-test", "The rule message", null, new Line("", 180), ViolationLevel.REQUIRED, "/MyPointer");
 
         return openApiViolationAggregator;
     }

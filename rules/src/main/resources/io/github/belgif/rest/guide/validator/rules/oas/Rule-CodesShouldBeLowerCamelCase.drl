@@ -13,7 +13,8 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import java.util.Set;
 import java.util.List;
 import java.util.Collection;
-import java.util.ArrayList;
+import java.util.ArrayList
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function Set excludeCodes() {
   return Set.of("BelgianRegionCode");
@@ -21,7 +22,7 @@ function Set excludeCodes() {
 
 function void violationCodesShouldBeLowerCamelCase(ViolationReport oas, List<Object> foundCodes, SchemaDefinition schema){
     oas.addViolation("[cod-design]",
-    "New code types SHOULD be represented as string values in lowerCamelCase.", "Found: << " + foundCodes + " >>", schema);
+    "New code types SHOULD be represented as string values in lowerCamelCase.", "Found: << " + foundCodes + " >>", schema, ViolationLevel.RECOMMENDED);
 }
 
 rule "Codes should be lowerCamelCase"

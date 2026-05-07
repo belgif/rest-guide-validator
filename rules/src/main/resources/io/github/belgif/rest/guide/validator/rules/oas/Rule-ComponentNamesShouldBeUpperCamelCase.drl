@@ -6,12 +6,13 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
-import io.github.belgif.rest.guide.validator.core.model.ServerDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ServerDefinition
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 
 function void violationComponentNamesShouldBeUpperCamelCase(ViolationReport oas, OpenApiDefinition component){
     oas.addViolation("[oas-comp]",
-    "Component names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.", component);
+    "Component names SHOULD use UpperCamelCase notation. For abbreviations as well, all letters except the first one should be lowercased.", component, ViolationLevel.RECOMMENDED);
 }
 
 rule "Component names should be UpperCamelCase"

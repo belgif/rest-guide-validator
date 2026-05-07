@@ -31,7 +31,7 @@ function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(Violatio
 
 function void violationDiscriminatorPropertyWithAllOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName) {
     oas.addViolation("[sch-allof]",
-        "Property used as discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema);
+        "Property used as discriminator is not present or not required in schema", "<<" + discriminatorPropertyName + ">>", schema, ViolationLevel.RECOMMENDED);
 }
 
 function boolean schemaIsReferencedByAllOf(SchemaDefinition schema, ParserResult parserResult) {

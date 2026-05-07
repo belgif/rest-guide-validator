@@ -13,13 +13,14 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.model.SecurityRequirementDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SecuritySchemeDefinition
-import java.util.HashSet;
+import java.util.HashSet
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void violationScopes(ViolationReport oas, SecurityRequirementDefinition securityRequirementDefinition, String scope, String securitySchemePointer){
     oas.addViolation("[sec-scopes]", "Scopes defined in a security requirement must also be defined in the referenced security scheme.", "Scope: <<" + scope + ">> not found in: " + securitySchemePointer,
-                     securityRequirementDefinition);
+                     securityRequirementDefinition, ViolationLevel.REQUIRED);
 }
 
 function Set fetchScopesFromFlows(OAuthFlows flows) {

@@ -21,19 +21,19 @@ import java.util.List;
 function void operationShouldNotHaveMoreThanOneTagViolation(ViolationReport oas, OperationDefinition operation) {
     oas.addViolation("[oas-tags]",
            		 "An operation SHOULD NOT have more than one tag.",
-           		 operation);
+           		 operation, ViolationLevel.RECOMMENDED);
 }
 
 function void eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(ViolationReport oas, OperationDefinition operation, String tag) {
     oas.addViolation("[oas-tags]",
            		 "Each tag used on an operation SHOULD also be declared in the top level tags list of the OpenAPI document, with an optional description.", "Tag: <<" + tag + ">> used but not declared.",
-           		 operation);
+           		 operation, ViolationLevel.RECOMMENDED);
 }
 
 function void nameOfTagShouldStartWithCapitalLetterViolation(ViolationReport oas, OperationDefinition operation, String tag) {
     oas.addViolation("[oas-tags]",
            		 "The name of a tag SHOULD start with a capital letter.", "Tag: <<" + tag + ">>",
-           		 operation);
+           		 operation, ViolationLevel.RECOMMENDED);
 }
 
 function boolean isTagDeclaredInTopLevelTagsList(String tag, ParserResult parserResult) {

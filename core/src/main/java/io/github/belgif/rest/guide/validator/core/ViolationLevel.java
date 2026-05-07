@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.core;
 
 public enum ViolationLevel {
-    MANDATORY("mandatory"), RECOMMENDED("recommended"), STYLE("style"), IGNORED("ignored");
+    REQUIRED("required"), RECOMMENDED("recommended"), IGNORED("ignored");
     public final String value;
 
     ViolationLevel(String value) {

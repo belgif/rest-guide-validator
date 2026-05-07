@@ -6,14 +6,15 @@ import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import java.util.Set;
+import java.util.Set
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void pathParamViolation(ViolationReport oas, ParameterDefinition parameter){
     oas.addViolation("[id-name]",
            		 "When using `id` or `code` in path parameters, they should be prefixed with the resource type. This allows to disambiguate when there are multiple identifiers in a single path",
-           		 parameter);
+           		 parameter, ViolationLevel.RECOMMENDED);
 }
 
 function Set forbiddenPathParamNames() {

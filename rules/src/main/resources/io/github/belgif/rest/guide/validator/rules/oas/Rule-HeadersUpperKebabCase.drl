@@ -8,7 +8,8 @@ import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
 import io.github.belgif.rest.guide.validator.core.model.ResponseDefinition;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In
-import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import io.github.belgif.rest.guide.validator.core.parser.Parser
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function Set excludeHeaders() {
   return Set.of("ETag", "traceparent", "tracestate", "WWW-Authenticate", "BelGov-*", "Accept-CH", "Sec-CH-*", "Sec-WebSocket-*", "baggage");
@@ -17,13 +18,13 @@ function Set excludeHeaders() {
 function void violationRequestHeaderParam(ViolationReport oas, ParameterDefinition parameterDefinition, String headerName){
   oas.addViolation("[hdr-case]",
     "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency. ", "HTTP Header name: ["+headerName+"]",
-    parameterDefinition);
+    parameterDefinition, ViolationLevel.RECOMMENDED);
 }
 
 function void violationResponseHeaderParam(ViolationReport oas, ResponseDefinition headerDefinition, String headerName){
   oas.addViolation("[hdr-case]",
     "By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.", "HTTP Header name: ["+headerName+"]",
-    headerDefinition);
+    headerDefinition, ViolationLevel.RECOMMENDED);
 }
 
 rule "RequestHeader parameter should be Upper-Kebab-Case"
