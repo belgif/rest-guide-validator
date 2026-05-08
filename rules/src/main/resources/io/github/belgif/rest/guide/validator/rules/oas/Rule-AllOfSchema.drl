@@ -19,16 +19,6 @@ import java.util.Set;
 import java.util.stream.Collectors
 import java.util.HashSet;
 
-function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
-    oas.addViolation("[sch-allof]",
-    "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
-}
-
-function void violationDiscriminatorMappingURISyntax(ViolationReport oas, SchemaDefinition schema, String mappingFound) {
-    oas.addViolation("[sch-allof]",
-    "Discriminator uses a non URI-reference syntax mapping (e.g. '#/components/schemas/Child')", "Found: <<" + mappingFound + ">>", schema, ViolationLevel.RECOMMENDED);
-}
-
 function void violationAllOfSubSchemasShouldNotDeclareTheSameProperties(ViolationReport oas, SchemaDefinition schema, String specificErrors) {
     oas.addViolation("[sch-allof]",
     "Subschemas in an allOf SHOULD NOT declare the same properties, because this will lead to problems for code generation tools.", specificErrors, schema, ViolationLevel.RECOMMENDED);
@@ -81,22 +71,6 @@ rule "SubSchemas in an allOf should not declare the same properties"
         $errors: Map(!isEmpty()) from getDoubleProperties($model, parserResult)
     then
         violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, createViolationMessageForDoubleProperties($errors));
-end
-
-rule "Discriminator Should Contain Explicit Mapping"
-    when
-        $schema: SchemaDefinition($discriminator: /model/discriminator)
-        Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
-    then
-        violationDiscriminatorShouldContainMapping(oas, $schema);
-end
-
-rule "Discriminator mapping should be in URI-reference syntax"
-    when
-        $schema: SchemaDefinition($mappings: /model/discriminator/mapping/values#String)
-        String(this matches("^[a-zA-Z0-9\\.\\-_]+$")) from $mappings
-    then
-        violationDiscriminatorMappingURISyntax(oas, $schema, $mappings);
 end
 
 rule "Property with discriminator.propertyName as name should be defined on the same schema that has the discriminator and is referenced by the allOf"
