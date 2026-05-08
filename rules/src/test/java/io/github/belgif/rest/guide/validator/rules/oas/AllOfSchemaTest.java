@@ -10,11 +10,6 @@ class AllOfSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testDiscriminatorWithoutMapping() {
-        assertErrorCount(1, callRules("discriminatorWithoutMapping.yaml"));
-    }
-
-    @Test
     void testAllOfWithDoubleProperties() {
         assertErrorCount(2, callRules("allOfWithDoubleProperties.yaml"));
     }

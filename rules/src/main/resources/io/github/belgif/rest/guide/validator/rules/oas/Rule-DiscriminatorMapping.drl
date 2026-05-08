@@ -1,0 +1,33 @@
+package io.github.belgif.rest.guide.validator.rules.oas;
+
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
+global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import org.eclipse.microprofile.openapi.models.media.Discriminator;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+
+function void violationDiscriminatorShouldContainMapping(ViolationReport oas, SchemaDefinition schema){
+    oas.addViolation("[sch-discr]",
+    "Discriminator does not have an explicit mapping of discriminator values to schemas.", null, schema, ViolationLevel.RECOMMENDED);
+}
+
+function void violationDiscriminatorMappingURISyntax(ViolationReport oas, SchemaDefinition schema, String mappingFound) {
+    oas.addViolation("[sch-discr]",
+    "Discriminator uses a non URI-reference syntax mapping (e.g. '#/components/schemas/Child')", "Found: <<" + mappingFound + ">>", schema, ViolationLevel.RECOMMENDED);
+}
+
+rule "Discriminator Should Contain Explicit Mapping"
+    when
+        $schema: SchemaDefinition($discriminator: /model/discriminator)
+        Discriminator(mapping == null || mapping.isEmpty()) from $discriminator
+    then
+        violationDiscriminatorShouldContainMapping(oas, $schema);
+end
+
+rule "Discriminator mapping should be in URI-reference syntax"
+    when
+        $schema: SchemaDefinition($mappings: /model/discriminator/mapping/values#String)
+        String(this matches("^[a-zA-Z0-9\\.\\-_]+$")) from $mappings
+    then
+        violationDiscriminatorMappingURISyntax(oas, $schema, $mappings);
+end
