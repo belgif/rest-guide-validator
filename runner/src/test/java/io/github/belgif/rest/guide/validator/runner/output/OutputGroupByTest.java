@@ -19,7 +19,7 @@ class OutputGroupByTest {
         Map<String, List<Violation>> groupedViolations = outputGroupBy.groupViolations(getViolationCollection());
 
         // Assert all rules are in separate groups
-        assertEquals(6, groupedViolations.keySet().size());
+        assertEquals(8, groupedViolations.size());
 
         List<String> keyList = new ArrayList<>(groupedViolations.keySet());
         // Assert correct order
@@ -27,9 +27,11 @@ class OutputGroupByTest {
         assertTrue(keyList.get(1).contains("rule1"));
         assertTrue(keyList.get(2).contains("rule2"));
         assertTrue(keyList.get(3).contains("rule3"));
-        assertTrue(keyList.get(4).contains("rule4"));
-        assertTrue(keyList.get(5).contains("rule1"));
-        assertTrue(keyList.get(5).contains("ignored"));
+        assertTrue(keyList.get(4).contains("rule5"));
+        assertTrue(keyList.get(5).contains("rule4"));
+        assertTrue(keyList.get(6).contains("rule5"));
+        assertTrue(keyList.get(7).contains("rule1"));
+        assertTrue(keyList.get(7).contains("ignored"));
     }
 
     @Test
@@ -46,8 +48,8 @@ class OutputGroupByTest {
         Map<String, List<Violation>> groupedViolations = outputGroupBy.groupViolations(getViolationCollection());
         List<String> keyList = new ArrayList<>(groupedViolations.keySet());
 
-        assertEquals("[MANDATORY]    rule1        description",keyList.get(0));
-        assertEquals("[MANDATORY]    rule1        nope",keyList.get(1));
+        assertEquals("[REQUIRED]     rule1        description",keyList.get(0));
+        assertEquals("[REQUIRED]     rule1        nope",keyList.get(1));
         assertTrue(keyList.get(keyList.size()-1).contains("IGNORED"));
     }
 
@@ -79,7 +81,7 @@ class OutputGroupByTest {
         // Assert correct amount of violations in each group
         List<Violation> file1 = groupedViolations.get(keyList.get(0));
         List<Violation> file2 = groupedViolations.get(keyList.get(1));
-        assertEquals(4, file1.size());
+        assertEquals(6, file1.size());
         assertEquals(4, file2.size());
     }
 
@@ -93,22 +95,25 @@ class OutputGroupByTest {
         List<Violation> file1 = groupedViolations.get(keyList.get(0));
         List<Violation> file2 = groupedViolations.get(keyList.get(1));
 
-        assertEquals(ViolationLevel.MANDATORY, file1.get(0).getLevel());
+        assertEquals(ViolationLevel.REQUIRED, file1.get(0).getLevel());
         assertEquals(ViolationLevel.IGNORED, file1.get(file1.size()-1).getLevel());
-        assertEquals(ViolationLevel.MANDATORY, file2.get(0).getLevel());
+        assertEquals(ViolationLevel.REQUIRED, file2.get(0).getLevel());
         assertEquals(ViolationLevel.RECOMMENDED, file2.get(file2.size()-1).getLevel());
     }
 
     private List<Violation> getViolationCollection() {
         List<Violation> violations = new ArrayList<>();
-        Violation fileOneMandatoryOne = new Violation("rule1", "description", "first message", ViolationLevel.MANDATORY, new Line("file1", 1), "pointer/to");
-        Violation fileOneMandatoryTwo = new Violation("rule2", "description", ViolationLevel.MANDATORY, new Line("file1", 100), "pointer/to");
-        Violation fileTwoMandatoryTwo = new Violation("rule2", "description", ViolationLevel.MANDATORY, new Line("file2", 1), "pointer/to");
-        Violation fileOneMandatoryThree = new Violation("rule3", "description", ViolationLevel.MANDATORY, new Line("file1", 101), "pointer/to");
+        Violation fileOneMandatoryOne = new Violation("rule1", "description", "first message", ViolationLevel.REQUIRED, new Line("file1", 1), "pointer/to");
+        Violation fileOneMandatoryTwo = new Violation("rule2", "description", ViolationLevel.REQUIRED, new Line("file1", 100), "pointer/to");
+        Violation fileTwoMandatoryTwo = new Violation("rule2", "description", ViolationLevel.REQUIRED, new Line("file2", 1), "pointer/to");
+        Violation fileOneMandatoryThree = new Violation("rule3", "description", ViolationLevel.REQUIRED, new Line("file1", 101), "pointer/to");
         Violation fileOneIgnoredOne = new Violation("rule1", "ignored: this is ignored", ViolationLevel.IGNORED, new Line("file1", 50), "pointer/to");
-        Violation fileTwoMandatoryOne = new Violation("rule1", "description", ViolationLevel.MANDATORY, new Line("file2", 20), "pointer/to");
-        Violation fileTwoMandatoryOneDifferentMessage = new Violation("rule1", "nope", ViolationLevel.MANDATORY, new Line("file2", 12), "pointer/to");
+        Violation fileTwoMandatoryOne = new Violation("rule1", "description", ViolationLevel.REQUIRED, new Line("file2", 20), "pointer/to");
+        Violation fileTwoMandatoryOneDifferentMessage = new Violation("rule1", "nope", ViolationLevel.REQUIRED, new Line("file2", 12), "pointer/to");
         Violation fileTwoRecommended = new Violation("rule4", "recommended description", ViolationLevel.RECOMMENDED, new Line("file2", 19), "pointer/to");
+
+        Violation fileOneMandatoryFive = new Violation("rule5", "description of rule5", "This MUST be fixed", ViolationLevel.REQUIRED, new Line("file1", 20), "pointer/to/mandatory");
+        Violation fileOneRecommendedFive = new Violation("rule5", "description of rule5", "This SHOULD be fixed", ViolationLevel.RECOMMENDED, new Line("file1", 26), "pointer/to/recommended");
 
         violations.add(fileTwoRecommended);
         violations.add(fileTwoMandatoryOne);
@@ -118,6 +123,9 @@ class OutputGroupByTest {
         violations.add(fileTwoMandatoryTwo);
         violations.add(fileOneMandatoryThree);
         violations.add(fileTwoMandatoryOneDifferentMessage);
+
+        violations.add(fileOneMandatoryFive);
+        violations.add(fileOneRecommendedFive);
 
         return violations;
     }

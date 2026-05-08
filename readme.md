@@ -18,7 +18,7 @@ Any rule violations in the report are linked to a rule identifier (e.g. [uri-not
 
 The violations are grouped by rule (default) or grouped by file.
 Each rule shows:
-* Violation level (MANDATORY / RECOMMENDED / STYLE / IGNORED)
+* Violation level (REQUIRED / RECOMMENDED / IGNORED)
 * Rule name ([rule-name])
 * A message that describes the general issue of the rule
 * The number of occurrences
@@ -30,21 +30,21 @@ Then for each violation of that rule, the console output contains:
 
 ```
  OpenApi validation summary: 10 violations and 0 ignored violations.
-[MANDATORY]    [cod-design] New code types SHOULD be represented as string values in lowerCamelCase. 1 occurrence:
+[REQUIRED]    [cod-design] New code types SHOULD be represented as string values in lowerCamelCase. 1 occurrence:
 logo.yaml       ln  15  #/components/schemas/LogoMetaData/properties/mediaType
-[MANDATORY]    [err-problem] Each error response of each operation SHOULD have a media type "application/problem+json" 1 occurrence:
+[REQUIRED]    [err-problem] Each error response of each operation SHOULD have a media type "application/problem+json" 1 occurrence:
 openapi.yaml    ln 518  #/paths/health/get/responses/500 -- [Operation: GET /health]
-[MANDATORY]    [evo-object] In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility.  5 occurrences:
+[REQUIRED]    [evo-object] In a request or response body, if any, you MUST always return a JSON object (and not e.g. an array) as a top level data structure to support future extensibility.  5 occurrences:
 openapi.yaml    ln 156  #/paths/organizations/post/requestBody/content/application/json
 openapi.yaml    ln 187  #/paths/organizations/{enterpriseNumber}/get/responses/200/content/application/json
 openapi.yaml    ln 223  #/paths/organizations/{enterpriseNumber}/put/requestBody/content/application/json
 openapi.yaml    ln 232  #/paths/organizations/{enterpriseNumber}/put/responses/200/content/application/json
 openapi.yaml    ln 262  #/paths/organizations/{enterpriseNumber}/patch/responses/200/content/application/json
-[MANDATORY]    [hdr-case]   By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.  1 occurrence:
+[REQUIRED]    [hdr-case]   By convention, HTTP headers SHOULD use Kebab-Case with uppercase for readability and consistency.  1 occurrence:
 openapi.yaml    ln 365  #/paths/logos/{id}/get/parameters/1
-[MANDATORY]    [jsn-naming] All JSON property names SHOULD be written in lowerCamelCase notation. 1 occurrence:
+[REQUIRED]    [jsn-naming] All JSON property names SHOULD be written in lowerCamelCase notation. 1 occurrence:
 logo.yaml       ln  24  #/components/schemas/Logo -- [propertyName: Image]
-[MANDATORY]    [oas-exampl] Example does not validate against schema 1 occurrence:
+[REQUIRED]    [oas-exampl] Example does not validate against schema 1 occurrence:
 employer.yaml   ln  40  #/components/schemas/Employer/example
 -- employerId: Type expected 'integer', found 'string'. In Schema: employer.yaml#/components/schemas/Employer : <belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId>.<type>
 -- employerId: Value '164893015' does not match format 'int64'. In Schema: employer.yaml#/components/schemas/Employer : <belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId>.<format>
@@ -60,7 +60,7 @@ To ignore following `cod-design` validation error, add the `x-ignore-rules` prop
 
 Error message:
 ```
-file: location-v1.yaml: ln 23:  [MANDATORY]    [cod-design]      New code types SHOULD be represented as string values in lowerCamelCase.       /components/schemas/BelgianRegionCode
+file: location-v1.yaml: ln 23:  [REQUIRED]    [cod-design]      New code types SHOULD be represented as string values in lowerCamelCase.       /components/schemas/BelgianRegionCode
 ```
 
 OpenAPI document:

@@ -1,8 +1,12 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
+import io.github.belgif.rest.guide.validator.core.ViolationReport
+import io.github.belgif.rest.guide.validator.core.Line;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 
 rule "OpenAPI Specification 3.1"
@@ -11,6 +15,6 @@ rule "OpenAPI Specification 3.1"
 
 	then
         oas.addViolation("[oas-contra]",
-         "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling."
+         "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling.", null, new Line(parserResult.getOpenApiFile().getName(), 0), ViolationLevel.RECOMMENDED, "#"
         );
 end

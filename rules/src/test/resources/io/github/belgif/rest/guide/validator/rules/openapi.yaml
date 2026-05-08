@@ -5,6 +5,29 @@ info:
 servers:
   - url: '/api/v1'
 paths:
+  /health:
+    get:
+      operationId: health
+      summary: health endpoint
+      responses:
+        '200':
+          description: Very good 200
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        503:
+          description: Not so good 503
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        default:
+          description: unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /everythingIsGoodHere:
     get:
       summary: This path is completely compliant with the guidelines
@@ -22,11 +45,12 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Problem"
     post:
       summary: post where everything is good
       operationId: alsoVeryGoodButItsPost
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -44,10 +68,11 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Problem"
 components:
   requestBodies:
     RequestBodyWithSchema:
+      required: true
       content:
         application/json:
           schema:
@@ -71,7 +96,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Pet'
-    Error:
+    Problem:
       type: object
       required:
         - code

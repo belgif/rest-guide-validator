@@ -8,13 +8,14 @@ import io.github.belgif.rest.guide.validator.core.model.OperationDefinition;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
-import java.util.Set;
+import java.util.Set
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void violationHead(ViolationReport oas, OperationDefinition operation, String code){
     oas.addViolation("[stat-codes]", "HEAD operation should not have this status code", "[statuscode: " + code + "]",
-                     operation);
+                     operation, ViolationLevel.RECOMMENDED);
 }
 
 rule "Head Status Code 201 v2"

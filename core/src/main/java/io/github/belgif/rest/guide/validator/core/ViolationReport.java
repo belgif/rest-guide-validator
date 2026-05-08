@@ -35,7 +35,7 @@ public class ViolationReport {
     }
 
     public boolean isOasValid() {
-        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.MANDATORY);
+        return getActionableViolations().stream().noneMatch(violation -> violation.getLevel() == ViolationLevel.REQUIRED || violation.getLevel() == ViolationLevel.RECOMMENDED);
     }
 
     public void addViolation(Violation violation) {
@@ -46,14 +46,6 @@ public class ViolationReport {
         this.addViolation(new Violation(ruleName, description, message, type, lineNumber, jsonPointer));
     }
 
-    public void addViolation(String ruleName, String description, String message, Line lineNumber, String jsonPointer) {
-        this.addViolation(ruleName, description, message, lineNumber, ViolationLevel.MANDATORY, jsonPointer);
-    }
-
-    public void addViolation(String ruleName, String description, Line lineNumber, String jsonPointer) {
-        this.addViolation(ruleName, description, null, lineNumber, ViolationLevel.MANDATORY, jsonPointer);
-    }
-
     public void addViolation(String ruleName, String description, String message, OpenApiDefinition<?> openApiDefinition, ViolationLevel violationLevel) {
         if (addExcludedFileViolation(openApiDefinition) || addIgnoredViolation(ruleName, description, openApiDefinition)) {
             return;
@@ -62,24 +54,8 @@ public class ViolationReport {
         this.addViolation(ruleName, description, message, lineNumber, violationLevel, openApiDefinition.getPrintableJsonPointer());
     }
 
-    public void addViolation(String ruleName, String description, String message, OpenApiDefinition<?> openApiDefinition) {
-        this.addViolation(ruleName, description, message, openApiDefinition, ViolationLevel.MANDATORY);
-    }
-
-    public void addViolation(String ruleName, String description, OpenApiDefinition<?> openApiDefinition) {
-        this.addViolation(ruleName, description, null, openApiDefinition, ViolationLevel.MANDATORY);
-    }
-
-    public void addViolation(String ruleName, String description, String message) {
-        this.addViolation(ruleName, description, message, new Line("", 0), ViolationLevel.MANDATORY, "");
-    }
-
-    public void addViolation(String ruleName, String description) {
-        this.addViolation(ruleName, description, ViolationLevel.MANDATORY);
-    }
-
-    public void addViolation(String ruleName, String description, ViolationLevel violationLevel) {
-        this.addViolation(ruleName, description, null, new Line("", 0), violationLevel, "");
+    public void addViolation(String ruleName, String description, OpenApiDefinition<?> openApiDefinition, ViolationLevel violationLevel) {
+        this.addViolation(ruleName, description, null, openApiDefinition, violationLevel);
     }
 
     public List<Violation> getActionableViolations() {

@@ -9,24 +9,25 @@ import java.util.List;
 import io.github.belgif.rest.guide.validator.core.model.ParameterDefinition;
 import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 function void violationPath(ViolationReport oas, PathDefinition path){
     oas.addViolation("[uri-notat]",
            		 "Path segments SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
-           		 path);
+           		 path, ViolationLevel.RECOMMENDED);
 }
 
 function void violationPathParam(ViolationReport oas, ParameterDefinition parameterDefinition){
   oas.addViolation("[path-param]",
     "Path parameters SHOULD use lowerCamelCase notation.",
-    parameterDefinition);
+    parameterDefinition, ViolationLevel.RECOMMENDED);
 }
 
 function void violationQueryParam(ViolationReport oas, ParameterDefinition parameterDefinition){
     oas.addViolation("[uri-notat]",
            		 "Query parameters SHOULD use lowerCamelCase notation to enhance readability and to separate compound names.",
-           		 parameterDefinition);
+           		 parameterDefinition, ViolationLevel.RECOMMENDED);
 }
 
 rule "Path CamelCase"

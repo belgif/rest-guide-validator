@@ -5,7 +5,8 @@ import io.github.belgif.rest.guide.validator.core.model.ServerDefinition;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.PathItem;
-import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult
+import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
@@ -17,7 +18,7 @@ function String urlPattern(){
 function void violationServerUrlFormat(ViolationReport oas, ServerDefinition server){
     oas.addViolation("[uri-format]",
                      "The server url should follow the format [/pathPrefix]/apiName/vMajorVersion optionally prefixed by https://hostname[:port] or http://localhost[:port]. The apiName must consist of one or more path segments in lowerCamelCase.",
-                     server);
+                     server, ViolationLevel.RECOMMENDED);
 }
 
 function boolean hasEntryFilePathsConfigured(ParserResult parserResult) {
