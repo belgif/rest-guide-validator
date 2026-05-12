@@ -11,7 +11,9 @@ import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
 import java.util.List;
 import java.lang.String;
-import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel
+import io.github.belgif.rest.guide.validator.core.model.MediaTypeDefinition
+import java.util.Set;
 
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
@@ -44,7 +46,8 @@ function Boolean isSchemaInAllOrAnyOf(SchemaDefinition schemaDefinition) {
 }
 
 function Boolean isSchemaDirectlyUnderNonJsonMediaType(SchemaDefinition schemaDefinition) {
-    return schemaDefinition.getJsonPointer().toString().matches(".*/content/(?!application[^/]*json/)[^/]+/schema$");
+  return schemaDefinition.getParent() instanceof MediaTypeDefinition mediaTypeDefinition
+         && !ApiFunctions.isMediaTypeIncluded(mediaTypeDefinition.getIdentifier(), Set.of("application/json"));
 }
 
 function void violationTitleShouldNotBePresentOrMatchSchemaName(ViolationReport oas, SchemaDefinition schema,String title){

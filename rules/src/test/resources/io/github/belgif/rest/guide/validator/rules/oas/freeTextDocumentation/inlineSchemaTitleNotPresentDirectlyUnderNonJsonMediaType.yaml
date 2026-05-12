@@ -34,7 +34,7 @@ paths:
         default:
           description: response description
           content:
-            x-www-form-url-encoded:
+            application/x-www-form-urlencoded:
               schema:
                 type: object
                 properties:
