@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 class FreeTextDocumentationTest extends AbstractOasRuleTest {
 
-
     @Test
     void testOperationSummaryPresent() {
         assertNoViolations(callRules("summaryPresent.yaml"));
@@ -28,7 +27,12 @@ class FreeTextDocumentationTest extends AbstractOasRuleTest {
 
     @Test
     void testInlineSchemaTitleNotPresent() {
-        assertErrorCount(1, callRules("inlineSchemaTitleNotPresent.yaml"));
+        assertErrorCount(2, callRules("inlineSchemaTitleNotPresent.yaml"));
+    }
+
+    @Test
+    void testInlineSchemaTitleNotPresentDirectlyUnderNonJsonMediaType() {
+        assertNoViolations(callRules("inlineSchemaTitleNotPresentDirectlyUnderNonJsonMediaType.yaml"));
     }
 
     @Test
@@ -50,6 +54,7 @@ class FreeTextDocumentationTest extends AbstractOasRuleTest {
     void testComponentSchemaTitleDoesNotMatchesSchemaName() {
         assertErrorCount(1, callRules("titleDoesNotMatchesSchemaName.yaml"));
     }
+
 }
 
 

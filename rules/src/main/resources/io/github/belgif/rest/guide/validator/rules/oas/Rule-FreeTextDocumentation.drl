@@ -43,6 +43,10 @@ function Boolean isSchemaInAllOrAnyOf(SchemaDefinition schemaDefinition) {
     return schemaDefinition.getJsonPointer().toString().matches("^.*/(all|any)Of/\\d*?$");
 }
 
+function Boolean isSchemaDirectlyUnderNonJsonMediaType(SchemaDefinition schemaDefinition) {
+    return schemaDefinition.getJsonPointer().toString().matches(".*/content/(?!application[^/]*json/)[^/]+/schema$");
+}
+
 function void violationTitleShouldNotBePresentOrMatchSchemaName(ViolationReport oas, SchemaDefinition schema,String title){
     oas.addViolation("[oas-descr]",
     "The title property of a component schema SHOULD NOT be used or SHOULD MATCH schema name.",
@@ -58,12 +62,12 @@ rule "A summary should be present for each operation"
     violationSummaryShouldBePresentForEachOperation(oas, $operation);
 end
 
-rule "A title should be present for inline object schemas (not required in an AllOf / AnyOf / Not composition)"
+rule "A title should be present for inline object schemas (not required when part of an AllOf, AnyOf, or Not composition, or when defined directly under non-JSON media types)"
   when
     $schema: SchemaDefinition(
       definitionType == DefinitionType.INLINE,
       /model[type == SchemaType.OBJECT && (title == null)],
-      !isSchemaInAllOrAnyOf(this))
+      !isSchemaInAllOrAnyOf(this), !isSchemaDirectlyUnderNonJsonMediaType(this))
   then
     violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
 end

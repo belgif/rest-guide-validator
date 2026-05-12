@@ -9,8 +9,18 @@ paths:
       summary: operation summary
       responses:
         default:
+          description: default response
           content:
             application/json:
               schema:
                 type: object
                 description: my description
+        400:
+          description: client problem response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                description: problem
+
+
