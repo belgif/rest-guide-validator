@@ -1,0 +1,43 @@
+openapi: 3.0.0
+info:
+  title: generalDocumentation
+  version: "1"
+paths:
+  /myFirstPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          description: response description
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  message:
+                    description: message
+                    type: string
+                  author:
+                    type: object
+                    title: Author
+                    properties:
+                      name:
+                        type: string
+                      surname:
+                        type: string
+  /mySecondPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          description: response description
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  message:
+                    description: message
+                    type: string
