@@ -62,8 +62,6 @@ rule "Rule-ScopesAreDefinedInSecurityScheme"
     $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
     $securitySchemeName: String() from $schemes.getKey()
     $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && (model.getType()==Type.OAUTH2 || hasReference()) && inEntryDocument())
-//    SecuritySchemeDefinition($flows: /model/flows#OAuthFlows) from $securitySchemeDefinition
-//    $definedScopes: Set() from fetchScopesFromFlows($flows)
     $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($securitySchemeDefinition, parserResult)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
