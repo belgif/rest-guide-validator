@@ -7,8 +7,8 @@ servers:
   - url: /demo/v1
 paths:
   /health:
-    $ref: "schemas/common.yaml#/paths/~1health"
+    $ref: "common.yaml#/paths/~1health"
 components:
   securitySchemes:
     OauthHealth:
-      $ref: "schemas/common.yaml#/components/securitySchemes/OauthHealthCommon"
+      $ref: "common.yaml#/components/securitySchemes/OauthHealthCommon"

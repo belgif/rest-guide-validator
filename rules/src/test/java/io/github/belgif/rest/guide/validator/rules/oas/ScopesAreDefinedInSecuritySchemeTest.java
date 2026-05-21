@@ -1,10 +1,8 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
-@Getter
 class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
 
     @Test
@@ -26,4 +24,18 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     void testValidOpenApiWithRedundantSecuritySchemesInExternalFiles() {
         assertNoViolations(callRules("externalNamingConflicts.yaml"));
     }
-}
+
+    @Test
+    void testSecuritySchemeWithImplicitReferenceNotFoundInEntryFile() {
+        assertErrorCount(1, callRules("references/notInEntryFile.yaml"));
+    }
+
+    @Test
+    void testSecuritySchemeWithImplicitReferenceToEntryFile() {
+        assertNoViolations(callRules("references/inEntryFile.yaml"));
+    }
+
+    @Test
+    void securitySchemeWithRefIsValidated() {
+        assertErrorCount(1, callRules("securitySchemeWithRef/openapi.yaml"));
+    }}

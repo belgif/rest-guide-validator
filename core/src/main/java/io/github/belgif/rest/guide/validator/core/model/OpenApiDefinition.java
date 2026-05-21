@@ -85,6 +85,17 @@ public abstract class OpenApiDefinition<T extends Constructible> {
                 || (this.getParent() != null && this.getParent().isReachableFromEntryDocument(updatedVisitedRefs));
     }
 
+    public boolean inEntryDocument() {
+        return this.openApiFile.equals(this.result.getOpenApiFile());
+    }
+
+    public boolean hasReference() {
+        if (this.model instanceof Reference<?> ref) {
+            return ref.getRef() != null;
+        }
+        return false;
+    }
+
     private void checkRef() {
         if (this.getModel() instanceof Reference) {
             String ref = ((Reference<?>) model).getRef();
