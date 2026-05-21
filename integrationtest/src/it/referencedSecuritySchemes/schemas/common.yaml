@@ -8,8 +8,6 @@ servers:
 paths:
   /health:
     get:
-      tags:
-        - Monitoring
       summary: Check health of the service
       description: Retrieve the health status of the service
       operationId: checkHealth
@@ -17,7 +15,7 @@ paths:
       externalDocs:
         url: https://www.belgif.be/specification/rest/api-guide/#health
       security:
-        - OauthHealth:
+        - OauthHealthCommon:
             - scope:my_organization:api:monitoring
       responses:
         "200":
@@ -45,7 +43,7 @@ components:
     Problem:
       type: object
   securitySchemes:
-    OauthHealth:
+    OauthHealthCommon:
       type: oauth2
       description: access using access token retrieved from oauth2 server
       flows:

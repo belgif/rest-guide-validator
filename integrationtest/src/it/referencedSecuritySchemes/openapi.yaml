@@ -11,4 +11,4 @@ paths:
 components:
   securitySchemes:
     OauthHealth:
-      $ref: "schemas/common.yaml#/components/securitySchemes/OauthHealth"
+      $ref: "schemas/common.yaml#/components/securitySchemes/OauthHealthCommon"
