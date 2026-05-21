@@ -1,13 +1,11 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
-import lombok.Getter;
+import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Getter
 class RepresentationOfCollectionTest extends AbstractOasRuleTest {
     @Test
     void testOpenApiWithout200Response() {

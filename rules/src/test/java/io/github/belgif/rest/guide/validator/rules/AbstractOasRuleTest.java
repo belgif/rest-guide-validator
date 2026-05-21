@@ -1,9 +1,8 @@
 package io.github.belgif.rest.guide.validator.rules;
 
 import io.github.belgif.rest.guide.validator.OpenApiSingleRuleValidator;
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.Violation;
-import lombok.Getter;
+import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -13,11 +12,10 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-@Getter
 @Slf4j
 public abstract class AbstractOasRuleTest {
 
-    protected ViolationReport callRules(String fileName)  {
+    protected ViolationReport callRules(String fileName) {
         String ruleFileName = getRulesFile(getClass().getSimpleName());
         var ruleUrl = getClass().getResource(ruleFileName);
         if (ruleUrl == null) {
@@ -64,14 +62,14 @@ public abstract class AbstractOasRuleTest {
         assertNotEquals(0, validationResult.getActionableViolations().size(), getMessage(validationResult));
     }
 
-    public static String getMessage(ViolationReport validationResult){
+    public static String getMessage(ViolationReport validationResult) {
         var violations = validationResult.getActionableViolations();
-        return "Number of errors : "+ violations.size() +"\n"
-                + violations.stream().map(Violation::toString).collect(Collectors.joining("\n")) ;
+        return "Number of errors : " + violations.size() + "\n"
+                + violations.stream().map(Violation::toString).collect(Collectors.joining("\n"));
     }
 
     public static void assertErrorCount(int expectedErrors, ViolationReport validationResult) {
-        assertEquals(expectedErrors,validationResult.getActionableViolations().size(), getMessage(validationResult));
+        assertEquals(expectedErrors, validationResult.getActionableViolations().size(), getMessage(validationResult));
     }
 
     private String getRulesFile(String s) {

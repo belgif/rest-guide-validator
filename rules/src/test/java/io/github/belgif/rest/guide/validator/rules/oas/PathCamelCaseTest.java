@@ -2,12 +2,10 @@ package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Getter
 class PathCamelCaseTest extends AbstractOasRuleTest {
     @Test
     void testValidOpenApi() {

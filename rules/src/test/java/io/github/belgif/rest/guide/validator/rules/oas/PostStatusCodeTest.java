@@ -1,10 +1,9 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
-@Getter
+
 class PostStatusCodeTest extends AbstractOasRuleTest {
 
     @Test
