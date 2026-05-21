@@ -1,0 +1,14 @@
+openapi: 3.0.4
+info:
+  title: Referenced Security Schemes Integration Test
+  description: An integration test to validate the correct parsing of the security schemes over multiple files.
+  version: 1.0.0
+servers:
+  - url: /demo/v1
+paths:
+  /health:
+    $ref: "schemas/common.yaml#/paths/~1health"
+components:
+  securitySchemes:
+    OauthHealth:
+      $ref: "schemas/common.yaml#/components/securitySchemes/OauthHealth"
