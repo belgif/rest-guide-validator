@@ -25,12 +25,14 @@ paths:
           content:
             application/json:
               schema:
+                title: VeryGood
                 type: object
         "503":
           description: not so good
           content:
             application/problem+json:
               schema:
+                title: NotSoGood
                 type: object
         default:
           description: this is a problem
