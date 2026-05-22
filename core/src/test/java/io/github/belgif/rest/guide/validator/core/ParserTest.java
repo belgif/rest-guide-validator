@@ -209,6 +209,24 @@ class ParserTest {
     }
 
     @Test
+    void testSecuritySchemeNotInEntryFile() {
+        var logger = (Logger) LoggerFactory.getLogger(Parser.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new ViolationReport();
+        var file = new File(getClass().getResource("../rules/securitySchemes/notInEntryFile.yaml").getFile());
+
+        listAppender.start();
+        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/health/get/security/0")));
+    }
+
+    @Test
     void testNonValidExampleIsParsed() {
         var oas = new ViolationReport();
         var file = new File(Objects.requireNonNull(getClass().getResource("../rules/wrongExampleFormat.yaml")).getFile());

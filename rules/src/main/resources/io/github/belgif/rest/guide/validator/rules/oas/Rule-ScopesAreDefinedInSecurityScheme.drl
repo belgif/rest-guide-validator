@@ -46,32 +46,19 @@ function Set fetchScopesFromFlows(OAuthFlows flows) {
 
 function Set fetchScopesFromSecuritySchemeDefinition(SecuritySchemeDefinition def, ParserResult parserResult) {
     SecuritySchemeDefinition definition = (SecuritySchemeDefinition) parserResult.resolve(def.getModel());
-    if (definition.getModel().getFlows() == null) {
+    if (definition.getModel().getFlows() == null || definition.getModel().getType() != Type.OAUTH2) {
       return new HashSet<>();
     }
     return fetchScopesFromFlows(definition.getModel().getFlows());
-}
-
-function boolean securitySchemeExistsInEntryDocument(String name, ParserResult parserResult) {
-    return parserResult.getSecuritySchemes().stream()
-      .anyMatch(def -> def.inEntryDocument() && name.equals(def.getIdentifier()) && ((def.getModel().getType() != null && def.getModel().getType() == Type.OAUTH2) || def.hasReference()));
 }
 
 rule "Rule-ScopesAreDefinedInSecurityScheme"
   when
     $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
     $securitySchemeName: String() from $schemes.getKey()
-    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && (model.getType()==Type.OAUTH2 || hasReference()) && inEntryDocument())
+    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && inEntryDocument())
     $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($securitySchemeDefinition, parserResult)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
     violationScopes(oas, $securityRequirementDefinition, $scope, $securitySchemeDefinition.getPrintableJsonPointer());
-end
-
-rule "Rule-ReferencedSecuritySchemesMustExist"
-  when
-    $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
-    $securitySchemeName: String(!securitySchemeExistsInEntryDocument(this, parserResult)) from $schemes.getKey()
-  then
-    violationSecuritySchemeExists(oas, $securityRequirementDefinition, $securitySchemeName);
 end

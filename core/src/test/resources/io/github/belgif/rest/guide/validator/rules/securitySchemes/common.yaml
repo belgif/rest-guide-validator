@@ -1,0 +1,53 @@
+openapi: 3.0.4
+info:
+  title: Referenced Security Schemes Integration Test
+  description: An integration test to validate the correct parsing of the security schemes over multiple files.
+  version: 1.0.0
+servers:
+  - url: /demo/v1
+paths:
+  /health:
+    get:
+      summary: Check health of the service
+      description: Retrieve the health status of the service
+      operationId: checkHealth
+      parameters: []
+      externalDocs:
+        url: https://www.belgif.be/specification/rest/api-guide/#health
+      security:
+        - OauthHealthCommon:
+            - scope:my_organization:api:monitoring
+      responses:
+        "200":
+          description: very nice
+          content:
+            application/json:
+              schema:
+                title: VeryGood
+                type: object
+        "503":
+          description: not so good
+          content:
+            application/problem+json:
+              schema:
+                title: NotSoGood
+                type: object
+        default:
+          description: this is a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+  securitySchemes:
+    OauthHealthCommon:
+      type: oauth2
+      description: access using access token retrieved from oauth2 server
+      flows:
+        clientCredentials:
+          tokenUrl: https://placeholder.myendpoint.org/oauth2endpoint
+          scopes:
+            "scope:my_organization:api:monitoring": access to health check operation

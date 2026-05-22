@@ -26,11 +26,6 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testSecuritySchemeWithImplicitReferenceNotFoundInEntryFile() {
-        assertErrorCount(1, callRules("references/notInEntryFile.yaml"));
-    }
-
-    @Test
     void testSecuritySchemeWithImplicitReferenceToEntryFile() {
         assertNoViolations(callRules("references/inEntryFile.yaml"));
     }
