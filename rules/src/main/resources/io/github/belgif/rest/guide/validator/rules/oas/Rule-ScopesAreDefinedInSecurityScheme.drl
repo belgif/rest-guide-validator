@@ -25,23 +25,6 @@ function void violationScopes(ViolationReport oas, SecurityRequirementDefinition
                      securityRequirementDefinition, ViolationLevel.REQUIRED);
 }
 
-function Set fetchScopesFromFlows(OAuthFlows flows) {
-    Set<String> scopes = new HashSet<>();
-    if (flows.getImplicit() != null && flows.getImplicit().getScopes() != null) {
-      scopes.addAll(flows.getImplicit().getScopes().keySet());
-    }
-    if (flows.getAuthorizationCode() != null && flows.getAuthorizationCode().getScopes() != null) {
-      scopes.addAll(flows.getAuthorizationCode().getScopes().keySet());
-    }
-    if (flows.getClientCredentials() != null && flows.getClientCredentials().getScopes() != null) {
-      scopes.addAll(flows.getClientCredentials().getScopes().keySet());
-    }
-    if (flows.getPassword() != null && flows.getPassword().getScopes() != null) {
-      scopes.addAll(flows.getPassword().getScopes().keySet());
-    }
-    return Set.of(scopes);
-}
-
 function Set fetchScopesFromSecuritySchemeDefinition(SecuritySchemeDefinition definition) {
     OAuthFlows flows = definition.getModel().getFlows();
     Set<String> scopes = new HashSet<>();

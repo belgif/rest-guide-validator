@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
@@ -163,14 +162,6 @@ public abstract class OpenApiDefinition<T extends Constructible> {
             return getTopLevelLineNumber();
         }
     }
-
-    public LineRangePath getLineRangePath() {
-        var startLine = getLineNumber();
-        var range = new LineRangePath(identifier, startLine.getLineNumber());
-        range.setEnd(getEndLineNumber(openApiFile));
-        return range;
-    }
-
 
     public String getPrintableJsonPointer() {
         return getJsonPointer().toPrettyString();

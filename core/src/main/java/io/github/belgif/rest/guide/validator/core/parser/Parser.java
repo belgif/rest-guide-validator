@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
-import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
