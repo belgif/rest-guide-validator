@@ -227,10 +227,10 @@ public class Parser {
     }
 
     public void verifySecurityRequirements(ParserResult result) {
-        var allowedRequirements = result.getSecuritySchemes().stream().filter(SecuritySchemeDefinition::inEntryDocument).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
+        var allowedSecurityRequirements = result.getSecuritySchemes().stream().filter(SecuritySchemeDefinition::inEntryDocument).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
-                if (!allowedRequirements.contains(securityScheme)) {
+                if (!allowedSecurityRequirements.contains(securityScheme)) {
                     log.error("{}: Security Scheme <<{}>> is not defined", securityRequirement.getFullyQualifiedPointer(), securityScheme);
                     result.setParsingValid(false);
                 }
