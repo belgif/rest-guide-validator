@@ -35,17 +35,6 @@ class ParserTest {
         assertNotNull(openApi.getPaths());
     }
 
-    @Test
-    void getAllPathWithLineRange() {
-        var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
-        var oas = new ViolationReport();
-        var result = new Parser(file).parse(oas);
-        var paths = result.getPaths();
-
-        paths.forEach(p -> assertTrue(p.getEnd() > p.getStart()));
-        paths.forEach(p -> log.debug(p.toString()));
-
-    }
 
     @Test
     void testConstructNestedSchema() {

@@ -61,7 +61,6 @@ public class Parser {
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
-        private List<LineRangePath> paths;
         private File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
@@ -198,7 +197,6 @@ public class Parser {
                 log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
                 throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), null, new Line(openApiFile.getName(), 0), ViolationLevel.REQUIRED, "#");
@@ -261,22 +259,6 @@ public class Parser {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * For all openAPI.path.key build a LineRangePath whith the start and end line of the path.
-     */
-    public void buildAllPathWithLineRange(ParserResult result) {
-        var paths = new ArrayList<LineRangePath>();
-
-        if (result.getPathDefinitions().isEmpty()) {
-            result.paths = Collections.emptyList();
-        } else {
-            result.pathDefinitions.forEach(p -> paths.add(p.getLineRangePath()));
-            Collections.sort(paths);
-
-            result.paths = paths;
         }
     }
 
