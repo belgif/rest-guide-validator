@@ -25,11 +25,6 @@ function void violationScopes(ViolationReport oas, SecurityRequirementDefinition
                      securityRequirementDefinition, ViolationLevel.REQUIRED);
 }
 
-function void violationSecuritySchemeExists(ViolationReport oas, SecurityRequirementDefinition securityRequirementDefinition, String referencedName){
-    oas.addViolation("[sec-req]", "Scopes defined in a security requirement must also be defined in the referenced security scheme.", "Referenced securityScheme: <<" + referencedName + ">> does not exist in entry file.",
-                     securityRequirementDefinition, ViolationLevel.REQUIRED);
-}
-
 function Set fetchScopesFromFlows(OAuthFlows flows) {
     Set<String> scopes = new HashSet<>();
     if (flows.getImplicit() != null && flows.getImplicit().getScopes() != null) {
