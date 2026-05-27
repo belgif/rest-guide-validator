@@ -231,7 +231,7 @@ public class Parser {
         result.securityRequirements.forEach(securityRequirement -> {
             for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
                 if (!allowedSecurityRequirements.contains(securityScheme)) {
-                    log.error("{}: Security Scheme <<{}>> is not defined in the entry OpenAPI decoument", securityRequirement.getFullyQualifiedPointer(), securityScheme);
+                    log.error("{}: Security Scheme <<{}>> is not defined in the entry OpenAPI document", securityRequirement.getFullyQualifiedPointer(), securityScheme);
                     result.setParsingValid(false);
                 }
             }
