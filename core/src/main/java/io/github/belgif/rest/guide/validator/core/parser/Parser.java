@@ -190,14 +190,14 @@ public class Parser {
             if (!isOasVersionSupported(result.src.values(), violationReport)) {
                 return null;
             }
-            verifySecurityRequirements(result);
             validateAllReferences(result);
+            result.populateBackReferences();
+            verifySecurityRequirements(result);
             if (!result.isParsingValid()) {
                 // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
                 log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
                 throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            result.populateBackReferences();
             buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
@@ -227,15 +227,17 @@ public class Parser {
     }
 
     public void verifySecurityRequirements(ParserResult result) {
-        var allowedSecurityRequirements = result.getSecuritySchemes().stream().filter(SecuritySchemeDefinition::inEntryDocument).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
-        result.securityRequirements.forEach(securityRequirement -> {
-            for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
-                if (!allowedSecurityRequirements.contains(securityScheme)) {
-                    log.error("{}: Security Scheme <<{}>> is not defined in the entry OpenAPI document", securityRequirement.getFullyQualifiedPointer(), securityScheme);
-                    result.setParsingValid(false);
-                }
-            }
-        });
+        var allowedSecuritySchemes = result.getSecuritySchemes().stream().filter(SecuritySchemeDefinition::inEntryDocument).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
+        result.securityRequirements.stream()
+                .filter(OpenApiDefinition::isReachableFromEntryDocument)
+                .forEach(securityRequirement -> {
+                    for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
+                        if (!allowedSecuritySchemes.contains(securityScheme)) {
+                            log.error("{}: Security Scheme <<{}>> is not defined in the entry OpenAPI document", securityRequirement.getFullyQualifiedPointer(), securityScheme);
+                            result.setParsingValid(false);
+                        }
+                    }
+                });
     }
 
     private void validateAllReferences(ParserResult result) {
