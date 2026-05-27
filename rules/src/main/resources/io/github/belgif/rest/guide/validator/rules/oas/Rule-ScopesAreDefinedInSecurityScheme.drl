@@ -36,15 +36,31 @@ function Set fetchScopesFromFlows(OAuthFlows flows) {
     if (flows.getClientCredentials() != null && flows.getClientCredentials().getScopes() != null) {
       scopes.addAll(flows.getClientCredentials().getScopes().keySet());
     }
+    if (flows.getPassword() != null && flows.getPassword().getScopes() != null) {
+      scopes.addAll(flows.getPassword().getScopes().keySet());
+    }
     return Set.of(scopes);
 }
 
-function Set fetchScopesFromSecuritySchemeDefinition(SecuritySchemeDefinition def, ParserResult parserResult) {
-    SecuritySchemeDefinition definition = (SecuritySchemeDefinition) parserResult.resolve(def.getModel());
-    if (definition.getModel().getFlows() == null || definition.getModel().getType() != Type.OAUTH2) {
-      return new HashSet<>();
+function Set fetchScopesFromSecuritySchemeDefinition(SecuritySchemeDefinition definition) {
+    OAuthFlows flows = definition.getModel().getFlows();
+    Set<String> scopes = new HashSet<>();
+    if (flows == null) {
+      return scopes;
     }
-    return fetchScopesFromFlows(definition.getModel().getFlows());
+    if (flows.getImplicit() != null && flows.getImplicit().getScopes() != null) {
+      scopes.addAll(flows.getImplicit().getScopes().keySet());
+    }
+    if (flows.getAuthorizationCode() != null && flows.getAuthorizationCode().getScopes() != null) {
+      scopes.addAll(flows.getAuthorizationCode().getScopes().keySet());
+    }
+    if (flows.getClientCredentials() != null && flows.getClientCredentials().getScopes() != null) {
+      scopes.addAll(flows.getClientCredentials().getScopes().keySet());
+    }
+    if (flows.getPassword() != null && flows.getPassword().getScopes() != null) {
+      scopes.addAll(flows.getPassword().getScopes().keySet());
+    }
+    return Set.of(scopes);
 }
 
 rule "Rule-ScopesAreDefinedInSecurityScheme"
@@ -52,8 +68,9 @@ rule "Rule-ScopesAreDefinedInSecurityScheme"
     $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
     $securitySchemeName: String() from $schemes.getKey()
     $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && inEntryDocument())
-    $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($securitySchemeDefinition, parserResult)
+    $resolvedSecuritySchemeDefinition: SecuritySchemeDefinition(model.type == Type.OAUTH2 || model.type == Type.OPENIDCONNECT) from parserResult.resolve($securitySchemeDefinition.getModel())
+    $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($resolvedSecuritySchemeDefinition)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
-    violationScopes(oas, $securityRequirementDefinition, $scope, $securitySchemeDefinition.getPrintableJsonPointer());
+    violationScopes(oas, $securityRequirementDefinition, $scope, $resolvedSecuritySchemeDefinition.getPrintableJsonPointer());
 end

@@ -33,4 +33,11 @@ class ScopesAreDefinedInSecuritySchemeTest extends AbstractOasRuleTest {
     @Test
     void securitySchemeWithRefIsValidated() {
         assertErrorCount(1, callRules("securitySchemeWithRef/openapi.yaml"));
-    }}
+    }
+
+    @Test
+    void securitySchemeWithWrongTypeShouldNotBeValidated() {
+        assertNoViolations(callRules("wrongSecurityType.yaml"));
+    }
+
+}
