@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
-import io.github.belgif.rest.guide.validator.LineRangePath;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
@@ -61,7 +60,6 @@ public class Parser {
         private Set<OpenApiDefinition<? extends Constructible>> allDefinitions = new HashSet<>();
 
         private OpenAPI openAPI;
-        private List<LineRangePath> paths;
         private File openApiFile;
         private Map<String, SourceDefinition> src;
         private boolean isParsingValid = true;
@@ -190,15 +188,14 @@ public class Parser {
             if (!isOasVersionSupported(result.src.values(), violationReport)) {
                 return null;
             }
-            verifySecurityRequirements(result);
             validateAllReferences(result);
+            result.populateBackReferences();
+            verifySecurityRequirements(result);
             if (!result.isParsingValid()) {
                 // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
                 log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
                 throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
-            result.populateBackReferences();
-            buildAllPathWithLineRange(result);
             return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), null, new Line(openApiFile.getName(), 0), ViolationLevel.REQUIRED, "#");
@@ -227,15 +224,17 @@ public class Parser {
     }
 
     public void verifySecurityRequirements(ParserResult result) {
-        var allowedRequirements = result.getSecuritySchemes().stream().map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
-        result.securityRequirements.forEach(securityRequirement -> {
-            for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
-                if (!allowedRequirements.contains(securityScheme)) {
-                    log.error("{}: Security Scheme <<{}>> is not defined", securityRequirement.getFullyQualifiedPointer(), securityScheme);
-                    result.setParsingValid(false);
-                }
-            }
-        });
+        var allowedSecuritySchemes = result.getSecuritySchemes().stream().filter(SecuritySchemeDefinition::inEntryDocument).map(OpenApiDefinition::getIdentifier).collect(Collectors.toSet());
+        result.securityRequirements.stream()
+                .filter(OpenApiDefinition::isReachableFromEntryDocument)
+                .forEach(securityRequirement -> {
+                    for (String securityScheme : securityRequirement.getModel().getSchemes().keySet()) {
+                        if (!allowedSecuritySchemes.contains(securityScheme)) {
+                            log.error("{}: Security Scheme <<{}>> is not defined in the entry OpenAPI document", securityRequirement.getFullyQualifiedPointer(), securityScheme);
+                            result.setParsingValid(false);
+                        }
+                    }
+                });
     }
 
     private void validateAllReferences(ParserResult result) {
@@ -259,22 +258,6 @@ public class Parser {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * For all openAPI.path.key build a LineRangePath whith the start and end line of the path.
-     */
-    public void buildAllPathWithLineRange(ParserResult result) {
-        var paths = new ArrayList<LineRangePath>();
-
-        if (result.getPathDefinitions().isEmpty()) {
-            result.paths = Collections.emptyList();
-        } else {
-            result.pathDefinitions.forEach(p -> paths.add(p.getLineRangePath()));
-            Collections.sort(paths);
-
-            result.paths = paths;
         }
     }
 
@@ -474,7 +457,7 @@ public class Parser {
             });
         }
         var securitySchemes = components.getSecuritySchemes();
-        if (securitySchemes != null && openApi.equals(openApiFile)) {
+        if (securitySchemes != null) {
             securitySchemes.forEach((name, scheme) -> result.securitySchemes.add(new SecuritySchemeDefinition(scheme, name, openApi, result)));
         }
         var links = components.getLinks();

@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: Scopes
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myFirstPath:
+    get:
+      security:
+        - Oauth:
+            - should:not:be:here
+      responses:
+        default:
+          description: default
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    Oauth:
+      type: apiKey
+      in: query
+      name: secret

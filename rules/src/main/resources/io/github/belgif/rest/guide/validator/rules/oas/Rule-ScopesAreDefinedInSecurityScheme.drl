@@ -17,14 +17,20 @@ import java.util.HashSet
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 function void violationScopes(ViolationReport oas, SecurityRequirementDefinition securityRequirementDefinition, String scope, String securitySchemePointer){
     oas.addViolation("[sec-req]", "Scopes defined in a security requirement must also be defined in the referenced security scheme.", "Scope: <<" + scope + ">> not found in: " + securitySchemePointer,
                      securityRequirementDefinition, ViolationLevel.REQUIRED);
 }
 
-function Set fetchScopesFromFlows(OAuthFlows flows) {
+function Set fetchScopesFromSecuritySchemeDefinition(SecuritySchemeDefinition definition) {
+    OAuthFlows flows = definition.getModel().getFlows();
     Set<String> scopes = new HashSet<>();
+    if (flows == null) {
+      return scopes;
+    }
     if (flows.getImplicit() != null && flows.getImplicit().getScopes() != null) {
       scopes.addAll(flows.getImplicit().getScopes().keySet());
     }
@@ -34,6 +40,9 @@ function Set fetchScopesFromFlows(OAuthFlows flows) {
     if (flows.getClientCredentials() != null && flows.getClientCredentials().getScopes() != null) {
       scopes.addAll(flows.getClientCredentials().getScopes().keySet());
     }
+    if (flows.getPassword() != null && flows.getPassword().getScopes() != null) {
+      scopes.addAll(flows.getPassword().getScopes().keySet());
+    }
     return Set.of(scopes);
 }
 
@@ -41,10 +50,10 @@ rule "Rule-ScopesAreDefinedInSecurityScheme"
   when
     $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
     $securitySchemeName: String() from $schemes.getKey()
-    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && model.getType()==Type.OAUTH2)
-    SecuritySchemeDefinition($flows: /model/flows#OAuthFlows) from $securitySchemeDefinition
-    $definedScopes: Set() from fetchScopesFromFlows($flows)
+    $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && inEntryDocument())
+    $resolvedSecuritySchemeDefinition: SecuritySchemeDefinition(model.type == Type.OAUTH2) from parserResult.resolve($securitySchemeDefinition.getModel())
+    $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($resolvedSecuritySchemeDefinition)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
-    violationScopes(oas, $securityRequirementDefinition, $scope, $securitySchemeDefinition.getPrintableJsonPointer());
+    violationScopes(oas, $securityRequirementDefinition, $scope, $resolvedSecuritySchemeDefinition.getPrintableJsonPointer());
 end

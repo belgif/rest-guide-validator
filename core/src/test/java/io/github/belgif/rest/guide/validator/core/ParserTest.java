@@ -35,17 +35,6 @@ class ParserTest {
         assertNotNull(openApi.getPaths());
     }
 
-    @Test
-    void getAllPathWithLineRange() {
-        var file = new File(getClass().getResource("../rules/schemasOpenApi.yaml").getFile());
-        var oas = new ViolationReport();
-        var result = new Parser(file).parse(oas);
-        var paths = result.getPaths();
-
-        paths.forEach(p -> assertTrue(p.getEnd() > p.getStart()));
-        paths.forEach(p -> log.debug(p.toString()));
-
-    }
 
     @Test
     void testConstructNestedSchema() {
@@ -206,6 +195,24 @@ class ParserTest {
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/myFirstPath/get/security/0")));
         assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/security/0")));
         assertEquals(3, listAppender.list.size());
+    }
+
+    @Test
+    void testSecuritySchemeNotInEntryFile() {
+        var logger = (Logger) LoggerFactory.getLogger(Parser.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+        logger.addAppender(listAppender);
+
+        var oas = new ViolationReport();
+        var file = new File(getClass().getResource("../rules/securitySchemes/notInEntryFile.yaml").getFile());
+
+        listAppender.start();
+        var ex = assertThrows(RuntimeException.class, () -> new Parser(file).parse(oas));
+        var errorMessage = "Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.";
+        assertEquals(errorMessage, ex.getMessage());
+
+        assertTrue(listAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains("/paths/health/get/security/0")));
     }
 
     @Test
