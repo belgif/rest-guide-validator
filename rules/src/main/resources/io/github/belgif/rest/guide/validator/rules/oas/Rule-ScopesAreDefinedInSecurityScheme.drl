@@ -51,7 +51,7 @@ rule "Rule-ScopesAreDefinedInSecurityScheme"
     $securityRequirementDefinition: SecurityRequirementDefinition($schemes: /model/schemes/entrySet, isReachableFromEntryDocument())
     $securitySchemeName: String() from $schemes.getKey()
     $securitySchemeDefinition: SecuritySchemeDefinition(identifier == $securitySchemeName && inEntryDocument())
-    $resolvedSecuritySchemeDefinition: SecuritySchemeDefinition(model.type == Type.OAUTH2 || model.type == Type.OPENIDCONNECT) from parserResult.resolve($securitySchemeDefinition.getModel())
+    $resolvedSecuritySchemeDefinition: SecuritySchemeDefinition(model.type == Type.OAUTH2) from parserResult.resolve($securitySchemeDefinition.getModel())
     $definedScopes: Set() from fetchScopesFromSecuritySchemeDefinition($resolvedSecuritySchemeDefinition)
     $scope: String(!$definedScopes.contains(this)) from $schemes.getValue()
   then
