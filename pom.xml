@@ -292,6 +292,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
                             <deploymentName>belgif-rest-guide-validator</deploymentName>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
