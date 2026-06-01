@@ -26,7 +26,7 @@ function void operationShouldNotHaveMoreThanOneTagViolation(ViolationReport oas,
 
 function void eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(ViolationReport oas, OperationDefinition operation, String tag) {
     oas.addViolation("[oas-tags]",
-           		 "Each tag used on an operation SHOULD also be declared in the top level tags list of the OpenAPI document, with an optional description.", "Tag: <<" + tag + ">> used but not declared.",
+           		 "Each tag used on an operation SHOULD also be declared in the top level tags list of the OpenAPI entry document, with an optional description.", "Tag: <<" + tag + ">> used but not declared.",
            		 operation, ViolationLevel.RECOMMENDED);
 }
 
