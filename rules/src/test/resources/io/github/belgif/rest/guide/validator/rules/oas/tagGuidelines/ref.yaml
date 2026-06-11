@@ -6,7 +6,7 @@ paths:
   /refPath:
     get:
       tags:
-        - My Tag
+        - This Tag Is In The Entry File
       operationId: myReferencedOperation
       responses:
         default:

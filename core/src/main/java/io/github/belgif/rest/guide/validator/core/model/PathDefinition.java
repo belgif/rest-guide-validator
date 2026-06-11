@@ -11,10 +11,12 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
      * Indicates if path is a direct (reachable) pathItem or referenced pathItem
      */
     private final boolean isDirectPath;
+    private final boolean hasReusableDefinitionsOnly;
 
     public PathDefinition(PathItem model, PathsDefinition parent, String identifier) {
         super(model, parent, identifier, JsonPointer.relative(identifier));
-        this.isDirectPath = parent.isInMainFile() && !hasReusableDefinitionsOnly();
+        this.hasReusableDefinitionsOnly = hasReusableDefinitionsOnly();
+        this.isDirectPath = parent.isInMainFile() && !hasReusableDefinitionsOnly;
     }
 
     @Override

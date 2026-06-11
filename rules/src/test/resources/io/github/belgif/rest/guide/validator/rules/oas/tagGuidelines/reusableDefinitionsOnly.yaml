@@ -1,0 +1,25 @@
+openapi: 3.0.0
+x-reusable-definitions-only: true
+info:
+  title: common technical data types
+  version: ${project.version}
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+paths:
+  /health: # Operation may be secured, but access should be allowed to all clients. In order to add a security scheme, copy this definition instead of referencing it.
+    get:
+      tags:
+        - Monitoring
+      summary: Check health of the service
+      operationId: checkHealth
+      externalDocs:
+        url: "https://www.belgif.be/specification/rest/api-guide/#health"
+      security: []
+      responses:
+        default:
+          description: my default response
+          content:
+            application/json:
+              schema:
+                type: object
