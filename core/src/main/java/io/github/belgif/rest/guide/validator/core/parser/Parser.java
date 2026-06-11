@@ -8,6 +8,7 @@ import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.*;
+import io.github.belgif.rest.guide.validator.core.util.CircularReferenceUtil;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import io.swagger.parser.OpenAPIParser;
@@ -190,6 +191,7 @@ public class Parser {
             }
             validateAllReferences(result);
             result.populateBackReferences();
+            CircularReferenceUtil.validateCircularReferences(result);
             verifySecurityRequirements(result);
             if (!result.isParsingValid()) {
                 // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.

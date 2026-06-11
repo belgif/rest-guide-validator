@@ -153,6 +153,13 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         return indirectParent;
     }
 
+    public OpenApiDefinition<?> getUpperParentOfSameType() {
+        if (!this.getClass().isInstance(this.parent)) {
+            return this;
+        }
+        return this.parent.getUpperParentOfSameType();
+    }
+
     public Line getLineNumber() {
         // Searches for lineNumber, in some cases the JsonPointer points further than is in the actual file (because some refs are resolved automatically in the parser)
         // So for inline objects, it searches as far as it can.
