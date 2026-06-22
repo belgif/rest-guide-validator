@@ -3,6 +3,7 @@ package io.github.belgif.rest.guide.validator.core.util;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -90,15 +91,16 @@ public class CircularReferenceUtil {
 
     private static boolean useLastSegment(List<String> segments, OpenApiDefinition<?> ref) {
         String lastSegment = segments.get(segments.size() - 1);
-        if (!lastSegment.equals("items") && !lastSegment.equals("additionalProperties")) {
+        if (!lastSegment.equals(RefType.ITEMS.getSegment()) && !lastSegment.equals(RefType.ADDITIONAL_PROPERTIES.getSegment())) {
             return false;
         }
-        if (lastSegment.equals("items") && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getItems() != null) {
+        if (lastSegment.equals(RefType.ITEMS.getSegment()) && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getItems() != null) {
             return true;
         }
-        return lastSegment.equals("additionalProperties") && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getAdditionalPropertiesSchema() != null;
+        return lastSegment.equals(RefType.ADDITIONAL_PROPERTIES.getSegment()) && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getAdditionalPropertiesSchema() != null;
     }
 
+    @Getter
     private enum RefType {
         REF(""),
         ALL_OF("allOf"),
@@ -114,10 +116,6 @@ public class CircularReferenceUtil {
 
         RefType(String segment) {
             this.segment = segment;
-        }
-
-        public String getSegment() {
-            return this.segment;
         }
 
         public static RefType fromSegment(String segment) {
