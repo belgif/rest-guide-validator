@@ -74,7 +74,7 @@ public class CircularReferenceUtil {
 
     private static boolean isUnsafe(List<RefType> refTypes) {
         return refTypes.stream().noneMatch(SAFE_REFS::contains) ||
-                (refTypes.size() == 1 && refTypes.get(0) == RefType.DISCRIMINATOR);
+                refTypes.stream().allMatch(r -> r == RefType.DISCRIMINATOR);
     }
 
     private static RefType getRefType(OpenApiDefinition<?> ref) {

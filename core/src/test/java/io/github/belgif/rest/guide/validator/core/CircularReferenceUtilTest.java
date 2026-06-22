@@ -1,7 +1,6 @@
 package io.github.belgif.rest.guide.validator.core;
 
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -15,6 +14,11 @@ class CircularReferenceUtilTest {
     @Test
     void testCircularReferenceViaDiscriminator() {
         assertParsingInvalid("invalidViaDiscriminator");
+    }
+
+    @Test
+    void testCircularReferenceViaMultipleDiscriminators() {
+        assertParsingInvalid("invalidViaMultipleDiscriminators");
     }
 
     @Test
