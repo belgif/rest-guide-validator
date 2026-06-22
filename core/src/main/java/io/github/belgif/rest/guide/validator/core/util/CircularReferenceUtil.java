@@ -17,11 +17,10 @@ public class CircularReferenceUtil {
     }
 
     private static final Set<RefType> SAFE_REFS = EnumSet.of(
-//            RefType.ALL_OF,
             RefType.PROPERTY,
             RefType.ITEMS,
             RefType.ADDITIONAL_PROPERTIES,
-            RefType.DISCRIMINATOR
+            RefType.DISCRIMINATOR //Not considered safe when it's the only reference.
     );
 
     public static void validateCircularReferences(Parser.ParserResult result) {
