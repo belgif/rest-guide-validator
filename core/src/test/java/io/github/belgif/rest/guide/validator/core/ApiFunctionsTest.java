@@ -272,7 +272,7 @@ class ApiFunctionsTest {
                     SchemaB:
                       allOf:
                         - type: string
-                        - $ref: "#/components/schemas/RootSchema"
+                        - pattern: ([A-Z])\\w+
                 """);
 
         var rootSchema = getSchemaDefinition("RootSchema", result);
