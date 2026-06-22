@@ -1,6 +1,7 @@
 package io.github.belgif.rest.guide.validator.core;
 
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -39,6 +40,11 @@ class CircularReferenceUtilTest {
     @Test
     void testCircularReferenceValidViaAllOfInheritance() {
         assertParsingValid("validViaAllOfInheritance");
+    }
+
+    @Test
+    void testCircularReferenceValidViaNestedProperty() {
+        assertParsingValid("validViaAllOfInsideNestedProperty");
     }
 
     private void assertParsingValid(String fileName) {

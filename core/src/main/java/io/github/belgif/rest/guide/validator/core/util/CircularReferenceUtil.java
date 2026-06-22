@@ -48,7 +48,7 @@ public class CircularReferenceUtil {
             RefType type = getRefType(ref);
             path.add(type);
 
-            if (containsUnsafeCycle(getDefinitionToPassAlong(ref), visited, path)) {
+            if (containsUnsafeCycle(getDefinitionRoot(ref), visited, path)) {
                 return true;
             }
 
@@ -59,11 +59,17 @@ public class CircularReferenceUtil {
         return false;
     }
 
-    private static OpenApiDefinition<?> getDefinitionToPassAlong(OpenApiDefinition<?> ref) {
+    /*
+    Finds definition that references something, so not for example an index of a oneOf.
+     */
+    private static OpenApiDefinition<?> getDefinitionRoot(OpenApiDefinition<?> ref) {
+        if (ref.getDefinitionType() == OpenApiDefinition.DefinitionType.TOP_LEVEL || !ref.getParent().getClass().isInstance(ref)) {
+            return ref;
+        }
         if (ref instanceof SchemaDefinition schemaRef && schemaRef.isInlineSchemaOfProperty()) {
             return schemaRef;
         }
-        return ref.getUpperParentOfSameType();
+        return getDefinitionRoot(ref.getParent());
     }
 
     private static boolean isUnsafe(List<RefType> refTypes) {
@@ -73,7 +79,7 @@ public class CircularReferenceUtil {
 
     private static RefType getRefType(OpenApiDefinition<?> ref) {
         // Might need something here with topLevelOfSameType or something like that...
-        int index = ref.getUpperParentOfSameType().getJsonPointer().splitSegments().size();
+        int index = getDefinitionRoot(ref).getJsonPointer().splitSegments().size();
         List<String> segments = ref.getJsonPointer().splitSegments().subList(index, ref.getJsonPointer().splitSegments().size());
         // direct ref or discriminator
         if (segments.isEmpty()) {
