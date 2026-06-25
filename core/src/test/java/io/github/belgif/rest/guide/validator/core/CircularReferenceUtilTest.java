@@ -47,6 +47,11 @@ class CircularReferenceUtilTest {
     }
 
     @Test
+    void testCircularReferenceViaNestedAllOf() {
+        assertParsingInvalid("invalidViaNestedAllOf");
+    }
+
+    @Test
     void testCircularReferenceValidViaProperty() {
         assertParsingValid("validViaProperty");
     }
