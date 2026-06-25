@@ -34,25 +34,25 @@ public class CircularReferenceUtil {
         }
     }
 
-    private static boolean containsUnsafeCycle(OpenApiDefinition<?> current, List<OpenApiDefinition<?>> visited, List<RefType> path) {
+    private static boolean containsUnsafeCycle(OpenApiDefinition<?> current, List<OpenApiDefinition<?>> visited, List<RefType> refTypePath) {
         int cycleStart = visited.indexOf(current);
         if (cycleStart >= 0) {
-            List<RefType> cyclePath = path.subList(cycleStart, path.size());
+            List<RefType> refTypeCyclePath = refTypePath.subList(cycleStart, refTypePath.size());
 
-            return isUnsafe(cyclePath);
+            return isUnsafe(refTypeCyclePath);
         }
 
         visited.add(current);
 
         for (OpenApiDefinition<?> ref : current.getReferencedBy()) {
             RefType type = getRefType(ref);
-            path.add(type);
+            refTypePath.add(type);
 
-            if (containsUnsafeCycle(getDefinitionRoot(ref), visited, path)) {
+            if (containsUnsafeCycle(getDefinitionRoot(ref), visited, refTypePath)) {
                 return true;
             }
 
-            path.remove(path.size() - 1);
+            refTypePath.remove(refTypePath.size() - 1);
         }
 
         visited.remove(visited.size() - 1);
@@ -78,7 +78,6 @@ public class CircularReferenceUtil {
     }
 
     private static RefType getRefType(OpenApiDefinition<?> ref) {
-        // Might need something here with topLevelOfSameType or something like that...
         int index = getDefinitionRoot(ref).getJsonPointer().splitSegments().size();
         List<String> segments = ref.getJsonPointer().splitSegments().subList(index, ref.getJsonPointer().splitSegments().size());
         // direct ref or discriminator
