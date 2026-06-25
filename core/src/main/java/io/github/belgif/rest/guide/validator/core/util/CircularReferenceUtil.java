@@ -79,9 +79,9 @@ public class CircularReferenceUtil {
 
     private static RefType getRefType(OpenApiDefinition<?> ref) {
         int index = getDefinitionRoot(ref).getJsonPointer().splitSegments().size();
-        List<String> segments = ref.getJsonPointer().splitSegments().subList(index, ref.getJsonPointer().splitSegments().size());
+        List<String> relativeJsonPointerSegments = ref.getJsonPointer().splitSegments().subList(index, ref.getJsonPointer().splitSegments().size());
         // direct ref or discriminator
-        if (segments.isEmpty()) {
+        if (relativeJsonPointerSegments.isEmpty()) {
             if (ref.hasReference()) {
                 return RefType.REF;
             }
@@ -90,19 +90,18 @@ public class CircularReferenceUtil {
             }
             throw new IllegalStateException("No valid reference type found.");
         }
-        int indexToUse = useLastSegment(segments, ref) ? segments.size() - 1 : segments.size() - 2;
-        return RefType.fromSegment(segments.get(indexToUse));
+        return RefType.fromSegment(relativeJsonPointerSegments.get(findRelevantSegmentIndex(relativeJsonPointerSegments, ref)));
     }
 
-    private static boolean useLastSegment(List<String> segments, OpenApiDefinition<?> ref) {
+    private static int findRelevantSegmentIndex(List<String> segments, OpenApiDefinition<?> ref) {
         String lastSegment = segments.get(segments.size() - 1);
         if (!lastSegment.equals(RefType.ITEMS.getSegment()) && !lastSegment.equals(RefType.ADDITIONAL_PROPERTIES.getSegment())) {
-            return false;
+            return segments.size() - 2;
         }
         if (lastSegment.equals(RefType.ITEMS.getSegment()) && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getItems() != null) {
-            return true;
+            return segments.size() - 1;
         }
-        return lastSegment.equals(RefType.ADDITIONAL_PROPERTIES.getSegment()) && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getAdditionalPropertiesSchema() != null;
+        return (lastSegment.equals(RefType.ADDITIONAL_PROPERTIES.getSegment()) && ref.getParent() != null && ref.getParent() instanceof SchemaDefinition schema && schema.getModel().getAdditionalPropertiesSchema() != null) ? segments.size() - 1 : segments.size() - 2;
     }
 
     @Getter
