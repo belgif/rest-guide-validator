@@ -48,7 +48,7 @@ public class CircularReferenceUtil {
             RefType type = getRefType(ref);
             refTypePath.add(type);
 
-            if (containsUnsafeCycle(getDefinitionRoot(ref), visited, refTypePath)) {
+            if (containsUnsafeCycle(findReferencingDefinition(ref), visited, refTypePath)) {
                 return true;
             }
 
@@ -60,10 +60,10 @@ public class CircularReferenceUtil {
     }
 
     /*
-    Finds definition that references something, so not for example an index of a oneOf with $ref, but the schema with the oneOf.
-    Takes nested structures into account.
+    Finds definition that references something, so for example the schema with a oneOf instead of the index of the oneOf with $ref.
+    If the schema contains a discriminator it is always returned.
      */
-    private static OpenApiDefinition<?> getDefinitionRoot(OpenApiDefinition<?> ref) {
+    private static OpenApiDefinition<?> findReferencingDefinition(OpenApiDefinition<?> ref) {
         if (ref.getDefinitionType() == OpenApiDefinition.DefinitionType.TOP_LEVEL || !ref.getParent().getClass().isInstance(ref)) {
             return ref;
         }
@@ -73,7 +73,7 @@ public class CircularReferenceUtil {
         )) {
             return schemaRef;
         }
-        return getDefinitionRoot(ref.getParent());
+        return findReferencingDefinition(ref.getParent());
     }
 
     private static boolean isUnsafe(List<RefType> refTypes) {
@@ -82,7 +82,7 @@ public class CircularReferenceUtil {
     }
 
     private static RefType getRefType(OpenApiDefinition<?> ref) {
-        int index = getDefinitionRoot(ref).getJsonPointer().splitSegments().size();
+        int index = findReferencingDefinition(ref).getJsonPointer().splitSegments().size();
         List<String> relativeJsonPointerSegments = ref.getJsonPointer().splitSegments().subList(index, ref.getJsonPointer().splitSegments().size());
         // direct ref or discriminator
         if (relativeJsonPointerSegments.isEmpty()) {
