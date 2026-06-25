@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+paths: {}
+components:
+  schemas:
+    ObjectType:
+      type: string
+      enum:
+        - one
+        - two
+        - three
+    ParentObject:
+      type: object
+      properties:
+        objectType:
+          $ref: '#/components/schemas/ObjectType'
+    BaseParentObject:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/ParentObject'
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
+          discriminator:
+            propertyName: 'objectType'
+            mapping:
+              'one': '#/components/schemas/OneObject'
+              'two': '#/components/schemas/TwoObject'
+    BaseOne:
+      type: object
+      properties:
+        myFirstProperty:
+          type: string
+    OneObject:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseParentObject'
+        - $ref: '#/components/schemas/BaseOne'
+        - properties:
+            somethingElse:
+              type: integer
+    BaseTwo:
+      type: object
+      properties:
+        mySecondProperty:
+          type: string
+    TwoObject:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseParentObject'
+        - $ref: '#/components/schemas/BaseTwo'
+        - properties:
+            somethingCompletelyDifferent:
+              type: integer
