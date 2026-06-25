@@ -60,13 +60,17 @@ public class CircularReferenceUtil {
     }
 
     /*
-    Finds definition that references something, so not for example an index of a oneOf.
+    Finds definition that references something, so not for example an index of a oneOf with $ref, but the schema with the oneOf.
+    Takes nested structures into account.
      */
     private static OpenApiDefinition<?> getDefinitionRoot(OpenApiDefinition<?> ref) {
         if (ref.getDefinitionType() == OpenApiDefinition.DefinitionType.TOP_LEVEL || !ref.getParent().getClass().isInstance(ref)) {
             return ref;
         }
-        if (ref instanceof SchemaDefinition schemaRef && schemaRef.isInlineSchemaOfProperty()) {
+        if (ref instanceof SchemaDefinition schemaRef && (
+                schemaRef.isInlineSchemaOfProperty() ||
+                        schemaRef.getModel().getDiscriminator() != null
+        )) {
             return schemaRef;
         }
         return getDefinitionRoot(ref.getParent());
