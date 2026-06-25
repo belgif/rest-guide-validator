@@ -28,20 +28,8 @@ components:
       type: object
     Parent:
       description: Some abstract parent
-      properties:
-        something:
-          type: string
-      allOf:
-        - $ref: '#/components/schemas/One'
-    One:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Two'
-    Two:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Three'
-    Three:
-      type: object
-      allOf:
+      not:
+        $ref: '#/components/schemas/Child'
+    Child:
+      anyOf:
         - $ref: '#/components/schemas/Parent'

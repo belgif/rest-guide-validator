@@ -548,6 +548,7 @@ public class Parser {
         constructNestedSchema(parentSchema.getAnyOf(), JsonPointer.relative("anyOf"), schemaDefinition, result);
         constructNestedSchema(parentSchema.getAdditionalPropertiesSchema(), JsonPointer.relative("additionalProperties"), schemaDefinition, result);
         constructNestedSchema(parentSchema.getItems(), JsonPointer.relative("items"), schemaDefinition, result);
+        constructNestedSchema(parentSchema.getNot(), JsonPointer.relative("not"), schemaDefinition, result);
         if (parentSchema.getProperties() != null) {
             parentSchema.getProperties().forEach((propertyName, propertyObject) ->
                     constructNestedSchema(propertyObject, JsonPointer.relative("properties").add(propertyName), schemaDefinition, result));

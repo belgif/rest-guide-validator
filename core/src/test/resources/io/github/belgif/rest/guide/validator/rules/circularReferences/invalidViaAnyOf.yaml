@@ -28,20 +28,29 @@ components:
       type: object
     Parent:
       description: Some abstract parent
+      discriminator:
+        propertyName: childType
+        mapping:
+          child: '#/components/schemas/Child'
+          otherChild: '#/components/schemas/OtherChild'
+      oneOf:
+        - $ref: '#/components/schemas/Child'
+        - $ref: '#/components/schemas/OtherChild'
+    Child:
+      required:
+        - childType
+      oneOf:
+        - required: [someProperty]
+        - required: [someOtherProperty]
+      description: Some child
       properties:
-        something:
+        childType:
           type: string
-      allOf:
-        - $ref: '#/components/schemas/One'
-    One:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Two'
-    Two:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Three'
-    Three:
-      type: object
-      allOf:
+        someProperty:
+          type: string
+        someOtherProperty:
+          type: string
+    OtherChild:
+      anyOf:
         - $ref: '#/components/schemas/Parent'
+        - $ref: '#/components/schemas/Child'

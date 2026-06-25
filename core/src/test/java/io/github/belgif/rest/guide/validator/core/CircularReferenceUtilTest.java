@@ -32,6 +32,16 @@ class CircularReferenceUtilTest {
     }
 
     @Test
+    void testCircularReferenceViaAnyOf() {
+        assertParsingInvalid("invalidViaAnyOf");
+    }
+
+    @Test
+    void testCircularReferenceViaNot() {
+        assertParsingInvalid("invalidViaNot");
+    }
+
+    @Test
     void testCircularReferenceViaAllOf() {
         assertParsingInvalid("invalidViaAllOf");
     }
