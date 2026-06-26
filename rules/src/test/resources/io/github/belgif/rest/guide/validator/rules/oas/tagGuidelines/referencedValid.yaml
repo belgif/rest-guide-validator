@@ -5,30 +5,7 @@ info:
 servers:
   - url: '/api/v1'
 tags:
-  - name: My Tag
-    description: This is my description
+  - name: This Tag Is In The Entry File
 paths:
-  /operationWithoutAnyTags:
-    get:
-      description: Nothing wrong here
-      operationId: noTags
-      responses:
-        default:
-          description: This is a description
-          content:
-            application/json:
-              schema:
-                type: string
-  /operationWithTag:
-    get:
-      description: Nothing wrong here
-      operationId: tag
-      tags:
-        - My Tag
-      responses:
-        default:
-          description: This is a description
-          content:
-            application/json:
-              schema:
-                type: string
+  /myPath:
+    $ref: 'ref.yaml#/paths/~1refPath'

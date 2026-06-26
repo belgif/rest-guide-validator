@@ -15,3 +15,15 @@ paths:
             application/json:
               schema:
                 type: object
+  /unusedPath:
+    get:
+      tags:
+        - No Problem
+      operationId: myNonReferencedOperation
+      responses:
+        default:
+          description: mandatory description
+          content:
+            application/json:
+              schema:
+                type: object

@@ -55,7 +55,7 @@ end
 
 rule "Rule-Tag Guidelines each tag should be declared in the top level tags list"
     when
-        $path: PathDefinition(!hasReusableDefinitionsOnly, $operation: /model/operations/entrySet/value#Operation)
+        $path: PathDefinition(isReachableFromEntryDocument, !hasReusableDefinitionsOnly(), $operation: /model/operations/entrySet/value#Operation)
         $operationDefinition: OperationDefinition($tag: /model/tags#String, !isTagDeclaredInTopLevelTagsList($tag, parserResult)) from parserResult.resolve($operation)
     then
         eachTagShouldBeDeclaredInTheTopLevelTagsListViolation(oas, $operationDefinition, $tag);
