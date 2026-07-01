@@ -7,7 +7,7 @@ servers: []
 paths: {}
 components:
   schemas:
-    MyEvent:
+    Parent:
       type: object
       properties:
         type:
@@ -18,7 +18,9 @@ components:
             - first
             - second
             - third
-      required: [type]
+      required: [ type ]
+    MyEvent:
+      type: object
       oneOf:
         - $ref: "#/components/schemas/FirstEvent"
         - $ref: "#/components/schemas/SecondEvent"
@@ -33,7 +35,7 @@ components:
     FirstEvent:
       type: object
       allOf:
-        - $ref: "#/components/schemas/MyEvent"
+        - $ref: "#/components/schemas/Parent"
       properties:
         data:
           description: This is a description
@@ -41,7 +43,7 @@ components:
     SecondEvent:
       type: object
       allOf:
-        - $ref: "#/components/schemas/MyEvent"
+        - $ref: "#/components/schemas/Parent"
       properties:
         data:
           description: This is a description
@@ -49,7 +51,7 @@ components:
     ThirdEvent:
       type: object
       allOf:
-        - $ref: "#/components/schemas/MyEvent"
+        - $ref: "#/components/schemas/Parent"
       properties:
         data:
           description: This is a description

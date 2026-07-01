@@ -1,18 +1,19 @@
 package io.github.belgif.rest.guide.validator.core;
 
-import io.github.belgif.rest.guide.validator.core.model.*;
-import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
+import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.ResponseHeaderDefinition;
+import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,7 @@ class ParserTest {
     @Test
     void buildOpenApiSpecification() throws IOException {
         var file = new File(getClass().getResource("../rules/logo.yaml").getFile());
-        assertNotNull( Parser.buildOpenApiSpecification(file));
+        assertNotNull(Parser.buildOpenApiSpecification(file));
     }
 
     @Test
@@ -172,7 +173,7 @@ class ParserTest {
         ExampleDefinition topLevelExampleDefinition = result.getExamples().stream().filter(def -> def.getDefinitionType().equals(OpenApiDefinition.DefinitionType.TOP_LEVEL)).findFirst().orElse(null);
         assertNotNull(topLevelExampleDefinition);
 
-        for (int i=0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             assertEquals(topLevelExampleDefinition, result.resolve(exampleDefinition.getModel()));
         }
     }

@@ -19,10 +19,6 @@ components:
             - second
             - third
       required: [type]
-      oneOf:
-        - $ref: "#/components/schemas/FirstEvent"
-        - $ref: "#/components/schemas/SecondEvent"
-        - $ref: "#/components/schemas/ThirdEvent"
       discriminator:
         propertyName: type
         mapping:
