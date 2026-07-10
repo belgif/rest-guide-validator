@@ -5,6 +5,7 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Reference;
+import org.eclipse.microprofile.openapi.models.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,98 +26,83 @@ public class CircularReferenceUtil {
         }
     }
 
-    private static boolean containsUnsafeCycle(OpenApiDefinition<?> def, List<Ref> visited, Parser.ParserResult result) {
-        if (visitedContainsDefinitionViaUnsafeRef(def, visited)) {
+    private static boolean containsUnsafeCycle(OpenApiDefinition<?> def, List<Visit> visited, Parser.ParserResult result) {
+        if (isUnsafeCycle(def, visited)) {
             return true;
         }
-        if (visited.stream().anyMatch(r -> r.refFrom().equals(def))) {
+        if (visited.stream().anyMatch(r -> r.source().equals(def))) {
             // In case there is a legit circular reference, the infinite loop should stop.
             return false;
         }
         if (!(def.getModel() instanceof Reference)) {
             return false;
         }
-        if (def instanceof SchemaDefinition schemaDefinition) {
-            // Return if one of these options is true:
-            return directRefContainsUnsafeCycle(def, visited, result) ||
-                    discriminatorRefContainsUnsafeCycle(schemaDefinition, visited, result) ||
-                    allOfRefContainsUnsafeCycle(schemaDefinition, visited, result) ||
-                    oneOfRefContainsUnsafeCycle(schemaDefinition, visited, result) ||
-                    anyOfRefContainsUnsafeCycle(schemaDefinition, visited, result) ||
-                    notRefContainsUnsafeCycle(schemaDefinition, visited, result);
-        } else {
-            return directRefContainsUnsafeCycle(def, visited, result);
+        for (Ref ref : getOutgoingRefs(def, result)) {
+            List<Visit> nextVisit = new ArrayList<>(visited);
+            nextVisit.add(new Visit(def, ref.discriminator));
+
+            if (containsUnsafeCycle(ref.target(), nextVisit, result)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    private static boolean visitedContainsDefinitionViaUnsafeRef(OpenApiDefinition<?> def, List<Ref> visited) {
-        return visited.stream().anyMatch(r -> r.refFrom().equals(def))
+    private static List<Ref> getOutgoingRefs(OpenApiDefinition<?> definition, Parser.ParserResult result) {
+        List<Ref> refs = new ArrayList<>();
+
+        if (definition.hasReference()) {
+            refs.add(new Ref(result.resolve(definition.getModel()), false));
+            return refs;
+        }
+
+        if (!(definition instanceof SchemaDefinition schemaDefinition)) {
+            return refs;
+        }
+
+        addDiscriminatorRefs(refs, schemaDefinition, result);
+        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAllOf(), result);
+        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getOneOf(), result);
+        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAnyOf(), result);
+
+        if (schemaDefinition.getModel().getNot() != null) {
+            refs.add(new Ref(result.resolve(schemaDefinition.getModel().getNot()), false));
+        }
+        return refs;
+    }
+
+    private static boolean isUnsafeCycle(OpenApiDefinition<?> def, List<Visit> visited) {
+        return visited.stream().anyMatch(r -> r.source().equals(def))
                 && (
-                visited.stream().allMatch(Ref::viaDiscriminator) ||
-                        visited.stream().noneMatch(Ref::viaDiscriminator)
+                visited.stream().allMatch(Visit::discriminator) ||
+                        visited.stream().noneMatch(Visit::discriminator)
         );
     }
 
-    private static boolean notRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
-        if (schemaDefinition.getModel().getNot() == null) {
-            return false;
+
+    private static void addSchemaCollectionRefs(List<Ref> refs, List<Schema> schemaDefinitionList, Parser.ParserResult result) {
+        if (schemaDefinitionList == null || schemaDefinitionList.isEmpty()) {
+            return;
         }
-        OpenApiDefinition<?> referenced = result.resolve(schemaDefinition.getModel().getNot());
-        return callNextCycle(schemaDefinition, referenced, false, visited, result);
+        refs.addAll(schemaDefinitionList.stream().map(result::resolve).map(r -> new Ref(r, false)).toList());
     }
 
-    private static boolean anyOfRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
-        if (schemaDefinition.getModel().getAnyOf() == null || schemaDefinition.getModel().getAnyOf().isEmpty()) {
-            return false;
-        }
-        return schemaDefinition.getModel().getAnyOf().stream()
-                .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
-    }
-
-
-    private static boolean oneOfRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
-        if (schemaDefinition.getModel().getOneOf() == null || schemaDefinition.getModel().getOneOf().isEmpty()) {
-            return false;
-        }
-        return schemaDefinition.getModel().getOneOf().stream()
-                .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
-    }
-
-    private static boolean allOfRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
-        if (schemaDefinition.getModel().getAllOf() == null || schemaDefinition.getModel().getAllOf().isEmpty()) {
-            return false;
-        }
-        return schemaDefinition.getModel().getAllOf().stream()
-                .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
-    }
-
-    private static boolean discriminatorRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
+    private static void addDiscriminatorRefs(List<Ref> refs, SchemaDefinition schemaDefinition, Parser.ParserResult result) {
         if (schemaDefinition.getModel().getDiscriminator() == null || schemaDefinition.getModel().getDiscriminator().getMapping() == null) {
-            return false;
+            return;
         }
-        return schemaDefinition.getModel().getDiscriminator().getMapping().values().stream()
+        refs.addAll(schemaDefinition.getModel().getDiscriminator().getMapping().values().stream()
                 .map(m -> result.resolveDiscriminatorMapping(schemaDefinition, m).orElseThrow(() -> new IllegalStateException("Reference does not exist but somehow was not catched before")))
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, true, visited, result));
+                .map(r -> new Ref(r, true))
+                .toList());
     }
 
-    private static boolean directRefContainsUnsafeCycle(OpenApiDefinition<?> def, List<Ref> visited, Parser.ParserResult result) {
-        if (!def.hasReference()) {
-            return false;
-        }
-        OpenApiDefinition<?> referenced = result.resolve(def.getModel());
-        return callNextCycle(def, referenced, false, visited, result);
+    private record Ref(
+            OpenApiDefinition<?> target,
+            boolean discriminator) {
     }
 
-    private static boolean callNextCycle(OpenApiDefinition<?> def, OpenApiDefinition<?> referenced, boolean viaDiscriminator, List<Ref> visited, Parser.ParserResult result) {
-        List<Ref> branchedVisited = new ArrayList<>(visited);
-        branchedVisited.add(new Ref(def, viaDiscriminator));
-        return containsUnsafeCycle(referenced, branchedVisited, result);
-    }
-
-    private record Ref(OpenApiDefinition<?> refFrom, boolean viaDiscriminator) {
+    private record Visit(OpenApiDefinition<?> source, boolean discriminator) {
     }
 
 }
