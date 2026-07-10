@@ -3,7 +3,6 @@ package io.github.belgif.rest.guide.validator.core.util;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Reference;
 
@@ -53,8 +52,8 @@ public class CircularReferenceUtil {
     private static boolean visitedContainsDefinitionViaUnsafeRef(OpenApiDefinition<?> def, List<Ref> visited) {
         return visited.stream().anyMatch(r -> r.refFrom().equals(def))
                 && (
-                visited.stream().allMatch(r -> r.refType() == RefType.DISCRIMINATOR) ||
-                        visited.stream().noneMatch(r -> r.refType() == RefType.DISCRIMINATOR)
+                visited.stream().allMatch(Ref::viaDiscriminator) ||
+                        visited.stream().noneMatch(Ref::viaDiscriminator)
         );
     }
 
@@ -63,7 +62,7 @@ public class CircularReferenceUtil {
             return false;
         }
         OpenApiDefinition<?> referenced = result.resolve(schemaDefinition.getModel().getNot());
-        return callNextCycle(schemaDefinition, referenced, RefType.NOT, visited, result);
+        return callNextCycle(schemaDefinition, referenced, false, visited, result);
     }
 
     private static boolean anyOfRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
@@ -72,7 +71,7 @@ public class CircularReferenceUtil {
         }
         return schemaDefinition.getModel().getAnyOf().stream()
                 .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, RefType.ONE_OF, visited, result));
+                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
     }
 
 
@@ -82,7 +81,7 @@ public class CircularReferenceUtil {
         }
         return schemaDefinition.getModel().getOneOf().stream()
                 .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, RefType.ONE_OF, visited, result));
+                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
     }
 
     private static boolean allOfRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
@@ -91,7 +90,7 @@ public class CircularReferenceUtil {
         }
         return schemaDefinition.getModel().getAllOf().stream()
                 .map(result::resolve)
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, RefType.ALL_OF, visited, result));
+                .anyMatch(r -> callNextCycle(schemaDefinition, r, false, visited, result));
     }
 
     private static boolean discriminatorRefContainsUnsafeCycle(SchemaDefinition schemaDefinition, List<Ref> visited, Parser.ParserResult result) {
@@ -100,7 +99,7 @@ public class CircularReferenceUtil {
         }
         return schemaDefinition.getModel().getDiscriminator().getMapping().values().stream()
                 .map(m -> result.resolveDiscriminatorMapping(schemaDefinition, m).orElseThrow(() -> new IllegalStateException("Reference does not exist but somehow was not catched before")))
-                .anyMatch(r -> callNextCycle(schemaDefinition, r, RefType.DISCRIMINATOR, visited, result));
+                .anyMatch(r -> callNextCycle(schemaDefinition, r, true, visited, result));
     }
 
     private static boolean directRefContainsUnsafeCycle(OpenApiDefinition<?> def, List<Ref> visited, Parser.ParserResult result) {
@@ -108,29 +107,16 @@ public class CircularReferenceUtil {
             return false;
         }
         OpenApiDefinition<?> referenced = result.resolve(def.getModel());
-        return callNextCycle(def, referenced, RefType.REF, visited, result);
+        return callNextCycle(def, referenced, false, visited, result);
     }
 
-    private static boolean callNextCycle(OpenApiDefinition<?> def, OpenApiDefinition<?> referenced, RefType refType, List<Ref> visited, Parser.ParserResult result) {
+    private static boolean callNextCycle(OpenApiDefinition<?> def, OpenApiDefinition<?> referenced, boolean viaDiscriminator, List<Ref> visited, Parser.ParserResult result) {
         List<Ref> branchedVisited = new ArrayList<>(visited);
-        branchedVisited.add(new Ref(def, refType));
+        branchedVisited.add(new Ref(def, viaDiscriminator));
         return containsUnsafeCycle(referenced, branchedVisited, result);
     }
 
-    private record Ref(OpenApiDefinition<?> refFrom, RefType refType) {
-    }
-
-    @Getter
-    private enum RefType {
-        REF(),
-        ALL_OF(),
-        ONE_OF(),
-        ANY_OF(),
-        NOT(),
-        DISCRIMINATOR(),
-        PROPERTY(),
-        ITEMS(),
-        ADDITIONAL_PROPERTIES()
+    private record Ref(OpenApiDefinition<?> refFrom, boolean viaDiscriminator) {
     }
 
 }
