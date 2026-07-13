@@ -15,8 +15,8 @@ class PathInPluralTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void historyAllowedExceptionTest() {
-        assertNoViolations(callRules("historyAllowed.yaml"));
+    void allowedExceptionsTest() {
+        assertNoViolations(callRules("allowedExceptions.yaml"));
     }
 
     @Test
