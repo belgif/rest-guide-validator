@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myDummyPath:
+    get:
+      operationId: myDummyPath
+      summary: Just something
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        default:
+          description: problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+    Parent:
+      description: Some abstract parent
+      discriminator:
+        propertyName: childType
+        mapping:
+          child: '#/components/schemas/Child'
+          otherChild: '#/components/schemas/OtherChild'
+      oneOf:
+        - $ref: '#/components/schemas/Child'
+        - $ref: '#/components/schemas/OtherChild'
+    Child:
+      required:
+        - childType
+      oneOf:
+        - required: [someProperty]
+        - required: [someOtherProperty]
+      description: Some child
+      properties:
+        childType:
+          type: string
+        someProperty:
+          type: string
+        someOtherProperty:
+          type: string
+    OtherChild:
+      required:
+        - childType
+      oneOf:
+        - required: [ yes ]
+        - required: [ orNo ]
+      description: Some child
+      properties:
+        childType:
+          type: string
+        yes:
+          type: string
+        orNo:
+          type: string
+        someTypeOfChild:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Parent'
+          properties:
+            someOtherTypeOfProperty:
+              type: string
