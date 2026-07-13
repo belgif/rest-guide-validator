@@ -25,8 +25,18 @@ class TagGuidelinesTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testTagsDeclaredInReferencedFiles() {
-        assertNoViolations(callRules("referenced.yaml"));
+    void testReachableTagsInReferencedFileDeclaredInEntryFile() {
+        assertNoViolations(callRules("referencedValid.yaml"));
+    }
+
+    @Test
+    void testTagsInReferencedFileNotDeclaredInEntryFile() {
+        assertErrorCount(1, callRules("referencedInvalid.yaml"));
+    }
+
+    @Test
+    void testReusableDefinitionsOnly() {
+        assertNoViolations(callRules("reusableDefinitionsOnly.yaml"));
     }
 
 }

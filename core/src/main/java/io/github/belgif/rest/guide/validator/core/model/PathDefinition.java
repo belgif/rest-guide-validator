@@ -22,7 +22,7 @@ public class PathDefinition extends OpenApiDefinition<PathItem> {
         return super.getModel();
     }
 
-    private boolean hasReusableDefinitionsOnly() {
+    public boolean hasReusableDefinitionsOnly() {
         return this.getResult().getSrc().get(this.getOpenApiFile().getAbsolutePath()).hasReusableDefinitionsOnly();
     }
 }

@@ -6,8 +6,20 @@ paths:
   /refPath:
     get:
       tags:
-        - My Tag
+        - This Tag Is In The Entry File
       operationId: myReferencedOperation
+      responses:
+        default:
+          description: mandatory description
+          content:
+            application/json:
+              schema:
+                type: object
+  /unusedPath:
+    get:
+      tags:
+        - No Problem
+      operationId: myNonReferencedOperation
       responses:
         default:
           description: mandatory description
