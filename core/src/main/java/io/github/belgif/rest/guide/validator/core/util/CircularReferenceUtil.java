@@ -19,13 +19,20 @@ public class CircularReferenceUtil {
     public static void validateCircularReferences(Parser.ParserResult result) {
         for (OpenApiDefinition<?> def : result.getAllDefinitions()) {
             if (containsUnsafeCycle(def, new ArrayList<>(), result)) {
-                log.error("{} contains a circular reference to itself", def.getPrintableJsonPointer());
+                log.error("{} contains a circular reference to itself", def.getPrintableJsonPointer());  //TODO: not necessarily def anymore, but can be nested/referenced schema
                 result.setParsingValid(false);
                 return;
             }
         }
     }
 
+    /**
+     *
+     * @param def - a definition referenced by the last definition in visited, e.g. D if C -> D
+     * @param visited - chain of definitions referencing one another e.g.  A -> B -> C
+     * @param result
+     * @return  Whether there's an unsafe circular reference concerning 'def' or one of the definitions it references
+     */
     private static boolean containsUnsafeCycle(OpenApiDefinition<?> def, List<Visit> visited, Parser.ParserResult result) {
         if (isUnsafeCycle(def, visited)) {
             return true;
@@ -34,10 +41,10 @@ public class CircularReferenceUtil {
             // In case there is a legit circular reference, the infinite loop should stop.
             return false;
         }
-        if (!(def.getModel() instanceof Reference)) {
+        if (!(def.getModel() instanceof Reference)) {  //TODO: check if it's a type that can be a reference; why this check? instead of def.getModel() instanceof def.getClass()
             return false;
         }
-        for (Ref ref : getOutgoingRefs(def, result)) {
+        for (Ref ref : getOutgoingRefs(def, result)) {  // TODO: not always refs, can also be subschemas
             List<Visit> nextVisit = new ArrayList<>(visited);
             nextVisit.add(new Visit(def, ref.discriminator));
 
@@ -53,21 +60,19 @@ public class CircularReferenceUtil {
 
         if (definition.hasReference()) {
             refs.add(new Ref(result.resolve(definition.getModel()), false));
-            return refs;
         }
 
-        if (!(definition instanceof SchemaDefinition schemaDefinition)) {
-            return refs;
+        if (definition instanceof SchemaDefinition schemaDefinition) {
+            addDiscriminatorRefs(refs, schemaDefinition, result);
+            addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAllOf(), result);
+            addSchemaCollectionRefs(refs, schemaDefinition.getModel().getOneOf(), result);
+            addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAnyOf(), result);
+
+            if (schemaDefinition.getModel().getNot() != null) {
+                refs.add(new Ref(result.resolve(schemaDefinition.getModel().getNot()), false));
+            }
         }
 
-        addDiscriminatorRefs(refs, schemaDefinition, result);
-        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAllOf(), result);
-        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getOneOf(), result);
-        addSchemaCollectionRefs(refs, schemaDefinition.getModel().getAnyOf(), result);
-
-        if (schemaDefinition.getModel().getNot() != null) {
-            refs.add(new Ref(result.resolve(schemaDefinition.getModel().getNot()), false));
-        }
         return refs;
     }
 
