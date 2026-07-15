@@ -34,3 +34,32 @@ paths:
             application/json:
               schema:
                 type: object
+  /collection/searchPhonetically/veryWrong/{wrongId}:
+    get:
+      summary: delete
+      operationId: delete
+      parameters:
+        - name: wrongId
+          in: path
+          description: uhuh
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object
+  /collection/searchPhonetically/veryWrong:
+    get:
+      summary: delete
+      operationId: delete
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                type: object

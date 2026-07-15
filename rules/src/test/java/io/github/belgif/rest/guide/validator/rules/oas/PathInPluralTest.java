@@ -11,7 +11,7 @@ class PathInPluralTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidOpenApi() {
-        assertErrorCount(1, callRules("openapi_bad.yaml"));
+        assertErrorCount(2, callRules("openapi_bad.yaml"));
     }
 
     @Test

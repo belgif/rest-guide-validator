@@ -38,7 +38,7 @@ rule "Rule-PathInPlural"
         $path: PathDefinition(directPath == true, $pathName: identifier)
         PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
         OperationDefinition(hasCollectionResponse(this, parserResult) || ApiFunctions.existsPathWithPathParamAfter($pathName, parserResult)) from parserResult.resolve($operation)
-        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.toLowerCase().endsWith("history") && !this.endsWith("/search") && !this.toLowerCase().endsWith("children") ) from $pathName
+        String( !this.endsWith("}") && !this.endsWith("s") && !this.endsWith("data") && !this.endsWith("Data") && !this.toLowerCase().endsWith("history") && this not matches ".*/search[a-zA-Z0-9]*$" && !this.toLowerCase().endsWith("children") ) from $pathName
     then
         pluralViolation(oas, $path);
 end
