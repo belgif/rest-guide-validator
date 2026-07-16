@@ -48,7 +48,7 @@ end
 
 rule "Rule-ResponsesOfHealthOperation"
     when
-        $path: PathDefinition(identifier == "/health")
+        $path: PathDefinition(identifier == "/health" && inEntryDocument())
         $resolvedPath: PathDefinition($operation: /model/GET) from parserResult.resolve($path.getModel())
         $operationDefinition: OperationDefinition($responses: /model/responses, !$responses.hasAPIResponse("200") || !$responses.hasAPIResponse("503")) from parserResult.resolve($operation)
     then
@@ -57,7 +57,7 @@ end
 
 rule "Rule-HealthOperationWithoutGet"
     when
-        $path: PathDefinition(identifier == "/health")
+        $path: PathDefinition(identifier == "/health" && inEntryDocument())
         PathItem(getGET() == null) from parserResult.resolve($path.getModel()).getModel()
     then
         healthGetOperationViolation(oas, $path);
