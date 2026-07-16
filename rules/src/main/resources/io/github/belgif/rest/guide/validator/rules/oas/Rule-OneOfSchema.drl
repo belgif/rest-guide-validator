@@ -21,7 +21,6 @@ import java.util.Collections
 import java.util.stream.Collectors
 import java.util.Map
 import java.util.stream.Stream
-import java.util.Objects;
 import java.util.Optional;
 
 function void violationDiscriminatorPropertyWithOneOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
