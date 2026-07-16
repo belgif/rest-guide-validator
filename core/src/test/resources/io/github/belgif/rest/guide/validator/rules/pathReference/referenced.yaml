@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myCollection/notPlural/{id}:
+    get:
+      operationId: somethingElse
+      description: uhuh
+      responses:
+        200:
+          description: good
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /myCollection/notPlural:
+    get:
+      operationId: something
+      description: yes
+      responses:
+        200:
+          description: all good
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemCollection'
+        default:
+          description: problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+    ItemCollection:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
