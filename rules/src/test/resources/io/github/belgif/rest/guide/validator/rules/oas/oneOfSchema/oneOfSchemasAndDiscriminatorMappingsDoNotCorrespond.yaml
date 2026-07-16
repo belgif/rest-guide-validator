@@ -1,0 +1,50 @@
+openapi: 3.0.1
+info:
+  title: TestCase
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    DiscriminatorMappingsDoNotCorrespond:
+      discriminator:
+        propertyName: type
+        mapping:
+          first: "#/components/schemas/SchemaOne"
+      oneOf:
+        - $ref: '#/components/schemas/SchemaOne'
+        - $ref: '#/components/schemas/SchemaTwo'
+    OneOfDoesNotCorrespond:
+      discriminator:
+        propertyName: type
+        mapping:
+          first: "#/components/schemas/SchemaOne"
+          second: "#/components/schemas/SchemaTwo"
+      oneOf:
+        - $ref: '#/components/schemas/SchemaOne'
+    DoesNotMatchAtAll:
+      discriminator:
+        propertyName: type
+        mapping:
+          first: "#/components/schemas/SchemaOne"
+      oneOf:
+        - $ref: '#/components/schemas/SchemaTwo'
+    SchemaOne:
+      type: object
+      properties:
+        firstProperty:
+          type: string
+        type:
+          type: string
+      required:
+        - type
+    SchemaTwo:
+      type: object
+      properties:
+        secondProperty:
+          type: string
+        type:
+          type: string
+      required:
+        - type
