@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info:
+  title: REST reference implementation
+  description: This is the reference implementation of a REST API following the G-Cloud style guide.
+  version: v1
+servers:
+  - url: /demo/v1
+paths:
+  /myCollection/notPlural/{id}:
+    $ref: 'referenced.yaml#/paths/~1myCollection~1notPlural~1{id}'
+  /myCollection/notPlural:
+    x-ignore-rules:
+      "col-name": personal reasons
+    $ref: 'referenced.yaml#/paths/~1myCollection~1notPlural'
