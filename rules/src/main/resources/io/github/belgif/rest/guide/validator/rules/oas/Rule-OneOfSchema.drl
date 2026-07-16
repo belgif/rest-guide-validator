@@ -127,25 +127,23 @@ function String findSchemasThatAreOnlyDefinedInOneOfOrDiscriminatorMapping(Schem
   if (schemasDefinedInOneOf.equals(schemasDefinedInDiscriminatorMapping)) {
     return null;
   }
-  String error = null;
+  StringBuilder errorBuilder = new StringBuilder();
   Set<SchemaDefinition> onlyInOneOf = new HashSet<>(schemasDefinedInOneOf);
   onlyInOneOf.removeAll(schemasDefinedInDiscriminatorMapping);
   if (!onlyInOneOf.isEmpty()) {
-    error = "Schemas defined in oneOf but not in discriminator mappings: ";
-    error = error + onlyInOneOf.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", "));
+    errorBuilder.append("Schemas defined in oneOf but not in discriminator mappings: ");
+    errorBuilder.append(onlyInOneOf.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", ")));
   }
   Set<SchemaDefinition> onlyInDiscriminatorMapping = new HashSet<>(schemasDefinedInDiscriminatorMapping);
   onlyInDiscriminatorMapping.removeAll(schemasDefinedInOneOf);
   if (!onlyInDiscriminatorMapping.isEmpty()) {
-    if (error != null) {
-      error = error + "\n";
-    } else {
-      error = "";
+    if (!errorBuilder.isEmpty()) {
+      errorBuilder.append("\n");
     }
-    error = error + "Schemas defined in discriminator mappings but not in oneOf: ";
-    error = error + onlyInDiscriminatorMapping.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", "));
+    errorBuilder.append("Schemas defined in discriminator mappings but not in oneOf: ");
+    errorBuilder.append(onlyInDiscriminatorMapping.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", ")));
   }
-  return error;
+  return errorBuilder.toString();
 }
 
 rule "OneOf use should be limited"

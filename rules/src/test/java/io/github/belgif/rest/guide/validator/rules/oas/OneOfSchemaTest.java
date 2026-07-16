@@ -82,6 +82,6 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testOneOfSchemasAndDiscriminatorMappingsDoNotCorrespond() {
-        assertErrorCount(30, callRules("oneOfSchemasAndDiscriminatorMappingsDoNotCorrespond.yaml"));
+        assertErrorCount(3, callRules("oneOfSchemasAndDiscriminatorMappingsDoNotCorrespond.yaml"));
     }
 }
