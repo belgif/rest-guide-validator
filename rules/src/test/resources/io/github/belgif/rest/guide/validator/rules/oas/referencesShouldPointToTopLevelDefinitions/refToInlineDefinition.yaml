@@ -1,0 +1,30 @@
+openapi: 3.0.1
+info:
+  title: ReadOnlyProperties
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: {}
+components:
+  schemas:
+    SchemaUnderTest:
+      type: object
+      properties:
+        first:
+          $ref: '#/components/schemas/MyPropertiesSchema'
+        second:
+          $ref: '#/components/schemas/MyPropertiesSchema/properties/second'
+    MyPropertiesSchema:
+      type: object
+      properties:
+        first:
+          type: string
+        second:
+          type: object
+          properties:
+            inlineProperty:
+              type: number
+            anotherOne:
+              type: string
+        third:
+          type: number
