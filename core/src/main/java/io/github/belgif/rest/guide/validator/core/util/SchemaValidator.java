@@ -1,12 +1,8 @@
 package io.github.belgif.rest.guide.validator.core.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.model.helper.BelgifOAI3Context;
-import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
-import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.openapi4j.core.exception.ResolutionException;
@@ -15,23 +11,14 @@ import org.openapi4j.core.model.v3.OAI3;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SchemaValidator {
-
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static final ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
-    // Map of globally resolved nodes for caching.
-    private static final Map<File, JsonNode> openApiNodesCache = new ConcurrentHashMap<>();
-    private static final Map<OpenApiDefinition<?>, JsonNode> schemaNodesCache = new ConcurrentHashMap<>();
 
     private SchemaValidator() {
     }
@@ -43,7 +30,7 @@ public class SchemaValidator {
                 return Optional.empty();
             }
             SchemaDefinition schemaDefinition = def.get();
-            JsonNode schemaNode = getSchemaNode(schemaDefinition);
+            JsonNode schemaNode = schemaDefinition.getJsonNode();
             ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
             JsonNode exampleNode = getExampleNode(example);
 
@@ -56,7 +43,7 @@ public class SchemaValidator {
 
     public static Set<Map.Entry<String, String>> getEnumViolations(SchemaDefinition schemaDefinition) {
         Set<Map.Entry<String, String>> violations = new HashSet<>();
-        JsonNode schemaNode = getSchemaNode(schemaDefinition.getHighLevelSchema());
+        JsonNode schemaNode = schemaDefinition.getHighLevelSchema().getJsonNode();
         try {
             OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
             Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
@@ -72,7 +59,7 @@ public class SchemaValidator {
 
     public static Optional<String> getDefaultValueViolations(SchemaDefinition schemaDefinition) {
         try {
-            JsonNode schemaNode = getSchemaNode(schemaDefinition);
+            JsonNode schemaNode = schemaDefinition.getJsonNode();
             if (schemaNode.has("default")) {
                 JsonNode defaultNode = schemaNode.get("default");
 
@@ -98,8 +85,7 @@ public class SchemaValidator {
      * </p>
      */
     private static JsonNode getExampleNode(ExampleDefinition exampleDefinition) {
-        JsonNode openApiNode = getOpenApiNode(exampleDefinition);
-        JsonNode exampleNode = getNodeAtLocation(openApiNode, exampleDefinition.getJsonPointer());
+        JsonNode exampleNode = exampleDefinition.getJsonNode();
         if (exampleDefinition.isOasExampleObject() && exampleNode.has("value")) {
             exampleNode = exampleNode.get("value");
         }
@@ -117,8 +103,7 @@ public class SchemaValidator {
      */
     private static Set<JsonNode> getEnumerationNodes(SchemaDefinition schemaDefinition) {
         Set<JsonNode> enumerations = new HashSet<>();
-        JsonNode openApiNode = getOpenApiNode(schemaDefinition);
-        JsonNode schema = getNodeAtLocation(openApiNode, schemaDefinition.getJsonPointer());
+        JsonNode schema = schemaDefinition.getJsonNode();
         for (JsonNode enumeration : schema.get("enum")) {
             enumerations.add(enumeration);
         }
@@ -148,17 +133,6 @@ public class SchemaValidator {
         return new HashSet<>();
     }
 
-    /**
-     * @param parent - Definition object of the example parent. Schema to validate against is derived from this
-     * @return JsonNode object of the schema that has to be validated against.
-     */
-    public static JsonNode getSchemaNode(OpenApiDefinition<?> parent) {
-        return schemaNodesCache.computeIfAbsent(parent, parentDef -> {
-            JsonNode openApiNode = getOpenApiNode(parentDef);
-            return getNodeAtLocation(openApiNode, parentDef.getJsonPointer());
-        });
-    }
-
     private static Optional<SchemaDefinition> getSchemaDefinition(ExampleDefinition exampleDefinition) {
         OpenApiDefinition<?> parentDef = exampleDefinition.getParent();
         Schema schema;
@@ -174,21 +148,6 @@ public class SchemaValidator {
             throw new RuntimeException("[Internal Error] Unable to find schema related to example: " + exampleDefinition.getJsonPointer());
         }
         return schema != null ? Optional.of((SchemaDefinition) exampleDefinition.getResult().resolve(schema)) : Optional.empty();
-    }
-
-    private static JsonNode getOpenApiNode(OpenApiDefinition<?> parent) {
-        return openApiNodesCache.computeIfAbsent(parent.getOpenApiFile(), parentFile -> {
-            SourceDefinition sourceDefinition = parent.getResult().getSrc().get(parent.getOpenApiFile().getAbsolutePath());
-            try {
-                return sourceDefinition.isYaml() ? yamlReader.readTree(parentFile) : mapper.readTree(parentFile);
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read openapi file <<" + parentFile.getAbsolutePath() + ">> for example validation", e);
-            }
-        });
-    }
-
-    private static JsonNode getNodeAtLocation(JsonNode openApiNode, JsonPointer jsonPointer) {
-        return openApiNode.at(com.fasterxml.jackson.core.JsonPointer.compile(jsonPointer.getJsonPointer()));
     }
 
     private static Optional<String> buildViolationString(Set<String> violations) {

@@ -3,10 +3,12 @@ package io.github.belgif.rest.guide.validator.core.model;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.Line;
 import io.github.belgif.rest.guide.validator.core.parser.JsonPointer;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
+import io.github.belgif.rest.guide.validator.core.util.JsonNodeUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.Constructible;
@@ -42,6 +44,11 @@ public abstract class OpenApiDefinition<T extends Constructible> {
     private final Map<String, String> ignoredRules;
 
     /**
+     * A raw JsonNode representation of this definition. Separately parsed for extension purposes.
+     */
+    private final JsonNode jsonNode;
+
+    /**
      * Constructor for an inline definition
      */
     protected OpenApiDefinition(T model, OpenApiDefinition<?> parent, String identifier, JsonPointer relativeJsonPointer) {
@@ -53,6 +60,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.openApiFile = parent.getOpenApiFile();
         this.jsonPointer = parent.getJsonPointer().add(relativeJsonPointer);
         this.ignoredRules = parseIgnoredRules();
+        this.jsonNode = JsonNodeUtil.findJsonNode(jsonPointer, openApiFile, result);
         checkRef();
     }
 
@@ -67,6 +75,7 @@ public abstract class OpenApiDefinition<T extends Constructible> {
         this.openApiFile = openApiFile;
         this.jsonPointer = jsonPointer;
         this.ignoredRules = parseIgnoredRules();
+        this.jsonNode = JsonNodeUtil.findJsonNode(jsonPointer, openApiFile, result);
         checkRef();
     }
 
