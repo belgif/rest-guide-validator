@@ -1,5 +1,7 @@
 package io.github.belgif.rest.guide.validator.core.parser;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.github.belgif.rest.guide.validator.core.util.JsonNodeUtil;
 import lombok.Getter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
@@ -17,6 +19,7 @@ public class SourceDefinition {
     private final boolean isYaml;
     private final OpenAPI openApi;
     private final boolean hasReusableDefinitionsOnly;
+    private final JsonNode jsonNode;
 
     public SourceDefinition(File file, OpenAPI openApi) throws IOException {
         this.file = file;
@@ -25,6 +28,7 @@ public class SourceDefinition {
         this.isYaml = checkIsYaml(this.fileName);
         this.openApi = openApi;
         this.hasReusableDefinitionsOnly = findHasReusableDefinitionsOnly(openApi);
+        this.jsonNode = JsonNodeUtil.parseJsonNode(file, isYaml);
     }
 
     public static boolean checkIsYaml(String fileName) {
@@ -39,8 +43,8 @@ public class SourceDefinition {
         if (openApi.getExtensions() != null &&
                 openApi.getExtensions().containsKey(REF_ONLY_KEY) &&
                 openApi.getExtensions().get(REF_ONLY_KEY) instanceof Boolean) {
-                return ((Boolean) openApi.getExtensions().get(REF_ONLY_KEY));
-            }
+            return ((Boolean) openApi.getExtensions().get(REF_ONLY_KEY));
+        }
         return false;
     }
 }

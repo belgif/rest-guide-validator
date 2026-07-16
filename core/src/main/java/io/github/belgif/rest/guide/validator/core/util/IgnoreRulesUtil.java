@@ -1,12 +1,8 @@
 package io.github.belgif.rest.guide.validator.core.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
-import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -15,9 +11,6 @@ import java.util.stream.Collectors;
 public class IgnoreRulesUtil {
 
     private static final String X_IGNORE_RULES = "x-ignore-rules";
-
-    private static ObjectMapper YAML_MAPPER;
-    private static ObjectMapper JSON_MAPPER;
 
     private IgnoreRulesUtil() {
     }
@@ -37,7 +30,7 @@ public class IgnoreRulesUtil {
     }
 
     private static void addIgnoreRules(OpenApiDefinition<?> definition) {
-        JsonNode node = getJsonNode(definition);
+        JsonNode node = definition.getJsonNode();
         if (node.has(X_IGNORE_RULES)) {
             JsonNode ignoredRules = node.get(X_IGNORE_RULES);
             Iterator<String> iterator = ignoredRules.fieldNames();
@@ -47,37 +40,6 @@ public class IgnoreRulesUtil {
                 definition.getIgnoredRules().put(ruleName, reason);
             }
         }
-    }
-
-    private static JsonNode getJsonNode(OpenApiDefinition<?> definition) {
-        JsonNode openapi = getJsonNodeForSrc(getSrc(definition));
-        return openapi.at(com.fasterxml.jackson.core.JsonPointer.compile(definition.getJsonPointer().getJsonPointer()));
-    }
-
-    private static JsonNode getJsonNodeForSrc(SourceDefinition src) {
-        try {
-            return getCorrectMapper(src).readTree(src.getSrc());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ObjectMapper getCorrectMapper(SourceDefinition sourceDefinition) {
-        if (sourceDefinition.isYaml()) {
-            if (YAML_MAPPER == null) {
-                YAML_MAPPER = new ObjectMapper(new YAMLFactory());
-            }
-            return YAML_MAPPER;
-        } else {
-            if (JSON_MAPPER == null) {
-                JSON_MAPPER = new ObjectMapper();
-            }
-            return JSON_MAPPER;
-        }
-    }
-
-    private static SourceDefinition getSrc(OpenApiDefinition<?> definition) {
-        return definition.getResult().getSrc().get(definition.getOpenApiFile().getAbsolutePath());
     }
 
 }

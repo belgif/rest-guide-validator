@@ -1,7 +1,5 @@
 package io.github.belgif.rest.guide.validator.core.parser;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import io.github.belgif.rest.guide.validator.core.Line;
@@ -11,7 +9,6 @@ import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.CircularReferenceUtil;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
 import io.github.belgif.rest.guide.validator.core.util.IgnoreRulesUtil;
-import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.AllArgsConstructor;
@@ -291,22 +288,11 @@ public class Parser {
     }
 
     private static int getOasVersion(SourceDefinition sourceDefinition) {
-        ObjectMapper mapper;
-
-        if (sourceDefinition.isYaml()) {
-            mapper = new ObjectMapper(new YAMLFactory());
+        var jsonNode = sourceDefinition.getJsonNode();
+        if (jsonNode.has("openapi")) {
+            return 3;
         } else {
-            mapper = new ObjectMapper();
-        }
-        try {
-            var jsonNode = mapper.readTree(sourceDefinition.getFile());
-            if (jsonNode.has("openapi")) {
-                return 3;
-            } else {
-                return 2;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error finding oas version for: " + sourceDefinition.getFile().getName(), e);
+            return 2;
         }
     }
 
@@ -582,7 +568,7 @@ public class Parser {
     This custom implementation retrieves the example as JsonNode from the contract file itself.
      */
     private void constructExamples(OpenApiDefinition<?> definition, ParserResult result) {
-        var schemaNode = SchemaValidator.getSchemaNode(definition);
+        var schemaNode = definition.getJsonNode();
         if (schemaNode.has("example")) {
             var exampleValue = schemaNode.get("example");
             var exampleObject = new SwExample();
