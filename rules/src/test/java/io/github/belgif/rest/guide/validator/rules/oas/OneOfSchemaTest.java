@@ -19,6 +19,11 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
+    void testOneOfWithImplicitObjectType() {
+        assertNoViolations(callRules("oneOfSchemaWithImplicitType.yaml"));
+    }
+
+    @Test
     void testOneOfWithEnumConstraint() {
         assertNoViolations(callRules("oneOfWithEnumConstraint.yaml"));
     }

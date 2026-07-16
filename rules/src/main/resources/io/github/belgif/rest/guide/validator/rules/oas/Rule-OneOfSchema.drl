@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections
 import java.util.stream.Collectors
 import java.util.Map
-import java.util.stream.Stream;
+import java.util.stream.Stream
+import java.util.Objects;
 
 function void violationDiscriminatorPropertyWithOneOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
     oas.addViolation("[sch-oneof]",
@@ -84,8 +85,10 @@ function List validateOneOfSchema(SchemaDefinition schemaWithOneOf, ParserResult
     List<SchemaDefinition> discriminatorAllowedSchemas = Collections.EMPTY_LIST;
     if (schemaWithOneOf.getModel().getDiscriminator() != null) {
         discriminatorAllowedSchemas = subSchemas.stream()
-            .filter(subSchema -> subSchema.getModel().getType() != null
-               && ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes().contains(SchemaType.OBJECT))
+            .filter(subSchema -> {
+               Set<Schema.SchemaType> allowedTypes = ApiFunctions.findSchemaTypes(subSchema.getModel(), parserResult).allowedTypes();
+               return allowedTypes != null && allowedTypes.contains(SchemaType.OBJECT);
+               })
             .toList();
         if (discriminatorAllowedSchemas.containsAll(subSchemas)) {
           List<String> parentProps = ApiFunctions.findNonNullProperties(schemaWithOneOf.getModel());
