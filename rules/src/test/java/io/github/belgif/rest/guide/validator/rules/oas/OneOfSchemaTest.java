@@ -61,7 +61,7 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     @Test
     void testNonCombinableSubSchemas() {
         ViolationReport report = callRules("nonCombinableOneOfSchemas.yaml");
-        assertErrorCount(2, report);
+        assertErrorCount(3, report);
         assertEquals("All subschemas should comply with one of the allowed uses for a oneOf schema.", report.getViolations().get(0).getMessage());
     }
 
@@ -83,5 +83,10 @@ class OneOfSchemaTest extends AbstractOasRuleTest {
     @Test
     void testOneOfDiscriminatorPropertyNotRequired() {
         assertErrorCount(1, callRules("oneOfDiscriminatorPropertyNotRequired.yaml"));
+    }
+
+    @Test
+    void testOneOfSchemasAndDiscriminatorMappingsDoNotCorrespond() {
+        assertErrorCount(3, callRules("oneOfSchemasAndDiscriminatorMappingsDoNotCorrespond.yaml"));
     }
 }

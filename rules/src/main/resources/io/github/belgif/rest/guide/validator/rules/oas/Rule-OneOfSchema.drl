@@ -22,6 +22,7 @@ import java.util.stream.Collectors
 import java.util.Map
 import java.util.stream.Stream
 import java.util.Objects;
+import java.util.Optional;
 
 function void violationDiscriminatorPropertyWithOneOf(ViolationReport oas, SchemaDefinition schema, String discriminatorPropertyName){
     oas.addViolation("[sch-oneof]",
@@ -36,6 +37,11 @@ function void violationOneOfSubSchemaAllowedUsage(ViolationReport oas, SchemaDef
 function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas, SchemaDefinition schema, String conflictingTypes) {
     oas.addViolation("[sch-oneof]",
         "use of `oneOf` SHOULD be limited to either: 1. subschemas with only a `required` constraint, without a `type` or other constraint 2. subschemas with an `enum` of the same simple `type` (i.e. no `array` or `object`) 3. subschemas of `type: object`, when a `discriminator` is also defined. Properties may only be defined within the subschemas.", "Enforces conflicting enum types: <<" + conflictingTypes + ">>", schema, ViolationLevel.RECOMMENDED);
+}
+
+function void violationOneOfSchemasCorrespondToDiscriminatorMappings(ViolationReport oas, SchemaDefinition schema, String errorMessage) {
+    oas.addViolation("[sch-oneof]",
+        "The schemas used in the discriminator mapping should be the same as the `oneOf` subschemas.", errorMessage, schema, ViolationLevel.RECOMMENDED);
 }
 
 function String createErrorMessage(SchemaDefinition oneOfSchemaDef, List<String> props) {
@@ -113,6 +119,36 @@ function String getConflictingTypesInEnum(SchemaDefinition schemaDefinition, Par
   return types.isEmpty() || types.size() == 1 ? null : types.stream().map(SchemaType::toString).collect(Collectors.joining(", ")).toString();
 }
 
+// Returns an error message
+function String findSchemasThatAreOnlyDefinedInOneOfOrDiscriminatorMapping(SchemaDefinition schemaDefinition, ParserResult parserResult) {
+  Set<SchemaDefinition> schemasDefinedInOneOf = schemaDefinition.getModel().getOneOf().stream().map(s -> (SchemaDefinition) parserResult.resolve(s)).collect(Collectors.toSet());
+  Set<SchemaDefinition> schemasDefinedInDiscriminatorMapping = schemaDefinition.getModel().getDiscriminator().getMapping().values().stream()
+    .map(s -> parserResult.resolveDiscriminatorMapping(schemaDefinition, s))
+    .filter(Optional::isPresent)
+    .map(Optional::get)
+    .collect(Collectors.toSet());
+  if (schemasDefinedInOneOf.equals(schemasDefinedInDiscriminatorMapping)) {
+    return null;
+  }
+  StringBuilder errorBuilder = new StringBuilder();
+  Set<SchemaDefinition> onlyInOneOf = new HashSet<>(schemasDefinedInOneOf);
+  onlyInOneOf.removeAll(schemasDefinedInDiscriminatorMapping);
+  if (!onlyInOneOf.isEmpty()) {
+    errorBuilder.append("Schemas defined in oneOf but not in discriminator mappings: ");
+    errorBuilder.append(onlyInOneOf.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", ")));
+  }
+  Set<SchemaDefinition> onlyInDiscriminatorMapping = new HashSet<>(schemasDefinedInDiscriminatorMapping);
+  onlyInDiscriminatorMapping.removeAll(schemasDefinedInOneOf);
+  if (!onlyInDiscriminatorMapping.isEmpty()) {
+    if (!errorBuilder.isEmpty()) {
+      errorBuilder.append("\n");
+    }
+    errorBuilder.append("Schemas defined in discriminator mappings but not in oneOf: ");
+    errorBuilder.append(onlyInDiscriminatorMapping.stream().map(SchemaDefinition::getPrintableJsonPointer).collect(Collectors.joining(", ")));
+  }
+  return errorBuilder.toString();
+}
+
 rule "OneOf use should be limited"
     when
         $schemaDefinition: SchemaDefinition(model.getOneOf() != null)
@@ -136,4 +172,12 @@ rule "Property with discriminator.propertyName as name should be defined in each
         $subSchema: SchemaDefinition( !ApiFunctions.getRecursiveProperties(getModel(), parserResult).containsKey($discriminatorPropertyName) || !ApiFunctions.getRequiredProperties(this, parserResult, true).contains($discriminatorPropertyName) ) from parserResult.resolve($oneOf)
     then
         violationDiscriminatorPropertyWithOneOf(oas, $subSchema, $discriminatorPropertyName);
+end
+
+rule "Discriminator mappings should contain all oneOf subschemas"
+    when
+        $schema: SchemaDefinition(model.getOneOf() != null && model.getDiscriminator() != null && model.getDiscriminator().getMapping() != null)
+        $error: String() from findSchemasThatAreOnlyDefinedInOneOfOrDiscriminatorMapping($schema, parserResult)
+    then
+        violationOneOfSchemasCorrespondToDiscriminatorMappings(oas, $schema, $error);
 end
