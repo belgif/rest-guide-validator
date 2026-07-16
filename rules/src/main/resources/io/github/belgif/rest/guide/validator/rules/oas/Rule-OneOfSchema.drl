@@ -40,7 +40,7 @@ function void violationOneOfSubSchemaWithEnumOfDifferentType(ViolationReport oas
 
 function void violationOneOfSchemasCorrespondToDiscriminatorMappings(ViolationReport oas, SchemaDefinition schema, String errorMessage) {
     oas.addViolation("[sch-oneof]",
-        "All `oneOf` subschemas should be present in the discriminator mapping", errorMessage, schema, ViolationLevel.RECOMMENDED);
+        "The schemas used in the discriminator mapping should be the same as the `oneOf` subschemas.", errorMessage, schema, ViolationLevel.RECOMMENDED);
 }
 
 function String createErrorMessage(SchemaDefinition oneOfSchemaDef, List<String> props) {
