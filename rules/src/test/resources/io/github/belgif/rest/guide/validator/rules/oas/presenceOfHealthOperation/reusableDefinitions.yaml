@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: OpenApi describing the doc resources
+  version: v1
+tags:
+  - name: Documentation
+    description: Documentation of this API
+x-reusable-definitions-only: true
+paths:
+  /doc/openapi.yaml:
+    get:
+      tags:
+        - Documentation
+      summary: Returns the API documentation in OpenAPI 3 YAML format
+      operationId: getOpenApi
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/yaml:
+              schema:
+                "$ref": "#/components/schemas/OpenApi"
+        default:
+          description: problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security: []
+components:
+  schemas:
+    OpenApi:
+      type: string
+      format: binary
+    Problem:
+      type: object
