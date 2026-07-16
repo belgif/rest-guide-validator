@@ -16,7 +16,8 @@ public class IgnoreRulesUtil {
     }
 
     /*
-    This method is necessary due to a bug in the swagger parser that ignores all extensions when a ref is found.
+    Add ignored rules set by x-ignore-rules on $ref entries.
+    These may be missing from the parsing result because the extension properties of Reference Objects are ignored.
     https://github.com/swagger-api/swagger-parser/issues/2168
 
     This method only checks the definitions where a ref is present. The rest of the definitions already have the ignoredRules property up to date with the info from the swaggerparser.
