@@ -10,6 +10,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.*;
 import io.github.belgif.rest.guide.validator.core.util.CircularReferenceUtil;
 import io.github.belgif.rest.guide.validator.core.util.ExampleMapper;
+import io.github.belgif.rest.guide.validator.core.util.IgnoreRulesUtil;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.parser.core.models.ParseOptions;
@@ -198,6 +199,7 @@ public class Parser {
                 log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
                 throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
             }
+            IgnoreRulesUtil.findIgnoreRules(result);
             return result;
         } catch (IOException e) {
             violationReport.addViolation(e.getClass().getSimpleName(), e.getLocalizedMessage(), null, new Line(openApiFile.getName(), 0), ViolationLevel.REQUIRED, "#");

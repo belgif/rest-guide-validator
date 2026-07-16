@@ -33,12 +33,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      type: object
+                $ref: '#/components/schemas/ItemCollection'
         default:
           description: problem
           content:
@@ -49,3 +44,10 @@ components:
   schemas:
     Problem:
       type: object
+    ItemCollection:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object

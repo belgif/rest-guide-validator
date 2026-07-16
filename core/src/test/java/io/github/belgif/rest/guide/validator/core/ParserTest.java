@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import io.github.belgif.rest.guide.validator.core.model.ResponseHeaderDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -252,5 +253,15 @@ class ParserTest {
         Parser.ParserResult result = new Parser(file).parse(oas);
         assertEquals(1, result.getServers().size());
         assertTrue(result.getPathDefinitions().stream().findFirst().get().isDirectPath());
+    }
+
+    @Test
+    void testIgnoredRuleOnPathWithRef() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/pathReference/openapi.yaml")).getFile());
+        Parser.ParserResult result = new Parser(file).parse(oas);
+
+        var path = result.getPathDefinitions().stream().filter(PathDefinition::isDirectPath).filter(p -> p.getPrintableJsonPointer().equals("/paths/myCollection/notPlural")).findFirst().get();
+        assertTrue(path.getIgnoredRules().containsKey("col-name"));
     }
 }

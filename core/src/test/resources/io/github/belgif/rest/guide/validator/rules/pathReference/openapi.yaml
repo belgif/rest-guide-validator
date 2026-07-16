@@ -10,5 +10,5 @@ paths:
     $ref: 'referenced.yaml#/paths/~1myCollection~1notPlural~1{id}'
   /myCollection/notPlural:
     x-ignore-rules:
-      "col-name": personal reasons
+      "col-name": just to test
     $ref: 'referenced.yaml#/paths/~1myCollection~1notPlural'
