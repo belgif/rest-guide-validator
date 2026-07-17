@@ -27,7 +27,7 @@ function void violationCodesShouldBeLowerCamelCase(ViolationReport oas, List<Obj
 
 rule "Codes should be lowerCamelCase"
     when
-        $schema: SchemaDefinition($schemaType: /model/type, ApiFunctions.isNotInSet(identifier, excludeCodes()))
+        $schema: SchemaDefinition(!isNestedInNot(), $schemaType: /model/type, ApiFunctions.isNotInSet(identifier, excludeCodes()))
         SchemaType( equals(SchemaType.STRING) ) from $schemaType
         Schema( enumeration != null ) from $schema.getModel()
         String(
