@@ -56,7 +56,7 @@ public class SourceDefinition {
         } else if (jsonNode.has("swagger")) {
             return jsonNode.get("swagger").asText();
         }
-        throw new RuntimeException("Unable to find OAS version for " + file.getAbsolutePath());
+        throw new RuntimeException("Input file is not a valid OpenAPI document. There is no openapi or swagger property at the document root of " + file.getAbsolutePath());
     }
 
 }
