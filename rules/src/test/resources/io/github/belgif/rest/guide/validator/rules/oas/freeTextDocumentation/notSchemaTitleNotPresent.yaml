@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  title: generalDocumentation
+  version: "1"
+paths:
+  /myFirstPath:
+    get:
+      operationId: operationId
+      summary: operation summary
+      responses:
+        default:
+          description: default response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: my description
+                title: MyInlineSchema
+                allOf:
+                  - $ref: '#/components/schemas/BaseSchema'
+                not:
+                  required:
+                    - myFirstProperty
+        400:
+          description: client problem response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                description: problem
+                title: BigProblem
+components:
+  schemas:
+    BaseSchema:
+      type: object
+      properties:
+        myFirstProperty:
+          type: string
+        secondProperty:
+          type: number

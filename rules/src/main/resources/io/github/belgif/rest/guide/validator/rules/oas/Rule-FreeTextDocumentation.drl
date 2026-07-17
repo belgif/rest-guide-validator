@@ -45,6 +45,10 @@ function Boolean isSchemaInAllOrAnyOf(SchemaDefinition schemaDefinition) {
     return schemaDefinition.getJsonPointer().toString().matches("^.*/(all|any)Of/\\d*?$");
 }
 
+function Boolean isSchemaUnderNot(SchemaDefinition schemaDefinition) {
+    return schemaDefinition.getJsonPointer().getJsonPointer().matches("^.*/not$");
+}
+
 function Boolean isSchemaDirectlyUnderNonJsonMediaType(SchemaDefinition schemaDefinition) {
   return schemaDefinition.getParent() instanceof MediaTypeDefinition mediaTypeDefinition
          && !ApiFunctions.isMediaTypeIncluded(mediaTypeDefinition.getIdentifier(), Set.of("application/json"));
@@ -70,7 +74,7 @@ rule "A title should be present for inline object schemas (not required when par
     $schema: SchemaDefinition(
       definitionType == DefinitionType.INLINE,
       /model[type == SchemaType.OBJECT && (title == null)],
-      !isSchemaInAllOrAnyOf(this), !isSchemaDirectlyUnderNonJsonMediaType(this))
+      !isSchemaInAllOrAnyOf(this), !isSchemaDirectlyUnderNonJsonMediaType(this), !isSchemaUnderNot(this))
   then
     violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
 end
