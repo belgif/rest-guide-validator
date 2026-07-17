@@ -20,6 +20,7 @@ public class SourceDefinition {
     private final OpenAPI openApi;
     private final boolean hasReusableDefinitionsOnly;
     private final JsonNode jsonNode;
+    private final String version;
 
     public SourceDefinition(File file, OpenAPI openApi) throws IOException {
         this.file = file;
@@ -29,6 +30,7 @@ public class SourceDefinition {
         this.openApi = openApi;
         this.hasReusableDefinitionsOnly = findHasReusableDefinitionsOnly(openApi);
         this.jsonNode = JsonNodeUtil.parseJsonNode(file, isYaml);
+        this.version = findVersion(openApi, jsonNode, file);
     }
 
     public static boolean checkIsYaml(String fileName) {
@@ -47,4 +49,14 @@ public class SourceDefinition {
         }
         return false;
     }
+
+    private static String findVersion(OpenAPI openapi, JsonNode jsonNode, File file) {
+        if (jsonNode.has("openapi")) {
+            return openapi.getOpenapi();
+        } else if (jsonNode.has("swagger")) {
+            return jsonNode.get("swagger").asText();
+        }
+        throw new RuntimeException("Unable to find OAS version for " + file.getAbsolutePath());
+    }
+
 }

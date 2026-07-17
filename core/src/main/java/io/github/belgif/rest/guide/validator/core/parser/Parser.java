@@ -30,12 +30,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 @AllArgsConstructor
 public class Parser {
+
+    /*
+
+     */
+    private static final String HUMAN_READABLE_SUPPORTED_VERSIONS = "3.0.x";
+    private static final List<Pattern> SUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3\\.0($|\\.\\d+$)"));
+    private static final List<Pattern> BLOCKING_UNSUPPORTED_VERSIONS = List.of(Pattern.compile("2(\\.\\d)*$"));
 
     private File openApiFile;
 
@@ -215,11 +223,16 @@ public class Parser {
     }
 
     private static boolean isOasVersionSupported(Collection<SourceDefinition> sources, ViolationReport violationReport) {
-        Set<SourceDefinition> invalidSources = sources.stream().filter(sourceDefinition -> getOasVersion(sourceDefinition) == 2).collect(Collectors.toSet());
+        Set<SourceDefinition> invalidSources = sources.stream()
+                .filter(sourceDefinition -> BLOCKING_UNSUPPORTED_VERSIONS.stream()
+                        .anyMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches())).collect(Collectors.toSet());
         if (invalidSources.isEmpty()) {
+            sources.stream().filter(sourceDefinition -> SUPPORTED_OAS_VERSIONS.stream()
+                            .anyMatch(pattern -> !pattern.matcher(sourceDefinition.getVersion()).matches()))
+                    .forEach(sourceDefinition -> log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported", sourceDefinition.getFileName(), sourceDefinition.getVersion()));
             return true;
         } else {
-            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2.0 / Swagger 2.0 are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.REQUIRED, "#"));
+            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi / Swagger version " + sourceDefinition.getVersion() + " are not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.REQUIRED, "#"));
         }
         return false;
     }
@@ -285,15 +298,6 @@ public class Parser {
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
-    }
-
-    private static int getOasVersion(SourceDefinition sourceDefinition) {
-        var jsonNode = sourceDefinition.getJsonNode();
-        if (jsonNode.has("openapi")) {
-            return 3;
-        } else {
-            return 2;
-        }
     }
 
     private void parseServers(ParserResult result) {
