@@ -39,7 +39,9 @@ import java.util.stream.Collectors;
 public class Parser {
 
     /*
-
+    - If OAS Version matches with one of the versions in BLOCKING_UNSUPPORTED_VERSIONS -> validation is not executed
+    - If OAS Version does NOT match with one of the versions in BLOCKING_UNSUPPORTED_VERSIONS and DOES NOT match with one of the SUPPORTED_OAS_VERSIONS, a warning is displayed, but validation is executed without guarantees on correctes.
+    - HUMAN_READABLE_SUPPORTED_VERSIONS is displayed in the error and warning message
      */
     private static final String HUMAN_READABLE_SUPPORTED_VERSIONS = "3.0.x";
     private static final List<Pattern> SUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3\\.0($|\\.\\d+$)"));
