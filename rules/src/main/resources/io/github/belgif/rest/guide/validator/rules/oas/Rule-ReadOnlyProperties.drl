@@ -20,7 +20,7 @@ function void violationReadOnlyProperties(ViolationReport oas, SchemaDefinition 
 
 rule "ReadOnly Properties"
     when
-        $schema: SchemaDefinition(model.getRef() == null)
+        $schema: SchemaDefinition(model.getRef() == null, !isNestedInNot())
         Map($property: /entrySet) from ApiFunctions.getRecursiveProperties($schema.getModel(), parserResult)
         $propertyKey: String(ApiFunctions.isPropertyRequiredAndReadOnly($schema, this, parserResult)) from $property.getKey()
     then
