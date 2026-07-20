@@ -38,4 +38,14 @@ class PresenceOfHealthOperationTest extends AbstractOasRuleTest {
     void testReferencedHealthOperation() {
         assertNoViolations(callRules("referencedHealthOperation.yaml"));
     }
+
+    @Test
+    void absenceOfHealthOperationAllowedInReusableDefinitionsOnlyFile() {
+        assertNoViolations(callRules("reusableDefinitions.yaml"));
+    }
+
+    @Test
+    void invalidHealthOperationInReusableDefinitionsFile() {
+        assertErrorCount(1, callRules("invalidHealthOperationInReusableDefinitionsFile.yaml"));
+    }
 }

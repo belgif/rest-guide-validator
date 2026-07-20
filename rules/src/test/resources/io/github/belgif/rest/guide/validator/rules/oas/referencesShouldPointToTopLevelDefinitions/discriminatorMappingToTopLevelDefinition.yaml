@@ -1,0 +1,35 @@
+openapi: 3.0.1
+info:
+  title: ReadOnlyProperties
+  version: '1.0'
+servers:
+  - url: '/api/v1'
+paths: { }
+components:
+  schemas:
+    SchemaUnderTest:
+      type: object
+      properties:
+        type:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          first: '#/components/schemas/First'
+          second: '#/components/schemas/SomethingBig'
+
+    First:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/SchemaUnderTest'
+        - properties:
+            myFirstProp:
+              type:"string
+
+    SomethingBig:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/SchemaUnderTest'
+        - properties:
+            somethingElse:
+              type: string
