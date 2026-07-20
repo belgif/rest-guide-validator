@@ -16,7 +16,7 @@ function void violationDefaultValuesShouldValidateAgainstSchema(ViolationReport 
 //So we cannot trust a filter on $schema.getModel().getDefaultValue() == null
 rule "Default values should validate against schema"
     when
-        $schema: SchemaDefinition()
+        $schema: SchemaDefinition(!isNestedInNot())
         $optional: Optional(isPresent()) from SchemaValidator.getDefaultValueViolations($schema)
         $violation: String() from $optional.get()
     then

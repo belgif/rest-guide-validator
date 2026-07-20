@@ -55,6 +55,11 @@ class FreeTextDocumentationTest extends AbstractOasRuleTest {
         assertErrorCount(1, callRules("titleDoesNotMatchesSchemaName.yaml"));
     }
 
+    @Test
+    void testNotSchemaTitleNotPresent() {
+        assertNoViolations(callRules("notSchemaTitleNotPresent.yaml"));
+    }
+
 }
 
 

@@ -17,7 +17,7 @@ function void violationEnumValuesShouldValidateAgainstSchema(ViolationReport oas
 
 rule "Enum values should validate against schema"
     when
-        $schema: SchemaDefinition($schemaType: /model/type)
+        $schema: SchemaDefinition($schemaType: /model/type, !isNestedInNot())
         Schema(enumeration != null) from $schema.getModel()
         $violation: Map.Entry() from SchemaValidator.getEnumViolations($schema)
     then

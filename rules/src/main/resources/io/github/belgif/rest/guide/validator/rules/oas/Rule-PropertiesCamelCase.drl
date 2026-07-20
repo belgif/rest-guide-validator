@@ -16,7 +16,7 @@ function void violationPropertiesCamelCase(ViolationReport oas, String propertyN
 
 rule "Properties CamelCase"
 	when
-        $schema: SchemaDefinition($propertyName: /model/properties/keySet#String, !ApiFunctions.isLowerCamelCase($propertyName))
+        $schema: SchemaDefinition(!isNestedInNot(), $propertyName: /model/properties/keySet#String, !ApiFunctions.isLowerCamelCase($propertyName))
     then
         violationPropertiesCamelCase(oas, $propertyName, $schema);
 end

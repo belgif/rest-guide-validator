@@ -50,7 +50,7 @@ function boolean isCloudEventsProperty(SchemaDefinition schemaDefinition, Parser
 
 rule "Rule Properties Nullable"
    	when
-      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !isCloudEventsProperty(this, parserResult))
+      $schema: SchemaDefinition(model.nullable == true && !hasPatchOrUpdateInTopLevelComponentName(this) && !schemaUsedInPatchOperation(this) && !isCloudEventsProperty(this, parserResult) && !isNestedInNot())
     then
       violationPropertiesNullable(oas, $schema);
 end

@@ -67,7 +67,7 @@ function Map getDoubleProperties(Schema schema, ParserResult parserResult) {
 
 rule "SubSchemas in an allOf should not declare the same properties"
     when
-        $schema: SchemaDefinition($model: /model, model.allOf != null)
+        $schema: SchemaDefinition($model: /model, model.allOf != null, !isNestedInNot())
         $errors: Map(!isEmpty()) from getDoubleProperties($model, parserResult)
     then
         violationAllOfSubSchemasShouldNotDeclareTheSameProperties(oas, $schema, createViolationMessageForDoubleProperties($errors));

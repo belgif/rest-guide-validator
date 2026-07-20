@@ -70,7 +70,7 @@ rule "A title should be present for inline object schemas (not required when par
     $schema: SchemaDefinition(
       definitionType == DefinitionType.INLINE,
       /model[type == SchemaType.OBJECT && (title == null)],
-      !isSchemaInAllOrAnyOf(this), !isSchemaDirectlyUnderNonJsonMediaType(this))
+      !isSchemaInAllOrAnyOf(this), !isSchemaDirectlyUnderNonJsonMediaType(this), !isNestedInNot)
   then
     violationTitleShouldBePresentForInlineObjectSchemas(oas, $schema);
 end

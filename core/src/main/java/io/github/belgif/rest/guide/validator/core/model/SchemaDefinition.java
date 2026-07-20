@@ -46,7 +46,30 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
         return this.definitionType.equals(DefinitionType.TOP_LEVEL) ||
                 this.getParent() == null ||
                 !(this.getParent() instanceof SchemaDefinition) ||
-                !this.getJsonPointer().toString().matches("^.*/(all|any|one)Of/\\d*?$");
+                (!this.getJsonPointer().toString().matches("^.*/(all|any|one)Of/\\d*?$") &&
+                        !isNestedInNot());
+    }
+
+    /**
+     * Checks if inline schema is nested under a 'not' subschema
+     * Uses this logic instead of relying on jsonpointer to be able to handle properties with name 'not'.
+     * @return true if this schema is an inline schema under a 'not'
+     */
+    public boolean isNestedInNot() {
+        if (this.definitionType == DefinitionType.TOP_LEVEL) {
+            return false;
+        }
+        OpenApiDefinition<?> child = this;
+        OpenApiDefinition<?> parent = getParent();
+        while (parent instanceof SchemaDefinition) {
+            // child sits at parentPointer + "/not"  ⇒ child is (the root of) a not subtree
+            if (child.getJsonPointer().toString().equals(parent.getJsonPointer().add("not").toString())) {
+                return true;
+            }
+            child = parent;
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     /**
