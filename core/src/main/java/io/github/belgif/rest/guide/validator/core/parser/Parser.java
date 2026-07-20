@@ -240,7 +240,7 @@ public class Parser {
             unsupportedSources.forEach(sourceDefinition -> {
                 log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported. Attempting to continue validation but it may yield unexpected results or errors.", sourceDefinition.getFileName(), sourceDefinition.getVersion());
                 violationReport.addViolation("[oas-contra]",
-                        "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, "#"
+                        "The description of a new REST API SHOULD be provided using OpenAPI 3.0. More recent OpenAPI 3.x versions improve upon OpenAPI 3.0, but SHOULD NOT be used to avoid interoperability problems because they are not yet sufficiently supported by tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, ""
                 );
             });
             return true;
