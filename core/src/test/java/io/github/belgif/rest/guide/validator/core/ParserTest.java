@@ -264,4 +264,24 @@ class ParserTest {
         var path = result.getPathDefinitions().stream().filter(PathDefinition::isDirectPath).filter(p -> p.getPrintableJsonPointer().equals("/paths/myCollection/notPlural")).findFirst().get();
         assertTrue(path.getIgnoredRules().containsKey("col-name"));
     }
+
+    @Test
+    void testUnsupportedOASVersion() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/unsupportedOasVersion.yaml")).getFile());
+        Parser.ParserResult result = new Parser(file).parse(oas);
+
+        assertNotNull(result);
+        assertTrue(oas.getViolations().get(0).getDescription().contains("SHOULD NOT be used"));
+    }
+
+    @Test
+    void testUnsupportedBlockingOasVersion() {
+        var oas = new ViolationReport();
+        var file = new File(Objects.requireNonNull(getClass().getResource("../rules/unsupportedBlockingOasVersion.yaml")).getFile());
+        Parser.ParserResult result = new Parser(file).parse(oas);
+
+        assertNull(result);
+        assertTrue(oas.getViolations().get(0).getDescription().contains("SHOULD NOT be used"));
+    }
 }
