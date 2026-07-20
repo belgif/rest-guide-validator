@@ -51,8 +51,8 @@ public class SchemaDefinition extends OpenApiDefinition<Schema> {
     }
 
     /**
+     * Checks if inline schema is nested under a 'not' subschema
      * Uses this logic instead of relying on jsonpointer to be able to handle properties with name 'not'.
-     *
      * @return true if this schema is an inline schema under a 'not'
      */
     public boolean isNestedInNot() {
