@@ -30,12 +30,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 @AllArgsConstructor
 public class Parser {
+
+    /*
+    - If OAS Version matches with one of the versions in BLOCKING_UNSUPPORTED_VERSIONS -> validation is not executed
+    - If OAS Version does NOT match with one of the versions in BLOCKING_UNSUPPORTED_VERSIONS and DOES NOT match with one of the SUPPORTED_OAS_VERSIONS, a warning is displayed, but validation is executed without guarantees on correctes.
+    - HUMAN_READABLE_SUPPORTED_VERSIONS is displayed in the error and warning message
+     */
+    private static final String HUMAN_READABLE_SUPPORTED_VERSIONS = "3.0.x";
+    private static final List<Pattern> SUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3\\.0($|\\.\\d+$)"));
+    private static final List<Pattern> UNSUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3(\\.\\d)*$"));
 
     private File openApiFile;
 
@@ -215,12 +225,32 @@ public class Parser {
     }
 
     private static boolean isOasVersionSupported(Collection<SourceDefinition> sources, ViolationReport violationReport) {
-        Set<SourceDefinition> invalidSources = sources.stream().filter(sourceDefinition -> getOasVersion(sourceDefinition) == 2).collect(Collectors.toSet());
-        if (invalidSources.isEmpty()) {
+        Set<SourceDefinition> unsupportedSources = sources.stream()
+                .filter(sourceDefinition -> SUPPORTED_OAS_VERSIONS.stream()
+                        .noneMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches()))
+                .collect(Collectors.toSet());
+        if (unsupportedSources.isEmpty()) {
             return true;
-        } else {
-            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi version 2.0 / Swagger 2.0 are not supported. Only OpenAPI 3.0 documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.REQUIRED, "#"));
         }
+        Set<SourceDefinition> blockingSources = unsupportedSources.stream()
+                .filter(sourceDefinition -> UNSUPPORTED_OAS_VERSIONS.stream()
+                        .noneMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches()))
+                .collect(Collectors.toSet());
+        if (blockingSources.isEmpty()) {
+            unsupportedSources.forEach(sourceDefinition -> {
+                log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported. Attempting to continue validation but it may yield unexpected results or errors.", sourceDefinition.getFileName(), sourceDefinition.getVersion());
+                violationReport.addViolation("[oas-contra]",
+                        "The description of a new REST API SHOULD be provided using OpenAPI 3.0. More recent OpenAPI 3.x versions improve upon OpenAPI 3.0, but SHOULD NOT be used to avoid interoperability problems because they are not yet sufficiently supported by tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, ""
+                );
+            });
+            return true;
+        }
+        blockingSources.forEach(sourceDefinition -> {
+            log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported.", sourceDefinition.getFileName(), sourceDefinition.getVersion());
+            violationReport.addViolation("[oas-contra]",
+                    "The description of a new REST API SHOULD be provided using OpenAPI 3.0. More recent OpenAPI 3.x versions improve upon OpenAPI 3.0, but SHOULD NOT be used to avoid interoperability problems because they are not yet sufficiently supported by tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, ""
+            );
+        });
         return false;
     }
 
@@ -285,15 +315,6 @@ public class Parser {
             openAPI.setOpenapi(version);
         }
         return SwAdapter.toOpenAPI(openAPI);
-    }
-
-    private static int getOasVersion(SourceDefinition sourceDefinition) {
-        var jsonNode = sourceDefinition.getJsonNode();
-        if (jsonNode.has("openapi")) {
-            return 3;
-        } else {
-            return 2;
-        }
     }
 
     private void parseServers(ParserResult result) {

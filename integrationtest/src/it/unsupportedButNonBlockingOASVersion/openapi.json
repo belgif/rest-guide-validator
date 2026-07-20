@@ -1,0 +1,25 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MyApp",
+    "description": "MyDescription",
+    "contact": {
+      "name": "MyName",
+      "url": "https://www.url.be",
+      "email": "webmaster@url.be"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://myserver.com",
+      "description": "Server URL"
+    }
+  ],
+  "tags": [
+  ],
+  "paths": {
+  },
+  "components": {
+  }
+}
