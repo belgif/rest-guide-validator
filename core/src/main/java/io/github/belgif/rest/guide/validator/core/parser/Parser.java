@@ -45,7 +45,7 @@ public class Parser {
      */
     private static final String HUMAN_READABLE_SUPPORTED_VERSIONS = "3.0.x";
     private static final List<Pattern> SUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3\\.0($|\\.\\d+$)"));
-    private static final List<Pattern> BLOCKING_UNSUPPORTED_VERSIONS = List.of(Pattern.compile("2(\\.\\d)*$"));
+    private static final List<Pattern> UNSUPPORTED_OAS_VERSIONS = List.of(Pattern.compile("3(\\.\\d)*$"));
 
     private File openApiFile;
 
@@ -225,17 +225,32 @@ public class Parser {
     }
 
     private static boolean isOasVersionSupported(Collection<SourceDefinition> sources, ViolationReport violationReport) {
-        Set<SourceDefinition> invalidSources = sources.stream()
-                .filter(sourceDefinition -> BLOCKING_UNSUPPORTED_VERSIONS.stream()
-                        .anyMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches())).collect(Collectors.toSet());
-        if (invalidSources.isEmpty()) {
-            sources.stream().filter(sourceDefinition -> SUPPORTED_OAS_VERSIONS.stream()
-                            .anyMatch(pattern -> !pattern.matcher(sourceDefinition.getVersion()).matches()))
-                    .forEach(sourceDefinition -> log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported", sourceDefinition.getFileName(), sourceDefinition.getVersion()));
+        Set<SourceDefinition> unsupportedSources = sources.stream()
+                .filter(sourceDefinition -> SUPPORTED_OAS_VERSIONS.stream()
+                        .noneMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches()))
+                .collect(Collectors.toSet());
+        if (unsupportedSources.isEmpty()) {
             return true;
-        } else {
-            invalidSources.forEach(sourceDefinition -> violationReport.addViolation("[unsupported]", "Input files of type OpenApi / Swagger version " + sourceDefinition.getVersion() + " are not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported", sourceDefinition.getFileName(), new Line("", 0), ViolationLevel.REQUIRED, "#"));
         }
+        Set<SourceDefinition> blockingSources = unsupportedSources.stream()
+                .filter(sourceDefinition -> UNSUPPORTED_OAS_VERSIONS.stream()
+                        .noneMatch(pattern -> pattern.matcher(sourceDefinition.getVersion()).matches()))
+                .collect(Collectors.toSet());
+        if (blockingSources.isEmpty()) {
+            unsupportedSources.forEach(sourceDefinition -> {
+                log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported. Attempting to continue validation but it may yield unexpected results or errors.", sourceDefinition.getFileName(), sourceDefinition.getVersion());
+                violationReport.addViolation("[oas-contra]",
+                        "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, "#"
+                );
+            });
+            return true;
+        }
+        blockingSources.forEach(sourceDefinition -> {
+            log.warn("Found input file {} of type OpenApi version <<{}>> is not supported. Only OpenAPI " + HUMAN_READABLE_SUPPORTED_VERSIONS + " documents are supported.", sourceDefinition.getFileName(), sourceDefinition.getVersion());
+            violationReport.addViolation("[oas-contra]",
+                    "OpenAPI 3.1 improves upon OpenAPI 3.0, but to avoid interoperability problems it SHOULD NOT be used yet because it is not yet widely supported by most tooling.", null, new Line(sourceDefinition.getFileName(), 0), ViolationLevel.RECOMMENDED, "#"
+            );
+        });
         return false;
     }
 
