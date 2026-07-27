@@ -4,6 +4,7 @@ import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
+import io.github.belgif.rest.guide.validator.core.model.PathDefinition;
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
 import org.eclipse.microprofile.openapi.models.Reference;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
@@ -21,7 +22,7 @@ function String findReferenceFromComponent(OpenApiDefinition def) {
 
 rule "References should point to top-level definitions"
     when
-        $component: OpenApiDefinition(hasReference())
+        $component: OpenApiDefinition(hasReference(), !(this instanceof PathDefinition))  // $ref to a path item in /paths/<escapedPath> is allowed bc /components/pathItems only exists in OAS 3.1
         OpenApiDefinition(DefinitionType != DefinitionType.TOP_LEVEL) from parserResult.resolve($component.getModel())
     then
         violationReferencesShouldPointToTopLevelDefinitions(oas, $component, ((Reference<?>) $component.getModel()).getRef());
