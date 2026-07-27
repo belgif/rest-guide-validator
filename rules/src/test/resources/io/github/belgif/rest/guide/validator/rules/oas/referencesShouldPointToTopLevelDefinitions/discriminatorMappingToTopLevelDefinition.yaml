@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: ReadOnlyProperties
+  title: discriminatorMappingToTopLevelDefinition
   version: '1.0'
 servers:
   - url: '/api/v1'
