@@ -23,7 +23,6 @@ public class ExpectedReferencePathConstants {
             Parameter.class, "/components/parameters",
             RequestBody.class, "/components/requestBodies",
             APIResponse.class, "/components/responses",
-            // OpenApi Parser sets refs to definitions in oas2 to components/schemas as well
             Schema.class, "/components/schemas",
             PathItem.class, "/paths",
             Header.class, "/components/headers",

@@ -21,6 +21,11 @@ class ReferencesShouldPointToTopLevelDefinitionsTest extends AbstractOasRuleTest
     }
 
     @Test
+    void testRefToPathDefinition() {
+        assertNoViolations(callRules("refToPathDefinition.yaml"));
+    }
+
+    @Test
     void testDiscriminatorMappingToInlineDefinition() {
         assertErrorCount(1, callRules("discriminatorMappingToInlineDefinition.yaml"));
     }
