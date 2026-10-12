@@ -39,6 +39,15 @@ Parse a json/swager file and build a java object structure.
 * com.jayway.jsonpath:json-path.  
 Read a json file and use json path.
 
+* com.networknt:json-schema-validator:2.x (Jackson 2).
+Validate examples, enum values and defaults using the OpenAPI 3.0 dialect (`Dialects.getOpenApi30()`).
+References and explicit discriminator mappings are resolved through the existing parser, including bare component names.
+The validation adapter retains discriminator-based branch selection for `oneOf`/`anyOf` and immediate-parent
+discriminator checks for `allOf`; networknt's annotation-only discriminator behavior is not used.
+Malformed discriminator declarations are rejected during parsing.
+URI format validation follows networknt's stricter rules; `nullable` follows its native OpenAPI 3.0 semantics.
+Violation strings retain their instance path, source filename, schema pointer and keyword context, but engine message wording can change.
+
 * org.drools:*, org.kie:*  
 Rules engine.
 
@@ -70,5 +79,3 @@ Maven plugin
 
  For this sentence ' **myVar**: String() **from** *collection* '   
 drool will apply the ***then*** section for each element in collection by using **myVar**
-
-

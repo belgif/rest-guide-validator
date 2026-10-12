@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
@@ -13,7 +14,10 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testRequiredValue() {
         ViolationReport aggregator = callRules("requiredValue.yaml");
         assertErrorCount(1, aggregator);
-        assertEquals(6, aggregator.getActionableViolations().get(0).getMessage().lines().count());
+        String message = aggregator.getActionableViolations().get(0).getMessage();
+        assertTrue(message.contains("items[0]: "), message);
+        assertTrue(message.contains("items[1]: "), message);
+        assertTrue(message.contains(" In Schema: requiredValue.yaml#/components/schemas/EmployerClasses : "), message);
     }
 
     @Test
@@ -32,7 +36,9 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testWrongTypes() {
         ViolationReport aggregator = callRules("wrongType.yaml");
         assertErrorCount(1, aggregator);
-        assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
+        String message = aggregator.getActionableViolations().get(0).getMessage();
+        assertTrue(message.startsWith("employerId: "), message);
+        assertTrue(message.endsWith("<type>"), message);
     }
 
     @Test
@@ -44,8 +50,8 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testMultipleExamplesInComponents() {
         ViolationReport aggregator = callRules("examplesInComponents.yaml");
         assertErrorCount(2, aggregator);
-        assertEquals(2, aggregator.getActionableViolations().get(0).getMessage().lines().count());
-        assertEquals(2, aggregator.getActionableViolations().get(1).getMessage().lines().count());
+        assertTrue(aggregator.getActionableViolations().stream().allMatch(violation ->
+                violation.getMessage().contains(" In Schema: examplesInComponents.yaml#/components/schemas/Employer : ")));
     }
 
     @Test
@@ -75,7 +81,10 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testUnrelatedDiscriminator() {
         ViolationReport aggregator = callRules("unrelatedDiscriminator.yaml");
         assertErrorCount(1, aggregator);
-        assertEquals("href: Value '/invalidUrl' does not match format 'uri'. In Schema: unrelatedDiscriminator.yaml#/components/schemas/NotificationsCollection : <allOf>.<format>", aggregator.getActionableViolations().get(0).getMessage());
+        String message = aggregator.getActionableViolations().get(0).getMessage();
+        assertTrue(message.startsWith("href: "), message);
+        assertTrue(message.contains(" In Schema: unrelatedDiscriminator.yaml#/components/schemas/NotificationsCollection : "), message);
+        assertTrue(message.endsWith("<format>"), message);
     }
 
     @Test

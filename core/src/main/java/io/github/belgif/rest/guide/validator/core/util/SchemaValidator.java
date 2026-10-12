@@ -1,15 +1,13 @@
 package io.github.belgif.rest.guide.validator.core.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.networknt.schema.SchemaException;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.path.NodePath;
 import io.github.belgif.rest.guide.validator.core.model.*;
-import io.github.belgif.rest.guide.validator.core.model.helper.BelgifOAI3Context;
+import io.github.belgif.rest.guide.validator.core.model.helper.SchemaValidationContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.openapi4j.core.exception.ResolutionException;
-import org.openapi4j.core.model.OAIContext;
-import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.schema.validator.ValidationContext;
-import org.openapi4j.schema.validator.ValidationData;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -30,28 +28,26 @@ public class SchemaValidator {
                 return Optional.empty();
             }
             SchemaDefinition schemaDefinition = def.get();
-            JsonNode schemaNode = schemaDefinition.getJsonNode();
             ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
             JsonNode exampleNode = getExampleNode(example);
 
-            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
-            return buildViolationString(validateSchema(schemaNode, exampleNode, apiContext, schemaDefinition));
-        } catch (ResolutionException ex) {
+            SchemaRegistry apiContext = SchemaValidationContext.createRegistry(schemaDefinition);
+            return buildViolationString(validateSchema(exampleNode, apiContext, schemaDefinition));
+        } catch (SchemaException ex) {
             throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getJsonPointer().toPrettyString() + ": Unable to validate example", ex);
         }
     }
 
     public static Set<Map.Entry<String, String>> getEnumViolations(SchemaDefinition schemaDefinition) {
         Set<Map.Entry<String, String>> violations = new HashSet<>();
-        JsonNode schemaNode = schemaDefinition.getHighLevelSchema().getJsonNode();
         try {
-            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
+            SchemaRegistry apiContext = SchemaValidationContext.createRegistry(schemaDefinition);
             Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
             for (JsonNode nodeToValidate : enumNodes) {
-                Optional<String> violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
+                Optional<String> violation = buildViolationString(validateSchema(nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
                 violation.ifPresent(s -> violations.add(Map.entry(nodeToValidate.toString(), s)));
             }
-        } catch (ResolutionException ex) {
+        } catch (SchemaException ex) {
             throw new RuntimeException(schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer().toPrettyString() + ": Unable to validate enums", ex);
         }
         return violations;
@@ -63,10 +59,10 @@ public class SchemaValidator {
             if (schemaNode.has("default")) {
                 JsonNode defaultNode = schemaNode.get("default");
 
-                var apiContext = new BelgifOAI3Context(schemaDefinition);
-                return buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition));
+                var apiContext = SchemaValidationContext.createRegistry(schemaDefinition);
+                return buildViolationString(validateSchema(defaultNode, apiContext, schemaDefinition));
             }
-        } catch (ResolutionException e) {
+        } catch (SchemaException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
@@ -111,26 +107,51 @@ public class SchemaValidator {
     }
 
     /**
-     * @param schemaNode  JsonNode object - contains $ref to schema to validate against as first property. Rest of the node is a copy of the merged openapi
      * @param exampleNode JsonNode object - contains the 'value' of the example object.
      * @return Set<String> with all violations in exampleNode
      */
-    private static Set<String> validateSchema(JsonNode schemaNode, JsonNode exampleNode, OAIContext apiContext, SchemaDefinition schemaDefinition) {
-        var validationContext = new ValidationContext<OAI3>(apiContext);
-        org.openapi4j.schema.validator.v3.SchemaValidator validator = new org.openapi4j.schema.validator.v3.SchemaValidator(validationContext, null, schemaNode);
+    private static Set<String> validateSchema(JsonNode exampleNode, SchemaRegistry apiContext, SchemaDefinition schemaDefinition) {
+        var validator = apiContext.getSchema(SchemaValidationContext.location(schemaDefinition));
+        return validator.validate(exampleNode).stream()
+                .map(error -> {
+                    String dataCrumbs = dataCrumbs(error.getInstanceLocation());
+                    return (dataCrumbs.isEmpty() ? "" : dataCrumbs + ": ") + error.getMessage() +
+                            " In Schema: " + schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer() +
+                            " : " + schemaCrumbs(error.getEvaluationPath());
+                })
+                .collect(Collectors.toSet());
+    }
 
-        ValidationData<Void> validation = new ValidationData<>();
-        validator.validate(exampleNode, validation);
-        if (!validation.isValid()) {
-            return validation.results().items().stream()
-                    .map(validationItem ->
-                            (!validationItem.dataCrumbs().isEmpty() ? validationItem.dataCrumbs() + ": " : "") + validationItem.message() + " " +
-                                    "In Schema: " + schemaDefinition.getOpenApiFile().getName() + "#" + schemaDefinition.getJsonPointer() +
-                                    " : " + (validationItem.dataCrumbs().isEmpty() ? validationItem.schemaCrumbs() : validationItem.schemaCrumbs().replaceFirst(validationItem.dataCrumbs() + ".", ""))
-                    )
-                    .collect(Collectors.toSet());
+    private static String dataCrumbs(NodePath path) {
+        StringBuilder crumbs = new StringBuilder();
+        for (int i = 0; i < path.getNameCount(); i++) {
+            Object element = path.getElement(i);
+            if (element instanceof Integer) {
+                crumbs.append("[").append(element).append("]");
+            } else {
+                if (!crumbs.isEmpty()) {
+                    crumbs.append(".");
+                }
+                crumbs.append(element);
+            }
         }
-        return new HashSet<>();
+        return crumbs.toString();
+    }
+
+    private static String schemaCrumbs(NodePath path) {
+        StringBuilder crumbs = new StringBuilder();
+        for (int i = 0; i < path.getNameCount(); i++) {
+            String name = path.getName(i);
+            if ("properties".equals(name)) {
+                i++;
+            } else if (!(path.getElement(i) instanceof Integer)) {
+                if (!crumbs.isEmpty()) {
+                    crumbs.append(".");
+                }
+                crumbs.append("<").append(name).append(">");
+            }
+        }
+        return crumbs.toString();
     }
 
     private static Optional<SchemaDefinition> getSchemaDefinition(ExampleDefinition exampleDefinition) {

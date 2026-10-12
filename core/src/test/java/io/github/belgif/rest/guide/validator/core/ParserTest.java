@@ -11,10 +11,13 @@ import io.github.belgif.rest.guide.validator.core.model.ResponseHeaderDefinition
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,30 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class ParserTest {
+    @TempDir
+    Path directory;
+
+    @Test
+    void testMalformedDiscriminatorRejectedBeforeDataValidation() throws IOException {
+        for (String declaration : new String[]{"{}", "{propertyName: null}", "{propertyName: ''}",
+                "{propertyName: 123}", "{propertyName: kind, mapping: {cat: Missing}}"}) {
+            Path file = Files.createTempFile(directory, "discriminator", ".yaml");
+            Files.writeString(file, """
+                    openapi: 3.0.3
+                    info: {title: Invalid discriminator, version: '1'}
+                    paths: {}
+                    components:
+                      schemas:
+                        Pet:
+                          type: object
+                          discriminator: %s
+                    """.formatted(declaration));
+            var exception = assertThrows(RuntimeException.class,
+                    () -> new Parser(file.toFile()).parse(new ViolationReport()), declaration);
+            assertEquals("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.",
+                    exception.getMessage(), declaration);
+        }
+    }
 
     @Test
     void buildOpenApiSpecification() throws IOException {

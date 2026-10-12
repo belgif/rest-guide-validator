@@ -198,14 +198,11 @@ public class Parser {
                 return null;
             }
             validateAllReferences(result);
+            verifyParsingValid(result);
             result.populateBackReferences();
             CircularReferenceUtil.validateCircularReferences(result);
             verifySecurityRequirements(result);
-            if (!result.isParsingValid()) {
-                // Double log because: The exception message is a bit separated from the parsing errors in the output, and only added to the end of some long output line.
-                log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
-                throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
-            }
+            verifyParsingValid(result);
             IgnoreRulesUtil.findIgnoreRules(result);
             return result;
         } catch (IOException e) {
@@ -279,6 +276,7 @@ public class Parser {
             }
         }
         for (SchemaDefinition schemaDefinition : result.schemas) {
+            validateDiscriminatorDeclaration(result, schemaDefinition);
             if (schemaDefinition.getModel().getDiscriminator() != null &&
                     schemaDefinition.getModel().getDiscriminator().getMapping() != null) {
                 for (String mapping : schemaDefinition.getModel().getDiscriminator().getMapping().values()) {
@@ -289,6 +287,24 @@ public class Parser {
                     }
                 }
             }
+        }
+    }
+
+    private void validateDiscriminatorDeclaration(ParserResult result, SchemaDefinition schemaDefinition) {
+        var discriminator = schemaDefinition.getJsonNode().get("discriminator");
+        if (discriminator != null && (!discriminator.hasNonNull("propertyName") ||
+                !discriminator.get("propertyName").isTextual() ||
+                discriminator.get("propertyName").asText().isBlank())) {
+            log.error("[Parsing error] Missing or invalid discriminator propertyName in: {}", schemaDefinition.getFullyQualifiedPointer());
+            result.setParsingValid(false);
+        }
+    }
+
+    private void verifyParsingValid(ParserResult result) {
+        if (!result.isParsingValid()) {
+            // Repeat the summary because the exception may appear far from the individual parsing errors.
+            log.error("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
+            throw new RuntimeException("Input file is not a valid OpenAPI document. Compliance to the REST style guidelines could not be verified.");
         }
     }
 
