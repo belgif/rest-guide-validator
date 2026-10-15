@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: Validator migration comparison fixture
+  version: "1"
+paths: {}
+components:
+  schemas:
+    ProbeString:
+      type: string
+      enum: [accepted, also-accepted]
+      default: accepted
+      example: accepted
+    EnumComposition:
+      oneOf:
+        - type: string
+          enum: [shared]
+        - type: string
+          enum: [shared]
+    InvalidDefault:
+      type: integer
+      enum: [1]
+      default: not-an-integer
+    SchemaNameChoice:
+      type: object
+      properties:
+        kind:
+          type: string
+        payload:
+          type: string
+      discriminator:
+        propertyName: kind
+        mapping:
+          child: SchemaNameChild
+      oneOf:
+        - $ref: '#/components/schemas/SchemaNameChild'
+        - $ref: '#/components/schemas/SchemaNameOther'
+    SchemaNameChild:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          type: string
+    SchemaNameOther:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          type: string
+    ReferenceChoice:
+      type: object
+      properties:
+        kind:
+          type: string
+        payload:
+          type: string
+      discriminator:
+        propertyName: kind
+        mapping:
+          child: '#/components/schemas/ReferenceChild'
+      oneOf:
+        - $ref: '#/components/schemas/ReferenceChild'
+        - $ref: '#/components/schemas/ReferenceOther'
+    ReferenceChild:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          type: string
+    ReferenceOther:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          type: string
