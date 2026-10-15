@@ -46,31 +46,57 @@ class ValidatorMigrationComparisonTest {
 
     private static final List<Probe> PROBES = List.of(
             probe("oneof-discriminator-overlapping-branches",
-                    "{\"type\":\"object\",\"required\":[\"kind\",\"value\"],\"properties\":{\"kind\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"discriminator\":{\"propertyName\":\"kind\",\"mapping\":{\"a\":\"#/components/schemas/A\"}},\"oneOf\":[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]}",
+                    """
+                    type: object
+                    required: [kind, value]
+                    properties:
+                      kind: {type: string}
+                      value: {type: string}
+                    discriminator:
+                      propertyName: kind
+                      mapping:
+                        a: '#/components/schemas/A'
+                    oneOf:
+                      - $ref: '#/components/schemas/A'
+                      - $ref: '#/components/schemas/B'
+                    """,
                     "{\"kind\":\"a\",\"value\":\"x\"}"),
             probe("anyof-discriminator-selected-branch-invalid-alternate-valid",
-                    "{\"type\":\"object\",\"required\":[\"kind\",\"value\"],\"properties\":{\"kind\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"discriminator\":{\"propertyName\":\"kind\",\"mapping\":{\"a\":\"#/components/schemas/A\"}},\"anyOf\":[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]}",
+                    """
+                    type: object
+                    required: [kind, value]
+                    properties:
+                      kind: {type: string}
+                      value: {type: string}
+                    discriminator:
+                      propertyName: kind
+                      mapping:
+                        a: '#/components/schemas/A'
+                    anyOf:
+                      - $ref: '#/components/schemas/A'
+                      - $ref: '#/components/schemas/B'
+                    """,
                     "{\"kind\":\"a\",\"value\":\"x\"}"),
             probe("discriminator-explicit-reference-mapping",
-                    discriminatorSchema("{\"a\":\"#/components/schemas/A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: '#/components/schemas/A'"),
                     "{\"kind\":\"a\",\"a\":\"ok\"}"),
             probe("discriminator-schema-name-shorthand-confounded-control",
-                    discriminatorSchema("{\"a\":\"A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: A"),
                     "{\"kind\":\"a\",\"a\":\"ok\"}"),
             probe("discriminator-implicit-schema-name",
-                    discriminatorSchema("{}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema(""),
                     "{\"kind\":\"A\",\"a\":\"ok\"}"),
             probe("discriminator-missing",
-                    discriminatorSchema("{\"a\":\"#/components/schemas/A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: '#/components/schemas/A'"),
                     "{\"a\":\"ok\"}"),
             probe("discriminator-null",
-                    discriminatorSchema("{\"a\":\"#/components/schemas/A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: '#/components/schemas/A'"),
                     "{\"kind\":null,\"a\":\"ok\"}"),
             probe("discriminator-non-string",
-                    discriminatorSchema("{\"a\":\"#/components/schemas/A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: '#/components/schemas/A'"),
                     "{\"kind\":7,\"a\":\"ok\"}"),
             probe("discriminator-unknown",
-                    discriminatorSchema("{\"a\":\"#/components/schemas/A\"}", "[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]"),
+                    discriminatorSchema("a: '#/components/schemas/A'"),
                     "{\"kind\":\"missing\",\"a\":\"ok\"}"),
             probe("discriminator-unconstrained-missing",
                     isolatedDiscriminatorSchema(),
@@ -85,88 +111,118 @@ class ValidatorMigrationComparisonTest {
                     isolatedDiscriminatorSchema(),
                     "{\"kind\":\"unknown\",\"a\":\"ok\"}"),
             probe("discriminator-child-allof-inherited",
-                    "{\"$ref\":\"#/components/schemas/Child\"}",
+                    "{$ref: '#/components/schemas/Child'}",
                     "{\"kind\":\"child\",\"payload\":\"ok\"}"),
             probe("discriminator-child-allof-inherited-unknown",
-                    "{\"$ref\":\"#/components/schemas/Child\"}",
+                    "{$ref: '#/components/schemas/Child'}",
                     "{\"kind\":\"unknown\",\"payload\":\"ok\"}"),
             probe("discriminator-child-allof-inherited-missing",
-                    "{\"$ref\":\"#/components/schemas/Child\"}",
+                    "{$ref: '#/components/schemas/Child'}",
                     "{\"payload\":\"ok\"}"),
             probe("nested-unrelated-discriminator",
-                    "{\"type\":\"object\",\"allOf\":[{\"type\":\"object\",\"properties\":{\"nested\":{\"type\":\"object\",\"properties\":{\"kind\":{\"type\":\"string\"}},\"discriminator\":{\"propertyName\":\"kind\"}}}}]}",
+                    """
+                    type: object
+                    allOf:
+                      - type: object
+                        properties:
+                          nested:
+                            type: object
+                            properties:
+                              kind: {type: string}
+                            discriminator:
+                              propertyName: kind
+                    """,
                     "{\"nested\":{\"kind\":\"x\"}}"),
             probe("nullable-string-null",
-                    "{\"type\":\"string\",\"nullable\":true}",
+                    "{type: string, nullable: true}",
                     "null"),
             probe("nullable-enum-excludes-null",
-                    "{\"type\":\"string\",\"nullable\":true,\"enum\":[\"x\"]}",
+                    "{type: string, nullable: true, enum: [x]}",
                     "null"),
             probe("nullable-oneof-type-less-composition",
-                    "{\"nullable\":true,\"oneOf\":[{\"type\":\"string\"},{\"type\":\"integer\"}]}",
+                    """
+                    nullable: true
+                    oneOf:
+                      - type: string
+                      - type: integer
+                    """,
                     "null"),
             probe("nullable-allof-composition",
-                    "{\"nullable\":true,\"allOf\":[{\"type\":\"string\"}]}",
+                    """
+                    nullable: true
+                    allOf:
+                      - type: string
+                    """,
                     "null"),
             probe("type-less-schema-null",
-                    "{\"description\":\"no type constraint\"}",
+                    "{description: 'no type constraint'}",
                     "null"),
             probe("required-property-present-null",
-                    "{\"type\":\"object\",\"required\":[\"value\"]}",
+                    "{type: object, required: [value]}",
                     "{\"value\":null}"),
             probe("required-property-absent",
-                    "{\"type\":\"object\",\"required\":[\"value\"]}",
+                    "{type: object, required: [value]}",
                     "{}"),
             probe("int32-upper-bound",
-                    "{\"type\":\"integer\",\"format\":\"int32\"}",
+                    "{type: integer, format: int32}",
                     "2147483648"),
             probe("int32-lower-bound",
-                    "{\"type\":\"integer\",\"format\":\"int32\"}",
+                    "{type: integer, format: int32}",
                     "-2147483649"),
             probe("int64-upper-bound",
-                    "{\"type\":\"integer\",\"format\":\"int64\"}",
+                    "{type: integer, format: int64}",
                     "9223372036854775808"),
             probe("byte-valid-base64",
-                    "{\"type\":\"string\",\"format\":\"byte\"}",
+                    "{type: string, format: byte}",
                     "\"SGVsbG8=\""),
             probe("byte-invalid-base64",
-                    "{\"type\":\"string\",\"format\":\"byte\"}",
+                    "{type: string, format: byte}",
                     "\"not base64!\""),
             probe("date-valid",
-                    "{\"type\":\"string\",\"format\":\"date\"}",
+                    "{type: string, format: date}",
                     "\"2024-02-29\""),
             probe("date-invalid",
-                    "{\"type\":\"string\",\"format\":\"date\"}",
+                    "{type: string, format: date}",
                     "\"2023-02-29\""),
             probe("date-time-invalid",
-                    "{\"type\":\"string\",\"format\":\"date-time\"}",
+                    "{type: string, format: date-time}",
                     "\"2024-01-01 12:00:00\""),
             probe("uri-relative-value",
-                    "{\"type\":\"string\",\"format\":\"uri\"}",
+                    "{type: string, format: uri}",
                     "\"./documents/123\""),
             probe("uri-reference-relative-value",
-                    "{\"type\":\"string\",\"format\":\"uri-reference\"}",
+                    "{type: string, format: uri-reference}",
                     "\"./documents/123\""),
             probe("exclusive-minimum-equality",
-                    "{\"type\":\"number\",\"minimum\":1,\"exclusiveMinimum\":true}",
+                    "{type: number, minimum: 1, exclusiveMinimum: true}",
                     "1"),
             probe("exclusive-maximum-equality",
-                    "{\"type\":\"number\",\"maximum\":1,\"exclusiveMaximum\":true}",
+                    "{type: number, maximum: 1, exclusiveMaximum: true}",
                     "1"),
             probe("additional-properties-with-allof",
-                    "{\"type\":\"object\",\"allOf\":[{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"string\"}}},{\"type\":\"object\",\"properties\":{\"b\":{\"type\":\"string\"}}}],\"additionalProperties\":false}",
+                    """
+                    type: object
+                    allOf:
+                      - type: object
+                        properties:
+                          a: {type: string}
+                      - type: object
+                        properties:
+                          b: {type: string}
+                    additionalProperties: false
+                    """,
                     "{\"a\":\"x\",\"b\":\"y\"}"),
             probe("read-only-context-neutral",
-                    "{\"type\":\"object\",\"required\":[\"value\"],\"properties\":{\"value\":{\"type\":\"string\",\"readOnly\":true}}}",
+                    "{type: object, required: [value], properties: {value: {type: string, readOnly: true}}}",
                     "{\"value\":\"present\"}"),
             probe("write-only-context-neutral",
-                    "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"writeOnly\":true}}}",
+                    "{type: object, properties: {value: {type: string, writeOnly: true}}}",
                     "{\"value\":\"secret\"}"),
             probe("ref-property-name-literal-dollar-ref",
-                    "{\"type\":\"object\",\"properties\":{\"$ref\":{\"type\":\"string\"}},\"required\":[\"$ref\"]}",
+                    "{type: object, properties: {$ref: {type: string}}, required: [$ref]}",
                     "{\"$ref\":\"literal\"}"),
             probe("json-pointer-escaped-component",
-                    "{\"$ref\":\"#/components/schemas/A~1B~0C\"}",
+                    "{$ref: '#/components/schemas/A~1B~0C'}",
                     "\"resolved\"")
     );
     private static final Map<String, List<State>> EXPECTED_MATRIX = Map.ofEntries(
@@ -243,18 +299,44 @@ class ValidatorMigrationComparisonTest {
 
     private static Probe probe(String id, String schema, String instance) {
         try {
-            return new Probe(id, JSON.readTree(schema), JSON.readTree(instance));
+            return new Probe(id, YAML.readTree(schema), JSON.readTree(instance));
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
 
-    private static String discriminatorSchema(String mapping, String alternatives) {
-        return "{\"type\":\"object\",\"required\":[\"kind\"],\"properties\":{\"kind\":{\"type\":\"string\"},\"a\":{\"type\":\"string\"},\"b\":{\"type\":\"integer\"}},\"discriminator\":{\"propertyName\":\"kind\",\"mapping\":" + mapping + "},\"oneOf\":" + alternatives + "}";
+    private static String discriminatorSchema(String mapping) {
+        String discriminatorMapping = mapping.isEmpty() ? "{}" : "\n      " + mapping;
+        return """
+                type: object
+                required: [kind]
+                properties:
+                  kind: {type: string}
+                  a: {type: string}
+                  b: {type: integer}
+                discriminator:
+                  propertyName: kind
+                  mapping: %s
+                oneOf:
+                  - $ref: '#/components/schemas/A'
+                  - $ref: '#/components/schemas/B'
+                """.formatted(discriminatorMapping);
     }
 
     private static String isolatedDiscriminatorSchema() {
-        return "{\"type\":\"object\",\"properties\":{\"kind\":{},\"a\":{\"type\":\"string\"}},\"discriminator\":{\"propertyName\":\"kind\",\"mapping\":{\"a\":\"#/components/schemas/A\"}},\"oneOf\":[{\"$ref\":\"#/components/schemas/A\"},{\"$ref\":\"#/components/schemas/B\"}]}";
+        return """
+                type: object
+                properties:
+                  kind: {}
+                  a: {type: string}
+                discriminator:
+                  propertyName: kind
+                  mapping:
+                    a: '#/components/schemas/A'
+                oneOf:
+                  - $ref: '#/components/schemas/A'
+                  - $ref: '#/components/schemas/B'
+                """;
     }
 
     @TestFactory
@@ -401,10 +483,11 @@ class ValidatorMigrationComparisonTest {
 
     @Test
     void unresolvedReferencesAreExecutionFailuresNotInvalidInstances() throws IOException {
-        JsonNode schema = JSON.readTree("{\"$ref\":\"#/components/schemas/Missing\"}");
+        JsonNode schema = YAML.readTree("$ref: '#/components/schemas/Missing'");
         JsonNode instance = JSON.readTree("\"anything\"");
         String documentLocation = TEST_BASE + "unresolved.json";
-        JsonNode document = probeDocument(probe("unresolved", "{\"$ref\":\"#/components/schemas/Missing\"}", "\"anything\""));
+        JsonNode document = probeDocument(probe("unresolved",
+                "$ref: '#/components/schemas/Missing'", "\"anything\""));
         Map<String, String> resources = Map.of(documentLocation, JSON.writeValueAsString(document));
         Observed old = validateOpenApi4j(schema, instance, document, documentLocation);
         Observed newer = validateNetworknt(schema, instance, documentLocation + "#/components/schemas/Target", resources);
