@@ -6,7 +6,6 @@ import io.github.belgif.rest.guide.validator.core.model.helper.BelgifOAI3Context
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.openapi4j.core.exception.ResolutionException;
-import org.openapi4j.core.model.OAIContext;
 import org.openapi4j.core.model.v3.OAI3;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
@@ -30,12 +29,10 @@ public class SchemaValidator {
                 return Optional.empty();
             }
             SchemaDefinition schemaDefinition = def.get();
-            JsonNode schemaNode = schemaDefinition.getJsonNode();
             ExampleDefinition example = (ExampleDefinition) exampleDefinition.getResult().resolve(exampleDefinition.getModel());
             JsonNode exampleNode = getExampleNode(example);
 
-            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
-            return buildViolationString(validateSchema(schemaNode, exampleNode, apiContext, schemaDefinition));
+            return buildViolationString(validateSchema(exampleNode, schemaDefinition));
         } catch (ResolutionException ex) {
             throw new RuntimeException(exampleDefinition.getOpenApiFile().getName() + "#" + exampleDefinition.getJsonPointer().toPrettyString() + ": Unable to validate example", ex);
         }
@@ -43,12 +40,10 @@ public class SchemaValidator {
 
     public static Set<Map.Entry<String, String>> getEnumViolations(SchemaDefinition schemaDefinition) {
         Set<Map.Entry<String, String>> violations = new HashSet<>();
-        JsonNode schemaNode = schemaDefinition.getHighLevelSchema().getJsonNode();
         try {
-            OAIContext apiContext = new BelgifOAI3Context(schemaDefinition);
             Set<JsonNode> enumNodes = getEnumerationNodes(schemaDefinition);
             for (JsonNode nodeToValidate : enumNodes) {
-                Optional<String> violation = buildViolationString(validateSchema(schemaNode, nodeToValidate, apiContext, schemaDefinition.getHighLevelSchema()));
+                Optional<String> violation = buildViolationString(validateSchema(nodeToValidate, schemaDefinition.getHighLevelSchema()));
                 violation.ifPresent(s -> violations.add(Map.entry(nodeToValidate.toString(), s)));
             }
         } catch (ResolutionException ex) {
@@ -63,8 +58,7 @@ public class SchemaValidator {
             if (schemaNode.has("default")) {
                 JsonNode defaultNode = schemaNode.get("default");
 
-                var apiContext = new BelgifOAI3Context(schemaDefinition);
-                return buildViolationString(validateSchema(schemaNode, defaultNode, apiContext, schemaDefinition));
+                return buildViolationString(validateSchema(defaultNode, schemaDefinition));
             }
         } catch (ResolutionException e) {
             throw new RuntimeException(e);
@@ -110,17 +104,14 @@ public class SchemaValidator {
         return enumerations;
     }
 
+
+
     /**
-     * @param schemaNode  JsonNode object - contains $ref to schema to validate against as first property. Rest of the node is a copy of the merged openapi
-     * @param exampleNode JsonNode object - contains the 'value' of the example object.
+     * @param jsonValueNode JsonNode object - contains the 'value' to validate.
      * @return Set<String> with all violations in exampleNode
      */
-    private static Set<String> validateSchema(JsonNode schemaNode, JsonNode exampleNode, OAIContext apiContext, SchemaDefinition schemaDefinition) {
-        var validationContext = new ValidationContext<OAI3>(apiContext);
-        org.openapi4j.schema.validator.v3.SchemaValidator validator = new org.openapi4j.schema.validator.v3.SchemaValidator(validationContext, null, schemaNode);
-
-        ValidationData<Void> validation = new ValidationData<>();
-        validator.validate(exampleNode, validation);
+    private static Set<String> validateSchema(JsonNode jsonValueNode, SchemaDefinition schemaDefinition) throws ResolutionException {
+        ValidationData<Void> validation = validate(jsonValueNode, schemaDefinition);
         if (!validation.isValid()) {
             return validation.results().items().stream()
                     .map(validationItem ->
@@ -131,6 +122,17 @@ public class SchemaValidator {
                     .collect(Collectors.toSet());
         }
         return new HashSet<>();
+    }
+
+    public static ValidationData<Void> validate(JsonNode jsonValueNode, SchemaDefinition schemaDefinition) throws ResolutionException {
+        JsonNode schemaNode = schemaDefinition.getJsonNode();
+        var apiContext = new BelgifOAI3Context(schemaDefinition);
+        var validationContext = new ValidationContext<OAI3>(apiContext);
+        org.openapi4j.schema.validator.v3.SchemaValidator validator = new org.openapi4j.schema.validator.v3.SchemaValidator(validationContext, null, schemaNode);
+
+        ValidationData<Void> validation = new ValidationData<>();
+        validator.validate(jsonValueNode, validation);
+        return validation;
     }
 
     private static Optional<SchemaDefinition> getSchemaDefinition(ExampleDefinition exampleDefinition) {
