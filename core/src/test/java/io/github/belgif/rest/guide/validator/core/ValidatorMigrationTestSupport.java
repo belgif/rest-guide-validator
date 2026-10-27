@@ -25,8 +25,6 @@ import org.openapi4j.schema.validator.ValidationData;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,11 +106,9 @@ final class ValidatorMigrationTestSupport {
         }
     }
 
-    static Observed validateCustomizedOpenApi4j(JsonNode document, JsonNode instance) throws IOException {
-        Path file = Files.createTempFile("validator-migration-", ".yaml");
+    static Observed validateCustomizedOpenApi4j(File file, JsonNode instance) {
         try {
-            Files.writeString(file, JSON.writeValueAsString(document));
-            Parser.ParserResult result = new Parser(file.toFile()).parse(new ViolationReport());
+            Parser.ParserResult result = new Parser(file).parse(new ViolationReport());
             if (result == null) {
                 return new Observed(State.EXECUTION_FAILURE, List.of(), "OpenAPI document parsing failed");
             }
@@ -126,8 +122,6 @@ final class ValidatorMigrationTestSupport {
         } catch (ResolutionException | RuntimeException e) {
             return new Observed(State.EXECUTION_FAILURE, List.of(),
                     e.getClass().getSimpleName() + ": " + e.getMessage());
-        } finally {
-            Files.deleteIfExists(file);
         }
     }
 

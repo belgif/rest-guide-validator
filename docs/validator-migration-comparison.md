@@ -14,14 +14,21 @@ The synthetic comparison is in
 parser-backed comparisons are in
 [`ParserBackedValidatorMigrationComparisonTest.java`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java).
 Each synthetic probe contains its full OpenAPI document, instance, and expected
-outcomes in `PROBES`. Parser-backed tests supply documents through the existing
-repository parser. Neither adapter fetches files or URLs independently.
+outcomes in `PROBES` or `customizationProbes()`. Multi-document probes also supply
+their referenced documents. The comparison writes these documents into a JUnit
+temporary directory and invokes the production `SchemaValidator.validate(...)`
+entry point with a parser-backed `SchemaDefinition`. Networknt receives the same
+unmodified documents in a resource map. There is no lightweight-context arm or
+isolated upstream OpenAPI4j arm: the project overrides are on the test classpath.
+Other parser-backed tests supply documents through the existing repository parser.
 Resolution and other execution failures are classified as
-`EXECUTION_FAILURE`, not as invalid instances. The unresolved-reference control
-asserts execution failure in both implementations. No fail-fast, strictness,
+`EXECUTION_FAILURE`, not as invalid instances; this includes production parser
+rejection. Fixture construction and file-writing errors fail the test directly.
+The unresolved-reference control asserts execution failure in both implementations.
+No fail-fast, strictness,
 readOnly, writeOnly, or directional execution settings are applied.
 
-The 41-case synthetic matrix is paired with parser-backed examples, enum and
+The 77-case synthetic matrix is paired with parser-backed examples, enum and
 default entry points, and discriminator mappings. Enum probes now validate
 against `SchemaDefinition.getHighLevelSchema()` and use that schema's document
 location and pointer, matching the existing openapi4j entry point. A nested
@@ -40,22 +47,33 @@ $env:PATH="$env:JAVA_HOME\bin;$env:PATH"
 mvn -q -pl core -am '-Dtest=ValidatorMigrationComparisonTest,ParserBackedValidatorMigrationComparisonTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
 ```
 
-Result: **44 tests, 0 failures, 0 errors**. Of 41 matrix cases, **26 had equal
-validity**, **13 were rejected by openapi4j and accepted by networknt**, and
-**2 were accepted by openapi4j and rejected by networknt**. The additional
+Result: **80 comparison tests, 0 failures, 0 errors**. Of 77 matrix cases,
+**52 had equal states**, **14 were rejected by openapi4j and accepted by networknt**,
+**5 were accepted by openapi4j and rejected by networknt**, and **6 differed
+because one implementation failed to execute**. The additional
 parser-backed discriminator comparisons are reported separately below.
 
-Combined core/rules command:
+Comparison and existing production-validator regression command (Java 25;
+explicit annotation processing enables Lombok):
 
 ```powershell
-$env:JAVA_HOME='C:\dev\java\sdk\17'
-$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
-mvn -q -pl core,rules -am '-Dtest=SchemaValidatorTest,ExamplesShouldValidateAgainstSchemaTest,ValidatorMigrationComparisonTest,ParserBackedValidatorMigrationComparisonTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
+mvn -q -pl core '-Dtest=ValidatorMigrationComparisonTest,ParserBackedValidatorMigrationComparisonTest,SchemaValidatorTest' '-Dmaven.compiler.proc=full' test
 ```
 
-Result: **73 tests, 0 failures, 0 errors**: 44 comparison tests, 9 existing
-`SchemaValidatorTest` tests, and 20 `ExamplesShouldValidateAgainstSchemaTest`
-tests.
+Result: **89 tests, 0 failures, 0 errors**: 80 comparison tests and 9 existing
+`SchemaValidatorTest` tests. Production behavior is unchanged.
+
+### Customization-specific probes
+
+The 36 added probes target the project's validator and resolver changes, with
+positive and negative controls:
+
+| Customization | Coverage and observed behavior |
+|---|---|
+| URI formats | Absolute versus network-path URI; malformed escapes; empty, fragment-only and relative references; raw versus percent-encoded non-ASCII and query brackets; the `uriref` alias. Production accepts a raw non-ASCII absolute URI and raw query brackets; Networknt rejects them. These are characterizations, not endorsed behavior changes. Production rejects malformed escapes under `uriref`, while Networknt treats this alias as an unasserted format. |
+| Discriminator inheritance | An `allOf` member contains a nested `$ref` directly to a discriminator-bearing schema. A valid nested object needs no root discriminator; invalid payloads and missing nested discriminator values still fail, even if a discriminator value is supplied at the root. Existing immediate-`allOf` inheritance probes remain controls. |
+| Mapping normalization | Paired schema-name and local-reference mappings on an inherited discriminator accept valid payloads and reject missing/wrongly typed payloads. Missing mapping targets cause production parser rejection (`EXECUTION_FAILURE`); Networknt instead returns `INVALID`. |
+| File-aware reference identity | Root and external documents define the same schema names with incompatible types. Valid external values pass and root-only values fail, including external discriminator mappings. With `external.yaml/#/...`, production still validates the external schema, while Networknt cannot resolve that document URI (`EXECUTION_FAILURE`). The resource map deliberately does not alias the trailing-slash URI to hide this difference. |
 
 Parser-backed coverage includes 8 examples, 12 enum values (including a value
 rejected by the enclosing oneOf), 2 defaults (one invalid), 1 external default,
@@ -76,22 +94,22 @@ Each case links directly to its `probe()` declaration in
 
 | Case | openapi4j 1.0.7 | networknt 2.0.8 | Recommendation | Evaluation |
 |---|---|---|---|---|
-| [`oneOf` overlapping alternatives with a discriminator mapping](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L28) | valid | invalid | **Accept networknt's rejection** if applying the ordinary `oneOf` rule: exactly one alternative must validate. OpenAPI describes the discriminator as a selection aid, not a replacement for the composition constraint. | OK, but discriminator schema should be validated (1) |
-| [`anyOf` where the selected alternative fails but another passes](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L62) | invalid | valid | **Accept networknt's result** for ordinary `anyOf`: at least one alternative validates. If the API requires the mapped alternative specifically, model that contract explicitly rather than relying on the validator's discriminator shortcut. | see (1)|
-| [Isolated missing discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L339) (unrequired, untyped property; exactly one alternative validates) | invalid | valid | Defaults differ. OpenAPI says the discriminator property should be required, but absence here violates no schema requirement. **Add `required`** where the contract requires presence; otherwise accept the unconstrained-schema result. |OK if schema doesn't specify the discriminator property as required. This is checked by a rule. The `propertyName` under `discriminator` should present however when `discriminator` is present. To check if this is validated. |
-| [Isolated null discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L370) (unrequired, untyped property; exactly one alternative validates) | invalid | valid | The schema has no independent null restriction. **Add a string type (and required if appropriate)** when null is disallowed. Do not assume default networknt strictness rejects it. |OK, same as next|
-| [Isolated non-string discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L401) (untyped property; exactly one alternative validates) | valid | valid | Both accept it when no type constraint exists. **Add `type: string`** if the API contract requires textual discriminator values. The old constrained control rejects it because its property is typed. |OK, but maybe check if validated by a rule instead that discriminator property should be string|
-| [Isolated unknown textual discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L432) | invalid | invalid | Both reject this mapped oneOf probe. Keep an explicit unknown-value regression test if mapping behavior is relied on. |OK, should be covered by tests of (1)|
-| [Inherited discriminator: `Child` allOf `$ref` to `Base`, mapped value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L463) | valid | valid | Equal outcome on the actual inherited shape; this is the positive control, not proof of all inheritance cases. Retain a parser-backed fixture if this pattern is used. |
-| [Inherited discriminator with unknown value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L487) | invalid | valid | networknt does not reject the unknown value on this `Child`/`Base` allOf path when no schema constraint independently rejects it. **If unknown values must fail, add a value constraint or an explicit discriminator check**; do not count on implicit inherited-discriminator enforcement. ||
-| [Inherited discriminator missing](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L511) | invalid | valid | No `required` constraint is present, so networknt accepts the instance. **Add `required`** when presence is part of the contract; otherwise record that networknt's default is permissive. ||
-| [`nullable: true` with enum excluding null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L567) | invalid | valid | OpenAPI says nullable adds null to the declared type and that other constraints may still reject it; enum interaction should be treated cautiously. **Keep null excluded with an explicit compatibility check if that is intended**, or include null in the enum when it is intended to pass. |Accept new behavior, even though not fully OpenAPI-spec-compliant. Too much of an edge case to warrant a workaround|
-| [Root `nullable: true` with type-less `oneOf`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L578) or [`allOf`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L593) | invalid | valid | OpenAPI 3.0 says nullable takes effect only with a `type` in the same Schema Object; networknt propagates through composition. **Do not rely on root nullable here**; put the nullable type on alternatives where null should be allowed, and retain a regression test. |Accept new behavior, even though not fully OpenAPI-spec-compliant. Too much of an edge case to warrant a workaround. Perhaps introduce a rule that mandates nullable to have a sibling type|
-| [Type-less schema applied to null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L607) | invalid | valid | An omitted type imposes no JSON Schema type restriction. **Accept networknt's unconstrained result** unless the project deliberately requires the old implicit non-null default, in which case add an explicit constraint. |OK|
-| `int32` outside the signed 32-bit range ([upper](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L640), [lower](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L651) probes) | invalid | valid | networknt's default OpenAPI dialect does not assert this format range. **Add explicit numeric bounds or a custom format assertion** if the API contract requires the range; otherwise accept the annotation-only result. |format should be validated|
-| [`int64` above the signed 64-bit range](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L662) | invalid | valid | Same format-assertion gap. **Add explicit bounds or a custom assertion** if range enforcement is required. |format should be validated|
-| [Invalid `byte`/base64 string](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L684) | invalid | valid | The default dialect does not validate this encoding. **Add a base64 constraint/custom assertion** if the API contract promises base64; otherwise accept the default behavior. |format should be validated|
-| [Impossible `format: date` value `2023-02-29`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L706) | valid | invalid | RFC 3339 full-date requires a real calendar date. **Accept networknt's rejection** as the standards-consistent result; the old validator is permissive here. |OK|
+| [`oneOf` overlapping alternatives with a discriminator mapping](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L36) | valid | invalid | **Accept networknt's rejection** if applying the ordinary `oneOf` rule: exactly one alternative must validate. OpenAPI describes the discriminator as a selection aid, not a replacement for the composition constraint. | OK, but discriminator schema should be validated (1) |
+| [`anyOf` where the selected alternative fails but another passes](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L70) | invalid | valid | **Accept networknt's result** for ordinary `anyOf`: at least one alternative validates. If the API requires the mapped alternative specifically, model that contract explicitly rather than relying on the validator's discriminator shortcut. | see (1)|
+| [Isolated missing discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L347) (unrequired, untyped property; exactly one alternative validates) | invalid | valid | Defaults differ. OpenAPI says the discriminator property should be required, but absence here violates no schema requirement. **Add `required`** where the contract requires presence; otherwise accept the unconstrained-schema result. |OK if schema doesn't specify the discriminator property as required. This is checked by a rule. The `propertyName` under `discriminator` should present however when `discriminator` is present. To check if this is validated. |
+| [Isolated null discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L378) (unrequired, untyped property; exactly one alternative validates) | invalid | valid | The schema has no independent null restriction. **Add a string type (and required if appropriate)** when null is disallowed. Do not assume default networknt strictness rejects it. |OK, same as next|
+| [Isolated non-string discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L409) (untyped property; exactly one alternative validates) | valid | valid | Both accept it when no type constraint exists. **Add `type: string`** if the API contract requires textual discriminator values. The old constrained control rejects it because its property is typed. |OK, but maybe check if validated by a rule instead that discriminator property should be string|
+| [Isolated unknown textual discriminator value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L440) | invalid | invalid | Both reject this mapped oneOf probe. Keep an explicit unknown-value regression test if mapping behavior is relied on. |OK, should be covered by tests of (1)|
+| [Inherited discriminator: `Child` allOf `$ref` to `Base`, mapped value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L471) | valid | valid | Equal outcome on the actual inherited shape; this is the positive control, not proof of all inheritance cases. Retain a parser-backed fixture if this pattern is used. |
+| [Inherited discriminator with unknown value](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L495) | invalid | valid | networknt does not reject the unknown value on this `Child`/`Base` allOf path when no schema constraint independently rejects it. **If unknown values must fail, add a value constraint or an explicit discriminator check**; do not count on implicit inherited-discriminator enforcement. ||
+| [Inherited discriminator missing](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L519) | invalid | valid | No `required` constraint is present, so networknt accepts the instance. **Add `required`** when presence is part of the contract; otherwise record that networknt's default is permissive. ||
+| [`nullable: true` with enum excluding null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L575) | invalid | valid | OpenAPI says nullable adds null to the declared type and that other constraints may still reject it; enum interaction should be treated cautiously. **Keep null excluded with an explicit compatibility check if that is intended**, or include null in the enum when it is intended to pass. |Accept new behavior, even though not fully OpenAPI-spec-compliant. Too much of an edge case to warrant a workaround|
+| [Root `nullable: true` with type-less `oneOf`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L586) or [`allOf`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L601) | invalid | valid | OpenAPI 3.0 says nullable takes effect only with a `type` in the same Schema Object; networknt propagates through composition. **Do not rely on root nullable here**; put the nullable type on alternatives where null should be allowed, and retain a regression test. |Accept new behavior, even though not fully OpenAPI-spec-compliant. Too much of an edge case to warrant a workaround. Perhaps introduce a rule that mandates nullable to have a sibling type|
+| [Type-less schema applied to null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L615) | invalid | valid | An omitted type imposes no JSON Schema type restriction. **Accept networknt's unconstrained result** unless the project deliberately requires the old implicit non-null default, in which case add an explicit constraint. |OK|
+| `int32` outside the signed 32-bit range ([upper](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L648), [lower](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L659) probes) | invalid | valid | networknt's default OpenAPI dialect does not assert this format range. **Add explicit numeric bounds or a custom format assertion** if the API contract requires the range; otherwise accept the annotation-only result. |format should be validated|
+| [`int64` above the signed 64-bit range](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L670) | invalid | valid | Same format-assertion gap. **Add explicit bounds or a custom assertion** if range enforcement is required. |format should be validated|
+| [Invalid `byte`/base64 string](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L692) | invalid | valid | The default dialect does not validate this encoding. **Add a base64 constraint/custom assertion** if the API contract promises base64; otherwise accept the default behavior. |format should be validated|
+| [Impossible `format: date` value `2023-02-29`](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L714) | valid | invalid | RFC 3339 full-date requires a real calendar date. **Accept networknt's rejection** as the standards-consistent result; the old validator is permissive here. |OK|
 
 The isolated missing/null probes intentionally have no root `required` or
 property `type` constraint, and their referenced oneOf alternatives are
@@ -101,7 +119,7 @@ original required/type-constrained probes remain as controls.
 
 ### Mapping coverage and other equal outcomes
 
-- The synthetic [`a -> A` schema-name-shorthand control](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L131)
+- The synthetic [`a -> A` schema-name-shorthand control](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L139)
   remains **invalid in both** engines. It also uses the existing implicit
   schema-name fallback and a branch enum, so it is **not evidence of general
   explicit schema-name mapping support**.
@@ -114,31 +132,31 @@ original required/type-constrained probes remain as controls.
   non-overlapping oneOf branches and canonical reference mappings**; if overlap
   is intentional, use anyOf to express the at-least-one rule. The schema-name
   case does not establish support for short-name mappings in this oneOf path;
-  see the [parser-backed comparison](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L114)
+  see the [parser-backed comparison](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L122)
   and the [mapping fixture](../core/src/test/resources/io/github/belgif/rest/guide/validator/rules/migrationComparison.yaml#L25);
   do not rely on that form without a separate compatibility decision.
-- A [nested unrelated discriminator inside an allOf sibling](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L535) passes in both
+- A [nested unrelated discriminator inside an allOf sibling](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L543) passes in both
   implementations, matching the shape of the existing unrelated-discriminator
   regression fixture. The parent does not acquire the nested child's
   discriminator.
-- Equal-validity controls include [valid byte/base64](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L673),
-  [valid date](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L695),
-  [relative uri-reference](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L739),
-  [invalid date-time](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L717),
-  [required property present as null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L618),
-  [exclusive minimum](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L750)
-  and [maximum](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L761),
-  and [additionalProperties with allOf](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L772).
-  Directional [readOnly](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L792)
-  and [writeOnly](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L803)
+- Equal-validity controls include [valid byte/base64](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L681),
+  [valid date](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L703),
+  [relative uri-reference](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L747),
+  [invalid date-time](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L725),
+  [required property present as null](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L626),
+  [exclusive minimum](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L758)
+  and [maximum](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L769),
+  and [additionalProperties with allOf](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L780).
+  Directional [readOnly](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L800)
+  and [writeOnly](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L811)
   behavior remains untested; the comparison intentionally leaves execution
   modes unset.
-- A literal [`$ref` property](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L814)
-  and an [escaped JSON Pointer component](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L825)
+- A literal [`$ref` property](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L822)
+  and an [escaped JSON Pointer component](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ValidatorMigrationComparisonTest.java#L833)
   validate in both. The existing external/relative/circular-reference fixture
   resolves using parser-supplied documents; its invalid Logos example is
-  invalid in both ([parser-backed examples](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L65),
-  [external default](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L149)).
+  invalid in both ([parser-backed examples](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L73),
+  [external default](../core/src/test/java/io/github/belgif/rest/guide/validator/core/ParserBackedValidatorMigrationComparisonTest.java#L157)).
   No independent networknt fetching is enabled.
 
 Some equal-validity failures have different diagnostics. For example, missing
