@@ -11,9 +11,11 @@ import com.networknt.schema.dialect.Dialects;
 import com.networknt.schema.resource.MapResourceLoader;
 import com.networknt.schema.resource.SchemaLoader;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition;
+import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition;
 import io.github.belgif.rest.guide.validator.core.parser.Parser;
 import io.github.belgif.rest.guide.validator.core.parser.SourceDefinition;
 import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
+import org.openapi4j.core.exception.ResolutionException;
 import org.openapi4j.core.model.OAIContext;
 import org.openapi4j.core.model.reference.OpenApi4jTestContext;
 import org.openapi4j.core.model.v3.OAI3;
@@ -23,6 +25,8 @@ import org.openapi4j.schema.validator.ValidationData;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +105,29 @@ final class ValidatorMigrationTestSupport {
         } catch (RuntimeException e) {
             return new Observed(State.EXECUTION_FAILURE, List.of(),
                     e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+    }
+
+    static Observed validateCustomizedOpenApi4j(JsonNode document, JsonNode instance) throws IOException {
+        Path file = Files.createTempFile("validator-migration-", ".yaml");
+        try {
+            Files.writeString(file, JSON.writeValueAsString(document));
+            Parser.ParserResult result = new Parser(file.toFile()).parse(new ViolationReport());
+            if (result == null) {
+                return new Observed(State.EXECUTION_FAILURE, List.of(), "OpenAPI document parsing failed");
+            }
+            SchemaDefinition schema = result.getSchemas().stream()
+                    .filter(candidate -> "Target".equals(candidate.getIdentifier()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Target schema was not parsed"));
+            ValidationData<Void> data = SchemaValidator.validate(instance, schema);
+            return new Observed(data.isValid() ? State.VALID : State.INVALID, List.of(),
+                    data.results().items().stream().map(item -> item.message()).toList().toString());
+        } catch (ResolutionException | RuntimeException e) {
+            return new Observed(State.EXECUTION_FAILURE, List.of(),
+                    e.getClass().getSimpleName() + ": " + e.getMessage());
+        } finally {
+            Files.deleteIfExists(file);
         }
     }
 

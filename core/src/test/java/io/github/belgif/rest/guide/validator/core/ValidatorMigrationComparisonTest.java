@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static io.github.belgif.rest.guide.validator.core.ValidatorMigrationTestSupport.JSON;
+import static io.github.belgif.rest.guide.validator.core.ValidatorMigrationTestSupport.validateCustomizedOpenApi4j;
 import static io.github.belgif.rest.guide.validator.core.ValidatorMigrationTestSupport.validateNetworknt;
 import static io.github.belgif.rest.guide.validator.core.ValidatorMigrationTestSupport.validateOpenApi4j;
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,7 +59,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: a, value: x}",
-                    State.VALID, State.INVALID),
+                    State.VALID, State.INVALID, State.VALID),
             probe("anyof-discriminator-selected-branch-invalid-alternate-valid",
                     """
                     openapi: 3.0.3
@@ -92,7 +93,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: a, value: x}",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("discriminator-explicit-reference-mapping",
                     """
                     openapi: 3.0.3
@@ -127,7 +128,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: a, a: ok}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("discriminator-schema-name-shorthand-confounded-control",
                     """
                     openapi: 3.0.3
@@ -162,7 +163,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: a, a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-implicit-schema-name",
                     """
                     openapi: 3.0.3
@@ -195,7 +196,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: A, a: ok}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("discriminator-missing",
                     """
                     openapi: 3.0.3
@@ -230,7 +231,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-null",
                     """
                     openapi: 3.0.3
@@ -265,7 +266,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: null, a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-non-string",
                     """
                     openapi: 3.0.3
@@ -300,7 +301,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: 7, a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-unknown",
                     """
                     openapi: 3.0.3
@@ -335,7 +336,7 @@ class ValidatorMigrationComparisonTest {
                             value: {type: string}
                     """,
                     "{kind: missing, a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-unconstrained-missing",
                     """
                     openapi: 3.0.3
@@ -366,7 +367,7 @@ class ValidatorMigrationComparisonTest {
                             a: {type: integer}
                     """,
                     "{a: ok}",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("discriminator-unconstrained-null",
                     """
                     openapi: 3.0.3
@@ -397,7 +398,7 @@ class ValidatorMigrationComparisonTest {
                             a: {type: integer}
                     """,
                     "{kind: null, a: ok}",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("discriminator-unconstrained-non-string",
                     """
                     openapi: 3.0.3
@@ -428,7 +429,7 @@ class ValidatorMigrationComparisonTest {
                             a: {type: integer}
                     """,
                     "{kind: 7, a: ok}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("discriminator-unconstrained-unknown",
                     """
                     openapi: 3.0.3
@@ -459,7 +460,7 @@ class ValidatorMigrationComparisonTest {
                             a: {type: integer}
                     """,
                     "{kind: unknown, a: ok}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("discriminator-child-allof-inherited",
                     """
                     openapi: 3.0.3
@@ -483,7 +484,7 @@ class ValidatorMigrationComparisonTest {
                                 payload: {type: string}
                     """,
                     "{kind: child, payload: ok}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("discriminator-child-allof-inherited-unknown",
                     """
                     openapi: 3.0.3
@@ -507,7 +508,7 @@ class ValidatorMigrationComparisonTest {
                                 payload: {type: string}
                     """,
                     "{kind: unknown, payload: ok}",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("discriminator-child-allof-inherited-missing",
                     """
                     openapi: 3.0.3
@@ -531,7 +532,7 @@ class ValidatorMigrationComparisonTest {
                                 payload: {type: string}
                     """,
                     "{payload: ok}",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("nested-unrelated-discriminator",
                     """
                     openapi: 3.0.3
@@ -552,7 +553,7 @@ class ValidatorMigrationComparisonTest {
                                     propertyName: kind
                     """,
                     "{nested: {kind: x}}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("nullable-string-null",
                     """
                     openapi: 3.0.3
@@ -563,7 +564,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, nullable: true}
                     """,
                     "null",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("nullable-enum-excludes-null",
                     """
                     openapi: 3.0.3
@@ -574,7 +575,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, nullable: true, enum: [x]}
                     """,
                     "null",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("nullable-oneof-type-less-composition",
                     """
                     openapi: 3.0.3
@@ -589,7 +590,7 @@ class ValidatorMigrationComparisonTest {
                             - type: integer
                     """,
                     "null",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("nullable-allof-composition",
                     """
                     openapi: 3.0.3
@@ -603,7 +604,7 @@ class ValidatorMigrationComparisonTest {
                             - type: string
                     """,
                     "null",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("type-less-schema-null",
                     """
                     openapi: 3.0.3
@@ -614,7 +615,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {description: 'no type constraint'}
                     """,
                     "null",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("required-property-present-null",
                     """
                     openapi: 3.0.3
@@ -625,7 +626,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: object, required: [value]}
                     """,
                     "{value: null}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("required-property-absent",
                     """
                     openapi: 3.0.3
@@ -636,7 +637,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: object, required: [value]}
                     """,
                     "{}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("int32-upper-bound",
                     """
                     openapi: 3.0.3
@@ -647,7 +648,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: integer, format: int32}
                     """,
                     "2147483648",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("int32-lower-bound",
                     """
                     openapi: 3.0.3
@@ -658,7 +659,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: integer, format: int32}
                     """,
                     "-2147483649",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("int64-upper-bound",
                     """
                     openapi: 3.0.3
@@ -669,7 +670,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: integer, format: int64}
                     """,
                     "9223372036854775808",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("byte-valid-base64",
                     """
                     openapi: 3.0.3
@@ -680,7 +681,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: byte}
                     """,
                     "'SGVsbG8='",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("byte-invalid-base64",
                     """
                     openapi: 3.0.3
@@ -691,7 +692,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: byte}
                     """,
                     "'not base64!'",
-                    State.INVALID, State.VALID),
+                    State.INVALID, State.VALID, State.INVALID),
             probe("date-valid",
                     """
                     openapi: 3.0.3
@@ -702,7 +703,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: date}
                     """,
                     "'2024-02-29'",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("date-invalid",
                     """
                     openapi: 3.0.3
@@ -713,7 +714,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: date}
                     """,
                     "'2023-02-29'",
-                    State.VALID, State.INVALID),
+                    State.VALID, State.INVALID, State.VALID),
             probe("date-time-invalid",
                     """
                     openapi: 3.0.3
@@ -724,7 +725,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: date-time}
                     """,
                     "'2024-01-01 12:00:00'",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("uri-relative-value",
                     """
                     openapi: 3.0.3
@@ -735,7 +736,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: uri}
                     """,
                     "'./documents/123'",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("uri-reference-relative-value",
                     """
                     openapi: 3.0.3
@@ -746,7 +747,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: string, format: uri-reference}
                     """,
                     "'./documents/123'",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("exclusive-minimum-equality",
                     """
                     openapi: 3.0.3
@@ -757,7 +758,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: number, minimum: 1, exclusiveMinimum: true}
                     """,
                     "1",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("exclusive-maximum-equality",
                     """
                     openapi: 3.0.3
@@ -768,7 +769,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: number, maximum: 1, exclusiveMaximum: true}
                     """,
                     "1",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("additional-properties-with-allof",
                     """
                     openapi: 3.0.3
@@ -788,7 +789,7 @@ class ValidatorMigrationComparisonTest {
                           additionalProperties: false
                     """,
                     "{a: x, b: y}",
-                    State.INVALID, State.INVALID),
+                    State.INVALID, State.INVALID, State.INVALID),
             probe("read-only-context-neutral",
                     """
                     openapi: 3.0.3
@@ -799,7 +800,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: object, required: [value], properties: {value: {type: string, readOnly: true}}}
                     """,
                     "{value: present}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("write-only-context-neutral",
                     """
                     openapi: 3.0.3
@@ -810,7 +811,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: object, properties: {value: {type: string, writeOnly: true}}}
                     """,
                     "{value: secret}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("ref-property-name-literal-dollar-ref",
                     """
                     openapi: 3.0.3
@@ -821,7 +822,7 @@ class ValidatorMigrationComparisonTest {
                         Target: {type: object, properties: {$ref: {type: string}}, required: [$ref]}
                     """,
                     "{$ref: literal}",
-                    State.VALID, State.VALID),
+                    State.VALID, State.VALID, State.VALID),
             probe("json-pointer-escaped-component",
                     """
                     openapi: 3.0.3
@@ -833,7 +834,7 @@ class ValidatorMigrationComparisonTest {
                         'A/B~C': {type: string}
                     """,
                     "'resolved'",
-                    State.VALID, State.VALID)
+                    State.VALID, State.VALID, State.VALID)
     );
 
     @TestFactory
@@ -875,9 +876,11 @@ class ValidatorMigrationComparisonTest {
         Observed old = validateOpenApi4j(schema, instance, document, documentLocation);
         Observed newer = validateNetworknt(schema, instance,
                 documentLocation + "#/components/schemas/Target", documents);
+        Observed customized = validateCustomizedOpenApi4j(document, instance);
 
         assertEquals(State.EXECUTION_FAILURE, old.state(), old.message());
         assertEquals(State.EXECUTION_FAILURE, newer.state(), newer.message());
+        assertEquals(State.EXECUTION_FAILURE, customized.state(), customized.message());
     }
 
     private static void compare(Probe probe) throws IOException {
@@ -889,8 +892,10 @@ class ValidatorMigrationComparisonTest {
 
         Observed old = validateOpenApi4j(schema, probe.instance(), probe.document(), documentLocation);
         Observed newer = validateNetworknt(schema, probe.instance(), schemaLocation, documents);
+        Observed customized = validateCustomizedOpenApi4j(probe.document(), probe.instance());
 
-        System.out.printf("MATRIX|%s|openapi4j=%s|networknt=%s%n", probe.id(), old.csv(), newer.csv());
+        System.out.printf("MATRIX|%s|openapi4j=%s|networknt=%s|customized-openapi4j=%s%n",
+                probe.id(), old.csv(), newer.csv(), customized.csv());
         if (Set.of("anyof-discriminator-selected-branch-invalid-alternate-valid",
                 "discriminator-schema-name-shorthand-confounded-control", "discriminator-implicit-schema-name",
                 "required-property-absent", "exclusive-minimum-equality", "uri-relative-value",
@@ -900,23 +905,28 @@ class ValidatorMigrationComparisonTest {
         }
         assertNotEquals(State.EXECUTION_FAILURE, old.state(), old.message());
         assertNotEquals(State.EXECUTION_FAILURE, newer.state(), newer.message());
+        assertNotEquals(State.EXECUTION_FAILURE, customized.state(), customized.message());
         assertEquals(probe.expectedOpenApi4j(), old.state(),
                 "openapi4j outcome for " + probe.id() + ": " + old.message());
         assertEquals(probe.expectedNetworknt(), newer.state(),
                 "networknt outcome for " + probe.id() + ": " + newer.message());
+        assertEquals(probe.expectedCustomizedOpenApi4j(), customized.state(),
+                "customized openapi4j outcome for " + probe.id() + ": " + customized.message());
     }
 
     private static Probe probe(String id, String document, String instance,
-                               State expectedOpenApi4j, State expectedNetworknt) {
+                               State expectedOpenApi4j, State expectedNetworknt,
+                               State expectedCustomizedOpenApi4j) {
         try {
             return new Probe(id, YAML.readTree(document), YAML.readTree(instance),
-                    expectedOpenApi4j, expectedNetworknt);
+                    expectedOpenApi4j, expectedNetworknt, expectedCustomizedOpenApi4j);
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
 
     private record Probe(String id, JsonNode document, JsonNode instance,
-                         State expectedOpenApi4j, State expectedNetworknt) {
+                         State expectedOpenApi4j, State expectedNetworknt,
+                         State expectedCustomizedOpenApi4j) {
     }
 }
