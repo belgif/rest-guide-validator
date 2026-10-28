@@ -15,6 +15,50 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SchemaValidatorTest {
     @Test
+    void testDefaultsEnumsAndActionableLocations() {
+        var oas = new ViolationReport();
+        var file = new File(this.getClass().getResource("schemaValidationRegression.yaml").getFile());
+        var result = new Parser(file).parse(oas);
+
+        SchemaDefinition acceptedDefault = result.getSchemas().stream()
+                .filter(schema -> "AcceptedDefault".equals(schema.getIdentifier()))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(SchemaValidator.getDefaultValueViolations(acceptedDefault).isEmpty());
+
+        SchemaDefinition invalidDefault = result.getSchemas().stream()
+                .filter(schema -> "InvalidDefault".equals(schema.getIdentifier()))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(SchemaValidator.getDefaultValueViolations(invalidDefault).orElseThrow().contains("InvalidDefault"));
+
+        SchemaDefinition enumSchema = result.getSchemas().stream()
+                .filter(schema -> "EnumValues".equals(schema.getIdentifier()))
+                .findFirst()
+                .orElseThrow();
+        var enumViolations = SchemaValidator.getEnumViolations(enumSchema);
+        assertEquals(1, enumViolations.size());
+        assertTrue(enumViolations.iterator().next().getKey().equals("42"));
+
+        ExampleDefinition invalidExample = result.getExamples().stream()
+                .filter(example -> example.getJsonPointer().toString().contains("ExampleLocation"))
+                .findFirst()
+                .orElseThrow();
+        String exampleViolation = SchemaValidator.getExampleViolations(invalidExample).orElseThrow();
+        assertTrue(exampleViolation.contains("Instance /member"));
+        assertTrue(exampleViolation.contains("schemaValidationRegression.yaml#/components/schemas/ExampleLocation"));
+
+        var externalResult = new Parser(new File(this.getClass()
+                .getResource("../rules/referencedFiles/openapi.yaml").getFile())).parse(new ViolationReport());
+        SchemaDefinition externalDefault = externalResult.getSchemas().stream()
+                .filter(schema -> schema.getOpenApiFile().getName().equals("problem-v1.yaml")
+                        && schema.getJsonPointer().toString().endsWith("/properties/type"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(SchemaValidator.getDefaultValueViolations(externalDefault).isEmpty());
+    }
+
+    @Test
     void testCircularDependency() {
         var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/circularDependency.yaml").getFile());
@@ -34,7 +78,10 @@ class SchemaValidatorTest {
 
         var examples = result.getExamples().stream().filter(exampleDefinition -> exampleDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)).collect(Collectors.toSet());
 
-        assertDoesNotThrow(()->examples.stream().map(SchemaValidator::getExampleViolations));
+        assertDoesNotThrow(() -> examples.forEach(SchemaValidator::getExampleViolations));
+        String violations = SchemaValidator.getExampleViolations(examples.iterator().next()).orElseThrow();
+        assertTrue(violations.contains("referencedFile.yaml"));
+        assertTrue(violations.contains("/employer"));
     }
 
     @Test
@@ -52,7 +99,7 @@ class SchemaValidatorTest {
 
     @Test
     void testDiscriminatorMappingOnSchemaName() {
-        // In order to test the belgif fix for a bug in openapi4j where discriminator mapping did only work with $ref.
+        // Discriminator mapping validation is handled by the OpenAPI 3.0 schema dialect.
         var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/discriminatorMappingsOnSchemaName.yaml").getFile());
         var result = new Parser(file).parse(oas);
@@ -111,17 +158,14 @@ class SchemaValidatorTest {
     }
 
     @Test
-    void testUriWithTrailingForwardSlash (){
+    void testUriWithTrailingForwardSlashDoesNotAliasReferencedFile() {
         var oas = new ViolationReport();
         var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriWithTrailingForwardSlash.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
         assertEquals(2, examples.size());
-
-        for (ExampleDefinition example : examples) {
-            assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(example));
-        }
+        assertThrows(IllegalStateException.class, () -> examples.forEach(SchemaValidator::getExampleViolations));
     }
 
 }

@@ -23,3 +23,4 @@ components:
       example:
         employerId: "6000000000000000"
         name: EmployerName
+        employer: {}
