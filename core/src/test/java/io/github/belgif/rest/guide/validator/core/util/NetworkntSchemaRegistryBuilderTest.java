@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NetworkntSchemaRegistryBuilderTest {
-    //TODO: check why DeserializationFeature needed
+    // When reading example values, Jackson deserializes JSON numbers into Double by default, which can cause precision loss when preparing our test values to pass to networknt. Use BigDecimal to preserve precision.
     private static final ObjectMapper JSON = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
     // dummy URI to assign to test schema
@@ -40,6 +40,7 @@ class NetworkntSchemaRegistryBuilderTest {
         assertValid("float", "0.1");
         assertInvalid("float", "0.1000000001");
         assertInvalid("float", "3.5e38");
+
         assertValid("double", "0.1");
         assertInvalid("double", "9007199254740993.1");
         assertInvalid("double", "1e309");

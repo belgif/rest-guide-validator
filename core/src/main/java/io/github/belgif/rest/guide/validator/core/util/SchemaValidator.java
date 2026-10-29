@@ -18,7 +18,7 @@ public class SchemaValidator {
 
     public static Set<String> validateSchema(JsonNode instanceNode, SchemaDefinition schemaDefinition) {
         try {
-            // TODO: consider creating/parsing schema registry only once per run to improve performance
+            // TODO: consider creating/parsing schema registry only once per run to improve performance. Cache key could be the entry OpenAPI document
             Map<String, String> documents = schemaDefinition.getResult().getSrc().values().stream()
                     .collect(Collectors.toMap(
                             source -> source.getFile().getAbsoluteFile().toURI().toString(),
@@ -41,7 +41,6 @@ public class SchemaValidator {
     }
 
     private static String formatViolation(Error error, SchemaDefinition schemaDefinition) {
-        // TODO: test/review the error message formatting to ensure it is clear and informative for users
         String instanceLocation = error.getInstanceLocation().toString();
         String schemaLocation = error.getSchemaLocation().toString();  // TODO: schemaLocation includes full file:/... absolute IRI, could be reduced to file name for brevity
         String message = error.getMessage();
