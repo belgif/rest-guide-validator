@@ -11,9 +11,12 @@ components:
     InvalidDefault:
       type: integer
       default: not-an-integer
-    EnumValues:
+    ValidEnum:
       type: string
-      enum: [accepted, 42]
+      enum: [accepted]
+    InvalidEnum:
+      type: string
+      enum: [42]
     ExampleLocation:
       type: object
       properties:

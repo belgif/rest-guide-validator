@@ -3,10 +3,9 @@ package io.github.belgif.rest.guide.validator.core.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.networknt.schema.ExecutionContext;
-import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaRegistry;
-import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaContext;
+import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.Dialects;
 import com.networknt.schema.format.Format;
@@ -18,7 +17,7 @@ import com.networknt.schema.utils.TypeFactory;
 import java.math.BigDecimal;
 import java.util.Map;
 
-final class NetworkntSchemaValidation {
+final class NetworkntSchemaRegistryBuilder {
     private static final Dialect OPEN_API_30_DIALECT = Dialect.builder(Dialects.getOpenApi30())
             .format(new Int32Format())
             .format(new Int64Format())
@@ -27,32 +26,32 @@ final class NetworkntSchemaValidation {
             .format(new ByteFormat())
             .build();
 
-    private NetworkntSchemaValidation() {
+    private NetworkntSchemaRegistryBuilder() {
     }
 
     static SchemaRegistry createRegistry(Map<String, String> documents) {
         return SchemaRegistry.withDialect(OPEN_API_30_DIALECT, builder -> {
             builder.schemaLoader(new SchemaLoader(new MapResourceLoader(documents)));
-            builder.schemaRegistryConfig(com.networknt.schema.SchemaRegistryConfig.builder().build());
+            builder.schemaRegistryConfig(SchemaRegistryConfig.builder().build());
         });
     }
 
-    static Schema schema(SchemaRegistry registry, String schemaUri) {
-        return registry.getSchema(SchemaLocation.of(schemaUri));
-    }
-
-    static Schema schema(SchemaRegistry registry, String schemaUri, JsonNode schemaNode) {
-        return registry.getSchema(SchemaLocation.of(schemaUri), schemaNode);
-    }
-
-    private abstract static class AtlassianFormat implements Format {
+    /*
+     * Format validation implementations to add support for OpenAPI 3.0 formats not part of the JSON Schema standard or provided by the networknt implementation.
+     *
+     * Adapted and modified for networknt's Format API from Atlassian openapi-request-validator (Apache-2.0):
+     * https://github.com/atlassian/openapi-request-validator/tree/master/openapi-request-validator-core/src/main/java/com/atlassian/oai/validator/schema/format
+     * Copyright @ 2016 Atlassian Pty Ltd.
+     * License: https://www.apache.org/licenses/LICENSE-2.0
+     */
+    private abstract static class OpenAPI3Format implements Format {
         @Override
         public String getMessageKey() {
             return "format";
         }
     }
 
-    private static final class Int32Format extends AtlassianFormat {
+    private static final class Int32Format extends OpenAPI3Format {
         @Override
         public String getName() {
             return "int32";
@@ -65,7 +64,7 @@ final class NetworkntSchemaValidation {
         }
     }
 
-    private static final class Int64Format extends AtlassianFormat {
+    private static final class Int64Format extends OpenAPI3Format {
         @Override
         public String getName() {
             return "int64";
@@ -78,7 +77,7 @@ final class NetworkntSchemaValidation {
         }
     }
 
-    private static final class FloatFormat extends AtlassianFormat {
+    private static final class FloatFormat extends OpenAPI3Format {
         @Override
         public String getName() {
             return "float";
@@ -98,7 +97,7 @@ final class NetworkntSchemaValidation {
         }
     }
 
-    private static final class DoubleFormat extends AtlassianFormat {
+    private static final class DoubleFormat extends OpenAPI3Format {
         @Override
         public String getName() {
             return "double";
@@ -123,13 +122,7 @@ final class NetworkntSchemaValidation {
         }
     }
 
-    /*
-     * Adapted and modified for networknt's Format API from Atlassian openapi-request-validator (Apache-2.0):
-     * https://github.com/atlassian/openapi-request-validator/tree/master/openapi-request-validator-core/src/main/java/com/atlassian/oai/validator/schema/format
-     * Copyright @ 2016 Atlassian Pty Ltd.
-     * License: https://www.apache.org/licenses/LICENSE-2.0
-     */
-    private static final class ByteFormat extends AtlassianFormat {
+    private static final class ByteFormat extends OpenAPI3Format {
         @Override
         public String getName() {
             return "byte";

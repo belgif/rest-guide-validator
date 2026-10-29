@@ -42,7 +42,7 @@ components:
       type: object
       properties:
         metaData:
-          $ref: 'LogoMetaData.yaml#/components/schemas/LogoMetaData'
+          $ref: 'circularDependency-part2.yaml#/components/schemas/LogoMetaData'
         href:
           type: string
           description: Any absolute URI that is using http or https protocol
@@ -51,7 +51,7 @@ components:
       type: object
       properties:
         meta:
-          $ref: 'LogoMetaData.yaml#/components/schemas/LogoMetaData'
+          $ref: 'circularDependency-part2.yaml#/components/schemas/LogoMetaData'
         image:
           type: string
           format: binary

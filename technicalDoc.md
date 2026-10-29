@@ -39,14 +39,8 @@ Parse a json/swager file and build a java object structure.
 * com.jayway.jsonpath:json-path.  
 Read a json file and use json path.
 
-* `com.networknt:json-schema-validator`. Validate OpenAPI 3.0 examples, enum
-  values, and defaults using parser-loaded documents and file-URI plus JSON
-  Pointer schema locations. Reference loading is limited to documents supplied
-  by the parser; the validator does not fetch schemas independently. It uses
-  networknt's OpenAPI 3.0 dialect and adds Atlassian-compatible `int32`,
-  `int64`, `float`, `double`, and `byte` format checks. Built-in formats and the
-  dialect's default nullable, composition, and discriminator behavior are
-  retained.
+* `com.networknt:json-schema-validator`. To validate OpenAPI 3.0 examples, enum
+  values, and defaults against their schemas.
 
 * org.drools:*, org.kie:*  
 Rules engine.

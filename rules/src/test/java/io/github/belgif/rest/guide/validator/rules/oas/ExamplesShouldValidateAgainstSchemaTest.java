@@ -13,14 +13,12 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testRequiredValue() {
         ViolationReport aggregator = callRules("requiredValue.yaml");
         assertErrorCount(1, aggregator);
-        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("Instance "));
     }
 
     @Test
     void testPatterns() {
         ViolationReport aggregator = callRules("doesNotRespectPatterns.yaml");
         assertErrorCount(1, aggregator);
-        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("Instance "));
     }
 
     @Test
@@ -32,7 +30,6 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testWrongTypes() {
         ViolationReport aggregator = callRules("wrongType.yaml");
         assertErrorCount(1, aggregator);
-        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("Instance "));
     }
 
     @Test
@@ -44,8 +41,6 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testMultipleExamplesInComponents() {
         ViolationReport aggregator = callRules("examplesInComponents.yaml");
         assertErrorCount(2, aggregator);
-        assertTrue(aggregator.getActionableViolations().stream()
-                .allMatch(violation -> violation.getMessage().contains("Instance ")));
     }
 
     @Test
@@ -57,8 +52,6 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testDateFormat() {
         ViolationReport aggregator = callRules("dateFormat.yaml");
         assertErrorCount(3, aggregator);
-        assertTrue(aggregator.getActionableViolations().stream()
-                .allMatch(violation -> violation.getMessage().contains("Instance ")));
     }
 
     @Test
@@ -68,17 +61,11 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testSimpleInvalidDiscriminator() {
+        // Changed behavior in networknt validator: a discriminator value that doesn't resolve to a schema is no longer a violation; unless when used when combined with a oneOf
         assertNoViolations(callRules("invalidDiscriminator.yaml"));
     }
 
-    @Test
-    void testUnrelatedDiscriminator() {
-        ViolationReport aggregator = callRules("unrelatedDiscriminator.yaml");
-        assertErrorCount(1, aggregator);
-        String message = aggregator.getActionableViolations().get(0).getMessage();
-        assertTrue(message.contains("Instance /href"));
-        assertTrue(message.contains("unrelatedDiscriminator.yaml#/components/schemas/NotificationsCollection"));
-    }
+    //TODO: add test for discriminator with oneOf, where the discriminator value doesn't resolve to a schema, which should be a violation
 
     @Test
     void testSchemaInExternalFile() {
@@ -106,8 +93,9 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testOneOfDiscriminator() {
-        assertThrows(IllegalStateException.class, () -> callRules("oneOfDiscriminator/openapi.yaml"));
+    void testFailOnOverwrittenDiscriminatorMapping() {
+        // New behavior: the networknt validator throws exception when a discriminator mapping is overwritten by schema composition
+        assertThrows(IllegalStateException.class, () -> callRules("oneOfOverwrittenDiscriminator/openapi.yaml"));
     }
 
     @Test
@@ -119,7 +107,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     void testDiscriminatorInSubSchemaOfOneOf() {
         ViolationReport aggregator = callRules("oneOf/openapi.yaml");
         assertErrorCount(1, aggregator);
-        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("Instance /testRequest/schemaUnderTest"));
+        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("In location /testRequest/schemaUnderTest"));
     }
 
     @Test

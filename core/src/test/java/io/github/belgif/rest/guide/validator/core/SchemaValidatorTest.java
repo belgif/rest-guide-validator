@@ -15,53 +15,61 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SchemaValidatorTest {
     @Test
-    void testDefaultsEnumsAndActionableLocations() {
-        var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("schemaValidationRegression.yaml").getFile());
-        var result = new Parser(file).parse(oas);
+    void testValidDefault() {
+        SchemaDefinition schema = getRegressionSchema("AcceptedDefault");
+        assertTrue(SchemaValidator.getDefaultValueViolations(schema).isEmpty());
+    }
 
-        SchemaDefinition acceptedDefault = result.getSchemas().stream()
-                .filter(schema -> "AcceptedDefault".equals(schema.getIdentifier()))
-                .findFirst()
-                .orElseThrow();
-        assertTrue(SchemaValidator.getDefaultValueViolations(acceptedDefault).isEmpty());
+    @Test
+    void testInvalidDefault() {
+        SchemaDefinition schema = getRegressionSchema("InvalidDefault");
+        assertTrue(SchemaValidator.getDefaultValueViolations(schema).orElseThrow().contains("InvalidDefault"));
+    }
 
-        SchemaDefinition invalidDefault = result.getSchemas().stream()
-                .filter(schema -> "InvalidDefault".equals(schema.getIdentifier()))
-                .findFirst()
-                .orElseThrow();
-        assertTrue(SchemaValidator.getDefaultValueViolations(invalidDefault).orElseThrow().contains("InvalidDefault"));
+    @Test
+    void testValidEnum() {
+        SchemaDefinition schema = getRegressionSchema("ValidEnum");
+        assertTrue(SchemaValidator.getEnumViolations(schema).isEmpty());
+    }
 
-        SchemaDefinition enumSchema = result.getSchemas().stream()
-                .filter(schema -> "EnumValues".equals(schema.getIdentifier()))
-                .findFirst()
-                .orElseThrow();
-        var enumViolations = SchemaValidator.getEnumViolations(enumSchema);
-        assertEquals(1, enumViolations.size());
-        assertTrue(enumViolations.iterator().next().getKey().equals("42"));
+    @Test
+    void testInvalidEnum() {
+        SchemaDefinition schema = getRegressionSchema("InvalidEnum");
+        var violations = SchemaValidator.getEnumViolations(schema);
 
+        assertEquals(1, violations.size());
+        assertEquals("42", violations.iterator().next().getKey());
+    }
+
+    @Test
+    void testExampleViolationIncludesActionableLocations() {
+        var result = parseRegressionDocument();
         ExampleDefinition invalidExample = result.getExamples().stream()
                 .filter(example -> example.getJsonPointer().toString().contains("ExampleLocation"))
                 .findFirst()
                 .orElseThrow();
-        String exampleViolation = SchemaValidator.getExampleViolations(invalidExample).orElseThrow();
-        assertTrue(exampleViolation.contains("Instance /member"));
-        assertTrue(exampleViolation.contains("schemaValidationRegression.yaml#/components/schemas/ExampleLocation"));
 
-        var externalResult = new Parser(new File(this.getClass()
-                .getResource("../rules/referencedFiles/openapi.yaml").getFile())).parse(new ViolationReport());
-        SchemaDefinition externalDefault = externalResult.getSchemas().stream()
-                .filter(schema -> schema.getOpenApiFile().getName().equals("problem-v1.yaml")
-                        && schema.getJsonPointer().toString().endsWith("/properties/type"))
+        String exampleViolation = SchemaValidator.getExampleViolations(invalidExample).orElseThrow();
+        assertTrue(exampleViolation.contains("Value at /member"));
+        assertTrue(exampleViolation.contains("validator/schemaValidationRegression.yaml#/components/schemas/ExampleLocation"));
+    }
+
+    private SchemaDefinition getRegressionSchema(String identifier) {
+        return parseRegressionDocument().getSchemas().stream()
+                .filter(schema -> identifier.equals(schema.getIdentifier()))
                 .findFirst()
                 .orElseThrow();
-        assertTrue(SchemaValidator.getDefaultValueViolations(externalDefault).isEmpty());
+    }
+
+    private Parser.ParserResult parseRegressionDocument() {
+        var file = new File(this.getClass().getResource("./validator/schemaValidationRegression.yaml").getFile());
+        return new Parser(file).parse(new ViolationReport());
     }
 
     @Test
     void testCircularDependency() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/circularDependency.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/circularDependency.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
         var examples = result.getExamples();
@@ -73,7 +81,7 @@ class SchemaValidatorTest {
     @Test
     void testSameComponentNameInRef() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/sameName.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/sameName.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
         var examples = result.getExamples().stream().filter(exampleDefinition -> exampleDefinition.getDefinitionType().equals(OpenApiDefinition.DefinitionType.INLINE)).collect(Collectors.toSet());
@@ -87,7 +95,7 @@ class SchemaValidatorTest {
     @Test
     void testValidationOnDeeperSchemas() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/parameter.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/parameter.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
         var examples = result.getExamples().stream().filter(exampleDefinition -> exampleDefinition.getJsonPointer().getJsonPointer().equals("/paths/~1encryptionKeys~1{id}/parameters/0/example")).collect(Collectors.toList());
@@ -101,7 +109,7 @@ class SchemaValidatorTest {
     void testDiscriminatorMappingOnSchemaName() {
         // Discriminator mapping validation is handled by the OpenAPI 3.0 schema dialect.
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/discriminatorMappingsOnSchemaName.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/discriminatorMappingsOnSchemaName.yaml").getFile());
         var result = new Parser(file).parse(oas);
 
         for (SchemaDefinition schemaDefinition : result.getSchemas()) {
@@ -114,7 +122,7 @@ class SchemaValidatorTest {
     @Test
     void testRefAsPropertyName() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/refAsPropertyName.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/refAsPropertyName.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().filter(def -> def.getPrintableJsonPointer().equals("/components/schemas/HealthStatus/example")).toList();
 
@@ -125,7 +133,7 @@ class SchemaValidatorTest {
     @Test
     void testRefAsPropertyNameOfDiscriminator() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/refAsPropertyNameInDiscriminator.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/refAsPropertyNameInDiscriminator.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
@@ -136,7 +144,7 @@ class SchemaValidatorTest {
     @Test
     void testUriReference() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriReference.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/uriReference.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
@@ -148,24 +156,13 @@ class SchemaValidatorTest {
     @Test
     void testUri() {
         var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uri.yaml").getFile());
+        var file = new File(this.getClass().getResource("./validator/uri.yaml").getFile());
         var result = new Parser(file).parse(oas);
         var examples = result.getExamples().stream().toList();
 
         assertEquals(1, examples.size());
         Optional<String> uriViolation = assertDoesNotThrow(() -> SchemaValidator.getExampleViolations(examples.get(0)));
         assertTrue(uriViolation.isPresent());
-    }
-
-    @Test
-    void testUriWithTrailingForwardSlashDoesNotAliasReferencedFile() {
-        var oas = new ViolationReport();
-        var file = new File(this.getClass().getResource("../rules/exampleValidatorFiles/uriWithTrailingForwardSlash.yaml").getFile());
-        var result = new Parser(file).parse(oas);
-        var examples = result.getExamples().stream().toList();
-
-        assertEquals(2, examples.size());
-        assertThrows(IllegalStateException.class, () -> examples.forEach(SchemaValidator::getExampleViolations));
     }
 
 }

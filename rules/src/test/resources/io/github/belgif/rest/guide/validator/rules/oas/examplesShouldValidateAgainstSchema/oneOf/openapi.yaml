@@ -5,19 +5,18 @@ info:
 paths: {}
 components:
   schemas:
-    myRequest:
-      description: Doesn't matter
+    TestSchema:
+      description: test schema
       type: object
       properties:
-        testRequest:
-          $ref: 'schemas.yaml#/components/schemas/TestRequest'
+        schemaUnderTest:
+          $ref: "schemas.yaml#/components/schemas/TopLevel"
+      required:
+        - schemaUnderTest
       example: {
-        "testRequest" : {
-          "myFirstProperty": "yes",
-          "schemaUnderTest": {
-            "objectType": "firstChild",
-            "dataSource": "myDataSource",
-            "firstChildProperty": "seems good"
-          }
-        }
+         "schemaUnderTest": {
+           "objectType": "thirdChild",
+           "dataSource": "myDataSource",
+           "firstChildProperty": "123"
+         }
       }

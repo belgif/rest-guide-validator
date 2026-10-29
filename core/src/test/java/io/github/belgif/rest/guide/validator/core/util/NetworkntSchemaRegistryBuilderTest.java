@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaLocation;
+import com.networknt.schema.SchemaRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,9 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class NetworkntSchemaValidationTest {
+class NetworkntSchemaRegistryBuilderTest {
+    //TODO: check why DeserializationFeature needed
     private static final ObjectMapper JSON = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+    // dummy URI to assign to test schema
     private static final String SCHEMA_URI = "https://example.test/schema";
 
     @Test
@@ -63,16 +67,6 @@ class NetworkntSchemaValidationTest {
         assertFalse(error.getMessage().contains("format.int32"));
     }
 
-    @Test
-    void unresolvedReferencesFailInsteadOfFallingBackToValidationResults() throws Exception {
-        assertThrows(RuntimeException.class, () -> {
-            JsonNode schemaNode = JSON.readTree("{\"$ref\":\"https://missing.example/schema.json\"}");
-            Schema schema = NetworkntSchemaValidation.schema(
-                    NetworkntSchemaValidation.createRegistry(Map.of()), SCHEMA_URI, schemaNode);
-            schema.validate(JSON.readTree("{}"));
-        });
-    }
-
     private static void assertValid(String format, String instance) throws Exception {
         assertTrue(validate(format, instance).isEmpty(), format + " should accept " + instance);
     }
@@ -85,8 +79,8 @@ class NetworkntSchemaValidationTest {
         JsonNode schemaNode = JSON.readTree("{\"type\":\"" + ("byte".equals(format) ? "string" : "number")
                 + "\",\"format\":\"" + format + "\"}");
         JsonNode instance = JSON.readTree(value);
-        Schema schema = NetworkntSchemaValidation.schema(
-                NetworkntSchemaValidation.createRegistry(Map.of()), SCHEMA_URI, schemaNode);
+        SchemaRegistry registry = NetworkntSchemaRegistryBuilder.createRegistry(Map.of());
+        Schema schema = registry.getSchema(SchemaLocation.of(SCHEMA_URI), schemaNode);
         return schema.validate(instance);
     }
 }

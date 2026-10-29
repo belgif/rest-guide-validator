@@ -17,10 +17,10 @@ components:
           exclusiveMinimum: false
           description: Just a description
           format: int64
-        role:
-          $ref: 'referencedFileWithExample.yaml/#/components/schemas/Role'
+        employer:
+          $ref: 'sameName-referencedFile.yaml#/components/schemas/Employer'
       additionalProperties: false
       example:
         employerId: "6000000000000000"
         name: EmployerName
-        role: {}
+        employer: {}

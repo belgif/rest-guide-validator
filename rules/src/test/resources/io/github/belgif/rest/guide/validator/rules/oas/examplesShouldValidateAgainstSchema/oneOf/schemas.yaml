@@ -5,22 +5,50 @@ info:
 paths: {}
 components:
   schemas:
-    TestRequest:
-      description: Doesn't matter
+    FirstChild:
+      description: description
       allOf:
+        - $ref: "#/components/schemas/Parent"
         - type: object
-        - type: object
-          required:
-            - schemaUnderTest
           properties:
-            myFirstProperty:
+            firstChildProperty:
               type: string
-              description: a property
-            schemaUnderTest:
-              oneOf:
-                - $ref: "complex/main/schemas.yaml#/components/schemas/TopLevel"
-                - type: object
-                  additionalProperties: false
-                  properties:
-                    something:
-                      type: string
+          required: [firstChildProperty]
+    SecondChild:
+      description: Doesnt matter
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: object
+          properties:
+            secondChildProperty:
+              type: string
+          required: [secondChildProperty]
+    ThirdChild:
+      description: Third Child
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: object
+          properties:
+            thirdChildProperty:
+              type: string
+          required: [ thirdChildProperty ]
+    Parent:
+      description: Parent schema
+      type: object
+      properties:
+        parentProperty:
+          type: string
+        objectType:
+          type: string
+      required: [objectType]
+    TopLevel:
+      type: object
+      description: TopLevel Schema
+      oneOf:
+        - $ref: "#/components/schemas/FirstChild"
+        - $ref: "#/components/schemas/SecondChild"
+      discriminator:
+        propertyName: objectType
+        mapping:
+          firstChild: "#/components/schemas/FirstChild"
+          secondChild: "#/components/schemas/SecondChild"

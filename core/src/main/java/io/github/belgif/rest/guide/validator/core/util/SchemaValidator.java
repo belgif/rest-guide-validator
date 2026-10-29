@@ -3,6 +3,7 @@ package io.github.belgif.rest.guide.validator.core.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaLocation;
 import io.github.belgif.rest.guide.validator.core.model.*;
 
 import java.util.HashMap;
@@ -45,6 +46,18 @@ public class SchemaValidator {
         return Optional.empty();
     }
 
+    // Internal methods
+
+    /**
+     * @param exampleDefinition The ExampleDefinition object to be transformed into a JsonNode.
+     * @return JsonNode of the original value of the example.
+     * <p>
+     * <br />
+     * Using exampleDefinition.getModel().getValue() doesn't work because swagger-parser transforms some of these example values
+     * into objects (i.e. Date or DateTime), so the original value is lost in those cases.
+     * Using the original value from the openapi file ensures a correct validation of the example.
+     * </p>
+     */
     private static JsonNode getExampleNode(ExampleDefinition exampleDefinition) {
         JsonNode exampleNode = exampleDefinition.getJsonNode();
         if (exampleDefinition.isOasExampleObject() && exampleNode.has("value")) {
@@ -53,6 +66,15 @@ public class SchemaValidator {
         return exampleNode;
     }
 
+    /**
+     * @param schemaDefinition The SchemaDefinition object where the enumerations have to be fetched from
+     * @return Set<JsonNode> of the original values of the enumerations.
+     * <p><br />
+     * Using schemaDefinition.getModel().getEnumeration() doesn't work because swagger-parser tries to transform these values
+     * into the object type of the schema. When this doesn't match it has a null value and the original value is lost.
+     * Using the original value from the openapi file ensures a correct validation of the enumeration.
+     * </p>
+     */
     private static Set<JsonNode> getEnumerationNodes(SchemaDefinition schemaDefinition) {
         Set<JsonNode> enumerations = new HashSet<>();
         JsonNode schema = schemaDefinition.getJsonNode();
@@ -64,16 +86,17 @@ public class SchemaValidator {
 
     private static Set<String> validateSchema(JsonNode instanceNode, SchemaDefinition schemaDefinition) {
         try {
+            // TODO: consider creating/parsing schema registry only once per run to improve performance
             Map<String, String> documents = schemaDefinition.getResult().getSrc().values().stream()
                     .collect(Collectors.toMap(
                             source -> source.getFile().getAbsoluteFile().toURI().toString(),
                             source -> source.getJsonNode().toString(),
                             (first, ignored) -> first,
                             HashMap::new));
-            var registry = NetworkntSchemaValidation.createRegistry(documents);
-            String schemaUri = schemaDefinition.getOpenApiFile().getAbsoluteFile().toURI().toString()
+            var registry = NetworkntSchemaRegistryBuilder.createRegistry(documents);
+            String schemaUri = schemaDefinition.getOpenApiFile().getAbsoluteFile().toURI()
                     + "#" + schemaDefinition.getJsonPointer().getJsonPointer();
-            Schema schema = NetworkntSchemaValidation.schema(registry, schemaUri);
+            Schema schema = registry.getSchema(SchemaLocation.of(schemaUri));
             return schema.validate(instanceNode).stream()
                     .map(error -> formatViolation(error, schemaDefinition))
                     .collect(Collectors.toSet());
@@ -86,15 +109,16 @@ public class SchemaValidator {
     }
 
     private static String formatViolation(Error error, SchemaDefinition schemaDefinition) {
+        // TODO: test/review the error message formatting to ensure it is clear and informative for users
         String instanceLocation = error.getInstanceLocation().toString();
-        String schemaLocation = error.getSchemaLocation().toString();
+        String schemaLocation = error.getSchemaLocation().toString();  // TODO: schemaLocation includes full file:/... absolute IRI, could be reduced to file name for brevity
         String message = error.getMessage();
         if (message == null || message.isBlank()) {
             message = "Validation failed for keyword '" + error.getKeyword() + "'";
         }
-        return "Instance " + (instanceLocation.isEmpty() ? "/" : instanceLocation) + ": " + message
-                + " In Schema: " + schemaDefinition.getOpenApiFile().getName() + "#"
-                + schemaDefinition.getJsonPointer() + " : " + schemaLocation;
+        return "Value at " + (instanceLocation.isEmpty() ? "/" : instanceLocation) + ": " + message
+                + " Validated by: " + schemaLocation + " via schema " + schemaDefinition.getOpenApiFile().getName() + "#"
+                + schemaDefinition.getJsonPointer();
     }
 
     private static Optional<SchemaDefinition> getSchemaDefinition(ExampleDefinition exampleDefinition) {
