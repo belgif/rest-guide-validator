@@ -1,0 +1,56 @@
+openapi: "3.0.3"
+info:
+  title: "My Test"
+  version: "0.3"
+paths: {}
+components:
+  schemas:
+    TestSchema:
+      type: object
+      discriminator:
+        propertyName: objectType
+        mapping:  # overwrites the mapping in the Parent schema
+          firstChild: "#/components/schemas/FirstChildBis"
+          secondChild: "#/components/schemas/SecondChild"
+      oneOf:
+        - $ref: "#/components/schemas/FirstChildBis"
+        - $ref: "#/components/schemas/SecondChild"
+    Parent:
+      type: object
+      description: description
+      required:
+        - objectType
+      properties:
+        objectType:
+          type: string
+        topLevelProperty:
+          type: string
+      discriminator:
+        propertyName: objectType
+        mapping:
+          firstChild: "#/components/schemas/FirstChild"
+          secondChild: "#/components/schemas/SecondChild"
+    FirstChild:
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: object
+          properties:
+            firstChildProperty:
+              type: string
+          required: [firstChildProperty]
+    SecondChild:
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: object
+          properties:
+            secondChildProperty:
+              type: string
+          required: [secondChildProperty]
+    FirstChildBis:
+      allOf:
+        - $ref: "#/components/schemas/Parent"
+        - type: object
+          properties:
+            firstChildBisProperty:
+              type: string
+          required: [firstChildBisProperty]

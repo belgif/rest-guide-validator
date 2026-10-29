@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import io.github.belgif.rest.guide.validator.core.model.ExampleDefinition;
 import io.github.belgif.rest.guide.validator.core.model.OpenApiDefinition.DefinitionType;
-import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
+import io.github.belgif.rest.guide.validator.core.util.SchemaValidationSupport;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 import java.util.Optional
 import io.github.belgif.rest.guide.validator.core.ViolationLevel;
@@ -21,7 +21,7 @@ function void violationExamplesShouldValidateAgainstSchema(ViolationReport oas, 
 rule "Example should be valid against schema"
     when
         $example: ExampleDefinition(definitionType.equals(DefinitionType.INLINE))
-        $optional: Optional(isPresent()) from SchemaValidator.getExampleViolations($example)
+        $optional: Optional(isPresent()) from SchemaValidationSupport.getExampleViolations($example)
         $violation: String() from $optional.get()
     then
         violationExamplesShouldValidateAgainstSchema(oas, $example, $violation);
