@@ -5,6 +5,17 @@ info:
 paths: {}
 components:
   schemas:
+    TestSchema:
+      type: object
+      description: TopLevel Schema
+      oneOf:
+        - $ref: "#/components/schemas/FirstChild"
+        - $ref: "#/components/schemas/SecondChild"
+      discriminator:
+        propertyName: objectType
+        mapping:
+          firstChild: "#/components/schemas/FirstChild"
+          secondChild: "#/components/schemas/SecondChild"
     FirstChild:
       description: description
       allOf:
@@ -23,15 +34,6 @@ components:
             secondChildProperty:
               type: string
           required: [secondChildProperty]
-    ThirdChild:
-      description: Third Child
-      allOf:
-        - $ref: "#/components/schemas/Parent"
-        - type: object
-          properties:
-            thirdChildProperty:
-              type: string
-          required: [ thirdChildProperty ]
     Parent:
       description: Parent schema
       type: object
@@ -41,14 +43,3 @@ components:
         objectType:
           type: string
       required: [objectType]
-    TopLevel:
-      type: object
-      description: TopLevel Schema
-      oneOf:
-        - $ref: "#/components/schemas/FirstChild"
-        - $ref: "#/components/schemas/SecondChild"
-      discriminator:
-        propertyName: objectType
-        mapping:
-          firstChild: "#/components/schemas/FirstChild"
-          secondChild: "#/components/schemas/SecondChild"

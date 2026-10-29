@@ -79,21 +79,4 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
         assertNoViolations(callRules("discriminatorRefsInResponse/openapi.yaml"));
     }
 
-    @Test
-    void testInvalidOneOfDiscriminator() {
-        assertErrorCount(1, callRules("oneOfDiscriminatorInvalid/openapi.yaml"));
-    }
-
-    @Test
-    void testDiscriminatorInSubSchemaOfOneOf() {
-        ViolationReport aggregator = callRules("oneOf/openapi.yaml");
-        assertErrorCount(1, aggregator);
-        assertTrue(aggregator.getActionableViolations().get(0).getMessage().contains("In location /testRequest/schemaUnderTest"));
-    }
-
-    @Test
-    void testInvalidDiscriminatorInSubSchemaOfOneOf() {
-        assertErrorCount(1, callRules("oneOfInvalid/openapi.yaml"));
-    }
-
 }

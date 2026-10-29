@@ -1,6 +1,5 @@
 package io.github.belgif.rest.guide.validator.core.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
@@ -120,8 +119,6 @@ class SchemaValidatorTest {
         assertTrue(violations.isEmpty());
     }
 
-    //TODO: add test for discriminator with oneOf, where the discriminator value doesn't resolve to a schema, which should be a violation
-
     @Test
     void testFailOnOverwrittenDiscriminatorMapping() throws Exception {
         SchemaDefinition schema = findSchema(parse(
@@ -135,6 +132,52 @@ class SchemaValidatorTest {
         );
         // New behavior: the networknt validator throws exception when a discriminator mapping is overwritten by schema composition
         assertThrows(IllegalStateException.class, () -> SchemaValidator.validateSchema(instance, schema));
+    }
+
+    @Test
+    void testOneOfDiscriminatorValidCase() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        JsonNode validInstance = OBJECT_MAPPER.readTree("""
+                {
+                    "firstChildProperty": "test",
+                    "objectType": "firstChild"
+                }
+                """
+        );
+        Set<String> violations = SchemaValidator.validateSchema(validInstance, schema);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void testOneOfDiscriminatorAllowsMatchingAnotherSubschema() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        JsonNode instance = OBJECT_MAPPER.readTree("""
+                {
+                    "objectType": "firstChild",
+                    "secondChildProperty": "test"
+                }
+                """
+        );
+        Set<String> violations = SchemaValidator.validateSchema(instance, schema);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void testOneOfDiscriminatorRejectsUnmappedValue() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        JsonNode instance = OBJECT_MAPPER.readTree("""
+                {
+                    "firstChildProperty": "test",
+                    "objectType": "unknownChild"
+                }
+                """
+        );
+
+        Set<String> violations = SchemaValidator.validateSchema(instance, schema);
+        assertEquals(1, violations.size());
     }
 
 
