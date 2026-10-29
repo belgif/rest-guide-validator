@@ -13,6 +13,9 @@ components:
           type: string
       discriminator:
         propertyName: petType
+        mapping:
+          Cat: '#/components/schemas/Cat'
+          Dog: '#/components/schemas/Dog'
     Cat:
       title: Cat
       allOf:
@@ -29,6 +32,3 @@ components:
           properties:
             bark:
               type: string
-      example:
-        bark: woof
-        petType: somethingCompletelyDifferent

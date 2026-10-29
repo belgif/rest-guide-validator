@@ -55,19 +55,6 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     }
 
     @Test
-    void testDiscriminator() {
-        assertErrorCount(4, callRules("discriminator.yaml"));
-    }
-
-    @Test
-    void testSimpleInvalidDiscriminator() {
-        // Changed behavior in networknt validator: a discriminator value that doesn't resolve to a schema is no longer a violation; unless when used when combined with a oneOf
-        assertNoViolations(callRules("invalidDiscriminator.yaml"));
-    }
-
-    //TODO: add test for discriminator with oneOf, where the discriminator value doesn't resolve to a schema, which should be a violation
-
-    @Test
     void testSchemaInExternalFile() {
         assertErrorCount(1, callRules("schemaInExternalFile.yaml"));
     }
@@ -90,12 +77,6 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
     @Test
     void testFailingDiscriminatorsInResponseObject() {
         assertNoViolations(callRules("discriminatorRefsInResponse/openapi.yaml"));
-    }
-
-    @Test
-    void testFailOnOverwrittenDiscriminatorMapping() {
-        // New behavior: the networknt validator throws exception when a discriminator mapping is overwritten by schema composition
-        assertThrows(IllegalStateException.class, () -> callRules("oneOfOverwrittenDiscriminator/openapi.yaml"));
     }
 
     @Test

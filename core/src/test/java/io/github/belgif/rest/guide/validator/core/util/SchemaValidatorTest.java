@@ -1,5 +1,6 @@
 package io.github.belgif.rest.guide.validator.core.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
@@ -11,9 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SchemaValidatorTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -103,6 +102,56 @@ class SchemaValidatorTest {
         assertTrue(violations.stream().anyMatch(violation -> violation.contains("Value at /member")));
         assertTrue(violations.stream().anyMatch(violation -> violation.contains(
                 "SchemaValidatorSupportTest/schemaValidationRegression.yaml#/components/schemas/ExampleLocation")));
+    }
+
+    @Test
+    void testAllOfDiscriminatorChildSchemaResolution() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                        "SchemaValidatorTest/discriminatorWithAllOf.yaml"), "Pet", "discriminatorWithAllOf.yaml");
+        JsonNode instance = OBJECT_MAPPER.readTree("""
+                {
+                    "petType": "Dog",
+                    "bark": 123
+                }
+                """
+        );
+        Set<String> violations = SchemaValidator.validateSchema(instance, schema);
+        //networknt validator does not validate allOf-style discriminator mapping, so the example is valid
+        assertTrue(violations.isEmpty());
+    }
+
+    //TODO: add test for discriminator with oneOf, where the discriminator value doesn't resolve to a schema, which should be a violation
+
+    @Test
+    void testFailOnOverwrittenDiscriminatorMapping() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                "SchemaValidatorTest/overwrittenDiscriminatorMapping.yaml"), "TestSchema", "overwrittenDiscriminatorMapping.yaml");
+        JsonNode instance = OBJECT_MAPPER.readTree("""
+                {
+                    "firstChildProperty": "test",
+                    "objectType": "firstChild"
+                }
+                """
+        );
+        // New behavior: the networknt validator throws exception when a discriminator mapping is overwritten by schema composition
+        assertThrows(IllegalStateException.class, () -> SchemaValidator.validateSchema(instance, schema));
+    }
+
+
+    @Test
+    void testAllOfDiscriminatorInvalidDiscriminatorValue() throws Exception {
+        SchemaDefinition schema = findSchema(parse(
+                "SchemaValidatorTest/discriminatorWithAllOf.yaml"), "Pet", "discriminatorWithAllOf.yaml");
+        JsonNode instance = OBJECT_MAPPER.readTree("""
+                {
+                    "petType": "Doggy",
+                    "bark": "woof"
+                }
+                """
+        );
+        Set<String> violations = SchemaValidator.validateSchema(instance, schema);
+        //networknt validator does not validate allOf-style discriminator, so the example is valid
+        assertTrue(violations.isEmpty());
     }
 
     private Set<String> validateExample(SchemaDefinition schema) {
