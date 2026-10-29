@@ -18,19 +18,14 @@ class SchemaValidatorTest {
 
     @Test
     void testCircularExternalReferenceAppliesReferencedConstraints() {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/circularDependency.yaml"),
-                "Logos", "circularDependency.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/circularDependency.yaml", "Logos");
         Set<String> violations = validateExample(schema);
-
         assertTrue(violations.stream().anyMatch(violation -> violation.contains("mediaType")));
     }
 
     @Test
     void testExternalReferenceIdentityUsesReferencedFile() {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/sameName.yaml"),
-                "Employer", "sameName.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/sameName.yaml", "Employer");
         Set<String> violations = validateExample(schema);
 
         assertFalse(violations.isEmpty());
@@ -40,9 +35,7 @@ class SchemaValidatorTest {
 
     @Test
     void testDeeperParameterSchemaRejectsInvalidIdentifier() throws IOException {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/parameter.yaml"),
-                "Identifier", "parameter.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/parameter.yaml", "Identifier");
         JsonNode instance = OBJECT_MAPPER.readTree("\"91504de4-7f27-491e-96dc-5c8fefc4814fab\"");
 
         Set<String> violations = SchemaValidator.validateSchema(instance, schema);
@@ -53,27 +46,19 @@ class SchemaValidatorTest {
 
     @Test
     void testRefPropertyNameIsValid() {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/refAsPropertyName.yaml"),
-                "HealthStatus", "refAsPropertyName.yaml");
-
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/refAsPropertyName.yaml", "HealthStatus");
         assertTrue(validateExample(schema).isEmpty());
     }
 
     @Test
     void testRefPropertyNameInDiscriminatorIsValid() {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/refAsPropertyNameInDiscriminator.yaml"),
-                "MyFirstSchema", "refAsPropertyNameInDiscriminator.yaml");
-
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/refAsPropertyNameInDiscriminator.yaml", "MyFirstSchema");
         assertTrue(validateExample(schema).isEmpty());
     }
 
     @Test
     void testUriReferenceFormatAcceptsRelativeReference() throws IOException {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/uriReference.yaml"),
-                "UriReference", "uriReference.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/uriReference.yaml", "UriReference");
         JsonNode instance = OBJECT_MAPPER.readTree("{\"href\":\"./documents/123\"}");
 
         assertTrue(SchemaValidator.validateSchema(instance, schema).isEmpty());
@@ -81,9 +66,7 @@ class SchemaValidatorTest {
 
     @Test
     void testUriFormatRejectsRelativeReference() throws IOException {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/uri.yaml"),
-                "Uri", "uri.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/uri.yaml", "Uri");
         JsonNode instance = OBJECT_MAPPER.readTree("{\"href\":\"./documents/123\"}");
 
         assertFalse(SchemaValidator.validateSchema(instance, schema).isEmpty());
@@ -91,9 +74,7 @@ class SchemaValidatorTest {
 
     @Test
     void testValidationViolationsIncludeActionableLocations() throws IOException {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorSupportTest/schemaValidationRegression.yaml"),
-                "ExampleLocation", "schemaValidationRegression.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorSupportTest/schemaValidationRegression.yaml", "ExampleLocation");
         JsonNode instance = OBJECT_MAPPER.readTree("{\"member\":42}");
 
         Set<String> violations = SchemaValidator.validateSchema(instance, schema);
@@ -105,8 +86,7 @@ class SchemaValidatorTest {
 
     @Test
     void testAllOfDiscriminatorChildSchemaResolution() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                        "SchemaValidatorTest/discriminatorWithAllOf.yaml"), "Pet", "discriminatorWithAllOf.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/discriminatorWithAllOf.yaml", "Pet");
         JsonNode instance = OBJECT_MAPPER.readTree("""
                 {
                     "petType": "Dog",
@@ -121,8 +101,7 @@ class SchemaValidatorTest {
 
     @Test
     void testFailOnOverwrittenDiscriminatorMapping() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/overwrittenDiscriminatorMapping.yaml"), "TestSchema", "overwrittenDiscriminatorMapping.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/overwrittenDiscriminatorMapping.yaml", "TestSchema");
         JsonNode instance = OBJECT_MAPPER.readTree("""
                 {
                     "firstChildProperty": "test",
@@ -136,8 +115,7 @@ class SchemaValidatorTest {
 
     @Test
     void testOneOfDiscriminatorValidCase() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/discriminatorWithOneOf.yaml", "TestSchema");
         JsonNode validInstance = OBJECT_MAPPER.readTree("""
                 {
                     "firstChildProperty": "test",
@@ -151,8 +129,7 @@ class SchemaValidatorTest {
 
     @Test
     void testOneOfDiscriminatorAllowsMatchingAnotherSubschema() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/discriminatorWithOneOf.yaml", "TestSchema");
         JsonNode instance = OBJECT_MAPPER.readTree("""
                 {
                     "objectType": "firstChild",
@@ -166,8 +143,7 @@ class SchemaValidatorTest {
 
     @Test
     void testOneOfDiscriminatorRejectsUnmappedValue() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/discriminatorWithOneOf.yaml"), "TestSchema", "discriminatorWithOneOf.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/discriminatorWithOneOf.yaml", "TestSchema");
         JsonNode instance = OBJECT_MAPPER.readTree("""
                 {
                     "firstChildProperty": "test",
@@ -183,8 +159,7 @@ class SchemaValidatorTest {
 
     @Test
     void testAllOfDiscriminatorInvalidDiscriminatorValue() throws Exception {
-        SchemaDefinition schema = findSchema(parse(
-                "SchemaValidatorTest/discriminatorWithAllOf.yaml"), "Pet", "discriminatorWithAllOf.yaml");
+        SchemaDefinition schema = loadSchema("SchemaValidatorTest/discriminatorWithAllOf.yaml", "Pet");
         JsonNode instance = OBJECT_MAPPER.readTree("""
                 {
                     "petType": "Doggy",
@@ -201,16 +176,13 @@ class SchemaValidatorTest {
         return SchemaValidator.validateSchema(schema.getJsonNode().get("example"), schema);
     }
 
-    private SchemaDefinition findSchema(Parser.ParserResult result, String identifier, String fileName) {
-        return result.getSchemas().stream()
+    private SchemaDefinition loadSchema(String resourcePath, String identifier) {
+        File file = new File(getClass().getResource(resourcePath).getFile());
+        Parser.ParserResult parserResult = new Parser(file).parse(new ViolationReport());
+        return parserResult.getSchemas().stream()
                 .filter(schema -> identifier.equals(schema.getIdentifier()))
-                .filter(schema -> fileName.equals(schema.getOpenApiFile().getName()))
+                .filter(schema -> file.getName().equals(schema.getOpenApiFile().getName()))
                 .findFirst()
                 .orElseThrow();
-    }
-
-    private Parser.ParserResult parse(String resourcePath) {
-        File file = new File(getClass().getResource(resourcePath).getFile());
-        return new Parser(file).parse(new ViolationReport());
     }
 }

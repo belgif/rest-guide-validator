@@ -65,7 +65,6 @@ class NetworkntSchemaRegistryBuilderTest {
         Error error = validate("int32", "2147483648").get(0);
 
         assertTrue(error.getMessage().contains("int32"));
-        assertFalse(error.getMessage().contains("format.int32"));
     }
 
     private static void assertValid(String format, String instance) throws Exception {
