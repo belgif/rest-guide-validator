@@ -1,7 +1,7 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import io.github.belgif.rest.guide.validator.core.util.SchemaValidator;
+import io.github.belgif.rest.guide.validator.core.util.SchemaValidationSupport;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -19,7 +19,7 @@ rule "Enum values should validate against schema"
     when
         $schema: SchemaDefinition($schemaType: /model/type, !isNestedInNot())
         Schema(enumeration != null) from $schema.getModel()
-        $violation: Map.Entry() from SchemaValidator.getEnumViolations($schema)
+        $violation: Map.Entry() from SchemaValidationSupport.getEnumViolations($schema)
     then
         violationEnumValuesShouldValidateAgainstSchema(oas, $schema, $violation);
 end

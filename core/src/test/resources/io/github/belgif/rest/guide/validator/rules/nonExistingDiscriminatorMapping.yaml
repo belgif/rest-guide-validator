@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: Test discriminator mappings based on schema names.
-  description: This tests the ability of the SchemaValidator to resolve discriminator mappings with schema names instead of $ref
+  description: This tests the ability of the SchemaValidationSupport to resolve discriminator mappings with schema names instead of $ref
   version: 1
 servers: []
 paths: {}
