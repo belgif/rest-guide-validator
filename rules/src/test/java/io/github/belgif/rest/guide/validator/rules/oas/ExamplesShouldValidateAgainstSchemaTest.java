@@ -1,24 +1,20 @@
 package io.github.belgif.rest.guide.validator.rules.oas;
 
-import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.rules.AbstractOasRuleTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testRequiredValue() {
-        ViolationReport aggregator = callRules("requiredValue.yaml");
-        assertErrorCount(1, aggregator);
+        assertErrorCount(1, callRules("requiredValue.yaml"));
     }
 
     @Test
     void testPatterns() {
-        ViolationReport aggregator = callRules("doesNotRespectPatterns.yaml");
-        assertErrorCount(1, aggregator);
+        assertErrorCount(1, callRules("doesNotRespectPatterns.yaml"));
     }
 
     @Test
@@ -28,8 +24,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testWrongTypes() {
-        ViolationReport aggregator = callRules("wrongType.yaml");
-        assertErrorCount(1, aggregator);
+        assertErrorCount(1, callRules("wrongType.yaml"));
     }
 
     @Test
@@ -39,8 +34,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testMultipleExamplesInComponents() {
-        ViolationReport aggregator = callRules("examplesInComponents.yaml");
-        assertErrorCount(2, aggregator);
+        assertErrorCount(2, callRules("examplesInComponents.yaml"));
     }
 
     @Test
@@ -50,8 +44,7 @@ class ExamplesShouldValidateAgainstSchemaTest extends AbstractOasRuleTest {
 
     @Test
     void testDateFormat() {
-        ViolationReport aggregator = callRules("dateFormat.yaml");
-        assertErrorCount(3, aggregator);
+        assertErrorCount(3, callRules("dateFormat.yaml"));
     }
 
     @Test
