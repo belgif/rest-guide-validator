@@ -16,7 +16,7 @@ jobs:
     steps:
 #    Setup Maven action to specify maven version > required for BUG https://issues.apache.org/jira/browse/MNG-7055
     - name: Setup Maven Action
-      uses: s4u/setup-maven-action@v1.20.0
+      uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
       with:
         java-version: '17'
         java-distribution: 'adopt'
