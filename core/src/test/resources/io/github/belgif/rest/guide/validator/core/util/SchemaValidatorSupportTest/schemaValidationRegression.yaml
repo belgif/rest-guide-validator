@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Schema validation regression
+  version: "1"
+paths: {}
+components:
+  schemas:
+    AcceptedDefault:
+      type: string
+      default: accepted
+    InvalidDefault:
+      type: integer
+      default: not-an-integer
+    ValidEnum:
+      type: string
+      enum: [accepted]
+    InvalidEnum:
+      type: string
+      enum: [42]
+    ExampleLocation:
+      type: object
+      properties:
+        member:
+          type: string
+      example:
+        member: 42

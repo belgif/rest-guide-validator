@@ -39,6 +39,9 @@ Parse a json/swager file and build a java object structure.
 * com.jayway.jsonpath:json-path.  
 Read a json file and use json path.
 
+* `com.networknt:json-schema-validator`. To validate OpenAPI 3.0 examples, enum
+  values, and defaults against their schemas.
+
 * org.drools:*, org.kie:*  
 Rules engine.
 
@@ -70,5 +73,3 @@ Maven plugin
 
  For this sentence ' **myVar**: String() **from** *collection* '   
 drool will apply the ***then*** section for each element in collection by using **myVar**
-
-
