@@ -16,7 +16,7 @@ jobs:
       with:
         java-version: '17'
         java-distribution: 'temurin'
-        maven-version: '3.9.9'
+        maven-version: '3.10.1'
         cache-enabled: 'false'
         settings-servers: | 
           [{
@@ -55,7 +55,7 @@ jobs:
         uses: actions/setup-java@v6
         with:
           java-version: 17
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Download CLI Folder
         uses: actions/download-artifact@v8
         with:

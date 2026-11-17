@@ -10,10 +10,8 @@ updates:
       - dependency-name: "org.apache.maven:maven-core"
       - dependency-name: "org.apache.maven:maven-model"
       - dependency-name: "org.apache.maven:maven-plugin-api"
-      - dependency-name: "io.swagger.parser.v3:swagger-parser"
-        versions: ["2.1.26"] # version has a regression: https://github.com/swagger-api/swagger-parser/issues/2167 also tested in ITs
-      - dependency-name: "org.codehaus.mojo:flatten-maven-plugin"
-        versions: ["1.7.1"] # version has a regression: https://github.com/mojohaus/flatten-maven-plugin/issues/461, a PR was already made, so expect to be fixed in next release.
+      - dependency-name: "com.networknt:json-schema-validator" # stick with 2.x which uses jackson 2 to align with swagger-parser
+        versions: [">=3.0.0"]
     groups:
       maven:
         patterns:
