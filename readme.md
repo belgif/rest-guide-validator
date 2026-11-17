@@ -122,7 +122,7 @@ If undefined, the OpenAPI is considered as a definitions-only document when `pat
 This Maven plugin requires JDK 17 or higher to be used in the Maven runtime. 
 Note that the JDK version used to compile the source code of the project can differ. 
 IDEs may need manual configuration to set the appropriate Maven runtime JDK version.
-The minimum maven version is 3.8.5.
+The minimum Maven version is 3.9.0.
 
 ### Goal Overview
 The goal `validate` binds by default to the lifecycle phase `prepare-package`.
