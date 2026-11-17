@@ -34,7 +34,7 @@ public class Testsuite {
     private String systemErr;
     private String systemOut;
 
-    private List<Testcase> testcase = new ArrayList<>();
+    private final List<Testcase> testcase = new ArrayList<>();
 
     @XmlAttribute
     public String getFailures() {
@@ -103,15 +103,10 @@ public class Testsuite {
 
 
     public List<Testcase> getTestcase() {
-        if(testcase == null)
-            testcase = new ArrayList<>();
         return testcase;
     }
 
     public void addTestcase(Testcase testcase){
-        if(this.testcase == null) {
-            this.testcase = new ArrayList<>();
-        }
         if(testcase.getTime() != null) {
             time += Float.parseFloat(testcase.getTime());
         }

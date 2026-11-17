@@ -37,21 +37,15 @@ public class Testcase {
     Error error;
 
     @XmlTransient
-    private List<String> sysout = new ArrayList<>();
+    private final List<String> sysout = new ArrayList<>();
 
 
     @XmlElement(name = "system-out")
     public String getSystemOut() {
-        if (sysout == null) {
-            return "";
-        }
         return String.join("\n", sysout);
     }
 
     public void appendSysOut(String violationMessage) {
-        if (sysout == null) {
-            sysout = new ArrayList<>();
-        }
         sysout.add(violationMessage);
     }
 
