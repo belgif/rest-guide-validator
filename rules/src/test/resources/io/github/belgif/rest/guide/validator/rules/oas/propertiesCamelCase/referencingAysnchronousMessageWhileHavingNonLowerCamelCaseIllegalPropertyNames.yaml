@@ -37,3 +37,13 @@ components:
       properties:
         my_property:
           type: string
+
+    OneOf:
+      oneOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - type: object
+          required:
+            - data_base64
+          properties:
+            data_base64:
+              nullable: false

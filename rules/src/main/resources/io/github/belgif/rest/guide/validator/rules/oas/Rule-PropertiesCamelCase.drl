@@ -7,6 +7,8 @@ import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
 import io.github.belgif.rest.guide.validator.core.ViolationLevel
 import java.util.Set;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
+import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
+global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
 
 function void violationPropertiesCamelCase(ViolationReport oas, String propertyName, SchemaDefinition schema){
     oas.addViolation("[jsn-naming]",
@@ -19,8 +21,8 @@ function Set allowedWithinCloudEvents() {
     return Set.of("data_base64");
 }
 
-function boolean isExceptionallyAllowedWithinCloudEvents(SchemaDefinition schemaDefinition, String nonLowerCamelCasePropertyName) {
-    if (schemaDefinition.getIdentifier() != null && schemaDefinition.getIdentifier().equals("AsynchronousMessage")) {
+function boolean isExceptionallyAllowedWithinCloudEvents(SchemaDefinition schemaDefinition, String nonLowerCamelCasePropertyName, ParserResult parserResult) {
+    if (ApiFunctions.inheritsFromSchema(schemaDefinition.getHighLevelSchema(), "AsynchronousMessage", parserResult)) {
       return allowedWithinCloudEvents().contains(nonLowerCamelCasePropertyName);
     }
     return false;
@@ -29,7 +31,7 @@ function boolean isExceptionallyAllowedWithinCloudEvents(SchemaDefinition schema
 rule "Properties CamelCase"
 	when
         $schema: SchemaDefinition(!isNestedInNot(), $propertyName: /model/properties/keySet#String, !ApiFunctions.isLowerCamelCase($propertyName))
-        SchemaDefinition(!isExceptionallyAllowedWithinCloudEvents(this, $propertyName)) from $schema
+        SchemaDefinition(!isExceptionallyAllowedWithinCloudEvents(this, $propertyName, parserResult)) from $schema
     then
         violationPropertiesCamelCase(oas, $propertyName, $schema);
 end
