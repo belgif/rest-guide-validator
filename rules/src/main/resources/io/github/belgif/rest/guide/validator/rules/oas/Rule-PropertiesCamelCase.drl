@@ -5,7 +5,8 @@ import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
 import io.github.belgif.rest.guide.validator.core.ViolationLevel
-import java.util.Set;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import java.util.function.Predicate;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 import io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult;
 global io.github.belgif.rest.guide.validator.core.parser.Parser.ParserResult parserResult;
@@ -17,15 +18,31 @@ function void violationPropertiesCamelCase(ViolationReport oas, String propertyN
            		  schema, ViolationLevel.RECOMMENDED);
 }
 
-function Set allowedWithinCloudEvents() {
-    return Set.of("data_base64");
-}
-
 function boolean isExceptionallyAllowedWithinCloudEvents(SchemaDefinition schemaDefinition, String nonLowerCamelCasePropertyName, ParserResult parserResult) {
-    if (ApiFunctions.inheritsFromSchema(schemaDefinition.getHighLevelSchema(), "AsynchronousMessage", parserResult)) {
-      return allowedWithinCloudEvents().contains(nonLowerCamelCasePropertyName);
+    if (!"data_base64".equals(nonLowerCamelCasePropertyName)) {
+        return false;
     }
-    return false;
+    Predicate<SchemaDefinition> matchesBase = candidate -> "AsynchronousMessage".equals(candidate.getIdentifier());
+    SchemaDefinition context = schemaDefinition;
+    while (true) {
+        SchemaDefinition candidate = context;
+        while (true) {
+            if (matchesBase.test(candidate)) {
+                return true;
+            }
+            if (candidate.getModel().getRef() == null) {
+                break;
+            }
+            candidate = (SchemaDefinition) parserResult.resolve(candidate.getModel());
+        }
+        if (candidate.getModel().getAllOf() != null && candidate.getModel().getAllOf().stream().anyMatch(member -> ApiFunctions.schemaMeetsCondition(member, parserResult, matchesBase))) {
+            return true;
+        }
+        if (context.isHighLevelSchema()) {
+            return false;
+        }
+        context = (SchemaDefinition) context.getParent();
+    }
 }
 
 rule "Properties CamelCase"

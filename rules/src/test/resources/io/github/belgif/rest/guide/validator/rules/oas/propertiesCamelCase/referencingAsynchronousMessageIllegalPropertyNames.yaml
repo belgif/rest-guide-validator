@@ -1,0 +1,123 @@
+openapi: "3.0.3"
+info:
+  version: 1.0.0
+  title: testcase PropertiesCamelCaseTest
+servers:
+  - url: petstore.swagger.io
+paths:
+  /petInfos/{petId}:
+    get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Pet:
+      type: "object"
+      properties:
+        asynchronous_pet:
+          $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+
+    MyMessage:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      properties:
+        my_property:
+          type: string
+
+    OneOf:
+      oneOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - type: object
+          required:
+            - data_base64
+          properties:
+            data_base64:
+              nullable: false
+
+    SchemaWithIllegalProperty:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      properties:
+        payload:
+          type: object
+          properties:
+            data_base64:
+              type: string
+
+    SchemaWithIllegalAdditionalProperties:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      additionalProperties:
+        type: object
+        properties:
+          data_base64:
+            type: string
+
+    SchemaWithIllegalItems:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              data_base64:
+                type: string
+
+    PlainAnyOf:
+      anyOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - type: object
+      properties:
+        data_base64:
+          type: string
+
+    PlainOneOf:
+      oneOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - type: object
+      properties:
+        data_base64:
+          type: string
+
+    SharedPayload:
+      type: object
+      properties:
+        data_base64:
+          type: string
+
+    MessageWithSharedPayload:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - $ref: '#/components/schemas/SharedPayload'
+
+    OrdinaryConsumer:
+      properties:
+        payload:
+          $ref: '#/components/schemas/SharedPayload'
+
+    MixedComposition:
+      allOf:
+        - oneOf:
+            - anyOf:
+                - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+                - type: object
+            - type: object
+      properties:
+        data_base64:
+          type: string

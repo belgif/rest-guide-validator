@@ -16,11 +16,11 @@ class PropertiesCamelCaseTest extends AbstractOasRuleTest {
 
     @Test
     void testReferenceToAsynchronousMessage() {
-        assertNoViolations(callRules("referencingAysnchronousMessage.yaml"));
+        assertNoViolations(callRules("referencingAsynchronousMessage.yaml"));
     }
 
     @Test
     void testReferenceToAsynchronousMessageAndIllegalNonLowerCamelCaseProperties() {
-        assertErrorCount(3, callRules("referencingAysnchronousMessageWhileHavingNonLowerCamelCaseIllegalPropertyNames.yaml"));
+        assertErrorCount(10, callRules("referencingAsynchronousMessageIllegalPropertyNames.yaml"));
     }
 }

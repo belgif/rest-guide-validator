@@ -1,0 +1,132 @@
+openapi: "3.0.3"
+info:
+  version: 1.0.0
+  title: testcase PropertiesCamelCaseTest
+servers:
+  - url: petstore.swagger.io
+paths:
+  /petInfos/{petId}:
+    get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Pet:
+      type: "object"
+      properties:
+        asynchronousPet:
+          $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+
+    MyMessage:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - type: object
+          required:
+            - data_base64
+          properties:
+            data_base64:
+              nullable: false
+      properties:
+        myProperty:
+          type: string
+
+    AnotherMessage:
+      oneOf:
+        - type: object
+          allOf:
+            - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+            - type: object
+              required:
+                - data_base64
+              properties:
+                data_base64:
+                  nullable: false
+        - type: object
+          properties:
+            somethingElse:
+              type: string
+
+    VeryNestedMessage:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+        - allOf:
+            - type: object
+              properties:
+                data_base64:
+                  type: string
+
+    BaseMessage:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      properties:
+        myExtraProperty:
+          type: string
+
+    ExtensionMessage:
+        allOf:
+            - $ref: '#/components/schemas/BaseMessage'
+            - type: object
+              properties:
+                data_base64:
+                  nullable: false
+
+    Container:
+      type: object
+      properties:
+        event:
+          allOf:
+            - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+            - type: object
+              properties:
+                data_base64:
+                  type: string
+        events:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/BaseMessage'
+            properties:
+              data_base64:
+                type: string
+        eventMap:
+          type: object
+          additionalProperties:
+            allOf:
+              - $ref: '#/components/schemas/BaseMessage'
+            properties:
+              data_base64:
+                type: string
+
+    AliasMessage:
+      $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+
+    AliasChain:
+      $ref: '#/components/schemas/AliasMessage'
+
+    AnyOfSubtype:
+      anyOf:
+        - allOf:
+            - $ref: '#/components/schemas/AliasChain'
+          properties:
+            data_base64:
+              type: string
+        - type: object
+
+    ReferencedSubtype:
+      oneOf:
+        - $ref: '#/components/schemas/ExtensionMessage'
+        - type: object

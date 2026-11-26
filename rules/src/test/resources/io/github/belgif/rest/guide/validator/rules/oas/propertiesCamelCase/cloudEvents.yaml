@@ -128,28 +128,6 @@ components:
           x-ignore-rules:
             jsn-null: allow null to comply with CloudEvents 1.0 spec
       additionalProperties: true
-        # restrictions on additional properties are commented out because they don't work well for code generation
-        # additional context attributes:
-        #       MUST consist of lower-case letters [a-z] or digits [0-9] from the ASCII character set.
-        #       SHOULD start with a letter.
-        #       MUST be at least one character in length, and SHOULD NOT exceed 20 characters.
-        #       SHOULD be descriptive and terse.
-        # The CloudEvents specification only supports below types for context attributes, to maximize messaging protocol compatibility
-      # See https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md#type-system and https://github.com/cloudevents/spec/blob/main/cloudevents/formats/json-format.md#22-type-system-mapping
-      #        oneOf:
-      #          - type: string  # includes attributes with base64-encoded, uri, uri-reference or timestamp types
-      #            nullable: true
-      #            x-ignore-rules:
-      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
-      #          - type: integer
-      #            format: int32
-      #            nullable: true
-      #            x-ignore-rules:
-      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
-      #          - type: boolean
-      #            nullable: true
-      #            x-ignore-rules:
-      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
       example:
         {
           "specversion": "1.0",
@@ -160,79 +138,3 @@ components:
           "subject": "132456",
           "data": { "...": "..." }
         }
-
-    AsynchronousReplyMessageBase:
-      description: Context attributes for reply messages
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/AsynchronousMessageBase"
-        - properties:
-            relatedto:
-              description: The `id` of the corresponding request message
-              type: string
-              minLength: 1
-              example: "550e8400-e29b-41d4-a716-446655440000"
-            relatedtosource:
-              description: The `source` of the corresponding request message
-              type: string
-              minLength: 1
-              example: "urn:async-source:client:123"
-          required: [relatedto, relatedtosource]
-
-    AsynchronousProblemReplyMessage:
-      description: An asynchronous problem reply message
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/AsynchronousReplyMessageBase"
-        - properties:
-            data:
-              $ref: "problem.yaml#/components/schemas/Problem"
-          required: [data]
-      example:
-        {
-          "specversion": "1.0",
-          "id": "987654-1234-1235-4567489798",
-          "service": "be.belgif.example.meeting.v3",
-          "source": "urn:async-source:be.belgif.example",
-          "type": "be.belgif.example.meeting.v3.meeting.create.problemReply",
-          "datacontenttype": "application/problem+json",
-          "relatedto": "550e8400-e29b-41d4-a716-446655440000",
-          "relatedtosource": "urn:async-source:client:123",
-          "data": {
-            "type": "urn:problem-type:belgif:badRequest",
-            "href": "https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html",
-            "title": "Bad Request",
-            "detail":  "The input message is incorrect",
-            "instance": "urn:uuid:987654-1234-1235-4567489798",
-            "issues": [
-              {
-                "type": "urn:problem-type:belgif:input-validation:schemaViolation",
-                "detail": "value 123 of invitees[0] is not of type string",
-                "in": "body",
-                "name": "invitees[0]",
-                "value": 123
-              }
-            ]
-          }
-        }
-
-    AsynchronousMessagesBatch:
-      type: object
-      description: A large batch of cloud events, often as content of a file.
-        The number of messages may be very high, so avoid loading them all in memory.
-      properties:
-        context:
-          title: AsynchronousMessagesBatchContext
-          type: object
-          description:
-            Context of the exchanged batch of asynchronous messages.
-            The context properties are defined by the party defining the exchange of the batch.
-            
-            Context properties SHOULD NOT be required to process messages functionally by an application, but MAY support technical aspects during message transfer like routing at batch-level or authentication.
-        messages:
-          type: array
-          description: "A list of asynchronous messages.
-            Each message should be self-contained: an application processing the message content shouldn't be required to retrieve business information from the transfer protocol or batch-level context."
-          items:
-            $ref: "#/components/schemas/AsynchronousMessage"
-      required: [messages]

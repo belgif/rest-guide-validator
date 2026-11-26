@@ -27,3 +27,5 @@ tmp/
 
 *.log
 *.msi
+
+.review/

@@ -147,14 +147,14 @@ public class ApiFunctions {
         /**
          * @formatter:off
          * ex.
-         {@snippet lang=yaml:
-         oneOf:
-         - description: anything allowed in this subschema # missing type -> any allowed
-         - type: object
-         - oneOf:
-             - type: object
-             - type: string
-         }
+        {@snippet lang=yaml:
+                oneOf:
+                - description: anything allowed in this subschema # missing type -> any allowed
+                - type: object
+                - oneOf:
+                - type: object
+                - type: string
+                }
 
         results in union of   [ null, (object), (object, string) ] which is (null) - any type allowed
          @formatter:on
