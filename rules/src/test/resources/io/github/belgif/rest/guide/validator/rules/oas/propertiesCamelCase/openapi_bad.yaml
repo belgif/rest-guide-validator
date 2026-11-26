@@ -39,3 +39,7 @@ components:
           type: string
         tag:
           type: string
+        data_base64:
+          description: Base64 encoded message payload. Must adhere to RFC4648. This property is mutually exclusive with `data`.
+          type: string
+          format: byte

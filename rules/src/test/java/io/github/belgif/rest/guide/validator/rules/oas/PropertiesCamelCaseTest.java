@@ -11,6 +11,16 @@ class PropertiesCamelCaseTest extends AbstractOasRuleTest {
 
     @Test
     void testInvalidOpenApi() {
-        assertViolations(callRules("openapi_bad.yaml"));
+        assertErrorCount(2, callRules("openapi_bad.yaml"));
+    }
+
+    @Test
+    void testReferenceToAsynchronousMessage() {
+        assertNoViolations(callRules("referencingAysnchronousMessage.yaml"));
+    }
+
+    @Test
+    void testReferenceToAsynchronousMessageAndIllegalNonLowerCamelCaseProperties() {
+        assertErrorCount(2, callRules("referencingAysnchronousMessageWhileHavingNonLowerCamelCaseIllegalPropertyNames.yaml"));
     }
 }

@@ -1,0 +1,39 @@
+openapi: "3.0.3"
+info:
+  version: 1.0.0
+  title: testcase PropertiesCamelCaseTest
+servers:
+  - url: petstore.swagger.io
+paths:
+  /petInfos/{petId}:
+    get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Pet:
+      type: "object"
+      properties:
+        asynchronousPet:
+          $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+
+    MyMessage:
+      allOf:
+        - $ref: 'cloudEvents.yaml#/components/schemas/AsynchronousMessage'
+      properties:
+        myProperty:
+          type: string

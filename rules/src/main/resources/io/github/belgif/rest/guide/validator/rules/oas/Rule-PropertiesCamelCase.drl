@@ -4,7 +4,8 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import io.github.belgif.rest.guide.validator.core.ApiFunctions;
 import io.github.belgif.rest.guide.validator.core.ViolationReport;
 import io.github.belgif.rest.guide.validator.core.model.SchemaDefinition
-import io.github.belgif.rest.guide.validator.core.ViolationLevel;
+import io.github.belgif.rest.guide.validator.core.ViolationLevel
+import java.util.Set;
 global io.github.belgif.rest.guide.validator.core.ViolationReport oas;
 
 function void violationPropertiesCamelCase(ViolationReport oas, String propertyName, SchemaDefinition schema){
@@ -14,9 +15,21 @@ function void violationPropertiesCamelCase(ViolationReport oas, String propertyN
            		  schema, ViolationLevel.RECOMMENDED);
 }
 
+function Set allowedWithinCloudEvents() {
+    return Set.of("data_base64");
+}
+
+function boolean isExceptionallyAllowedWithinCloudEvents(SchemaDefinition schemaDefinition, String nonLowerCamelCasePropertyName) {
+    if (schemaDefinition.getIdentifier() != null && schemaDefinition.getIdentifier().equals("AsynchronousMessage")) {
+      return allowedWithinCloudEvents().contains(nonLowerCamelCasePropertyName);
+    }
+    return false;
+}
+
 rule "Properties CamelCase"
 	when
         $schema: SchemaDefinition(!isNestedInNot(), $propertyName: /model/properties/keySet#String, !ApiFunctions.isLowerCamelCase($propertyName))
+        SchemaDefinition(!isExceptionallyAllowedWithinCloudEvents(this, $propertyName)) from $schema
     then
         violationPropertiesCamelCase(oas, $propertyName, $schema);
 end
